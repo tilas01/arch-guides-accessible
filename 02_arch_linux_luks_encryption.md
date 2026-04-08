@@ -1,6 +1,6 @@
 ---
 title: 02. Arch Linux with LUKS Encryption
-author: [tilas01](https://www.github.com/tilas01) and Gemini Code Assist
+author: "tilas01 on GitHub and Gemini Code Assist"
 date: 2026-04-07
 ---
 

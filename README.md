@@ -1,5 +1,5 @@
 ---
-title: Arch Linux Guides (Accessible)
+title: "Arch Linux Guides (Accessible)"
 author: "tilas01 on GitHub and Gemini Code Assist"
 date: 2026-04-07
 ---
