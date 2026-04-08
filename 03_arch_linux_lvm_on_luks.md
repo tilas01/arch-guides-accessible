@@ -1,6 +1,6 @@
 ---
 title: 03. Arch Linux with LVM on LUKS
-author: tilas01 on GitHub (https://www.github.com/tilas01) (Gemini Code Assist)
+author: [tilas01](https://www.github.com/tilas01) and Gemini Code Assist
 date: 2026-04-07
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: 07. Install and Setup DWM (Suckless Window Manager)
-author: tilas01
+author: [tilas01](https://www.github.com/tilas01) and Gemini Code Assist
 date: 2026-04-07
 ---
 
@@ -211,15 +211,12 @@ systemctl suspend # Test if slock runs on suspend (your screen should lock)
 
 To prevent bypassing `slock` by switching TTYs or killing the X server, configure Xorg.
 
-Create `/etc/X11/xorg.conf.d/slock.conf`:
+Create `/etc/X11/xorg.conf.d/slock.conf` with the following content:
 
-```diff
---- /dev/null
-+++ b/arch-guides-all-new/docs/etc/X11/xorg.conf.d/slock.conf
-@@ -0,0 +1,5 @@
-+Section "ServerFlags"
-+    Option "DontVTSwitch" "True"
-+    Option "DontZap"      "True"
+```
+Section "ServerFlags"
+    Option "DontVTSwitch" "True"
+    Option "DontZap"      "True"
 +EndSection
 ```
 

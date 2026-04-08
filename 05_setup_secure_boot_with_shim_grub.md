@@ -116,25 +116,22 @@ Depends = findutils
 Depends = grep
 ```
 
-Create `/etc/pacman.d/hooks/998-sign_grub_for_secureboot.hook`:
+Create `/etc/pacman.d/hooks/998-sign_grub_for_secureboot.hook` with the following content:
 
-```diff
---- /dev/null
-+++ b/arch-guides-all-new/docs/998-sign_grub_for_secureboot.hook
-@@ -0,0 +1,13 @@
-+[Trigger]
-+Operation = Install
-+Operation = Upgrade
-+Type = Package
-+Target = grub
-+
-+[Action]
-+Description = Signing GRUB for Secure Boot
-+When = PostTransaction
-+Exec = /usr/bin/find /efi/ -name 'grubx64*' -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key /root/sbkeys/MOK.key --cert /root/sbkeys/MOK.crt --output {} {}; fi' \ ;
-+Depends = sbsigntools
-+Depends = findutils
-+Depends = grep
+```
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = grub
+
+[Action]
+Description = Signing GRUB for Secure Boot
+When = PostTransaction
+Exec = /usr/bin/find /efi/ -name 'grubx64*' -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key /root/sbkeys/MOK.key --cert /root/sbkeys/MOK.crt --output {} {}; fi' \ ;
+Depends = sbsigntools
+Depends = findutils
+Depends = grep
 ```
 
 ## 8. Add Shim to EFI Boot Manager

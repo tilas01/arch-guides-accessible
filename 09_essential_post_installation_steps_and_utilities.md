@@ -1,6 +1,6 @@
 ---
 title: 09. Essential Post-Installation Steps & Utilities
-author: tilas01
+author: [tilas01](https://www.github.com/tilas01) and Gemini Code Assist
 date: 2026-04-07
 ---
 

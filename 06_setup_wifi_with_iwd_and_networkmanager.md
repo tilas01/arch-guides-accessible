@@ -98,25 +98,22 @@ ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
 This file (`/etc/systemd/resolved.conf`) will contain your DNS settings. The example below uses Quad9 for privacy and filtering.
 
-Create the file `/etc/systemd/resolved.conf`:
+Create the file `/etc/systemd/resolved.conf` with the following content:
 
-```diff
---- /dev/null
-+++ b/arch-guides-all-new/docs/etc/systemd/resolved.conf
-@@ -0,0 +1,12 @@
-+[Resolve]
-+# Example using Quad9 DNS servers (replace with your preferred DNS providers)
-+# DNS=9.9.9.9#dns.quad9.net 149.112.112.112#dns.quad9.net
-+# FallbackDNS=2620:fe::fe 2620:fe::9
-+DNS=9.9.9.9 149.112.112.112
-+FallbackDNS=2620:fe::fe 2620:fe::9
-+DNSSEC=true
-+DNSOverTLS=yes
-+# DNSOverHTTPS=yes # Uncomment if you prefer DoH over DoT, or use both
-+Cache=yes
-+LLMNR=no
-+MulticastDNS=no
-+DNSStubListener=yes
+```
+[Resolve]
+# Example using Quad9 DNS servers (replace with your preferred DNS providers)
+# DNS=9.9.9.9#dns.quad9.net 149.112.112.112#dns.quad9.net
+# FallbackDNS=2620:fe::fe 2620:fe::9
+DNS=9.9.9.9 149.112.112.112
+FallbackDNS=2620:fe::fe 2620:fe::9
+DNSSEC=true
+DNSOverTLS=yes
+# DNSOverHTTPS=yes # Uncomment if you prefer DoH over DoT, or use both
+Cache=yes
+LLMNR=no
+MulticastDNS=no
+DNSStubListener=yes
 ```
 
 **Explanation of settings:**
