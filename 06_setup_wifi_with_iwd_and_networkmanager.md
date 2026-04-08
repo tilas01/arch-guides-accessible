@@ -1,6 +1,6 @@
 ---
 title: 06. Setup Wi-Fi with iwd and NetworkManager
-author: [tilas01](https://www.github.com/tilas01)
+author: [tilas01](https://www.github.com/tilas01) and Gemini Code Assist
 date: 2026-04-07
 ---
 
@@ -79,14 +79,11 @@ pacman -Sy systemd-resolved
 
 ### Configure NetworkManager to use `systemd-resolved`
 
-Create the file `/etc/NetworkManager/conf.d/dns.conf`:
+Create the file `/etc/NetworkManager/conf.d/dns.conf` with the following content:
 
-```diff
---- /dev/null
-+++ b/arch-guides-all-new/docs/etc/NetworkManager/conf.d/dns.conf
-@@ -0,0 +1,2 @@
-+[main]
-+dns=systemd-resolved
+```
+[main]
+dns=systemd-resolved
 ```
 
 ### Link System `resolv.conf` to `systemd-resolved`

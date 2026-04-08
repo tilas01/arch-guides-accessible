@@ -1,6 +1,6 @@
 ---
 title: 05. Setup Secure Boot with Shim (GRUB)
-author: [tilas01](https://www.github.com/tilas01)
+author: [tilas01](https://www.github.com/tilas01) and Gemini Code Assist
 date: 2026-04-07
 ---
 
@@ -95,28 +95,25 @@ To ensure your kernel and GRUB remain signed after updates, create Pacman hooks.
 sudo mkdir -p /etc/pacman.d/hooks
 ```
 
-Create `/etc/pacman.d/hooks/999-sign_kernel_for_secureboot.hook`:
+Create `/etc/pacman.d/hooks/999-sign_kernel_for_secureboot.hook` with the following content:
 
-```diff
---- /dev/null
-+++ b/arch-guides-all-new/docs/999-sign_kernel_for_secureboot.hook
-@@ -0,0 +1,16 @@
-+[Trigger]
-+Operation = Install
-+Operation = Upgrade
-+Type = Package
-+Target = linux
-+Target = linux-lts
-+Target = linux-hardened
-+Target = linux-zen
-+
-+[Action]
-+Description = Signing Kernel for Secure Boot
-+When = PostTransaction
-+Exec = /usr/bin/find /boot/ -maxdepth 1 -name 'vmlinuz-*' -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key /root/sbkeys/MOK.key --cert /root/sbkeys/MOK.crt --output {} {}; fi' \ ;
-+Depends = sbsigntools
-+Depends = findutils
-+Depends = grep
+```
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = linux
+Target = linux-lts
+Target = linux-hardened
+Target = linux-zen
+
+[Action]
+Description = Signing Kernel for Secure Boot
+When = PostTransaction
+Exec = /usr/bin/find /boot/ -maxdepth 1 -name 'vmlinuz-*' -exec /usr/bin/sh -c 'if ! /usr/bin/sbverify --list {} 2>/dev/null | /usr/bin/grep -q "signature certificates"; then /usr/bin/sbsign --key /root/sbkeys/MOK.key --cert /root/sbkeys/MOK.crt --output {} {}; fi' \ ;
+Depends = sbsigntools
+Depends = findutils
+Depends = grep
 ```
 
 Create `/etc/pacman.d/hooks/998-sign_grub_for_secureboot.hook`:
