@@ -8,13 +8,20 @@ date: 2026-04-07
 
 # Arch Linux Guides (Accessible) 🐧
 
-This repository is a very useful and accessible tool to help install Arch Linux professionally. It provides clear, modular instructions reformatted for ease of use and professional implementation.
+This repository is a very useful and accessible tool to help install Arch Linux professionally. It provides clear, modular instructions, reformatted for ease of use and professional implementation.
 
 > [!IMPORTANT]
 > **AI-Generated Content Notice:** This entire repository has been refactored and rewritten by **Gemini Code Assist** based on the original [arch-guides-all](https://www.github.com/tilas01/arch-guides-all) repository. It has been reformatted to be more minimal and easier to understand. **Please note that as this content is AI-generated, it may contain errors; always verify commands before execution.** If you prefer 100% human-written tutorials, please visit the original repository at [arch-guides-all](https://www.github.com/tilas01/arch-guides-all).
 
 ### ⚠️ Disclaimer
 While these instructions are based on Arch Linux best practices, the ecosystem evolves rapidly. Always cross-reference with the [Arch Wiki](https://wiki.archlinux.org/title/Main_page). The authors are not responsible for data loss or system damage. Testing in a Virtual Machine (VM) is highly recommended.
+
+## Important Considerations
+
+*   **UEFI vs. BIOS**: Most modern systems use UEFI. Ensure you know your system's boot mode.
+*   **Dual Booting**: If dual-booting with Windows, **always install Windows first**. Windows installers are known to overwrite existing bootloaders and partitions without warning.
+*   **Secure Boot**: Understand the implications of Secure Boot. While this guide provides a method to enable it with Shim, true protection against advanced physical attacks often involves more complex setups.
+*   **Encryption**: Full disk encryption (LUKS) is highly recommended for data security.
 
 ---
 
@@ -54,6 +61,20 @@ This project is licensed under the MIT License.
 
 ---
 #### Credits
+*   **Author:** tilas01 on GitHub (https://www.github.com/tilas01) (Gemini Code Assist)
+
+*Please do not remove credits when sharing, modifying, or publishing this guide.*
+
+## Requirements
+*   A 64-bit UEFI-compatible system.
+*   An active internet connection.
+*   A USB flash drive (minimum 2GB).
+
+---
+*This guide is based on the official Arch Wiki.*
+
+---
+#### Credits
 *   **Author:** [tilas01](https://www.github.com/tilas01) (Gemini Code Assist)
 
 *Please do not remove credits when sharing, modifying, or publishing this guide.*
@@ -65,14 +86,3 @@ This project is licensed under the MIT License.
 
 ---
 *This guide is based on the official Arch Wiki.*
-```
-
-```diff
-
-
-*   **UEFI vs. BIOS**: Most modern systems use UEFI. Ensure you know your system's boot mode.
-*   **Dual Booting**: If dual-booting with Windows, **always install Windows first**. Windows installers can overwrite existing Linux partitions.
-*   **Secure Boot**: Understand the implications of Secure Boot. While this guide provides a method to enable it with Shim, true protection against advanced physical attacks often involves more complex setups.
-*   **Encryption**: Full disk encryption (LUKS) is highly recommended for data security.
-
----

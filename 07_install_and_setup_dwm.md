@@ -1,6 +1,6 @@
 ---
 title: 07. Install and Setup DWM (Suckless Window Manager)
-author: tilas01 on GitHub (https://www.github.com/tilas01) (Gemini Code Assist)
+author: tilas01
 date: 2026-04-07
 ---
 
@@ -183,31 +183,28 @@ After rebooting, log in to a TTY, and DWM should start automatically.
 
 Create a systemd service to automatically lock your screen with `slock` when your system suspends.
 
-Create `/etc/systemd/system/slock@.service`:
+Create the file `/etc/systemd/system/slock@.service` with the following content:
 
-```diff
---- /dev/null
-+++ b/arch-guides-all-new/docs/etc/systemd/system/slock@.service
-@@ -0,0 +1,10 @@
-+[Unit]
-+Description=Lock X session using slock for user %i
-+Before=sleep.target
-+
-+[Service]
-+User=%i
-+Environment=DISPLAY=:0
-+ExecStartPre=/usr/bin/xset dpms force suspend
-+ExecStart=/usr/local/bin/slock
-+
-+[Install]
-+WantedBy=sleep.target
+```ini
+[Unit]
+Description=Lock X session using slock for user %i
+Before=sleep.target
+
+[Service]
+User=%i
+Environment=DISPLAY=:0
+ExecStartPre=/usr/bin/xset dpms force suspend
+ExecStart=/usr/local/bin/slock
+
+[Install]
+WantedBy=sleep.target
 ```
 
 Enable the service for your user:
 
 ```bash
-doas systemctl enable slock@{your_username}.service
-systemctl suspend # Test if slock runs on suspend
+doas systemctl enable slock@$(whoami).service
+systemctl suspend # Test if slock runs on suspend (your screen should lock)
 ```
 
 ## 10. Block TTY Access and Prevent Killing X (Security for `slock`)
@@ -306,8 +303,8 @@ doas make clean install
 *   **Volume Mixer**: `alsamixer`
 *   **DWM Keybind Cheat Sheet**: ratfactor.com/dwm
 *   **Official DWM Tutorial**: dwm.suckless.org/tutorial/
-*   **Mental Outlaw's Suckless Guides**: GitHub, YouTube
+*   **Mental Outlaw's Suckless Guides**: YouTube Playlist
 
 #### Credits
-*   **Author:** tilas01 on GitHub (https://www.github.com/tilas01) (Gemini Code Assist)
+*   **Author:** tilas01
 *Please do not remove credits*

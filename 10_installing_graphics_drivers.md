@@ -1,6 +1,6 @@
 ---
 title: 10. Installing Graphics Drivers
-author: tilas01 (Gemini Code Assist)
+author: tilas01
 date: 2026-04-07
 ---
 
@@ -36,7 +36,36 @@ sudo pacman -S {driver_package_name}
 
 **Note for NVIDIA DKMS:** If you installed a kernel other than `linux` (e.g., `linux-zen`), you **must** install `nvidia-dkms` along with the corresponding kernel headers (e.g., `linux-zen-headers`).
 
-## 4. Reboot (Recommended)
+## 4. VirtualBox Guest Additions (For VM Users)
+
+If you are running Arch inside VirtualBox, you need these drivers for screen resizing, shared clipboard, and folder sharing.
+
+### Install Packages
+
+*   **Standard Kernel (`linux`)**:
+    ```bash
+    sudo pacman -S virtualbox-guest-utils
+    ```
+*   **Custom Kernels (`linux-zen`, `linux-lts`, etc.)**:
+    You must use the DKMS version to ensure the modules are built for your specific kernel.
+    ```bash
+    sudo pacman -S virtualbox-guest-dkms virtualbox-guest-utils
+    ```
+    *Note: Ensure your kernel headers are installed (e.g., `sudo pacman -S linux-zen-headers`).*
+
+### Enable Services
+
+```bash
+sudo systemctl enable --now vboxservice.service
+```
+
+### Shared Folder Permissions
+Add your user to the `vboxsf` group to access shared folders:
+```bash
+sudo usermod -aG vboxsf {your_username}
+```
+
+## 5. Reboot (Recommended)
 
 After installing graphics drivers, a reboot is often necessary for the changes to take take full effect.
 

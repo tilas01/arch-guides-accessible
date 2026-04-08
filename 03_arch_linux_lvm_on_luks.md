@@ -11,7 +11,7 @@ This guide explains how to configure Logical Volume Management (LVM) on top of a
 ## Assumptions
 
 *   You have identified your target disk (e.g., `/dev/sda`).
-*   Secure Boot is disabled.
+*   Secure Boot is disabled (refer to your UEFI firmware settings).
 *   You are comfortable with `cryptsetup` and LVM utilities.
 
 ## 1. Partition the Disk for LVM on LUKS

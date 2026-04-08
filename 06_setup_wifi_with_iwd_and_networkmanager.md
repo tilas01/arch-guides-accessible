@@ -1,6 +1,6 @@
 ---
 title: 06. Setup Wi-Fi with iwd and NetworkManager
-author: tilas01 (Gemini Code Assist)
+author: [tilas01](https://www.github.com/tilas01)
 date: 2026-04-07
 ---
 
@@ -29,14 +29,11 @@ systemctl enable iwd
 
 Create a configuration file to tell NetworkManager to use `iwd` for Wi-Fi.
 
-Create the file `/etc/NetworkManager/conf.d/wifi_backend.conf`:
+Create the file `/etc/NetworkManager/conf.d/wifi_backend.conf` with the following content:
 
-```diff
---- /dev/null
-+++ b/arch-guides-all-new/docs/etc/NetworkManager/conf.d/wifi_backend.conf
-@@ -0,0 +1,2 @@
-+[device]
-+wifi.backend=iwd
+```ini
+[device]
+wifi.backend=iwd
 ```
 
 ## 4. Restart NetworkManager and iwd
@@ -44,8 +41,7 @@ Create the file `/etc/NetworkManager/conf.d/wifi_backend.conf`:
 Apply the changes by restarting the services.
 
 ```bash
-sudo systemctl restart NetworkManager
-sudo systemctl restart iwd # May not be strictly necessary, but good practice
+sudo systemctl restart NetworkManager iwd
 ```
 
 ## 5. Connect to Wi-Fi with `nmcli`
@@ -170,5 +166,5 @@ If you experience connectivity issues, try restarting your system and all releva
 *   systemd-resolved Arch Wiki Page
 
 #### Credits
-*   **Author:** tilas01 (Gemini Code Assist)
+*   **Author:** tilas01
 *Please do not remove credits when sharing, modifying, or publishing this guide.*

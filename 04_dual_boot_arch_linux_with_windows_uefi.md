@@ -1,6 +1,6 @@
 ---
 title: 04. Dual Boot Arch Linux with Windows (UEFI)
-author: [tilas01](https://www.github.com/tilas01) (Gemini Code Assist)
+author: tilas01 on GitHub (https://www.github.com/tilas01) (Gemini Code Assist)
 date: 2026-04-07
 ---
 
@@ -22,7 +22,7 @@ Before installing Arch Linux, prepare your Windows system.
 
 ## 2. Arch Linux Installation (Partitioning for Dual Boot)
 
-Proceed with the initial installation steps as described in 01. Initial Setup, 02. LUKS, or 03. LVM on LUKS.
+Proceed with the initial installation steps as described in 01. Initial Setup & Basic Installation (UEFI), 02. Arch Linux with LUKS Encryption, or 03. Arch Linux with LVM on LUKS.
 
 The key difference will be in the partitioning step. Instead of creating a new EFI partition, you will **reuse the existing Windows EFI System Partition**.
 
@@ -61,7 +61,7 @@ swapon /dev/sdaX # If using a swap partition
 
 ## 3. GRUB Configuration for Dual Boot
 
-During the GRUB configuration step (covered in 09. Essential Post-Installation), you must enable `os-prober` to detect your Windows installation.
+During the GRUB configuration step (covered in 09. Essential Post-Installation Steps & Utilities), you must enable `os-prober` to detect your Windows installation.
 
 ```bash
 nano /etc/default/grub

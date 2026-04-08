@@ -1,6 +1,6 @@
 ---
 title: 09. Essential Post-Installation Steps & Utilities
-author: tilas01 on GitHub (https://www.github.com/tilas01) (Gemini Code Assist)
+author: tilas01
 date: 2026-04-07
 ---
 
@@ -185,14 +185,14 @@ pacman -S grub efibootmgr os-prober
 
 ### Special GRUB Configuration for LUKS/LVM on LUKS
 
-If you are using LUKS encryption (from 02. LUKS or 03. LVM on LUKS), you need to modify `/etc/default/grub`.
+If you are using LUKS encryption (from 02. Arch Linux with LUKS Encryption or 03. Arch Linux with LVM on LUKS), you need to modify `/etc/default/grub`.
 
 1.  **Get UUID**: Find the UUID of your LUKS partition (`/dev/sda2` in those guides).
     ```bash
     blkid
     ```
     Save the UUID for your encrypted partition.
-
+ 
 2.  **Edit GRUB defaults**:
     ```bash
     nano /etc/default/grub
@@ -210,7 +210,7 @@ If you are using LUKS encryption (from 02. LUKS or 03. LVM on LUKS), you need to
 
 ### GRUB Configuration for Dual Boot with Windows
 
-If you are dual-booting with Windows (from 04. Dual Boot), ensure `os-prober` is enabled in `/etc/default/grub`:
+If you are dual-booting with Windows (from 04. Dual Boot Arch Linux with Windows (UEFI)), ensure `os-prober` is enabled in `/etc/default/grub`:
 
 ```
 GRUB_DISABLE_OS_PROBER=false
@@ -301,5 +301,5 @@ After rebooting into your new Arch Linux system, you can proceed with:
 *   12. General Notes & Troubleshooting Tips
 
 #### Credits
-*   **Author:** tilas01 on GitHub (https://www.github.com/tilas01) (Gemini Code Assist)
+*   **Author:** tilas01
 *Please do not remove credits*

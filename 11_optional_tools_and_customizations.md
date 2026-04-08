@@ -1,6 +1,6 @@
 ---
 title: 11. Optional Tools & Customizations
-author: tilas01 (Refactored by Gemini Code Assist)
+author: [tilas01](https://www.github.com/tilas01) (Gemini Code Assist)
 date: 2026-04-07
 ---
 

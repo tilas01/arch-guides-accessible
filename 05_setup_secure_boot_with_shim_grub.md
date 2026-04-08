@@ -1,6 +1,6 @@
 ---
 title: 05. Setup Secure Boot with Shim (GRUB)
-author: tilas01 (Gemini Code Assist)
+author: [tilas01](https://www.github.com/tilas01)
 date: 2026-04-07
 ---
 
@@ -11,10 +11,10 @@ This guide outlines how to enable Secure Boot on your Arch Linux installation us
 ## Important Information & Security Considerations
 
 *   **Evil Maid Attack**: This setup primarily provides a workaround for Secure Boot requirements and **does NOT protect against sophisticated "Evil Maid" attacks**. An attacker with physical access can still enroll their own keys.
-    *   For a deeper understanding, review the Wikipedia page on Evil Maid attacks.
+    *   For a deeper understanding, review the [Wikipedia page on Evil Maid attacks](https://en.wikipedia.org/wiki/Evil_maid_attack).
 *   **Real Protection**: True protection against physical attacks involves full disk encryption (LUKS), strong boot and administrator passwords in your UEFI firmware, and potentially physical security measures.
 *   **Custom Keys**: While it's possible to use your own Secure Boot keys, this guide uses Shim, which simplifies the process but relies on Microsoft's keys. Using your own keys is more complex and carries a higher risk of bricking your system if not done correctly.
-*   **Arch Wiki**: For advanced Secure Boot configurations and using your own keys, refer to the Arch Wiki Unified Extensible Firmware Interface/Secure Boot page.
+*   **Arch Wiki**: For advanced Secure Boot configurations and using your own keys, refer to the [Arch Wiki UEFI/Secure Boot page](https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot).
 
 ## Assumptions
 
@@ -89,7 +89,7 @@ sudo sbsign --key /root/sbkeys/MOK.key --cert /root/sbkeys/MOK.crt --output /efi
 
 ## 7. Create Pacman Hooks for Automatic Signing
 
-To ensure your kernel and GRUB remain signed after updates, create Pacman hooks.
+To ensure your kernel and GRUB remain signed after updates, create Pacman hooks. These hooks will automatically re-sign the relevant files whenever they are updated.
 
 ```bash
 sudo mkdir -p /etc/pacman.d/hooks
@@ -197,5 +197,5 @@ sudo reboot
 Remember to use your UEFI boot menu (e.g., `F9` or `F12` during boot) to select between Arch Linux (via Shim) and Windows if you've hidden the GRUB menu.
 
 #### Credits
-*   **Author:** tilas01 (Gemini Code Assist)
+*   **Author:** [tilas01](https://www.github.com/tilas01)
 *Please do not remove credits when sharing, modifying, or publishing this guide.*

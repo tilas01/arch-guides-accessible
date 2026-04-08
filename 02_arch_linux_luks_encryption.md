@@ -11,7 +11,7 @@ This guide details how to set up Arch Linux with full disk encryption using LUKS
 ## Assumptions
 
 *   You have identified your target disk (e.g., `/dev/sda`).
-*   Secure Boot is disabled.
+*   Secure Boot is disabled (refer to your UEFI firmware settings).
 *   You are comfortable with the `cryptsetup` utility.
 
 ## 1. Partition the Disk for LUKS

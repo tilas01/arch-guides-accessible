@@ -1,6 +1,6 @@
 ---
 title: 12. General Notes & Troubleshooting Tips
-author: tilas01 (Gemini Code Assist)
+author: [tilas01](https://www.github.com/tilas01)
 date: 2026-04-07
 ---
 
@@ -15,7 +15,7 @@ It is crucial to install the appropriate microcode updates for your CPU. These u
 *   **Intel CPUs**: Install `intel-ucode`.
 *   **AMD CPUs**: Install `amd-ucode`.
 
-These packages should be included in your `pacstrap` command (see 09. Essential Post-Installation). If you missed it, install it now:
+These packages should be included in your `pacstrap` command (see 09. Essential Post-Installation Steps). If you missed it, install it now:
 
 ```bash
 sudo pacman -S intel-ucode # or amd-ucode
@@ -51,7 +51,7 @@ Ensure you have installed the correct graphics drivers for your system. Refer to
     *   `journalctl -xe`: View recent errors and warnings.
 *   **Boot from Live USB**: If your system fails to boot, use your Arch Linux installation medium to `arch-chroot` into your system and diagnose/fix issues.
 *   **Network Issues**: If you lose internet connectivity, re-check your network configuration (see 06. Setup Wi-Fi).
-*   **GRUB Issues**: If GRUB fails to boot, you might need to reinstall it or regenerate its configuration from a live environment.
+*   **GRUB Issues**: If GRUB fails to boot, you might need to reinstall it or regenerate its configuration from a live environment. Refer to the Arch Wiki GRUB page for detailed troubleshooting.
 
 ## 5. Security Best Practices
 
@@ -72,5 +72,5 @@ Ensure you have installed the correct graphics drivers for your system. Refer to
 *   feh Arch Wiki Page
 
 #### Credits
-*   **Author:** tilas01 (Gemini Code Assist)
+*   **Author:** tilas01
 *Please do not remove credits when sharing, modifying, or publishing this guide.*
