@@ -1,6 +1,6 @@
 ---
-title: 05. Setup Secure Boot with Shim (GRUB)
-author: [tilas01](https://www.github.com/tilas01) and Gemini Code Assist
+title: "05. Setup Secure Boot with Shim (GRUB)"
+author: "[tilas01](https://www.github.com/tilas01) and Gemini Code Assist"
 date: 2026-04-07
 ---
 

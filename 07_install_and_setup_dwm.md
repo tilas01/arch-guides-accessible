@@ -1,6 +1,6 @@
 ---
-title: 07. Install and Setup DWM (Suckless Window Manager)
-author: [tilas01](https://www.github.com/tilas01) and Gemini Code Assist
+title: "07. Install and Setup DWM (Suckless Window Manager)"
+author: "[tilas01](https://www.github.com/tilas01) and Gemini Code Assist"
 date: 2026-04-07
 ---
 
