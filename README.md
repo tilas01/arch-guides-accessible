@@ -95,10 +95,5 @@ This project is licensed under the MIT License.
 
 *Please do not remove credits when sharing, modifying, or publishing this guide.*
 
-## Requirements
-*   A 64-bit UEFI-compatible system.
-*   An active internet connection.
-*   A USB flash drive (minimum 2GB).
-
 ---
 *This guide is based on the official Arch Wiki.*
