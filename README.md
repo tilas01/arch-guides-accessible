@@ -96,4 +96,3 @@ This project is licensed under the MIT License.
 *Please do not remove credits when sharing, modifying, or publishing this guide.*
 
 ---
-*This guide is based on the official Arch Wiki.*
