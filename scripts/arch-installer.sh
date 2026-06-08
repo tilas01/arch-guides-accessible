@@ -41,6 +41,14 @@ echo "5) GRUB + Shim"
 read -p "Choice [1-5]: " BOOT_CHOICE
 
 echo ""
+echo "Select Graphics Drivers (GPU):"
+echo "1) None / Virtual Machine / Generic"
+echo "2) AMD - Libre (uses only open source dependencies recursively and is fully open source)"
+echo "3) NVIDIA - Open Source (code is public but may depend on things that code isnt public for)"
+echo "4) NVIDIA - Proprietary (code is not public)"
+read -p "Choice [1-4]: " GPU_CHOICE
+
+echo ""
 read -p "Install Advanced Evil Maid Detector? (y/n): " EVIL_CHOICE
 
 echo ""
@@ -99,7 +107,20 @@ elif [ "$PART_CHOICE" == "4" ]; then
 fi
 
 # 2. Base Install
-extract_and_run "docs/03-base-installation.md" "host"
+GPU_PKGS=""
+if [ "$GPU_CHOICE" == "2" ]; then
+    GPU_PKGS="mesa xf86-video-amdgpu vulkan-radeon"
+elif [ "$GPU_CHOICE" == "3" ]; then
+    GPU_PKGS="mesa xf86-video-nouveau"
+elif [ "$GPU_CHOICE" == "4" ]; then
+    GPU_PKGS="nvidia nvidia-utils"
+fi
+
+tmp_base="/tmp/base_install.sh"
+curl -s "$REPO_URL/docs/03-base-installation.md" | awk '/^```bash/{flag=1; next} /^```/{flag=0} flag' > "$tmp_base"
+sed -i "s|pacstrap -K /mnt base |pacstrap -K /mnt base $GPU_PKGS |g" "$tmp_base"
+bash "$tmp_base"
+rm -f "$tmp_base"
 
 # Write mkinitcpio hooks based on Init choice
 cat <<EOF > /mnt/setup_init.sh

@@ -66,6 +66,16 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label>Graphics Drivers (GPU):</label>
+                    <select id="gpu">
+                        <option value="none" selected>None / Virtual Machine / Generic</option>
+                        <option value="amd">AMD - Libre (uses only open source dependencies recursively and is fully open source)</option>
+                        <option value="nvidia-nouveau">NVIDIA - Open Source (code is public but may depend on things that code isnt public for)</option>
+                        <option value="nvidia-prop">NVIDIA - Proprietary (code is not public)</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn">Generate Custom Guide</button>
             </form>
         </section>
