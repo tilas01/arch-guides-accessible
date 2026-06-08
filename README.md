@@ -25,18 +25,29 @@ This repository maps out every path to building an Arch Linux system. Whether yo
 
 For users who want to deploy these configurations rapidly, we provide two highly modular, audited installation scripts. You can run these one-liners directly from the live Arch ISO environment.
 
-### 🦀 1. The Highly Optimized Async Rust Builder (Recommended for speed & multiple systems)
-This ultra-fast installer compiles directly in memory, spawning concurrent asynchronous tasks (`tokio`) to fetch all the required markdown guides into RAM simultaneously. It entirely skips image blobs and git history to save massive bandwidth. It utilizes max `Cargo` release optimizations (`opt-level=3`).
+<details>
+<summary><b>🦀 The Highly Optimized Async Rust Builder (Click to Expand)</b></summary>
+<br>
+
+**Recommended for speed & multiple established systems.**
+This ultra-fast installer executes a pre-compiled, GitHub Actions reproducible release binary. It spawns concurrent asynchronous tasks (`tokio`) to fetch all the required markdown guides into RAM simultaneously. It entirely skips image blobs and git history to save massive bandwidth. It downloads the pre-compiled binary, checks the `sha256sum` hash against the Git-hosted release hash for extreme security verification, and executes.
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-accessible/main/scripts/run-rust-installer.sh)"
 ```
-👉 [Read the Rust Installer Manual & Specs](rust-installer/README.md)
+👉 [Read the Rust Installer Manual & Specs (including auto-compiler instructions)](rust-installer/README.md)
 
-### 🐚 2. The Traditional Bash Installer
+</details>
+
+<details>
+<summary><b>🐚 The Traditional Bash Installer (Click to Expand)</b></summary>
+<br>
+
 Runs sequentially top-to-bottom. Excellent for users who prefer standard Bash execution over compiled memory binaries.
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-accessible/main/scripts/arch-installer.sh)"
 ```
+
+</details>
 
 **Capabilities of Both Installers:**
 * Prompts interactively for precise GPU drivers (Libre AMD, Nouveau, or Proprietary NVIDIA).

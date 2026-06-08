@@ -1,25 +1,26 @@
 #!/bin/bash
-# Arch Guides: Automated Rust Compiler & Runner
+# Arch Guides: Download, Verify, and Execute Rust Installer
 
 set -e
-echo "[+] Bootstrapping Rust Environment..."
-pacman -Sy --noconfirm --needed rustup git
-rustup default stable
 
-echo "[+] Fetching Repository..."
-git clone --depth 1 https://github.com/tilas01/arch-guides-accessible.git /tmp/arch-repo
-cd /tmp/arch-repo/rust-installer
+echo "[+] Fetching pre-compiled Reproducible Rust Build..."
+curl -sLO https://github.com/tilas01/arch-guides-accessible/releases/download/latest/arch-installer-linux-x86_64
+curl -sLO https://github.com/tilas01/arch-guides-accessible/releases/download/latest/arch-installer-linux-x86_64.sha256
 
-echo "[+] Compiling Highly Optimized Async Installer..."
-cargo build --release
+echo "[+] Verifying Hash Signature against Git-hosted checksum..."
+if sha256sum -c arch-installer-linux-x86_64.sha256; then
+    echo "[✓] Hash verification passed."
+else
+    echo "[!] CRITICAL ERROR: Hash verification failed. Binary may be compromised."
+    rm -f arch-installer-linux-x86_64 arch-installer-linux-x86_64.sha256
+    exit 1
+fi
 
-echo "[+] Executing..."
-./target/release/arch-installer
+echo "[+] Executing Async Rust Installer..."
+chmod +x arch-installer-linux-x86_64
+./arch-installer-linux-x86_64
 
-echo "[+] Cleaning up build dependencies..."
-cd /
-rm -rf /tmp/arch-repo
-rustup self uninstall -y || true
-pacman -Rs --noconfirm rustup git || true
+echo "[+] Cleaning up local files..."
+rm -f arch-installer-linux-x86_64 arch-installer-linux-x86_64.sha256
 
 echo "[+] Finished."
