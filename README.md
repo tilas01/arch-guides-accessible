@@ -1,17 +1,12 @@
 <img src="img/banner.png" width="100%" alt="Arch Guides Banner">
 
+> *⚠️ AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
+
 # Arch Guides: Accessible & Modular
 
 **The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.**
 
 This repository maps out every path to building an Arch Linux system. Whether you desire a standard unencrypted setup, or a hardened, Post-Quantum LUKS2 encrypted system utilizing Unified Kernel Images, Secure Boot with custom keys, and active Evil Maid countermeasures, you have full control over the process.
-
----
-
-## Legal Disclaimer & AI Notice
-
-**AI-Generated Content & Security Warning:**
-Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by [tilas01](https://www.github.com/tilas01) and drawing from [max-baz](https://github.com/max-baz/arch-secure-boot). While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS".
 
 ---
 
@@ -104,10 +99,60 @@ Found in `scripts/pacman-hooks/`.
 
 ## Supported Install Configurations
 
-By utilizing the modular paths above, you can build over 15 distinct configurations, including but not limited to:
-1. **The Fortress:** LUKS2 + Direct UKI + Custom Secure Boot Keys + Evil Maid Detector + Linux-Hardened.
-2. **The Flexible Secure:** LVM on LUKS2 + systemd-boot + Evil Maid Detector.
-3. **The Standard Dual Boot:** Unencrypted + GRUB + os-prober + Windows Dual Boot.
-4. **The Minimalist Dual Boot:** LUKS2 + systemd-boot + Native Windows Detection.
-5. **The Microsoft Trust:** LUKS2 + GRUB + Shim Secure Boot.
-...and many more permutations across BIOS/UEFI limits!
+By utilizing the modular paths above, you can build over 20 distinct configurations across BIOS and UEFI systems. Click below to expand and view the detailed permutations:
+
+<details>
+<summary><strong>1. The Fortress (Maximum Security)</strong></summary>
+
+* **Base Elements:** LUKS2 (AES-256-XTS) + Direct UKI + Custom Secure Boot Keys + Evil Maid Detector + Linux-Hardened.
+* **Firmware Limits:** Requires UEFI (Secure Boot and UKIs do not function on Legacy BIOS).
+* **Dual Boot Permutations:**
+  * *Non-Dual Boot:* The purest and most secure form.
+  * *Dual Boot (Systemd-boot):* Adds `systemd-boot` to chainload Windows without compromising the UKI security, assuming Windows is securely maintained.
+</details>
+
+<details>
+<summary><strong>2. The Flexible Secure (LVM & Snapshots)</strong></summary>
+
+* **Base Elements:** LVM on LUKS2 + systemd-boot + Evil Maid Detector + Linux-Zen.
+* **Firmware Limits:** Fully supports UEFI. For BIOS, systemd-boot is swapped for GRUB.
+* **Dual Boot Permutations:**
+  * *Non-Dual Boot:* Highly resilient setup allowing encrypted BTRFS/Ext4 snapshots across logical volumes.
+  * *Dual Boot (systemd-boot or GRUB os-prober):* Easily segments storage for Windows while retaining full volume encryption for Linux.
+</details>
+
+<details>
+<summary><strong>3. The Minimalist (Performance & Simplicity)</strong></summary>
+
+* **Base Elements:** LUKS2 + systemd-boot + Standard Linux Kernel.
+* **Firmware Limits:** Requires UEFI (systemd-boot is UEFI-only).
+* **Dual Boot Permutations:**
+  * *Non-Dual Boot:* Extremely fast boot times with zero menu bloat.
+  * *Dual Boot (Native Windows Detection):* systemd-boot instantly detects Windows on the same ESP.
+</details>
+
+<details>
+<summary><strong>4. The Microsoft Trust (Standard Secure Boot)</strong></summary>
+
+* **Base Elements:** LUKS2 + GRUB + Shim Secure Boot + Standard Linux Kernel.
+* **Firmware Limits:** Requires UEFI for Shim/Secure Boot functionality.
+* **Dual Boot Permutations:**
+  * *Non-Dual Boot:* Utilizes factory Microsoft keys to load Shim -> GRUB -> Arch.
+  * *Dual Boot (GRUB os-prober):* The traditional, safest dual-boot method compatible with out-of-the-box Windows Secure Boot parameters.
+</details>
+
+<details>
+<summary><strong>5. The Legacy Classic (BIOS Systems)</strong></summary>
+
+* **Base Elements:** Unencrypted or LUKS2 + GRUB + MBR/DOS.
+* **Firmware Limits:** Explicitly designed for older Legacy BIOS systems lacking UEFI.
+* **Dual Boot Permutations:**
+  * *Non-Dual Boot:* Standard MBR installation.
+  * *Dual Boot (GRUB os-prober):* Chainloads older Windows installations (e.g., Windows 7/10 Legacy).
+</details>
+
+<details>
+<summary><strong>License Information</strong></summary>
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+</details>
