@@ -19,17 +19,26 @@ read -p "Enter the target disk (e.g., /dev/sda or /dev/nvme0n1): " DISK
 
 echo ""
 echo "Select Partitioning & Encryption Setup:"
-echo "1) Unencrypted (docs/02-partitioning/unencrypted.md)"
-echo "2) LUKS2 (docs/02-partitioning/luks2.md)"
-echo "3) LVM on LUKS2 (docs/02-partitioning/lvm-on-luks2.md)"
-read -p "Choice [1-3]: " PART_CHOICE
+echo "1) Unencrypted"
+echo "2) LUKS1 (Legacy GRUB Compatible)"
+echo "3) LUKS2 (Post-Quantum Argon2id / Recommended)"
+echo "4) LVM on LUKS2"
+read -p "Choice [1-4]: " PART_CHOICE
 
 echo ""
-echo "Select Bootloader:"
-echo "1) systemd-boot (docs/04-bootloaders/systemd-boot.md)"
-echo "2) GRUB (docs/04-bootloaders/grub.md)"
-echo "3) UKI / No GRUB (docs/04-bootloaders/uki-no-grub.md)"
-read -p "Choice [1-3]: " BOOT_CHOICE
+echo "Select Init System (mkinitcpio hooks):"
+echo "1) systemd (Modern, sd-encrypt)"
+echo "2) busybox/udev (Traditional, encrypt hook)"
+read -p "Choice [1-2]: " INIT_CHOICE
+
+echo ""
+echo "Select Bootloader & Secure Boot:"
+echo "1) UKI / Direct UEFI (Custom Keys)"
+echo "2) UKI + Shim (Microsoft Trust)"
+echo "3) systemd-boot"
+echo "4) GRUB"
+echo "5) GRUB + Shim"
+read -p "Choice [1-5]: " BOOT_CHOICE
 
 echo ""
 read -p "Install Advanced Evil Maid Detector? (y/n): " EVIL_CHOICE
@@ -39,7 +48,6 @@ echo "================================================="
 echo "Ready to begin installation on $DISK."
 read -p "Press ENTER to begin extracting and running blocks..."
 
-# Determine partitions
 PART_EFI="${DISK}1"
 PART_ROOT="${DISK}2"
 if [[ "$DISK" == *"nvme"* ]]; then
@@ -53,15 +61,11 @@ extract_and_run() {
     echo "[+] Extracting live script from: $file_path"
     
     local tmp_script="/tmp/arch_extract_$RANDOM.sh"
-    # Extract bash blocks using awk
     curl -s "$REPO_URL/$file_path" | awk '/^```bash/{flag=1; next} /^```/{flag=0} flag' > "$tmp_script"
     
-    # Replace markdown placeholders with actual choices
     sed -i "s|/dev/sda1|$PART_EFI|g" "$tmp_script"
     sed -i "s|/dev/sda2|$PART_ROOT|g" "$tmp_script"
     sed -i "s|/dev/sda|$DISK|g" "$tmp_script"
-    
-    # Remove interactive commands like cfdisk, we'll do it manually
     sed -i '/cfdisk/d' "$tmp_script"
     
     if [ -s "$tmp_script" ]; then
@@ -78,31 +82,66 @@ extract_and_run() {
     rm -f "$tmp_script"
 }
 
-# 1. Manual partitioning logic because cfdisk is interactive in markdown
+# 1. Partitioning
 echo "[+] Wiping disk and creating partitions..."
 sgdisk -Z "$DISK"
 sgdisk -n 1:0:+512M -t 1:ef00 "$DISK"
 sgdisk -n 2:0:0 -t 2:8300 "$DISK"
 
-# Run specific partitioning markdown
 if [ "$PART_CHOICE" == "1" ]; then
     extract_and_run "docs/02-partitioning/unencrypted.md" "host"
 elif [ "$PART_CHOICE" == "2" ]; then
-    extract_and_run "docs/02-partitioning/luks2.md" "host"
+    extract_and_run "docs/02-partitioning/luks1.md" "host"
 elif [ "$PART_CHOICE" == "3" ]; then
+    extract_and_run "docs/02-partitioning/luks2.md" "host"
+elif [ "$PART_CHOICE" == "4" ]; then
     extract_and_run "docs/02-partitioning/lvm-on-luks2.md" "host"
 fi
 
 # 2. Base Install
 extract_and_run "docs/03-base-installation.md" "host"
 
-# 3. Bootloader Install (Requires chroot, but scripts in MD don't prepend arch-chroot)
+# Write mkinitcpio hooks based on Init choice
+cat <<EOF > /mnt/setup_init.sh
+#!/bin/bash
+if [ "$INIT_CHOICE" == "1" ]; then
+    if [ "$PART_CHOICE" == "1" ]; then
+        sed -i 's/^HOOKS=.*/HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole block filesystems fsck)/' /etc/mkinitcpio.conf
+    elif [ "$PART_CHOICE" == "4" ]; then
+        sed -i 's/^HOOKS=.*/HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole block sd-encrypt lvm2 filesystems fsck)/' /etc/mkinitcpio.conf
+    else
+        sed -i 's/^HOOKS=.*/HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole block sd-encrypt filesystems fsck)/' /etc/mkinitcpio.conf
+    fi
+else
+    if [ "$PART_CHOICE" == "1" ]; then
+        sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block filesystems fsck)/' /etc/mkinitcpio.conf
+    elif [ "$PART_CHOICE" == "4" ]; then
+        sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt lvm2 filesystems fsck)/' /etc/mkinitcpio.conf
+    else
+        sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems fsck)/' /etc/mkinitcpio.conf
+    fi
+fi
+mkinitcpio -P
+EOF
+chmod +x /mnt/setup_init.sh
+arch-chroot /mnt /setup_init.sh
+rm /mnt/setup_init.sh
+
+# 3. Bootloader Install
 if [ "$BOOT_CHOICE" == "1" ]; then
-    extract_and_run "docs/04-bootloaders/systemd-boot.md" "chroot"
-elif [ "$BOOT_CHOICE" == "2" ]; then
-    extract_and_run "docs/04-bootloaders/grub.md" "chroot"
-elif [ "$BOOT_CHOICE" == "3" ]; then
     extract_and_run "docs/04-bootloaders/uki-no-grub.md" "chroot"
+    extract_and_run "docs/05-secure-boot/custom-keys-uki.md" "chroot"
+elif [ "$BOOT_CHOICE" == "2" ]; then
+    extract_and_run "docs/04-bootloaders/uki-no-grub.md" "chroot"
+    arch-chroot /mnt pacman -S --noconfirm shim-signed
+    arch-chroot /mnt cp /usr/share/shim-signed/shimx64.efi /efi/EFI/arch/bootx64.efi
+elif [ "$BOOT_CHOICE" == "3" ]; then
+    extract_and_run "docs/04-bootloaders/systemd-boot.md" "chroot"
+elif [ "$BOOT_CHOICE" == "4" ]; then
+    extract_and_run "docs/04-bootloaders/grub.md" "chroot"
+elif [ "$BOOT_CHOICE" == "5" ]; then
+    extract_and_run "docs/04-bootloaders/grub.md" "chroot"
+    extract_and_run "docs/05-secure-boot/shim-grub.md" "chroot"
 fi
 
 # 4. Copy scripts and Setup Evil Maid

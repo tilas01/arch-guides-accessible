@@ -31,18 +31,29 @@
                 <div class="form-group">
                     <label>Partitioning / Encryption:</label>
                     <select id="partitioning">
-                        <option value="unencrypted">Unencrypted (Minimalist)</option>
-                        <option value="luks2" selected>LUKS2 Encryption (Recommended)</option>
-                        <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Secure)</option>
+                        <option value="unencrypted">Unencrypted (Minimalist / No Security)</option>
+                        <option value="luks1">LUKS1 (Legacy GRUB Compatible / High Security)</option>
+                        <option value="luks2" selected>LUKS2 (Post-Quantum Argon2id / Max Security)</option>
+                        <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes / Max Security)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Init System (mkinitcpio Hooks):</label>
+                    <select id="init_system">
+                        <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
+                        <option value="busybox">busybox/udev init (Traditional, encrypt hook)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Bootloader:</label>
+                    <label>Bootloader & Secure Boot:</label>
                     <select id="bootloader">
-                        <option value="uki-no-grub" selected>UKI / Direct UEFI (Fortress Security)</option>
+                        <option value="uki-custom" selected>UKI + Custom Keys (Fortress / Direct UEFI)</option>
+                        <option value="uki-shim">UKI + Shim (Secure Boot via Microsoft Trust)</option>
                         <option value="systemd-boot">systemd-boot (Clean/Minimal)</option>
-                        <option value="grub">GRUB (Legacy/Traditional)</option>
+                        <option value="grub">GRUB (Legacy/Traditional BIOS/UEFI)</option>
+                        <option value="grub-shim">GRUB + Shim (Legacy + Microsoft Secure Boot)</option>
                     </select>
                 </div>
 
@@ -51,7 +62,7 @@
                     <select id="kernel">
                         <option value="linux-hardened linux-zen">Primary: Hardened | Backup: Zen</option>
                         <option value="linux linux-lts">Primary: Standard | Backup: LTS</option>
-                        <option value="linux-zen">Primary: Zen (Performance)</option>
+                        <option value="linux-zen">Primary: Zen (Performance/Gaming)</option>
                     </select>
                 </div>
 
