@@ -49,6 +49,13 @@ echo "4) NVIDIA - Proprietary (code is not public)"
 read -p "Choice [1-4]: " GPU_CHOICE
 
 echo ""
+echo "Select DNS Caching Service:"
+echo "1) systemd-resolved (Default, minimal)"
+echo "2) unbound (Validating, recursive, caching DNS resolver)"
+echo "3) dnscrypt-proxy (Flexible DNS proxy, supports encrypted protocols)"
+read -p "Choice [1-3]: " DNS_CHOICE
+
+echo ""
 read -p "Install Advanced Evil Maid Detector? (y/n): " EVIL_CHOICE
 
 echo ""
@@ -165,7 +172,18 @@ elif [ "$BOOT_CHOICE" == "5" ]; then
     extract_and_run "docs/05-secure-boot/shim-grub.md" "chroot"
 fi
 
-# 4. Copy scripts and Setup Evil Maid
+# 4. DNS Setup
+if [ "$DNS_CHOICE" == "2" ]; then
+    arch-chroot /mnt pacman -S --noconfirm unbound
+    arch-chroot /mnt systemctl enable unbound
+elif [ "$DNS_CHOICE" == "3" ]; then
+    arch-chroot /mnt pacman -S --noconfirm dnscrypt-proxy
+    arch-chroot /mnt systemctl enable dnscrypt-proxy
+else
+    arch-chroot /mnt systemctl enable systemd-resolved
+fi
+
+# 5. Copy scripts and Setup Evil Maid
 echo "[+] Fetching scripts directory..."
 mkdir -p /mnt/root/scripts
 curl -s "$REPO_URL/scripts/evil-maid-detector.sh" > /mnt/root/scripts/evil-maid-detector.sh

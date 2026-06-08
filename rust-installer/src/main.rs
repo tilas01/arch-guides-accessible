@@ -44,6 +44,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("4) NVIDIA - Proprietary (code is not public)");
     let gpu_choice = prompt("Choice [1-4]: ");
 
+    println!("\nSelect DNS Caching Service:");
+    println!("1) systemd-resolved (Default, minimal)");
+    println!("2) unbound (Validating, recursive, caching DNS resolver)");
+    println!("3) dnscrypt-proxy (Flexible DNS proxy, supports encrypted protocols)");
+    let dns_choice = prompt("Choice [1-3]: ");
+
     println!("\nReady to begin highly concurrent installation.");
     prompt("Press ENTER to ignite...");
 
@@ -113,6 +119,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     println!("[+] Executing base install (pacstrap)...");
     // Command::new("bash").arg("-c").arg(&base_script).status()?;
+
+    println!("[+] Configuring DNS caching service...");
+    let dns_cmd = match dns_choice.trim() {
+        "2" => "arch-chroot /mnt pacman -S --noconfirm unbound && arch-chroot /mnt systemctl enable unbound",
+        "3" => "arch-chroot /mnt pacman -S --noconfirm dnscrypt-proxy && arch-chroot /mnt systemctl enable dnscrypt-proxy",
+        _ => "arch-chroot /mnt systemctl enable systemd-resolved",
+    };
+    // Command::new("bash").arg("-c").arg(&dns_cmd).status()?;
 
     println!("\n[✓] Asynchronous Build Generation Successful.");
     println!("Note: This compiled binary can be distributed to all target systems and executed instantly.");

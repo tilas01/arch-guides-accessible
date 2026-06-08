@@ -76,6 +76,15 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label>DNS Caching Service:</label>
+                    <select id="dns">
+                        <option value="systemd-resolved" selected>systemd-resolved (Default, minimal)</option>
+                        <option value="unbound">unbound (Validating, recursive, caching DNS resolver)</option>
+                        <option value="dnscrypt-proxy">dnscrypt-proxy (Flexible DNS proxy, supports encrypted protocols)</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn">Generate Custom Guide</button>
             </form>
         </section>
