@@ -1,16 +1,20 @@
 <img src="img/banner.png" width="100%" alt="Arch Guides Banner">
 
-> *⚠️ AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
-
 # Arch Guides: Accessible & Modular
-
 **The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.**
+
+## ?? Legal Disclaimer & AI Notice
+> *?? AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
+
+---
+
+## Arch Dynamic Installation Setup Guide
+
+> *⚠️ AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
 
 This repository maps out every path to building an Arch Linux system. Whether you desire a standard unencrypted setup, or a hardened, Post-Quantum LUKS2 encrypted system utilizing Unified Kernel Images, Secure Boot with custom keys, and active Evil Maid countermeasures, you have full control over the process.
 
 ---
-
-## Dynamic Setup Guide
 
 Building your Arch Linux system is a series of interconnected choices. Follow this linear map to build your precise setup.
 
