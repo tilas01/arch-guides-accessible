@@ -7,6 +7,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const boot = document.getElementById('bootloader').value;
     const kernels = document.getElementById('kernel').value;
     const gpu = document.getElementById('gpu').value;
+    const dns = document.getElementById('dns').value;
 
     let partEfi = disk + "1";
     let partRoot = disk + "2";
@@ -115,6 +116,19 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         output += `grub-mkconfig -o /boot/grub/grub.cfg\n`;
         output += `\`\`\`\n`;
     }
+
+    output += `\n## 5. DNS Caching Service (${dns})\n`;
+    output += `\`\`\`bash\n`;
+    if (dns === "unbound") {
+        output += `pacman -S unbound\n`;
+        output += `systemctl enable unbound\n`;
+    } else if (dns === "dnscrypt-proxy") {
+        output += `pacman -S dnscrypt-proxy\n`;
+        output += `systemctl enable dnscrypt-proxy\n`;
+    } else {
+        output += `systemctl enable systemd-resolved\n`;
+    }
+    output += `\`\`\`\n`;
 
     output += `\n*Guide complete. Ensure networking and passwords are set before rebooting into your tailored environment.*`;
 

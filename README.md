@@ -21,17 +21,34 @@
 
 This repository maps out every path to building an Arch Linux system. Whether you desire a standard unencrypted setup, or a hardened, Post-Quantum LUKS2 encrypted system utilizing Unified Kernel Images, Secure Boot with custom keys, and active Evil Maid countermeasures, you have full control over the process.
 
-## ⚡ Quick Setup: Automated Batch Installer
+## ⚡ Quick Setup: Automated Extractive Installers
 
-For users who want to deploy these configurations rapidly, we have provided a fully modular, audited bash script that automates the entire installation process.
-* 👉 **[Download & View `arch-installer.sh`](scripts/arch-installer.sh)**
+For users who want to deploy these configurations rapidly, we provide two highly modular, audited installation scripts. You can run these one-liners directly from the live Arch ISO environment.
 
-**Capabilities:**
-* Prompts interactively for your desired partitioning (Unencrypted, LUKS2, LVM).
-* Automatically configures `mkinitcpio` hooks based on your encryption choice.
-* Bootstraps your selected bootloader (`systemd-boot`, `GRUB`, or `UKI`).
-* Installs and configures the Evil Maid Detector payload automatically if requested.
-* *Note: Run this script directly from the live Arch ISO environment.*
+### 🦀 1. The Highly Optimized Async Rust Builder (Recommended for speed & multiple systems)
+This ultra-fast installer compiles directly in memory, spawning concurrent asynchronous tasks (`tokio`) to fetch all the required markdown guides into RAM simultaneously. It entirely skips image blobs and git history to save massive bandwidth. It utilizes max `Cargo` release optimizations (`opt-level=3`).
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-accessible/main/scripts/run-rust-installer.sh)"
+```
+👉 [Read the Rust Installer Manual & Specs](rust-installer/README.md)
+
+### 🐚 2. The Traditional Bash Installer
+Runs sequentially top-to-bottom. Excellent for users who prefer standard Bash execution over compiled memory binaries.
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-accessible/main/scripts/arch-installer.sh)"
+```
+
+**Capabilities of Both Installers:**
+* Prompts interactively for precise GPU drivers (Libre AMD, Nouveau, or Proprietary NVIDIA).
+* Prompts interactively for your desired partitioning (Unencrypted, LUKS1, LUKS2, LVM).
+* Prompts for Init Systems (systemd vs busybox).
+* Prompts for precise DNS Caching mechanisms (unbound, systemd-resolved, dnscrypt-proxy).
+* Bootstraps your selected bootloader with Shim/Secure Boot combinations (`systemd-boot`, `GRUB`, or `UKI`).
+
+### 📚 Helpful Post-Setup Tutorials & Commands
+After you finish installation, rely on these resources to secure and maintain your system:
+* 👉 **[Arch Command Cheatsheet](docs/arch-command-cheatsheet.md)**: Daily commands for pacman, services, managing strict user permissions (755/644), and configuring Google Authenticator SSH Two-Factor (OTP).
+* 👉 **[System Maintenance & SSH Security](docs/maintenance.md)**: Strategies for using your secondary backup kernel (e.g. `linux-zen`) and maintaining Fake Kernel secure boot architectures.
 
 ---
 
