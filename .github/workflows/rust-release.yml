@@ -1,0 +1,39 @@
+name: Rust Installer Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'rust-installer/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Reproducible Build & Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Compile Release Binary
+        run: |
+          cd rust-installer
+          cargo build --release
+          cp target/release/arch-installer ../arch-installer-linux-x86_64
+          cd ..
+          sha256sum arch-installer-linux-x86_64 > arch-installer-linux-x86_64.sha256
+
+      - name: Publish Latest Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: Latest Build
+          files: |
+            arch-installer-linux-x86_64
+            arch-installer-linux-x86_64.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
