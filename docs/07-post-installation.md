@@ -38,4 +38,10 @@ pacman -S git base-devel
 # clone yay and makepkg -si
 ```
 
+## 4. Next Steps & Maintenance
+Congratulations! Your core setup is complete.
+To ensure your system remains secure and well-maintained over time, please review the following advanced resources:
+* 👉 **[System Maintenance & SSH Security Guide](maintenance.md)** - Explains Fake/Backup Kernels, OTP, and VM specific installations.
+* 👉 **[Arch Command Cheatsheet](arch-command-cheatsheet.md)** - Essential commands for pacman, services, and auditing.
+
 Reboot and enjoy your highly modular, accessible Arch Linux setup!

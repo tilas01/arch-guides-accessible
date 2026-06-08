@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arch Guides | Accessible & Modular</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <img src="../img/banner.png" alt="Arch Guides Banner" class="banner">
+        <h1>Arch Guides Wiki & Generator</h1>
+        <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
+    </header>
+
+    <main>
+        <noscript>
+            <div class="alert warning">
+                JavaScript is disabled. The interactive generator requires JS, but you can still read the raw <a href="https://github.com/tilas01/arch-guides-accessible/tree/main/docs" target="_blank">Markdown files here</a>.
+            </div>
+        </noscript>
+
+        <section id="generator">
+            <h2>⚙️ Dynamic Install Generator</h2>
+            <form id="install-form">
+                <div class="form-group">
+                    <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
+                    <input type="text" id="target-disk" value="/dev/sda" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Partitioning / Encryption:</label>
+                    <select id="partitioning">
+                        <option value="unencrypted">Unencrypted (Minimalist)</option>
+                        <option value="luks2" selected>LUKS2 Encryption (Recommended)</option>
+                        <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Secure)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Bootloader:</label>
+                    <select id="bootloader">
+                        <option value="uki-no-grub" selected>UKI / Direct UEFI (Fortress Security)</option>
+                        <option value="systemd-boot">systemd-boot (Clean/Minimal)</option>
+                        <option value="grub">GRUB (Legacy/Traditional)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Kernel Selection:</label>
+                    <select id="kernel">
+                        <option value="linux-hardened linux-zen">Primary: Hardened | Backup: Zen</option>
+                        <option value="linux linux-lts">Primary: Standard | Backup: LTS</option>
+                        <option value="linux-zen">Primary: Zen (Performance)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">Generate Custom Guide</button>
+            </form>
+        </section>
+
+        <section id="output-section" style="display: none;">
+            <h2>📖 Your Customized Installation Guide</h2>
+            <div class="markdown-body" id="generated-guide"></div>
+        </section>
+        
+        <section class="links-grid">
+            <h2>📚 Wiki & References</h2>
+            <ul>
+                <li><a href="../docs/maintenance.md" target="_blank">System Maintenance & Fake Kernel Strategy</a></li>
+                <li><a href="../docs/arch-command-cheatsheet.md" target="_blank">Arch Command Cheatsheet (Pacman, SSH, VMs)</a></li>
+                <li><a href="../scripts/arch-installer.sh" target="_blank">Automated Bash Installer Script</a></li>
+                <li><a href="https://github.com/tilas01/arch-guides-accessible/tree/main/docs" target="_blank">Full Documentation Repo</a></li>
+            </ul>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

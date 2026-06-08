@@ -3,8 +3,8 @@
 # Arch Guides: Accessible & Modular
 **The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.**
 
-## ?? Legal Disclaimer & AI Notice
-> *?? AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
+## ⚖️ Legal Disclaimer & AI Notice
+> *⚠️ AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
 
 ---
 
@@ -12,9 +12,17 @@
 
 # Base Installation
 
-## 1. Install Base Packages
+## 1. Install Base Packages & Kernel Choice
+
+When installing Arch Linux, you must choose your kernel strategy. You can install multiple kernels simultaneously (e.g., one primary, one backup).
+
+*   **`linux`** (Standard): The default, stable kernel. Best for minimalists.
+*   **`linux-zen`** (Performance): Tuned for desktop responsiveness and gaming. Excellent as a primary or reliable backup.
+*   **`linux-hardened`** (Security): Applies strict security patches. Recommended as primary for "Fortress" setups.
+
+**Example (Installing Hardened as primary, Zen as backup):**
 ```bash
-pacstrap -K /mnt base linux linux-firmware neovim lvm2
+pacstrap -K /mnt base linux-hardened linux-zen linux-firmware neovim lvm2
 ```
 *(Include `btrfs-progs` if using BTRFS, or `lvm2` if using LVM).*
 
