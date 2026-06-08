@@ -3,14 +3,21 @@
 # Arch Guides: Accessible & Modular
 **The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.**
 
-## ?? Legal Disclaimer & AI Notice
-> *?? AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
+## ⚖️ Legal Disclaimer & AI Notice
+> *⚠️ AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
 
 ---
 
-## Arch Dynamic Installation Setup Guide
+## 📑 Table of Contents
+1. [Arch Dynamic Installation Setup Guide](#-arch-dynamic-installation-setup-guide)
+2. [Quick Setup: Automated Batch Installer](#-quick-setup-automated-batch-installer)
+3. [Manual Dynamic Setup Guide](#-manual-dynamic-setup-guide)
+4. [Included Payloads & Security Mechanisms](#-included-payloads--security-mechanisms)
+5. [Supported Install Configurations](#-supported-install-configurations)
 
-> *⚠️ AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
+---
+
+## 🛠️ Arch Dynamic Installation Setup Guide
 
 This repository maps out every path to building an Arch Linux system. Whether you desire a standard unencrypted setup, or a hardened, Post-Quantum LUKS2 encrypted system utilizing Unified Kernel Images, Secure Boot with custom keys, and active Evil Maid countermeasures, you have full control over the process.
 
@@ -85,7 +92,7 @@ Finish up with networking, DNS, and GUI.
 
 ---
 
-## Included Payloads & Security Mechanisms
+## 🛡️ Included Payloads & Security Mechanisms
 
 This repository includes several integrated payloads designed for maximal security and stability.
 
@@ -115,7 +122,7 @@ Found in `scripts/pacman-hooks/`.
 
 ---
 
-## Supported Install Configurations
+## 🧩 Supported Install Configurations
 
 By utilizing the modular paths above, you can build over 20 distinct configurations across BIOS and UEFI systems. Click below to expand and view the detailed permutations:
 
