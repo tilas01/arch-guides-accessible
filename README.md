@@ -1,8 +1,6 @@
-<p align="center">
-  <img src="img/banner.png" alt="Arch Guides Banner">
-</p>
+<img src="img/banner.png" width="100%" alt="Arch Guides Banner">
 
-<h1 align="center">Arch Guides: Accessible & Modular</h1>
+# Arch Guides: Accessible & Modular
 
 <p align="center">
   <strong>The ultimate, dynamically customizable guide to installing Arch Linux.</strong><br>
