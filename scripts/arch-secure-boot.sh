@@ -1,0 +1,189 @@
+#!/bin/bash
+# Adapted from max-baz's arch-secure-boot script.
+# https://github.com/max-baz/arch-secure-boot
+# This script has been modified for this guide by Gemini AI.
+
+set -e
+
+DIR="/etc/arch-secure-boot"
+KEYSDIR="$DIR/keys"
+SBKEYSDIR="/etc/secureboot/keys"
+mkdir -p "$DIR" "$KEYSDIR" "$SBKEYSDIR"
+
+[ -f "$DIR/config" ] && source "$DIR/config"
+
+ESP="${ESP:-/efi}"
+EFI="${EFI:-EFI/arch}"
+KERNEL="${KERNEL:-linux}"
+KERNEL_LTS="linux-lts"
+NAME_PREFIX="secure-boot"
+NAME="$NAME_PREFIX-$KERNEL"
+NAME_LTS="$NAME_PREFIX-$KERNEL_LTS"
+NAME_EFI_SHELL="$NAME_PREFIX-efi-shell"
+SUBVOLUME_ROOT="${SUBVOLUME_ROOT:-root}"
+SUBVOLUME_SNAPSHOT="${SUBVOLUME_SNAPSHOT:-snapshots/%1/snapshot}" # %1 is replaced with snapshot ID
+
+CMDLINE=/etc/kernel/cmdline
+[ -f "$CMDLINE" ] || CMDLINE=/proc/cmdline
+
+cmd="$0 $@"
+print_config() {
+    cat >&2 << EOF
+
+== Command ==
+$cmd
+
+== Config ==
+ESP=$ESP
+EFI=$EFI
+KERNEL=$KERNEL
+CMDLINE=$CMDLINE
+EOF
+}
+trap 'print_config' ERR
+
+error() {
+    echo >&2 "$@"
+    exit 1
+}
+
+case "$1" in
+    initial-setup)
+        "$0" generate-keys
+        "$0" generate-efi
+        "$0" add-efi
+        "$0" enroll-keys || true
+        ;;
+
+    generate-snapshots)
+        snapper --no-dbus -t 0 -c root list --disable-used-space --columns number,date,description > "$ESP/snapshots.txt"
+        ;;
+
+    generate-efi)
+        echo "Generating EFI images..."
+
+        find "$KEYSDIR" -mindepth 1 | read || error "Error: Secure Boot keys are not generated yet."
+
+        tmp="$(mktemp -d)"
+        trap 'rm -rf $tmp' EXIT
+        cd "$tmp"
+
+        grep -m1 -v "^#" "$CMDLINE" > cmdline
+        # Assuming recovery.nsh is in the same directory as this script, or adapt path
+        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+        if [ -f "$SCRIPT_DIR/recovery.nsh" ]; then
+            sed "s|%%NAME%%|$NAME|g; s|%%CMDLINE%%|$(cat cmdline)|g" "$SCRIPT_DIR/recovery.nsh" > recovery.nsh
+            sed -i "s|subvol=$SUBVOLUME_ROOT|subvol=$SUBVOLUME_SNAPSHOT|g" recovery.nsh
+        else
+            echo "Warning: recovery.nsh not found in $SCRIPT_DIR"
+            touch recovery.nsh
+        fi
+
+        cat /boot/*-ucode.img "/boot/initramfs-$KERNEL.img" > ucode-initramfs.img
+        cp /usr/share/edk2-shell/x64/Shell_Full.efi "$NAME_EFI_SHELL-unsigned.efi" 2>/dev/null || touch "$NAME_EFI_SHELL-unsigned.efi"
+
+        section_alignment="$(LC_ALL=C objdump -p /usr/lib/systemd/boot/efi/linuxx64.efi.stub | awk '/SectionAlignment/ {print strtonum("0x"$2)}')"
+
+        offset() {
+            echo $(("$1" + "$2" + section_alignment - ("$1" + "$2") % section_alignment))
+        }
+
+        osrel_offset="$(offset 0 "$(LC_ALL=C objdump -h /usr/lib/systemd/boot/efi/linuxx64.efi.stub | awk 'NF==7 {size=strtonum("0x"$3); offset=strtonum("0x"$4)} END {print size + offset}')")"
+        cmdline_offset="$(offset "$osrel_offset" "$(stat -Lc%s /etc/os-release)")"
+        initrd_offset_from_cmdline="$(offset "$cmdline_offset" "$(stat -Lc%s cmdline)")"
+        initrd_offset_from_osrel="$(offset "$osrel_offset" "$(stat -Lc%s /etc/os-release)")"
+        default_kernel_offset="$(offset "$initrd_offset_from_cmdline" "$(stat -Lc%s ucode-initramfs.img)")"
+        
+        # Using objcopy to create the UKI
+        objcopy \
+            --add-section .osrel=/etc/os-release --change-section-vma .osrel="$(printf 0x%x "$osrel_offset")" \
+            --add-section .cmdline=cmdline --change-section-vma .cmdline="$(printf 0x%x "$cmdline_offset")" \
+            --add-section .initrd=ucode-initramfs.img --change-section-vma .initrd="$(printf 0x%x "$initrd_offset_from_cmdline")" \
+            --add-section .linux="/boot/vmlinuz-$KERNEL" --change-section-vma .linux="$(printf 0x%x "$default_kernel_offset")" \
+            /usr/lib/systemd/boot/efi/linuxx64.efi.stub "$NAME-unsigned.efi"
+
+        if [ -f "/boot/initramfs-$KERNEL-fallback.img" ]; then
+            fallback_kernel_offset="$(offset "$initrd_offset_from_osrel" "$(stat -Lc%s "/boot/initramfs-$KERNEL-fallback.img")")"
+            objcopy \
+                --add-section .osrel=/etc/os-release --change-section-vma .osrel="$(printf 0x%x "$osrel_offset")" \
+                --add-section .initrd="/boot/initramfs-$KERNEL-fallback.img" --change-section-vma .initrd="$(printf 0x%x "$initrd_offset_from_osrel")" \
+                --add-section .linux="/boot/vmlinuz-$KERNEL" --change-section-vma .linux="$(printf 0x%x "$fallback_kernel_offset")" \
+                /usr/lib/systemd/boot/efi/linuxx64.efi.stub "$NAME-recovery-unsigned.efi"
+        else
+            touch "$NAME-recovery-unsigned.efi"
+        fi
+
+        for image in "$NAME" "$NAME-recovery" "$NAME_EFI_SHELL"; do
+            if [ -s "$image-unsigned.efi" ]; then
+                sbsign --key "$KEYSDIR/db.key" --cert "$KEYSDIR/db.crt" --output "$image.efi" "$image-unsigned.efi"
+            fi
+        done
+
+        if [ -f /usr/lib/fwupd/efi/fwupdx64.efi ]; then
+            sbsign --key "$KEYSDIR/db.key" --cert "$KEYSDIR/db.crt" /usr/lib/fwupd/efi/fwupdx64.efi || true
+        fi
+
+        mkdir -p "$ESP/$EFI"
+
+        echo "Removing older EFI images..."
+        find "$ESP/$EFI" -mindepth 1 -maxdepth 1 -name "$NAME_PREFIX-*.efi" -print -exec rm '{}' +
+
+        echo "Copying new EFI images..."
+        cp -v recovery.nsh "$ESP" 2>/dev/null || true
+        for image in "$NAME" "$NAME-recovery" "$NAME_EFI_SHELL"; do
+            if [ -f "$image.efi" ]; then
+                cp -v "$image.efi" "$ESP/$EFI"
+            fi
+        done
+        ;;
+
+    add-efi)
+        echo "Adding boot entries for EFI images..."
+
+        entry="/$EFI/$NAME.efi"
+        [ -f "$ESP/$entry" ] || error "Error: EFI images are not generated yet."
+        mount="$(findmnt -n -o SOURCE -T "$ESP")"
+        partition="${mount##*[!0-9]}"
+
+        efibootmgr -d "$mount" -p "$partition" -c -l "${entry//\//\\}" -L "$NAME"
+        ;;
+
+    enroll-keys)
+        echo "Enrolling Secure Boot keys..."
+
+        find "$SBKEYSDIR" -mindepth 2 | read || error "Error: keys are not generated yet."
+
+        chattr -i /sys/firmware/efi/efivars/{PK,KEK,db}* || true
+        sbkeysync --verbose
+        efi-updatevar -f "$SBKEYSDIR/PK/PK.auth" PK
+        ;;
+
+    generate-keys)
+        echo "Generating Secure Boot keys..."
+
+        cd "$KEYSDIR"
+
+        uuidgen > uuid
+        read uuid < uuid
+
+        for pair in PK=PK KEK=PK db=KEK; do
+            key="${pair%=*}"
+            from="${pair#*=}"
+
+            openssl req -new -x509 -newkey rsa:4096 -subj "/CN=SecureBoot $key/" -keyout "$key.key" -out "$key.crt" -days 3650 -nodes -sha256
+            openssl x509 -in "$key.crt" -inform PEM -out "$key.der" -outform DER
+
+            sbsiglist --owner "$uuid" --type x509 --output "$key.esl" "$key.der"
+            sbvarsign --key "$from.key" --cert "$from.crt" --output "$key.auth" "$key" "$key.esl"
+
+            chmod 0400 "$key".{key,auth}
+
+            mkdir -p "$SBKEYSDIR/$key/"
+            cp "$key.auth" "$SBKEYSDIR/$key/"
+        done
+        ;;
+
+    *)
+        error "Usage: $0 <initial-setup|generate-snapshots|generate-efi|add-efi|generate-keys|enroll-keys>"
+        ;;
+esac
