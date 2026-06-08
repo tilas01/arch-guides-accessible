@@ -6,6 +6,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const initSys = document.getElementById('init_system').value;
     const boot = document.getElementById('bootloader').value;
     const kernels = document.getElementById('kernel').value;
+    const gpu = document.getElementById('gpu').value;
 
     let partEfi = disk + "1";
     let partRoot = disk + "2";
@@ -48,9 +49,14 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     output += `mkdir -p /mnt/efi\nmount ${partEfi} /mnt/efi\n`;
     output += `\`\`\`\n\n`;
 
-    output += `## 2. Base Installation & Kernel\n`;
+    let gpuPackages = "";
+    if (gpu === "amd") gpuPackages = "mesa xf86-video-amdgpu vulkan-radeon";
+    else if (gpu === "nvidia-nouveau") gpuPackages = "mesa xf86-video-nouveau";
+    else if (gpu === "nvidia-prop") gpuPackages = "nvidia nvidia-utils";
+
+    output += `## 2. Base Installation, Kernel & GPU\n`;
     output += `\`\`\`bash\n`;
-    output += `pacstrap -K /mnt base ${kernels} linux-firmware neovim sudo git\n`;
+    output += `pacstrap -K /mnt base ${kernels} ${gpuPackages} linux-firmware neovim sudo git\n`;
     output += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
     output += `arch-chroot /mnt\n`;
     output += `\`\`\`\n\n`;
