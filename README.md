@@ -14,9 +14,23 @@
 
 This repository maps out every path to building an Arch Linux system. Whether you desire a standard unencrypted setup, or a hardened, Post-Quantum LUKS2 encrypted system utilizing Unified Kernel Images, Secure Boot with custom keys, and active Evil Maid countermeasures, you have full control over the process.
 
+## ⚡ Quick Setup: Automated Batch Installer
+
+For users who want to deploy these configurations rapidly, we have provided a fully modular, audited bash script that automates the entire installation process.
+* 👉 **[Download & View `arch-installer.sh`](scripts/arch-installer.sh)**
+
+**Capabilities:**
+* Prompts interactively for your desired partitioning (Unencrypted, LUKS2, LVM).
+* Automatically configures `mkinitcpio` hooks based on your encryption choice.
+* Bootstraps your selected bootloader (`systemd-boot`, `GRUB`, or `UKI`).
+* Installs and configures the Evil Maid Detector payload automatically if requested.
+* *Note: Run this script directly from the live Arch ISO environment.*
+
 ---
 
-Building your Arch Linux system is a series of interconnected choices. Follow this linear map to build your precise setup.
+## 🗺️ Manual Dynamic Setup Guide
+
+Building your Arch Linux system is a series of interconnected choices. Follow this linear map to build your precise setup manually.
 
 ### 1. Pre-Installation
 All installations begin here. You will verify your boot mode, connect to the internet, and sync your clock.
