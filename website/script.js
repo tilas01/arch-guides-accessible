@@ -468,11 +468,11 @@ if (toggleBtn) {
 
 // Mobile tap / Desktop hover info panel update
 formSteps.forEach((step) => {
-    step.addEventListener('mouseenter', () => updateInfoPanel(step));
+    step.addEventListener('mouseenter', (e) => updateInfoPanel(step, e));
     step.addEventListener('mouseleave', () => {
         infoPanel.classList.remove('active');
     });
-    step.addEventListener('touchstart', () => updateInfoPanel(step), {passive: true});
+    step.addEventListener('touchstart', (e) => updateInfoPanel(step, e), {passive: true});
     
     // Right-click on the setting to open wiki
     step.addEventListener('contextmenu', (e) => {
@@ -494,15 +494,15 @@ formSteps.forEach((step) => {
 
 const banner = document.querySelector('.banner');
 if (banner) {
-    banner.addEventListener('mouseenter', () => {
-        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Banner Image' : 'Click to view the source code on GitHub.', querySelector: () => null });
+    banner.addEventListener('mouseenter', (e) => {
+        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Banner Image' : 'Click to view the source code on GitHub.', querySelector: () => null }, e);
     });
     banner.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
 }
 
 if (toggleBtn) {
-    toggleBtn.addEventListener('mouseenter', () => {
-        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipsEnabled ? 'ON' : 'OFF'}. Click to toggle.`, querySelector: () => null });
+    toggleBtn.addEventListener('mouseenter', (e) => {
+        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipsEnabled ? 'ON' : 'OFF'}. Click to toggle.`, querySelector: () => null }, e);
     });
     toggleBtn.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
 }
@@ -521,7 +521,7 @@ document.addEventListener('mousemove', (e) => {
     infoPanel.style.top = y + 'px';
 });
 
-function updateInfoPanel(group) {
+function updateInfoPanel(group, e) {
     if (!tooltipsEnabled) return;
     
     const title = group.getAttribute('data-title');
@@ -541,13 +541,15 @@ function updateInfoPanel(group) {
     }
 
     // Dynamic warnings based on current selections
-    const fw = document.getElementById('firmware').value;
-    const part = document.getElementById('partitioning').value;
+    const fwEl = document.getElementById('firmware');
+    const partEl = document.getElementById('partitioning');
+    const fw = fwEl ? fwEl.value : '';
+    const part = partEl ? partEl.value : '';
     
-    if (group.querySelector('#bootloader') && fw === 'bios') {
+    if (group.querySelector && group.querySelector('#bootloader') && fw === 'bios') {
         warnings += `<div style="color: #ff5555; margin-top: 10px;">⚠️ <strong>Warning:</strong> You selected Legacy BIOS. UKI and systemd-boot are physically impossible to install. GRUB is enforced.</div>`;
     }
-    if (group.querySelector('#partitioning') && fw === 'bios' && part === 'luks2') {
+    if (group.querySelector && group.querySelector('#partitioning') && fw === 'bios' && part === 'luks2') {
         warnings += `<div style="color: #ffb86c; margin-top: 10px;">⚠️ <strong>Notice:</strong> GRUB has limited support for LUKS2. You will need an unencrypted /boot partition.</div>`;
     }
 
@@ -560,6 +562,20 @@ function updateInfoPanel(group) {
     `;
 
     infoPanel.classList.add('active');
+    
+    // Position immediately on enter if event is provided
+    if (e && window.innerWidth > 768) {
+        let x = e.clientX + 15;
+        let y = e.clientY + 15;
+        
+        const rect = infoPanel.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 15;
+        if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 15;
+        
+        infoPanel.style.left = x + 'px';
+        infoPanel.style.top = y + 'px';
+    }
+    
     if (window.innerWidth <= 768) {
         document.body.classList.add('panel-active');
     }
