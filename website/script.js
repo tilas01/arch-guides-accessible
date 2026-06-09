@@ -863,43 +863,33 @@ if (restoreConfig) {
 const downloadBtn = document.getElementById('download-btn');
 if (downloadBtn) {
     downloadBtn.addEventListener('click', () => {
-        const generatedDiv = document.getElementById('generated-guide');
-        if (!generatedDiv || !generatedDiv.innerHTML) {
-            alert("Please generate a guide or script first.");
-            return;
-        }
-        
         const format = document.getElementById('outputformat').value;
-        const extension = format === 'script' ? 'sh' : 'md';
-        const filename = `arch-install-${new Date().getTime()}.${extension}`;
-        
-        // Find the raw text, including our metadata block
-        const textContent = generatedDiv.innerText;
-        
-        const blob = new Blob([textContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const ts = new Date().getTime();
 
-        if (format === 'both') {
-            const scriptMatches = textContent.match(/```bash\n([\s\S]*?)```/g);
-            if (scriptMatches) {
-                const scriptContent = "#!/bin/bash\n# Arch Installation Script (Extracted from Guide)\n\n" + scriptMatches.map(m => m.replace(/```bash\n/g, '').replace(/```/g, '')).join("\n");
-                const blobSh = new Blob([scriptContent], { type: 'text/plain' });
-                const urlSh = URL.createObjectURL(blobSh);
-                const aSh = document.createElement('a');
-                aSh.href = urlSh;
-                aSh.download = `arch-install-${new Date().getTime()}.sh`;
-                document.body.appendChild(aSh);
-                aSh.click();
-                document.body.removeChild(aSh);
-                URL.revokeObjectURL(urlSh);
-            }
+        const triggerDownload = (content, filename) => {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        const mdEditor = document.getElementById('editor');
+        const shEditor = document.getElementById('script-editor');
+
+        if (format === 'script' && mdEditor) {
+            triggerDownload(mdEditor.value, `arch-install-${ts}.sh`);
+        } else if (format === 'markdown' && mdEditor) {
+            triggerDownload(mdEditor.value, `arch-install-${ts}.md`);
+        } else if (format === 'both' && mdEditor && shEditor) {
+            triggerDownload(mdEditor.value, `arch-install-${ts}.md`);
+            triggerDownload(shEditor.value, `arch-install-${ts}.sh`);
+        } else {
+            alert("No guide generated yet. Please generate first.");
         }
     });
 }
