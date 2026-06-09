@@ -458,8 +458,10 @@ if (toggleBtn) {
             toggleBtn.style.filter = 'grayscale(1) sepia(1) hue-rotate(-50deg) saturate(5)'; // Makes it redish
             infoPanel.classList.remove('active');
             document.body.classList.remove('panel-active');
+            toggleBtn.title = 'Tooltips: OFF (Click to Enable)';
         } else {
             toggleBtn.style.filter = 'none';
+            toggleBtn.title = 'Tooltips: ON (Click to Disable)';
         }
     });
 }
@@ -467,7 +469,18 @@ if (toggleBtn) {
 // Mobile tap / Desktop hover info panel update
 formSteps.forEach((step) => {
     step.addEventListener('mouseenter', () => updateInfoPanel(step));
+    step.addEventListener('mouseleave', () => {
+        infoPanel.classList.remove('active');
+    });
     step.addEventListener('touchstart', () => updateInfoPanel(step), {passive: true});
+    
+    // Right-click on the setting to open wiki
+    step.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const title = step.getAttribute('data-title');
+        const hash = title ? '#' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
+        window.open('wiki.html' + hash, '_blank');
+    });
     
     // Dynamic interactions
     const input = step.querySelector('select, input');
@@ -477,6 +490,35 @@ formSteps.forEach((step) => {
             validateConfigurations();
         });
     }
+});
+
+const banner = document.querySelector('.banner');
+if (banner) {
+    banner.addEventListener('mouseenter', () => {
+        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Banner Image' : 'Click to view the source code on GitHub.', querySelector: () => null });
+    });
+    banner.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
+}
+
+if (toggleBtn) {
+    toggleBtn.addEventListener('mouseenter', () => {
+        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipsEnabled ? 'ON' : 'OFF'}. Click to toggle.`, querySelector: () => null });
+    });
+    toggleBtn.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
+}
+
+document.addEventListener('mousemove', (e) => {
+    if (!tooltipsEnabled || !infoPanel.classList.contains('active')) return;
+    
+    let x = e.clientX + 15;
+    let y = e.clientY + 15;
+    
+    const rect = infoPanel.getBoundingClientRect();
+    if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 15;
+    if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 15;
+    
+    infoPanel.style.left = x + 'px';
+    infoPanel.style.top = y + 'px';
 });
 
 function updateInfoPanel(group) {
@@ -512,17 +554,11 @@ function updateInfoPanel(group) {
     infoContent.innerHTML = `
         <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.2rem;">📌 ${title || 'Setting Details'}</h3>
         <p style="color: var(--fg-color); line-height: 1.5;">${desc || ''}</p>
-        <p style="font-size: 0.85rem; color: var(--accent-blue); margin-top: 10px;"><em>💡 Right-click this panel to read the full Wiki article on this topic.</em></p>
+        <p style="font-size: 0.85rem; color: var(--accent-blue); margin-top: 10px;"><em>💡 Right-click this setting to read the full Wiki article.</em></p>
         ${warnings}
         ${extraInfo}
     `;
 
-    infoPanel.oncontextmenu = (e) => {
-        e.preventDefault();
-        const hash = title ? '#' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
-        window.open('wiki.html' + hash, '_blank');
-    };
-    
     infoPanel.classList.add('active');
     if (window.innerWidth <= 768) {
         document.body.classList.add('panel-active');
