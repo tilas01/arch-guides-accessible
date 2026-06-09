@@ -235,6 +235,12 @@ noscript .js-only {
         transition: opacity 0.15s ease;
         opacity: 1;
     }
+    .info-panel.side-overlay {
+        left: auto !important;
+        right: 2rem !important;
+        top: 5rem !important;
+        bottom: auto !important;
+    }
 }
 
 @media screen and (max-width: 768px) {

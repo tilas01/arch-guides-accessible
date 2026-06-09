@@ -447,22 +447,33 @@ const formSteps = document.querySelectorAll('.form-step');
 const infoPanel = document.getElementById('info-panel');
 const infoContent = document.getElementById('info-panel-content');
 const defaultPanelHTML = infoContent.innerHTML;
-let tooltipsEnabled = true;
+let tooltipMode = window.innerWidth <= 768 ? 'bottom' : 'cursor';
 
 const toggleBtn = document.getElementById('toggle-tooltips');
 if (toggleBtn) {
     toggleBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        tooltipsEnabled = !tooltipsEnabled;
-        if (!tooltipsEnabled) {
-            toggleBtn.style.filter = 'grayscale(1) sepia(1) hue-rotate(-50deg) saturate(5)'; // Makes it redish
+        
+        if (window.innerWidth <= 768) {
+            tooltipMode = tooltipMode === 'off' ? 'bottom' : 'off';
+        } else {
+            if (tooltipMode === 'cursor') tooltipMode = 'side';
+            else if (tooltipMode === 'side') tooltipMode = 'off';
+            else tooltipMode = 'cursor';
+        }
+        
+        if (tooltipMode === 'off') {
+            toggleBtn.style.filter = 'grayscale(1) sepia(1) hue-rotate(-50deg) saturate(5)';
             infoPanel.classList.remove('active');
             document.body.classList.remove('panel-active');
-            toggleBtn.title = 'Tooltips: OFF (Click to Enable)';
+            toggleBtn.title = 'Tooltips: OFF';
         } else {
             toggleBtn.style.filter = 'none';
-            toggleBtn.title = 'Tooltips: ON (Click to Disable)';
+            toggleBtn.title = `Tooltips: ON (${tooltipMode.toUpperCase()})`;
         }
+        
+        // Refresh tooltip if hovered
+        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipMode.toUpperCase()}. Click to cycle modes.`, querySelector: () => null }, e, true);
     });
 }
 
@@ -495,13 +506,13 @@ if (banner) {
 
 if (toggleBtn) {
     toggleBtn.addEventListener('mouseenter', (e) => {
-        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipsEnabled ? 'ON' : 'OFF'}. Click to toggle.`, querySelector: () => null }, e, true);
+        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipMode.toUpperCase()}. Click to cycle modes.`, querySelector: () => null }, e, true);
     });
     toggleBtn.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
 }
 
 document.addEventListener('contextmenu', (e) => {
-    if (infoPanel.classList.contains('active') && window._currentWikiHash) {
+    if (window.innerWidth > 768 && infoPanel.classList.contains('active') && window._currentWikiHash) {
         e.preventDefault();
         window.open('wiki.html' + window._currentWikiHash, '_blank');
     }
@@ -509,6 +520,11 @@ document.addEventListener('contextmenu', (e) => {
 
 document.addEventListener('mousemove', (e) => {
     if (!infoPanel.classList.contains('active')) return;
+    if (window.innerWidth <= 768) return;
+    if (tooltipMode === 'side') return; // Do not follow mouse in side overlay mode
+    if (tooltipMode === 'off' && infoPanel.classList.contains('side-overlay')) return; // Just in case it's the toggle button's tooltip
+
+    infoPanel.classList.remove('side-overlay');
     
     let x = e.clientX + 15;
     let y = e.clientY + 15;
@@ -522,7 +538,7 @@ document.addEventListener('mousemove', (e) => {
 });
 
 function updateInfoPanel(group, e, forceShow = false) {
-    if (!tooltipsEnabled && !forceShow) return;
+    if (tooltipMode === 'off' && !forceShow) return;
     
     const title = group.getAttribute('data-title');
     const desc = group.getAttribute('data-desc');
@@ -575,15 +591,23 @@ function updateInfoPanel(group, e, forceShow = false) {
     
     // Position immediately on enter if event is provided
     if (e && window.innerWidth > 768) {
-        let x = e.clientX + 15;
-        let y = e.clientY + 15;
-        
-        const rect = infoPanel.getBoundingClientRect();
-        if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 15;
-        if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 15;
-        
-        infoPanel.style.left = x + 'px';
-        infoPanel.style.top = y + 'px';
+        if (tooltipMode === 'side' && !forceShow) {
+            infoPanel.classList.add('side-overlay');
+            infoPanel.style.left = '';
+            infoPanel.style.top = '';
+        } else {
+            // For cursor mode, OR if forceShow is true (like hovering the toggle button when tooltips are off/side)
+            infoPanel.classList.remove('side-overlay');
+            let x = e.clientX + 15;
+            let y = e.clientY + 15;
+            
+            const rect = infoPanel.getBoundingClientRect();
+            if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 15;
+            if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 15;
+            
+            infoPanel.style.left = x + 'px';
+            infoPanel.style.top = y + 'px';
+        }
     }
     
     if (window.innerWidth <= 768) {
@@ -593,7 +617,7 @@ function updateInfoPanel(group, e, forceShow = false) {
 
 // Close panel on clicking outside (Mobile)
 document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768 && tooltipsEnabled) {
+    if (window.innerWidth <= 768 && tooltipMode !== 'off') {
         if (!e.target.closest('.form-step') && !e.target.closest('#info-panel')) {
             infoPanel.classList.remove('active');
             document.body.classList.remove('panel-active');
