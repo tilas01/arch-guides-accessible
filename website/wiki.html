@@ -11,6 +11,9 @@
             display: flex;
             gap: 2rem;
             align-items: flex-start;
+            max-width: 1400px;
+            width: 95%;
+            margin: 0 auto;
         }
         .wiki-nav {
             flex: 0 0 250px;
@@ -61,53 +64,9 @@
     <script src="legal.js"></script>
 </head>
 <body>
-    <div id="legal-modal-overlay">
-        <div id="legal-modal">
-            <h2 style="color: var(--accent-red); margin-top: 0;">⚖️ Legal Disclaimer</h2>
-            <p style="color: var(--fg-color);">This tool generates complex system configurations and scripts. By proceeding, you acknowledge that:</p>
-            <ul style="color: var(--fg-color); line-height: 1.5; margin-bottom: 1.5rem; margin-top: 1rem; padding-left: 1.5rem;">
-                <li>The scripts and guides are provided <strong>"AS IS"</strong>, without warranty of any kind.</li>
-                <li>The author takes <strong>no responsibility</strong> for any data loss, system breakage, or errors resulting from the use of this generator.</li>
-                <li>You take full accountability for executing any generated code.</li>
-            </ul>
-            <div class="alert info" style="margin-bottom: 1.5rem;">
-                <strong>💡 Tip:</strong> Always review commands or code from the internet before running them. It is a fundamental security best practice.
-            </div>
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--fg-color);">
-                <input type="checkbox" id="legal-checkbox" style="width: 20px; height: 20px; cursor: pointer;">
-                I agree, understand the risks, and take full accountability.
-            </label>
-            <button id="legal-accept-btn" class="btn" style="width: 100%; margin-top: 1.5rem; opacity: 0.5; cursor: not-allowed;" disabled>Enter Site</button>
-        </div>
-    </div>
-    <script>
-        if (!sessionStorage.getItem('agreed_to_tos')) {
-            const overlay = document.getElementById('legal-modal-overlay');
-            const checkbox = document.getElementById('legal-checkbox');
-            const btn = document.getElementById('legal-accept-btn');
-            
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                } else {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    btn.style.cursor = 'not-allowed';
-                }
-            });
-            
-            btn.addEventListener('click', () => {
-                sessionStorage.setItem('agreed_to_tos', 'true');
-                overlay.style.display = 'none';
-            });
-        } else {
-            document.getElementById('legal-modal-overlay').style.display = 'none';
-        }
-    </script>
+
     <header>
-        <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
+        <a href="https://github.com/tilas01/arch-guides-dynamic" title="View Source on GitHub" target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
         <h1>Arch Guides | Full Static Wiki</h1>
         <p>Comprehensive documentation, command reference, and maintenance guides.</p>
         <nav style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -128,15 +87,37 @@
             <aside class="wiki-nav">
                 <h3>Documentation</h3>
                 <ul id="wiki-menu">
-                    <li><a data-file="architecture.md">ℹ️ Generator & Architecture</a></li>
-                    <li><a data-file="01-pre-installation.md">💻 1. Pre-Installation</a></li>
-                    <li><a data-file="02-partitioning/luks2.md">🔐 2. Partitioning (LUKS2)</a></li>
-                    <li><a data-file="03-base-installation.md">💿 3. Base Installation</a></li>
-                    <li><a data-file="04-bootloaders/uki-no-grub.md">🚀 4. Bootloaders (UKI)</a></li>
-                    <li><a data-file="05-secure-boot/custom-keys-uki.md">🛡️ 5. Secure Boot</a></li>
-                    <li><a data-file="07-post-installation.md">🖥️ 6. Post Install & Desktop</a></li>
-                    <li><a data-file="maintenance.md">🛠️ 7. Maintenance & Fake Kernel</a></li>
-                    <li><a data-file="helpful-commands.md">📜 8. Helpful Commands (paru)</a></li>
+                    <li><a data-file="architecture.md" id="link-output-format">ℹ️ Generator & Architecture</a></li>
+                    <li><a data-file="01-pre-installation.md" id="link-target-installation-disk">💻 1. Pre-Installation</a></li>
+                    <li><strong>🔐 2. Partitioning</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a data-file="02-partitioning/luks2.md" id="link-encryption-options">LUKS2 / LUKS1 / Unencrypted</a></li>
+                            <li><a data-file="02-partitioning/lvm-on-luks2.md" id="link-file-system-features">LVM on LUKS2 / BTRFS</a></li>
+                        </ul>
+                    </li>
+                    <li><a data-file="03-base-installation.md" id="link-firmware-selection">💿 3. Base Installation</a></li>
+                    <li><strong>🚀 4. Bootloaders</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a data-file="04-bootloaders/uki-no-grub.md" id="link-bootloader-choice">UKI (No GRUB)</a></li>
+                            <li><a data-file="04-bootloaders/systemd-boot.md" id="link-init-system">systemd-boot</a></li>
+                            <li><a data-file="04-bootloaders/grub.md">GRUB</a></li>
+                        </ul>
+                    </li>
+                    <li><strong>🛡️ 5. Secure Boot</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a data-file="05-secure-boot/custom-keys-uki.md">Custom Keys (UKI)</a></li>
+                            <li><a data-file="05-secure-boot/shim-grub.md">Shim (GRUB)</a></li>
+                        </ul>
+                    </li>
+                    <li><strong>🖥️ 6. Dual Boot & Post Install</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a data-file="06-dual-boot/grub-os-prober.md">Dual Boot (GRUB)</a></li>
+                            <li><a data-file="06-dual-boot/systemd-boot-windows.md">Dual Boot (systemd-boot)</a></li>
+                            <li><a data-file="07-post-installation.md" id="link-post-install-apps-scripts">Post Install & Desktop</a></li>
+                        </ul>
+                    </li>
+                    <li><a data-file="maintenance.md" id="link-fake-main-kernel">🛠️ 7. Maintenance & Kernels</a></li>
+                    <li><a data-file="helpful-commands.md" id="link-advanced-security-tools">📜 8. Security & Commands</a></li>
                 </ul>
             </aside>
             <section class="wiki-content">
@@ -168,13 +149,48 @@
                         if (!response.ok) throw new Error('Network response was not ok');
                         return response.text();
                     })
-                    .then(text => {
-                        wikiBody.innerHTML = marked.parse(text);
-                    })
+                    .then(data => {
+                const contentDiv = document.getElementById('wiki-body');
+                contentDiv.innerHTML = marked.parse(data);
+                
+                // Add id attributes to all headings for anchors
+                const headings = contentDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                const navUl = document.querySelector('.wiki-nav ul');
+                let tocHTML = '';
+                
+                headings.forEach(heading => {
+                    const id = heading.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                    heading.id = id;
+                    if (heading.tagName === 'H2' || heading.tagName === 'H3') {
+                        const padding = heading.tagName === 'H3' ? '15px' : '0';
+                        tocHTML += `<li style="padding-left: ${padding}"><a href="#${id}">${heading.innerText}</a></li>`;
+                    }
+                });
+                
+                navUl.innerHTML = tocHTML;
+
+                document.querySelectorAll('.wiki-nav a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        document.querySelectorAll('.wiki-nav a').forEach(l => l.classList.remove('active'));
+                        e.target.classList.add('active');
+                    });
+                });
+            })
                     .catch(err => {
                         wikiBody.innerHTML = `<div class="alert warning">Failed to load ${file}. You can <a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/docs/${file}" target="_blank">view it on GitHub directly</a>.</div>`;
                     });
             });
+        });
+        // Auto-load based on hash
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.replace('#', '');
+            if (hash) {
+                const link = document.getElementById('link-' + hash);
+                if (link) {
+                    link.click();
+                    return;
+                }
+            }
         });
     </script>
 </body>
