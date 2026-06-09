@@ -1,4 +1,4 @@
-document.getElementById('install-form').addEventListener('submit', function(e) {
+document.getElementById('generate-btn').addEventListener('click', function(e) {
     e.preventDefault();
 
     const fw = document.getElementById('firmware').value;
@@ -17,11 +17,15 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const browser = document.getElementById('browser').value;
     const dns = document.getElementById('dns').value;
     const format = document.getElementById('outputformat').value;
-    const secTools = document.getElementById('securitytools') ? document.getElementById('securitytools').value : 'none';
-    const anon_kloak = document.getElementById('anon_kloak') ? document.getElementById('anon_kloak').value : 'no';
-    const anon_webhook = document.getElementById('anon_webhook') ? document.getElementById('anon_webhook').value : 'no';
-    const anon_ssh = document.getElementById('anon_ssh') ? document.getElementById('anon_ssh').value : 'no';
-    const fakeEvilMaid = document.getElementById('fake-evil-maid') ? document.getElementById('fake-evil-maid').value : 'no';
+    const format = document.getElementById('outputformat').value;
+    
+    const useCustomScripts = document.getElementById('use-custom-scripts') ? document.getElementById('use-custom-scripts').value === 'yes' : false;
+    const secTools = (useCustomScripts && document.getElementById('securitytools')) ? document.getElementById('securitytools').value : 'none';
+    const libreOtpMode = document.getElementById('libre_otp_mode') ? document.getElementById('libre_otp_mode').value : 'login';
+    const anon_kloak = (useCustomScripts && document.getElementById('anon_kloak')) ? document.getElementById('anon_kloak').value : 'no';
+    const anon_webhook = (useCustomScripts && document.getElementById('anon_webhook')) ? document.getElementById('anon_webhook').value : 'no';
+    const anon_ssh = (useCustomScripts && document.getElementById('anon_ssh')) ? document.getElementById('anon_ssh').value : 'no';
+    const fakeEvilMaid = (useCustomScripts && document.getElementById('fake-evil-maid')) ? document.getElementById('fake-evil-maid').value : 'no';
 
     let errors = [];
     if (fw === "bios" && boot !== "grub") {
@@ -53,14 +57,13 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         partRoot = disk + "p2";
     }
 
-    let isScript = (format === "script");
-    let cmdOnly = isScript;
-    let output = "";
+    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, desktop, swap_size, post_apps, cleanup, secTools, libreOtpMode, anon_kloak, anon_webhook, anon_ssh, fakeEvilMaid, format };
 
-    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, desktop, swap_size, post_apps, cleanup, secTools, anon_kloak, anon_webhook, anon_ssh, fakeEvilMaid, format };
-    output += '### CONFIG_START\n### ' + JSON.stringify(configData) + '\n### CONFIG_END\n\n';
+    function buildOutput(cmdOnly) {
+        let output = "";
+        output += '### CONFIG_START\n### ' + JSON.stringify(configData) + '\n### CONFIG_END\n\n';
 
-    if (!cmdOnly) {
+        if (!cmdOnly) {
         output += `# Your Custom Arch Linux Guide\n\n`;
         output += `*Review and edit your markdown directly below. This is happening entirely locally in your browser.*\n\n`;
         output += `## 1. Partitioning & Formatting (${part} + ${fs})\n`;
@@ -396,20 +399,37 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         output += `\n*Guide complete. Ensure networking and passwords are set before rebooting into your tailored environment.*`;
     }
 
+    return output;
+}
+
     // Editable text area setup
     const outputSection = document.getElementById('output-section');
     outputSection.style.display = 'block';
     
     let renderedHTML = "";
-    if (isScript) {
+    if (format === "script") {
+        let scriptOutput = buildOutput(true);
         renderedHTML = `
             <div class="alert warning">Review all script commands below. You can edit this script directly in your browser.</div>
-            <textarea id="editor" spellcheck="false" style="width: 100%; height: 500px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue);">${output}</textarea>
+            <textarea id="editor" spellcheck="false" style="width: 100%; height: 500px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue);">${scriptOutput}</textarea>
+        `;
+    } else if (format === "both") {
+        let mdOutput = buildOutput(false);
+        let scriptOutput = buildOutput(true);
+        renderedHTML = `
+            <div class="alert info">You chose BOTH. Below is the Markdown Guide. Underneath it is the Raw Script.</div>
+            <textarea id="editor" spellcheck="false" style="width: 100%; height: 200px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue); margin-bottom: 1rem;">${mdOutput}</textarea>
+            <h3>Live Preview:</h3>
+            <div id="preview" style="border: 1px solid var(--bg-lighter); padding: 1rem; margin-bottom: 2rem;"></div>
+            
+            <h3>Raw Executable Bash Script:</h3>
+            <textarea id="script-editor" spellcheck="false" style="width: 100%; height: 300px; background: var(--bg-dark); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue);">${scriptOutput}</textarea>
         `;
     } else {
+        let mdOutput = buildOutput(false);
         renderedHTML = `
             <div class="alert warning">You may edit the markdown guide locally before confirming/saving.</div>
-            <textarea id="editor" spellcheck="false" style="width: 100%; height: 200px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue); margin-bottom: 1rem;">${output}</textarea>
+            <textarea id="editor" spellcheck="false" style="width: 100%; height: 200px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue); margin-bottom: 1rem;">${mdOutput}</textarea>
             <h3>Live Preview:</h3>
             <div id="preview" style="border: 1px solid var(--bg-lighter); padding: 1rem;"></div>
         `;
@@ -417,7 +437,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
 
     document.getElementById('generated-guide').innerHTML = renderedHTML;
     
-    if (!isScript) {
+    if (format !== "script") {
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
         
@@ -440,6 +460,39 @@ const formSteps = document.querySelectorAll('.form-step, .nav-tooltip');
 const infoPanel = document.getElementById('info-panel');
 const infoContent = document.getElementById('info-panel-content');
 const defaultPanelHTML = infoContent.innerHTML;
+
+const customScriptsToggleBtn = document.getElementById('toggle-custom-scripts');
+const customScriptsSelect = document.getElementById('use-custom-scripts');
+const customScriptsContainer = document.getElementById('custom-scripts-container');
+const securityToolsSelect = document.getElementById('securitytools');
+const libreOtpModeContainer = document.getElementById('libre-otp-mode-container');
+
+if (customScriptsToggleBtn) {
+    customScriptsToggleBtn.addEventListener('click', () => {
+        if (customScriptsSelect) {
+            customScriptsSelect.value = customScriptsSelect.value === 'yes' ? 'no' : 'yes';
+            customScriptsSelect.dispatchEvent(new Event('change'));
+        }
+    });
+    customScriptsToggleBtn.addEventListener('mouseenter', (e) => updateInfoPanel(customScriptsToggleBtn, e));
+    customScriptsToggleBtn.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
+}
+
+if (customScriptsSelect && customScriptsContainer) {
+    customScriptsSelect.addEventListener('change', () => {
+        customScriptsContainer.style.display = customScriptsSelect.value === 'yes' ? 'block' : 'none';
+    });
+}
+
+if (securityToolsSelect && libreOtpModeContainer) {
+    securityToolsSelect.addEventListener('change', () => {
+        if (securityToolsSelect.value === 'libre-otp' || securityToolsSelect.value === 'both') {
+            libreOtpModeContainer.style.display = 'block';
+        } else {
+            libreOtpModeContainer.style.display = 'none';
+        }
+    });
+}
 
 // Click infoPanel on mobile to open wiki
 infoPanel.addEventListener('click', () => {
@@ -514,14 +567,26 @@ function updateInfoPanel(group, e) {
         'Upload Guide': 'architecture.md',
         'Project Repository': 'architecture.md',
         'Firmware Selection': 'architecture.md#1-firmware-uefi-vs-bios',
-        'Fake Evil Maid Directory': 'architecture.md#anti-rubberducky-daemon',
+        'Target Installation Disk': '01-pre-installation.md',
         'Partitioning Scheme': 'architecture.md#2-encryption-luks1-vs-luks2-vs-unencrypted',
+        'File System': 'architecture.md#2-encryption-luks1-vs-luks2-vs-unencrypted',
         'Init System': 'architecture.md#3-init-systems-systemd-vs-busybox',
         'Bootloader': 'architecture.md#4-bootloaders-secure-boot',
-        'Target Installation Disk': '01-pre-installation.md',
-        'File System': '02-partitioning/lvm-on-luks2.md',
-        'Output Format': 'architecture.md#how-the-website-generator-works',
-        'User Philosophy': '03-base-installation.md'
+        'Main Linux Kernel': '03-base-installation.md',
+        'Backup Linux Kernel': '03-base-installation.md',
+        'Software Philosophy': '03-base-installation.md',
+        'Desktop Environment': '04-desktop-environment.md',
+        'Swap Space': '02-partitioning.md',
+        'Post-Install Apps': '04-desktop-environment.md',
+        'System Cleanup': '04-desktop-environment.md',
+        'Tilas01 Custom Scripts': 'architecture.md#anti-rubberducky-daemon',
+        'Advanced Security Tools': 'architecture.md#anti-rubberducky-daemon',
+        'Libre OTP Mode': 'architecture.md#anti-rubberducky-daemon',
+        'Keystroke Anonymisation': 'architecture.md#kloak-anti-keystroke-profiling',
+        'Malware Detection Webhooks': 'architecture.md#anti-rubberducky-daemon',
+        'Hardened SSH & OTP': 'architecture.md#anti-rubberducky-daemon',
+        'Fake Evil Maid Directory': 'architecture.md#anti-rubberducky-daemon',
+        'Output Format': 'architecture.md#how-the-website-generator-works'
     };
 
     const mappedLink = title ? wikiMap[title] : null;
@@ -638,14 +703,32 @@ function validateConfigurations() {
     
     // Validate if the setup is completely insecure and warn globally
     const warnings = [];
+    const successes = [];
+    
+    const secToolsVal = document.getElementById('securitytools') ? document.getElementById('securitytools').value : 'none';
+    const fakeEvilMaidVal = document.getElementById('fake-evil-maid') ? document.getElementById('fake-evil-maid').value : 'no';
+    const useCustomScripts = document.getElementById('use-custom-scripts') ? document.getElementById('use-custom-scripts').value === 'yes' : false;
+
     if (part.value === 'unencrypted' && bootloader.value !== 'uki-custom') {
-        warnings.push("⚠️ Smart Analysis: You chose no encryption and no secure boot ownership. This is a highly insecure setup.");
+        warnings.push("⚠️ Smart Analysis: You chose no encryption and no secure boot ownership. This is a highly insecure setup. Anyone with physical access can tamper with your system.");
+    }
+    
+    if (part.value === 'luks2' && bootloader.value === 'uki-custom' && fw === 'uefi' && useCustomScripts && secToolsVal === 'both' && fakeEvilMaidVal === 'yes') {
+        successes.push("🛡️ Smart Analysis: Outstanding! You have configured a fully encrypted, tamper-evident system with hardware-bound 2FA and decoy environments. This is the most secure setup possible! Good job.");
     }
     
     const globalWarningsDiv = document.getElementById('global-warnings');
     if (globalWarningsDiv) {
+        let htmlContent = "";
         if (warnings.length > 0) {
-            globalWarningsDiv.innerHTML = warnings.map(w => `<div class="alert warning" style="margin-bottom: 0.5rem; text-align: left;">${w}</div>`).join('');
+            htmlContent += warnings.map(w => `<div class="alert warning" style="margin-bottom: 0.5rem; text-align: left;">${w}</div>`).join('');
+        }
+        if (successes.length > 0) {
+            htmlContent += successes.map(s => `<div class="alert info" style="margin-bottom: 0.5rem; text-align: left; background: rgba(46, 204, 113, 0.1); border-color: #2ecc71;">${s}</div>`).join('');
+        }
+        
+        if (htmlContent) {
+            globalWarningsDiv.innerHTML = htmlContent;
             globalWarningsDiv.style.display = 'block';
         } else {
             globalWarningsDiv.innerHTML = '';
