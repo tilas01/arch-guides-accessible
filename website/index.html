@@ -180,39 +180,50 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Anonymisation & Anti-Evil Maid" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling. Webhooks alert you of malicious binaries. OpenSSH can be configured with strict secure crypto and Libre OTP.">
-                        <label>Anonymisation & Anti-Evil Maid Services:</label>
-                        <select id="anonymisation">
-                            <option value="none" selected>None</option>
-                            <option value="kloak">Kloak (Keystroke Anonymization)</option>
-                            <option value="webhook">Kernel Webhook Alerts (Malicious Binary Detection)</option>
-                            <option value="ssh">Hardened OpenSSH + Libre OTP</option>
-                            <option value="all">Full Anonymisation Suite (Kloak + Webhooks + Hardened SSH)</option>
+                    <div class="form-group form-step" data-title="Keystroke Anonymisation" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling.">
+                        <label>Keystroke Anonymisation (Kloak):</label>
+                        <select id="anon_kloak">
+                            <option value="no" selected>No</option>
+                            <option value="yes">Yes</option>
                         </select>
                     </div>
 
-                    <div id="spoofing-options" style="display: none;">
-                        <div class="form-group form-step" data-title="Fake Main Kernel" data-desc="Spoof an Evil Maid attacker by installing a decoy main kernel.">
-                            <label>Fake Main Kernel (Decoy):</label>
-                            <select id="kernel-fake-main">
-                                <option value="none" selected>None (No Spoofing)</option>
-                                <option value="linux-lts">linux-lts (Decoy)</option>
-                                <option value="linux">linux (Decoy)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group form-step" data-title="Fake Backup Kernel" data-desc="Spoof an Evil Maid attacker by installing a decoy backup kernel.">
-                            <label>Fake Backup Kernel (Decoy):</label>
-                            <select id="kernel-fake-backup">
-                                <option value="none" selected>None</option>
-                                <option value="linux">linux (Decoy)</option>
-                            </select>
-                        </div>
+                    <div class="form-group form-step" data-title="Malware Detection Webhooks" data-desc="Configure a systemd service to alert you via webhook if malicious binaries are detected.">
+                        <label>Kernel Webhook Alerts:</label>
+                        <select id="anon_webhook">
+                            <option value="no" selected>No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
 
-                        <div class="form-group form-step" data-title="Spoof Directory" data-desc="The directory where your real /boot or /efi is located, or where the decoy will reside depending on your setup.">
-                            <label>Spoof Directory (e.g. /boot or /efi):</label>
-                            <input type="text" id="spoof-dir" value="/boot" required>
-                        </div>
+                    <div class="form-group form-step" data-title="Hardened SSH & OTP" data-desc="Configure OpenSSH with strict crypto and Libre OTP for 2FA.">
+                        <label>Hardened OpenSSH + Libre OTP:</label>
+                        <select id="anon_ssh">
+                            <option value="no" selected>No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Fake Main Kernel" data-desc="Spoof an Evil Maid attacker by installing a decoy main kernel.">
+                        <label>Fake Main Kernel (Decoy):</label>
+                        <select id="kernel-fake-main">
+                            <option value="none" selected>None (No Spoofing)</option>
+                            <option value="linux-lts">linux-lts (Decoy)</option>
+                            <option value="linux">linux (Decoy)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group form-step" data-title="Fake Backup Kernel" data-desc="Spoof an Evil Maid attacker by installing a decoy backup kernel.">
+                        <label>Fake Backup Kernel (Decoy):</label>
+                        <select id="kernel-fake-backup">
+                            <option value="none" selected>None</option>
+                            <option value="linux">linux (Decoy)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Spoof Directory" data-desc="The directory where your real /boot or /efi is located, or where the decoy will reside depending on your setup.">
+                        <label>Spoof Directory (e.g. /boot or /efi):</label>
+                        <input type="text" id="spoof-dir" value="/boot" required>
                     </div>
 
                     <div class="form-group form-step" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial or a raw executable Bash Script.">
