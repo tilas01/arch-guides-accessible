@@ -49,6 +49,12 @@
             .wiki-nav {
                 flex: auto;
                 width: 100%;
+                margin-bottom: 1rem;
+            }
+            .wiki-content {
+                padding: 1rem;
+                overflow-x: auto;
+                width: 100%;
             }
         }
     </style>
@@ -76,13 +82,14 @@
                 <h3>Documentation</h3>
                 <ul id="wiki-menu">
                     <li><a data-file="architecture.md">ℹ️ Generator & Architecture</a></li>
-                    <li><a data-file="01-live-usb.md">1. Live USB Setup</a></li>
-                    <li><a data-file="02-disk-preparation.md">2. Disk Preparation (LUKS/LVM)</a></li>
-                    <li><a data-file="03-base-installation.md">3. Base Installation</a></li>
-                    <li><a data-file="06-networking.md">4. Networking & DNS</a></li>
-                    <li><a data-file="07-post-installation.md">5. Post Install & Desktop</a></li>
-                    <li><a data-file="maintenance.md">6. Maintenance & Fake Kernel</a></li>
-                    <li><a data-file="arch-command-cheatsheet.md">7. Command Cheatsheet</a></li>
+                    <li><a data-file="01-pre-installation.md">💻 1. Pre-Installation</a></li>
+                    <li><a data-file="02-partitioning/luks2.md">🔐 2. Partitioning (LUKS2)</a></li>
+                    <li><a data-file="03-base-installation.md">💿 3. Base Installation</a></li>
+                    <li><a data-file="04-bootloaders/uki-no-grub.md">🚀 4. Bootloaders (UKI)</a></li>
+                    <li><a data-file="05-secure-boot/custom-keys-uki.md">🛡️ 5. Secure Boot</a></li>
+                    <li><a data-file="07-post-installation.md">🖥️ 6. Post Install & Desktop</a></li>
+                    <li><a data-file="maintenance.md">🛠️ 7. Maintenance & Fake Kernel</a></li>
+                    <li><a data-file="helpful-commands.md">📜 8. Helpful Commands (paru)</a></li>
                 </ul>
             </aside>
             <section class="wiki-content">
