@@ -145,33 +145,6 @@ noscript .js-only {
     display: none !important;
 }
 
-/* Custom Tooltips */
-[data-desc] {
-    position: relative;
-    cursor: help;
-}
-
-[data-desc]:hover::after {
-    content: "📌 " attr(data-title) "\A \A" attr(data-desc);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--bg-darker);
-    color: var(--accent-cyan);
-    padding: 0.8rem 1rem;
-    border-radius: 6px;
-    border: 1px solid var(--accent-blue);
-    white-space: pre-wrap;
-    width: max-content;
-    max-width: 320px;
-    font-size: 0.85rem;
-    z-index: 10;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    margin-bottom: 5px;
-    text-align: left;
-    line-height: 1.4;
-}
 
 /* Nav Link */
 .nav-link {
@@ -210,14 +183,6 @@ noscript .js-only {
         overflow-x: auto;
     }
 
-    /* Adjust Tooltips for small screens */
-    [data-desc]:hover::after {
-        width: 250px;
-        left: 0;
-        transform: none;
-        font-size: 0.75rem;
-    }
-
     .nav-link {
         display: block;
         margin: 0.5rem 0;
@@ -234,7 +199,7 @@ noscript .js-only {
     }
 
     /* Disable hover tooltips on extremely small screens to prevent overlap */
-    [data-desc]:hover::after {
+    [data-desc]:hover::after, [data-desc]:active::after {
         display: none;
     }
 }

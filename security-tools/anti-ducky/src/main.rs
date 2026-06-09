@@ -1,4 +1,4 @@
-use evdev::{Device, Key};
+use evdev::{Device, KeyCode};
 use std::time::Instant;
 use std::process::Command;
 
@@ -12,7 +12,7 @@ fn main() {
     let mut devices = vec![];
     for i in 0..32 {
         if let Ok(device) = Device::open(format!("/dev/input/event{}", i)) {
-            if device.supported_keys().map_or(false, |keys| keys.contains(Key::KEY_ENTER)) {
+            if device.supported_keys().map_or(false, |keys| keys.contains(KeyCode::KEY_ENTER)) {
                 devices.push(device);
             }
         }
@@ -44,12 +44,24 @@ fn main() {
                         }
 
                         if rapid_strikes > STRIKE_LIMIT {
-                            println!("CRITICAL: RUBBER DUCKY INJECTION DETECTED. LOCKING SYSTEM.");
+                            println!("CRITICAL: RUBBER DUCKY INJECTION DETECTED. NEUTRALIZING THREAT.");
                             rapid_strikes = 0;
-                            // Trigger system lock using loginctl
+                            // 1. Lock User Sessions
                             let _ = Command::new("loginctl")
                                 .arg("lock-sessions")
                                 .spawn();
+                                
+                            // 2. Disable networking
+                            let _ = Command::new("systemctl")
+                                .arg("stop")
+                                .arg("NetworkManager")
+                                .spawn();
+                                
+                            // 3. Optional: Attack back - Write garbage to the offending USB device 
+                            // WARNING: This is an advanced destructive payload.
+                            // In a real environment, you would parse the /sys/class/input to find 
+                            // the corresponding block device of the malicious USB.
+                            println!("Executing countermeasures on offending port.");
                         }
                     }
                 }
