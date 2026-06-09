@@ -22,7 +22,7 @@ When installing Arch Linux, you must choose your kernel strategy. You can instal
 
 **Example (Installing Hardened as primary, Zen as backup):**
 ```bash
-pacstrap -K /mnt base linux-hardened linux-zen linux-firmware neovim lvm2
+pacstrap -K /mnt base linux-hardened linux-zen linux-firmware neovim opendoas pfetch lvm2
 ```
 *(Include `btrfs-progs` if using BTRFS, or `lvm2` if using LVM).*
 

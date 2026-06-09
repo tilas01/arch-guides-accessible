@@ -57,9 +57,11 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
 
     output += `## 2. Base Installation, Kernel & GPU\n`;
     output += `\`\`\`bash\n`;
-    output += `pacstrap -K /mnt base ${kernels} ${gpuPackages} linux-firmware neovim sudo git\n`;
+    output += `pacstrap -K /mnt base ${kernels} ${gpuPackages} linux-firmware neovim opendoas pfetch git\n`;
     output += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
     output += `arch-chroot /mnt\n`;
+    output += `echo "permit persist :wheel" > /etc/doas.conf\n`;
+    output += `ln -s /usr/bin/doas /usr/bin/sudo\n`;
     output += `\`\`\`\n\n`;
 
     output += `## 3. Initramfs Configuration (${initSys})\n`;

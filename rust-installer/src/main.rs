@@ -128,6 +128,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     // Command::new("bash").arg("-c").arg(&dns_cmd).status()?;
 
+    println!("[+] Configuring minimalist tools (doas & pfetch)...");
+    let minimal_tools_cmd = "arch-chroot /mnt bash -c 'echo \"permit persist :wheel\" > /etc/doas.conf' && arch-chroot /mnt ln -s /usr/bin/doas /usr/bin/sudo && arch-chroot /mnt bash -c 'echo \"pfetch\" >> /etc/profile'";
+    // Command::new("bash").arg("-c").arg(&minimal_tools_cmd).status()?;
+
     println!("\n[✓] Asynchronous Build Generation Successful.");
     println!("Note: This compiled binary can be distributed to all target systems and executed instantly.");
 

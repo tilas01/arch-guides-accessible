@@ -183,7 +183,13 @@ else
     arch-chroot /mnt systemctl enable systemd-resolved
 fi
 
-# 5. Copy scripts and Setup Evil Maid
+# 5. Minimalist System Tools Setup (doas & pfetch)
+echo "[+] Configuring doas and pfetch..."
+arch-chroot /mnt bash -c 'echo "permit persist :wheel" > /etc/doas.conf'
+arch-chroot /mnt ln -s /usr/bin/doas /usr/bin/sudo
+arch-chroot /mnt bash -c 'echo "pfetch" >> /etc/profile'
+
+# 6. Copy scripts and Setup Evil Maid
 echo "[+] Fetching scripts directory..."
 mkdir -p /mnt/root/scripts
 curl -s "$REPO_URL/scripts/evil-maid-detector.sh" > /mnt/root/scripts/evil-maid-detector.sh
