@@ -1,10 +1,10 @@
-﻿<img src="../img/banner.png" width="100%" alt="Arch Guides Banner">
+
 
 # Arch Guides: Accessible & Modular
 **The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.**
 
-## ⚖️ Legal Disclaimer & AI Notice
-> *⚠️ AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
+## ?? Legal Disclaimer & AI Notice
+> *?? AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
 
 ---
 
@@ -49,7 +49,7 @@ pacman -S git base-devel
 ## 4. Next Steps & Maintenance
 Congratulations! Your core setup is complete.
 To ensure your system remains secure and well-maintained over time, please review the following advanced resources:
-* ðŸ‘‰ **[System Maintenance & SSH Security Guide](maintenance.md)** - Explains Fake/Backup Kernels, OTP, and VM specific installations.
-* ðŸ‘‰ **[Arch Command Cheatsheet](arch-command-cheatsheet.md)** - Essential commands for pacman, services, and auditing.
+* 👉 **[System Maintenance & SSH Security Guide](maintenance.md)** - Explains Fake/Backup Kernels, OTP, and VM specific installations.
+* 👉 **[Arch Command Cheatsheet](arch-command-cheatsheet.md)** - Essential commands for pacman, services, and auditing.
 
 Reboot and enjoy your highly modular, accessible Arch Linux setup!

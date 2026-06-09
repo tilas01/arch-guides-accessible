@@ -1,16 +1,16 @@
-﻿<img src="../img/banner.png" width="100%" alt="Arch Guides Banner">
+
 
 # Arch Guides: Accessible & Modular
 **The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.**
 
-## ⚖️ Legal Disclaimer & AI Notice
-> *⚠️ AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
+## ??� Legal Disclaimer & AI Notice
+> *??� AI-Generated Content & Security Warning: Approximately 95% of the content in this repository has been generated, refactored, and formatted by AI, with manual curation by tilas01 and drawing from max-baz. While designed for modularity and high security, you are solely responsible for reviewing every command before execution. We strongly recommend testing in a VM and cross-referencing with the Arch Wiki. Provided "AS IS". Licensed under the MIT License.*
 
 ---
 
-## ðŸ“– Helpful Commands
+## 📖 Helpful Commands
 
-### ðŸ“¦ Pacman (Package Manager)
+### 📦 Pacman (Package Manager)
 * **Sync & Upgrade System:** `sudo pacman -Syu`
 * **Install a Package:** `sudo pacman -S <package_name>`
 * **Search for a Package:** `pacman -Ss <query>`
@@ -18,13 +18,13 @@
 * **Clear Package Cache (Frees space):** `sudo pacman -Sc`
 * **List Explicitly Installed Packages:** `pacman -Qe`
 
-### ðŸ§¹ Systemd & Services
+### 🧹 Systemd & Services
 * **Start a Service:** `sudo systemctl start <service>`
 * **Enable a Service (Starts on boot):** `sudo systemctl enable <service>`
 * **Check Service Status:** `systemctl status <service>`
 * **View System Logs (Errors):** `journalctl -p 3 -xb`
 
-### ðŸ›¡ï¸ Permissions & Users
+### 🛡️ Permissions & Users
 * **Add a new user:** `sudo useradd -m -G wheel -s /bin/bash <username>`
 * **Change password:** `passwd <username>`
 * **Fix Permissions (Directories to 755, Files to 644):**
@@ -33,12 +33,12 @@
   find /target/dir -type f -exec chmod 644 {} \;
   ```
 
-### ðŸ”’ Security Auditing
+### 🔒 Security Auditing
 * **Check if Secure Boot is Active:** `bootctl status`
 * **Verify UKI Signatures:** `sbverify --list /efi/EFI/arch/secure-boot-linux.efi`
 * **Check Evil Maid Logs:** `cat /var/lib/evilmaid/esp_hash.sha256`
 
-### ðŸ“¦ AUR Package Manager (paru)
+### 📦 AUR Package Manager (paru)
 
 `paru` is the recommended Rust-based Libre AUR helper.
 

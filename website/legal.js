@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    if (sessionStorage.getItem('legal_accepted') === 'true') {
+    if (localStorage.getItem('legal_accepted') === 'true') {
         return;
     }
 
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     acceptBtn.addEventListener('click', () => {
-        sessionStorage.setItem('legal_accepted', 'true');
+        localStorage.setItem('legal_accepted', 'true');
         document.body.removeChild(overlay);
         document.body.style.overflow = 'auto';
     });

@@ -19,6 +19,7 @@
             <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated configurations">Upload Guide</a> | 
             <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Project Repository" data-desc="The full source code, scripts, and documentation">Repository</a>
         </nav>
+        <button id="toggle-custom-scripts" type="button" class="js-only nav-tooltip" data-title="Custom Scripts Toggle" data-desc="Enable options for custom anonymisation, anti-evil maid, and Libre OTP." style="position: absolute; left: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">📜</button>
     </header>
 
     <main>
@@ -170,15 +171,33 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Advanced Security Tools" data-desc="Integrate our custom Rust-native Libre OTP for login/boot/SSH or Anti-RubberDucky for keyboard input filtering.">
-                        <label>Rust Advanced Security Tools:</label>
-                        <select id="securitytools">
-                            <option value="none" selected>None (Standard Setup)</option>
-                            <option value="libre-otp">Libre OTP (Customizable Rust Native 2FA on Boot/Login/SSH)</option>
-                            <option value="anti-ducky">Anti-RubberDucky (Rust Input Control & Filtering)</option>
-                            <option value="both">Both Libre OTP & Anti-RubberDucky</option>
+                    <div class="form-group form-step" data-title="Tilas01 Custom Scripts" data-desc="Enable highly advanced security tooling, decoy environments, and anonymisation scripts authored by Tilas01.">
+                        <label>Use Custom Security Scripts (by Tilas01)?</label>
+                        <select id="use-custom-scripts">
+                            <option value="no" selected>No (Standard Installation)</option>
+                            <option value="yes">Yes (Reveal Advanced Options)</option>
                         </select>
                     </div>
+
+                    <div id="custom-scripts-container" style="display: none;">
+                        <div class="form-group form-step" data-title="Advanced Security Tools" data-desc="Integrate our custom Rust-native Libre OTP for login/boot/SSH or Anti-RubberDucky for keyboard input filtering.">
+                            <label>Rust Advanced Security Tools:</label>
+                            <select id="securitytools">
+                                <option value="none" selected>None (Standard Setup)</option>
+                                <option value="libre-otp">Libre OTP (Customizable Rust Native 2FA on Boot/Login/SSH)</option>
+                                <option value="anti-ducky">Anti-RubberDucky (Rust Input Control & Filtering)</option>
+                                <option value="both">Both Libre OTP & Anti-RubberDucky</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-step" id="libre-otp-mode-container" style="display: none;" data-title="Libre OTP Mode" data-desc="Choose where to require the Libre OTP two-factor authentication.">
+                            <label>Libre OTP Mode:</label>
+                            <select id="libre_otp_mode">
+                                <option value="login" selected>Login Only</option>
+                                <option value="boot">Boot Only</option>
+                                <option value="both">Both Boot & Login</option>
+                            </select>
+                        </div>
 
                     <div class="form-group form-step" data-title="Keystroke Anonymisation" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling.">
                         <label>Keystroke Anonymisation (Kloak):</label>
@@ -204,24 +223,26 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Fake Evil Maid Directory" data-desc="Enable automated script logic to build backup kernels and decoy environments preventing physical tampering detection.">
+                    <div class="form-group form-step" data-title="Fake Evil Maid Directory" data-desc="Do you want to use anti evil maid script author tilas01 on github? Enable automated script logic to build backup kernels and decoy environments preventing physical tampering detection.">
                         <label>Anti-Evil Maid Post-Install Setup:</label>
                         <select id="fake-evil-maid">
-                            <option value="yes">Yes (Generate decoy environment & backup kernels)</option>
                             <option value="no" selected>No (Standard Installation)</option>
+                            <option value="yes">Yes (Generate decoy environment & backup kernels)</option>
                         </select>
                     </div>
+                    </div> <!-- End Custom Scripts Container -->
 
-                    <div class="form-group form-step" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial or a raw executable Bash Script.">
+                    <div class="form-group form-step" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial, a raw executable Bash Script, or both.">
                         <label>Output Format:</label>
                         <select id="outputformat">
-                            <option value="markdown" selected>Markdown Guide (Recommended, explanatory tutorial)</option>
+                            <option value="both" selected>Both (Markdown Guide + Executable Script)</option>
+                            <option value="markdown">Markdown Guide (Recommended, explanatory tutorial)</option>
                             <option value="script">Raw Executable Bash Script (Review commands before executing)</option>
                         </select>
                     </div>
 
                     <div id="global-warnings" style="margin-bottom: 1rem;"></div>
-                    <button type="submit" id="generate-btn" class="btn form-step" style="margin-top: 1rem; width: 100%;">Generate Custom Guide</button>
+                    <button type="button" id="generate-btn" class="btn form-step" style="margin-top: 1rem; width: 100%;">Generate Custom Guide</button>
                     <button type="button" id="download-btn" class="btn form-step" style="width: 100%; margin-top: 10px; background: var(--accent-purple); display: none;">Download File</button>
                 </form>
             </section>
