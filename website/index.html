@@ -14,7 +14,9 @@
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
         <nav>
             <a href="index.html" class="nav-link">Generator</a> | 
-            <a href="wiki.html" class="nav-link">Wiki / Documentation</a>
+            <a href="wiki.html" class="nav-link">Wiki / Documentation</a> | 
+            <a href="#" id="nav-upload" class="nav-link">Upload</a>
+            <input type="file" id="upload-file" accept=".md,.sh" style="display: none;">
         </nav>
     </header>
 
@@ -25,13 +27,21 @@
             </div>
         </noscript>
 
-        <div class="controls-bar js-only" style="text-align: right; margin-bottom: 1rem;">
-            <button id="toggle-tooltips" class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; background: var(--bg-lighter);">Disable Info Panel / Tooltips</button>
+        <div class="controls-bar js-only" style="text-align: right; margin-bottom: 1rem; position: absolute; right: 2rem; top: 2rem;">
+            <button id="toggle-tooltips" title="Toggle Tooltips" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">💬</button>
         </div>
 
         <div class="layout-container js-only">
             <section class="generator-form">
                 <form id="install-form">
+                    <div class="form-group form-step" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Make sure this is correct!">
+                        <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
+                        <input type="text" id="target-disk" value="/dev/sda" required>
+                        <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
+                            <strong>Tip:</strong> Run <code>lsblk</code> in your terminal to find your correct target disk name.
+                        </div>
+                    </div>
+
                     <div class="form-group form-step" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                         <label>Firmware Interface:</label>
                         <select id="firmware">
@@ -40,23 +50,6 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="File System Features" data-desc="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
-                        <label>File System:</label>
-                        <select id="filesystem">
-                            <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
-                            <option value="ext4">Ext4 (Standard/Stable)</option>
-                            <option value="xfs">XFS (High Performance Large Files)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group form-step" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Make sure this is correct!">
-                        <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
-                        <input type="text" id="target-disk" value="/dev/sda" required>
-                        <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
-                            <strong>Tip:</strong> Run <code>lsblk</code> in your terminal to find your correct target disk name.
-                        </div>
-                    </div>
-                    
                     <div class="form-group form-step" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
                         <label>Partitioning / Encryption (Speed vs Security):</label>
                         <select id="partitioning">
@@ -64,14 +57,6 @@
                             <option value="luks1">LUKS1 (Slower unlock / Legacy GRUB Compatible / High Security)</option>
                             <option value="luks2" selected>LUKS2 (Fast modern unlock / Post-Quantum Argon2id / Max Security)</option>
                             <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes / Max Security)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group form-step" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
-                        <label>Init System (mkinitcpio Hooks):</label>
-                        <select id="init_system">
-                            <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
-                            <option value="busybox">busybox/udev init (Traditional, encrypt hook)</option>
                         </select>
                     </div>
 
@@ -82,6 +67,23 @@
                             <option value="uki-shim">UKI + Shim (Secure Boot via Microsoft Trust)</option>
                             <option value="systemd-boot">systemd-boot (Clean/Minimal)</option>
                             <option value="grub">GRUB (Legacy/Traditional BIOS/UEFI)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
+                        <label>Init System (mkinitcpio Hooks):</label>
+                        <select id="init_system">
+                            <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
+                            <option value="busybox">busybox/udev init (Traditional, encrypt hook)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="File System Features" data-desc="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
+                        <label>File System:</label>
+                        <select id="filesystem">
+                            <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
+                            <option value="ext4">Ext4 (Standard/Stable)</option>
+                            <option value="xfs">XFS (High Performance Large Files)</option>
                         </select>
                     </div>
 
@@ -195,12 +197,8 @@
                         </select>
                     </div>
 
-                    <div id="continue-prompt" class="alert info form-step visible" style="margin-top: 1rem; text-align: center;">
-                        <p>Please select an option above to reveal the next step.</p>
-                        <button type="button" id="reveal-all-btn" class="btn" style="margin-top: 10px; background: var(--bg-lighter);">View full selection now</button>
-                    </div>
-
-                    <button type="submit" id="generate-btn" class="btn form-step" style="margin-top: 1rem;">Generate Custom Guide</button>
+                    <button type="submit" id="generate-btn" class="btn" style="width: 100%;">Generate Live Preview</button>
+                    <button type="button" id="download-btn" class="btn" style="width: 100%; margin-top: 10px; background: var(--accent-purple); display: none;">Download File</button>
                 </form>
             </section>
             
