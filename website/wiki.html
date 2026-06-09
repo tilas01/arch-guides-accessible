@@ -67,7 +67,7 @@
     <main>
         <noscript>
             <div class="alert warning">
-                JavaScript is disabled. Please view the raw markdown documentation directly in the <a href="https://github.com/tilas01/arch-guides-accessible/tree/main/docs" target="_blank">docs directory on GitHub</a>.
+                JavaScript is disabled. Please view the raw markdown documentation directly in the <a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/docs" target="_blank">docs directory on GitHub</a>.
             </div>
         </noscript>
 
@@ -117,7 +117,7 @@
                         wikiBody.innerHTML = marked.parse(text);
                     })
                     .catch(err => {
-                        wikiBody.innerHTML = `<div class="alert warning">Failed to load ${file}. You can <a href="https://github.com/tilas01/arch-guides-accessible/tree/main/docs/${file}" target="_blank">view it on GitHub directly</a>.</div>`;
+                        wikiBody.innerHTML = `<div class="alert warning">Failed to load ${file}. You can <a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/docs/${file}" target="_blank">view it on GitHub directly</a>.</div>`;
                     });
             });
         });

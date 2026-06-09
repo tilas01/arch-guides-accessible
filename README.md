@@ -9,8 +9,8 @@
 ---
 
 ## 🌐 Public Hosted Resources
-*   **[Interactive Dynamic Install Generator](https://tilas01.github.io/arch-guides-accessible/)** - Dynamically generates an installation guide tailored exactly to your hardware and security needs.
-*   **[Static Tokyo-Night Wiki](https://tilas01.github.io/arch-guides-accessible/wiki.html)** - A comprehensive, modular documentation repository aggregating the best of v1, v2, and v3 guides.
+*   **[Interactive Dynamic Install Generator](https://tilas01.github.io/arch-guides-dynamic/)** - Dynamically generates an installation guide tailored exactly to your hardware and security needs.
+*   **[Static Tokyo-Night Wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html)** - A comprehensive, modular documentation repository aggregating the best of v1, v2, and v3 guides.
 
 ---
 
@@ -38,7 +38,7 @@ For users who want to deploy these configurations rapidly, we provide two highly
 **Recommended for speed & multiple established systems.**
 This ultra-fast installer executes a pre-compiled, GitHub Actions reproducible release binary. It spawns concurrent asynchronous tasks (`tokio`) to fetch all the required markdown guides into RAM simultaneously. It entirely skips image blobs and git history to save massive bandwidth. It downloads the pre-compiled binary, checks the `sha256sum` hash against the Git-hosted release hash for extreme security verification, and executes.
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-accessible/main/scripts/run-rust-installer.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/run-rust-installer.sh)"
 ```
 👉 [Read the Rust Installer Manual & Specs (including auto-compiler instructions)](rust-installer/README.md)
 
@@ -50,7 +50,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-acce
 
 Runs sequentially top-to-bottom. Excellent for users who prefer standard Bash execution over compiled memory binaries.
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-accessible/main/scripts/arch-installer.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/arch-installer.sh)"
 ```
 
 </details>
