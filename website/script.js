@@ -21,9 +21,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const anon_kloak = document.getElementById('anon_kloak') ? document.getElementById('anon_kloak').value : 'no';
     const anon_webhook = document.getElementById('anon_webhook') ? document.getElementById('anon_webhook').value : 'no';
     const anon_ssh = document.getElementById('anon_ssh') ? document.getElementById('anon_ssh').value : 'no';
-    const fakeMain = document.getElementById('kernel-fake-main') ? document.getElementById('kernel-fake-main').value : 'none';
-    const fakeBackup = document.getElementById('kernel-fake-backup') ? document.getElementById('kernel-fake-backup').value : 'none';
-    const spoofDir = document.getElementById('spoof-dir') ? document.getElementById('spoof-dir').value : '/boot';
+    const fakeEvilMaid = document.getElementById('fake-evil-maid') ? document.getElementById('fake-evil-maid').value : 'no';
 
     let errors = [];
     if (fw === "bios" && boot !== "grub") {
@@ -59,7 +57,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     let cmdOnly = isScript;
     let output = "";
 
-    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, desktop, swap_size, post_apps, cleanup, secTools, anon_kloak, anon_webhook, anon_ssh, fakeMain, fakeBackup, spoofDir, format };
+    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, desktop, swap_size, post_apps, cleanup, secTools, anon_kloak, anon_webhook, anon_ssh, fakeEvilMaid, format };
     output += '### CONFIG_START\n### ' + JSON.stringify(configData) + '\n### CONFIG_END\n\n';
 
     if (!cmdOnly) {
@@ -159,9 +157,8 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
 
     let allKernels = kernelMain + " " + kernelMain + "-headers";
     if (kernelBackup !== "none") allKernels += " " + kernelBackup + " " + kernelBackup + "-headers";
-    if (anonTools !== "none") {
-        if (fakeMain !== "none") allKernels += " " + fakeMain;
-        if (fakeBackup !== "none") allKernels += " " + fakeBackup;
+    if (fakeEvilMaid === 'yes') {
+        allKernels += " linux-lts linux-hardened"; // Generic decoys
     }
 
     output += `pacstrap -K /mnt base ${allKernels} ${gpuPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
@@ -339,10 +336,11 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     }
     
     
-    if (anon_kloak === "yes" || anon_webhook === "yes" || anon_ssh === "yes" || fakeMain !== "none" || fakeBackup !== "none") {
+    if (anon_kloak === "yes" || anon_webhook === "yes" || anon_ssh === "yes" || fakeEvilMaid === "yes") {
         if (!cmdOnly) {
             output += `\`\`\`\n\n`;
             output += `## 8. Anonymisation & Anti-Evil Maid\n`;
+            output += `Configure background services for anonymity or anti-tampering.\n\n`;
             output += `\`\`\`bash\n`;
         } else {
             output += `\n# 8. Anonymisation & Anti-Evil Maid\n`;
@@ -370,18 +368,13 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
             output += `systemctl enable sshd.service\n`;
         }
 
-        if (fakeMain !== "none" || fakeBackup !== "none") {
+        if (fakeEvilMaid === "yes") {
             output += `\n# EVIL MAID SPOOFING: Deploy Fake Decoy Kernels\n`;
-            output += `mkdir -p ${spoofDir}\n`;
-            if (fakeMain !== "none") {
-                output += `cp /boot/vmlinuz-${fakeMain} ${spoofDir}/vmlinuz-linux\n`;
-                output += `cp /boot/initramfs-${fakeMain}.img ${spoofDir}/initramfs-linux.img\n`;
-            }
-            if (fakeBackup !== "none") {
-                output += `cp /boot/vmlinuz-${fakeBackup} ${spoofDir}/vmlinuz-linux-lts\n`;
-                output += `cp /boot/initramfs-${fakeBackup}.img ${spoofDir}/initramfs-linux-lts.img\n`;
-            }
-            output += `echo "Fake decoy kernels successfully deployed to ${spoofDir} to trap attackers."\n`;
+            output += `mkdir -p /boot/fake_efi\n`;
+            output += `cp /boot/vmlinuz-linux-lts /boot/fake_efi/vmlinuz-linux\n`;
+            output += `cp /boot/initramfs-linux-lts.img /boot/fake_efi/initramfs-linux.img\n`;
+            output += `cp /boot/vmlinuz-linux-hardened /boot/fake_efi/vmlinuz-linux-lts\n`;
+            output += `cp /boot/initramfs-linux-hardened.img /boot/fake_efi/initramfs-linux-lts.img\n`;
         }
     }
     if (cmdOnly) {
@@ -443,39 +436,17 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
 });
 
 // Interactive UI Logic
-const formSteps = document.querySelectorAll('.form-step');
+const formSteps = document.querySelectorAll('.form-step, .nav-tooltip');
 const infoPanel = document.getElementById('info-panel');
 const infoContent = document.getElementById('info-panel-content');
 const defaultPanelHTML = infoContent.innerHTML;
-let tooltipMode = window.innerWidth <= 768 ? 'bottom' : 'cursor';
 
-const toggleBtn = document.getElementById('toggle-tooltips');
-if (toggleBtn) {
-    toggleBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        if (window.innerWidth <= 768) {
-            tooltipMode = tooltipMode === 'off' ? 'bottom' : 'off';
-        } else {
-            if (tooltipMode === 'cursor') tooltipMode = 'side';
-            else if (tooltipMode === 'side') tooltipMode = 'off';
-            else tooltipMode = 'cursor';
-        }
-        
-        if (tooltipMode === 'off') {
-            toggleBtn.style.filter = 'grayscale(1) sepia(1) hue-rotate(-50deg) saturate(5)';
-            infoPanel.classList.remove('active');
-            document.body.classList.remove('panel-active');
-            toggleBtn.title = 'Tooltips: OFF';
-        } else {
-            toggleBtn.style.filter = 'none';
-            toggleBtn.title = `Tooltips: ON (${tooltipMode.toUpperCase()})`;
-        }
-        
-        // Refresh tooltip if hovered
-        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipMode.toUpperCase()}. Click to cycle modes.`, querySelector: () => null }, e, true);
-    });
-}
+// Click infoPanel on mobile to open wiki
+infoPanel.addEventListener('click', () => {
+    if (window.innerWidth <= 768 && window._currentWikiHash) {
+        window.open('wiki.html' + window._currentWikiHash, '_blank');
+    }
+});
 
 // Mobile tap / Desktop hover info panel update
 formSteps.forEach((step) => {
@@ -504,13 +475,6 @@ if (banner) {
     banner.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
 }
 
-if (toggleBtn) {
-    toggleBtn.addEventListener('mouseenter', (e) => {
-        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipMode.toUpperCase()}. Click to cycle modes.`, querySelector: () => null }, e, true);
-    });
-    toggleBtn.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
-}
-
 document.addEventListener('contextmenu', (e) => {
     if (window.innerWidth > 768 && infoPanel.classList.contains('active') && window._currentWikiHash) {
         e.preventDefault();
@@ -521,8 +485,6 @@ document.addEventListener('contextmenu', (e) => {
 document.addEventListener('mousemove', (e) => {
     if (!infoPanel.classList.contains('active')) return;
     if (window.innerWidth <= 768) return;
-    if (tooltipMode === 'side') return; // Do not follow mouse in side overlay mode
-    if (tooltipMode === 'off' && infoPanel.classList.contains('side-overlay')) return; // Just in case it's the toggle button's tooltip
 
     infoPanel.classList.remove('side-overlay');
     
@@ -537,9 +499,7 @@ document.addEventListener('mousemove', (e) => {
     infoPanel.style.top = y + 'px';
 });
 
-function updateInfoPanel(group, e, forceShow = false) {
-    if (tooltipMode === 'off' && !forceShow) return;
-    
+function updateInfoPanel(group, e) {
     const title = group.getAttribute('data-title');
     const desc = group.getAttribute('data-desc');
     const select = group.querySelector ? group.querySelector('select') : null;
@@ -549,15 +509,18 @@ function updateInfoPanel(group, e, forceShow = false) {
     if (!title && !desc) return;
     
     const wikiMap = {
-        'Firmware (UEFI vs BIOS)': 'architecture.md#1-firmware-uefi-vs-bios',
+        'Generator': 'architecture.md#how-the-website-generator-works',
+        'Wiki': 'architecture.md',
+        'Upload Guide': 'architecture.md',
+        'Project Repository': 'architecture.md',
+        'Firmware Selection': 'architecture.md#1-firmware-uefi-vs-bios',
+        'Fake Evil Maid Directory': 'architecture.md#anti-rubberducky-daemon',
         'Partitioning Scheme': 'architecture.md#2-encryption-luks1-vs-luks2-vs-unencrypted',
         'Init System': 'architecture.md#3-init-systems-systemd-vs-busybox',
         'Bootloader': 'architecture.md#4-bootloaders-secure-boot',
         'Target Installation Disk': '01-pre-installation.md',
         'File System': '02-partitioning/lvm-on-luks2.md',
         'Output Format': 'architecture.md#how-the-website-generator-works',
-        'Project Repository': 'architecture.md',
-        'Spoof Directory': 'architecture.md',
         'User Philosophy': '03-base-installation.md'
     };
 
@@ -605,23 +568,16 @@ function updateInfoPanel(group, e, forceShow = false) {
     
     // Position immediately on enter if event is provided
     if (e && window.innerWidth > 768) {
-        if (tooltipMode === 'side' && !forceShow) {
-            infoPanel.classList.add('side-overlay');
-            infoPanel.style.left = '';
-            infoPanel.style.top = '';
-        } else {
-            // For cursor mode, OR if forceShow is true (like hovering the toggle button when tooltips are off/side)
-            infoPanel.classList.remove('side-overlay');
-            let x = e.clientX + 15;
-            let y = e.clientY + 15;
-            
-            const rect = infoPanel.getBoundingClientRect();
-            if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 15;
-            if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 15;
-            
-            infoPanel.style.left = x + 'px';
-            infoPanel.style.top = y + 'px';
-        }
+        infoPanel.classList.remove('side-overlay');
+        let x = e.clientX + 15;
+        let y = e.clientY + 15;
+        
+        const rect = infoPanel.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 15;
+        if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 15;
+        
+        infoPanel.style.left = x + 'px';
+        infoPanel.style.top = y + 'px';
     }
     
     if (window.innerWidth <= 768) {
@@ -631,7 +587,7 @@ function updateInfoPanel(group, e, forceShow = false) {
 
 // Close panel on clicking outside (Mobile)
 document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768 && tooltipMode !== 'off') {
+    if (window.innerWidth <= 768) {
         if (!e.target.closest('.form-step') && !e.target.closest('#info-panel')) {
             infoPanel.classList.remove('active');
             document.body.classList.remove('panel-active');
@@ -722,9 +678,7 @@ if (restoreConfig) {
                                              key === 'kernelMain' ? 'kernel-main' :
                                              key === 'kernelBackup' ? 'kernel-backup' :
                                              key === 'secTools' ? 'securitytools' :
-                                             key === 'fakeMain' ? 'kernel-fake-main' :
-                                             key === 'fakeBackup' ? 'kernel-fake-backup' :
-                                             key === 'spoofDir' ? 'spoof-dir' :
+                                             key === 'fakeEvilMaid' ? 'fake-evil-maid' :
                                              key === 'format' ? 'outputformat' :
                                              key === 'part' ? 'partitioning' :
                                              key === 'disk' ? 'target-disk' :
