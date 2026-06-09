@@ -548,7 +548,21 @@ function updateInfoPanel(group, e, forceShow = false) {
 
     if (!title && !desc) return;
     
-    window._currentWikiHash = title ? '#' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
+    const wikiMap = {
+        'Firmware (UEFI vs BIOS)': 'architecture.md#1-firmware-uefi-vs-bios',
+        'Partitioning Scheme': 'architecture.md#2-encryption-luks1-vs-luks2-vs-unencrypted',
+        'Init System': 'architecture.md#3-init-systems-systemd-vs-busybox',
+        'Bootloader': 'architecture.md#4-bootloaders-secure-boot',
+        'Target Installation Disk': '01-pre-installation.md',
+        'File System': '02-partitioning/lvm-on-luks2.md',
+        'Output Format': 'architecture.md#how-the-website-generator-works',
+        'Project Repository': 'architecture.md',
+        'Spoof Directory': 'architecture.md',
+        'User Philosophy': '03-base-installation.md'
+    };
+
+    const mappedLink = title ? wikiMap[title] : null;
+    window._currentWikiHash = mappedLink ? `?page=${mappedLink.split('#')[0]}${mappedLink.includes('#') ? '#' + mappedLink.split('#')[1] : ''}` : '';
 
     if (select) {
         const selectedText = select.options[select.selectedIndex].text;
@@ -630,20 +644,58 @@ document.addEventListener('click', (e) => {
 function validateConfigurations() {
     const fw = document.getElementById('firmware').value;
     const bootloader = document.getElementById('bootloader');
+    const part = document.getElementById('partitioning');
+    const generateBtn = document.getElementById('generate-btn');
     
+    // BIOS constraints
     if (fw === 'bios') {
         Array.from(bootloader.options).forEach(opt => {
             if (opt.value.includes('uki') || opt.value === 'systemd-boot') {
                 opt.disabled = true;
+                opt.text = opt.text.replace(' (Disabled)', '') + ' (Disabled)';
             }
         });
         if (bootloader.value !== 'grub') {
             bootloader.value = 'grub';
         }
+        
+        // Disable LUKS2 for BIOS
+        Array.from(part.options).forEach(opt => {
+            if (opt.value === 'luks2') {
+                opt.disabled = true;
+                opt.text = opt.text.replace(' (Disabled)', '') + ' (Disabled)';
+            }
+        });
+        if (part.value === 'luks2') {
+            part.value = 'luks1';
+        }
     } else {
-        Array.from(bootloader.options).forEach(opt => opt.disabled = false);
+        Array.from(bootloader.options).forEach(opt => {
+            opt.disabled = false;
+            opt.text = opt.text.replace(' (Disabled)', '');
+        });
+        Array.from(part.options).forEach(opt => {
+            opt.disabled = false;
+            opt.text = opt.text.replace(' (Disabled)', '');
+        });
     }
     
+    // Validate if the setup is completely insecure and warn globally
+    const warnings = [];
+    if (part.value === 'unencrypted' && bootloader.value !== 'uki-custom') {
+        warnings.push("⚠️ Smart Analysis: You chose no encryption and no secure boot ownership. This is a highly insecure setup.");
+    }
+    
+    const globalWarningsDiv = document.getElementById('global-warnings');
+    if (globalWarningsDiv) {
+        if (warnings.length > 0) {
+            globalWarningsDiv.innerHTML = warnings.map(w => `<div class="alert warning" style="margin-bottom: 0.5rem; text-align: left;">${w}</div>`).join('');
+            globalWarningsDiv.style.display = 'block';
+        } else {
+            globalWarningsDiv.innerHTML = '';
+            globalWarningsDiv.style.display = 'none';
+        }
+    }
 }
 
 // Initial validation

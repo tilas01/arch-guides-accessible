@@ -171,18 +171,45 @@
 
                 document.querySelectorAll('.wiki-nav a').forEach(link => {
                     link.addEventListener('click', (e) => {
-                        document.querySelectorAll('.wiki-nav a').forEach(l => l.classList.remove('active'));
-                        e.target.classList.add('active');
+                        e.preventDefault();
+                        const targetId = link.getAttribute('href').substring(1);
+                        const targetElem = document.getElementById(targetId);
+                        if (targetElem) {
+                            window.scrollTo({ top: targetElem.offsetTop - 20, behavior: 'smooth' });
+                            window.history.pushState(null, null, '#' + targetId);
+                        }
                     });
                 });
-            })
+                
+                // Scroll to hash if present in URL on direct link
+                if (window.location.hash) {
+                    setTimeout(() => {
+                        const targetId = window.location.hash.substring(1);
+                        const targetElem = document.getElementById(targetId);
+                        if (targetElem) {
+                            window.scrollTo({ top: targetElem.offsetTop - 20, behavior: 'smooth' });
+                        }
+                    }, 100);
+                }
+                    })
                     .catch(err => {
                         wikiBody.innerHTML = `<div class="alert warning">Failed to load ${file}. You can <a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/docs/${file}" target="_blank">view it on GitHub directly</a>.</div>`;
                     });
             });
         });
-        // Auto-load based on hash
+        // Auto-load based on hash or page param
         window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const page = urlParams.get('page');
+            
+            if (page) {
+                const link = document.querySelector(`a[data-file="${page}"]`);
+                if (link) {
+                    link.click();
+                    return;
+                }
+            }
+            
             const hash = window.location.hash.replace('#', '');
             if (hash) {
                 const link = document.getElementById('link-' + hash);
