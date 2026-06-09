@@ -338,9 +338,6 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         }
     }
     
-    const anon_kloak = document.getElementById('anon_kloak') ? document.getElementById('anon_kloak').value : 'no';
-    const anon_webhook = document.getElementById('anon_webhook') ? document.getElementById('anon_webhook').value : 'no';
-    const anon_ssh = document.getElementById('anon_ssh') ? document.getElementById('anon_ssh').value : 'no';
     
     if (anon_kloak === "yes" || anon_webhook === "yes" || anon_ssh === "yes" || fakeMain !== "none" || fakeBackup !== "none") {
         if (!cmdOnly) {
@@ -468,7 +465,6 @@ if (toggleBtn) {
 }
 
 // Mobile tap / Desktop hover info panel update
-const formSteps = document.querySelectorAll('.form-step');
 formSteps.forEach((step) => {
     step.addEventListener('mouseenter', () => updateInfoPanel(step));
     step.addEventListener('touchstart', () => updateInfoPanel(step), {passive: true});
@@ -497,8 +493,8 @@ function updateInfoPanel(group) {
     if (select) {
         const selectedText = select.options[select.selectedIndex].text;
         extraInfo = `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--bg-lighter);">
-            <strong style="color: var(--accent-green)">Current Selection:</strong><br>
-            <span style="color: var(--fg-color)">${selectedText}</span>
+            <strong style="color: var(--accent-green)">🟢 Current Selection:</strong><br>
+            <span style="color: var(--accent-blue); font-weight: bold; font-size: 1.1rem;">${selectedText}</span>
         </div>`;
     }
 

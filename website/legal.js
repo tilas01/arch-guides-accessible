@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <h2 style="color:var(--accent-red); margin-top:0;">⚠️ Legal Disclaimer & Warning</h2>
         <p style="color:var(--fg-color); text-align:left; font-size:0.95rem; line-height:1.5;">
             By using this website, its documentation, or any generated scripts, you explicitly agree to the following terms:<br><br>
-            <strong>1. No Warranty or Liability:</strong> All content, scripts, and software are provided "AS IS", without warranty of any kind. The repository authors hold <strong>NO liability</strong> for any data loss, system damage, or security breaches.<br><br>
+            <strong>1. No Warranty or Liability:</strong> All content, scripts, and software are provided "AS IS", without warranty of any kind. Inside the <strong>tilas01/arch-guides-dynamic github repository</strong> and on this website, there is absolutely <strong>NO accountability</strong> and <strong>NO liability</strong> for any data loss, system damage, or security breaches.<br><br>
             <strong>2. AI-Assisted Content:</strong> This website, its repositories, and its generated configurations were built with the assistance of AI. You must <strong>ALWAYS review code and commands</strong> before executing them on your machine.<br><br>
             <strong>3. User Accountability:</strong> You take full accountability for running these scripts and applying these configurations.
         </p>
