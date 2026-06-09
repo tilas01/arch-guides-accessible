@@ -54,13 +54,21 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     let cmdOnly = isScript;
     let output = "";
 
+    // Generate config metadata for uploading later
+    const configData = {
+        fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, philosophy, desktop, browser, dns, secTools, anonTools, fakeMain, fakeBackup, spoofDir, format
+    };
+    const metadataString = `### CONFIG_START\n### ${JSON.stringify(configData)}\n### CONFIG_END\n\n`;
+
     if (!cmdOnly) {
+        output += `<!--\n${metadataString}-->\n`;
         output += `# Your Custom Arch Linux Guide\n\n`;
         output += `*Review and edit your markdown directly below. This is happening entirely locally in your browser.*\n\n`;
         output += `## 1. Partitioning & Formatting (${part} + ${fs})\n`;
         output += `\`\`\`bash\n`;
     } else {
         output += `#!/bin/bash\n`;
+        output += `${metadataString}`;
         output += `# WARNING: Review all script commands before executing!\n`;
         output += `set -e\n\n`;
         output += `# 1. Partitioning & Formatting\n`;
@@ -380,6 +388,24 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
 
     document.getElementById('generated-guide').innerHTML = renderedHTML;
     
+    // Download logic
+    const downloadBtn = document.getElementById('download-btn');
+    if (downloadBtn) {
+        downloadBtn.style.display = 'block';
+        downloadBtn.onclick = () => {
+            const finalContent = isScript ? output : document.getElementById('editor').value;
+            const blob = new Blob([finalContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = isScript ? 'arch_install.sh' : 'arch_guide.md';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+    }
+
     if (!isScript) {
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
@@ -399,6 +425,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
 });
 
 // Interactive UI Logic
+// Interactive UI Logic
 const formSteps = document.querySelectorAll('.form-step');
 const infoPanel = document.getElementById('info-panel');
 const infoContent = document.getElementById('info-panel-content');
@@ -407,44 +434,30 @@ let tooltipsEnabled = true;
 
 const toggleBtn = document.getElementById('toggle-tooltips');
 if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
+    toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         tooltipsEnabled = !tooltipsEnabled;
         if (!tooltipsEnabled) {
-            toggleBtn.textContent = 'Enable Info Panel / Tooltips';
-            toggleBtn.style.background = 'var(--accent-red)';
+            toggleBtn.style.textDecoration = 'line-through';
+            toggleBtn.style.opacity = '0.5';
             infoPanel.classList.remove('active');
             document.body.classList.remove('panel-active');
         } else {
-            toggleBtn.textContent = 'Disable Info Panel / Tooltips';
-            toggleBtn.style.background = 'var(--bg-lighter)';
+            toggleBtn.style.textDecoration = 'none';
+            toggleBtn.style.opacity = '1';
         }
     });
 }
 
-// Progressive Disclosure
-let currentStep = 0;
-formSteps[0].classList.add('visible');
-
-document.getElementById('reveal-all-btn').addEventListener('click', () => {
-    formSteps.forEach(step => step.classList.add('visible'));
-    document.getElementById('continue-prompt').style.display = 'none';
-    document.getElementById('generate-btn').style.display = 'block';
-});
+// Remove progressive disclosure (all visible by default)
+formSteps.forEach(step => step.classList.add('visible'));
 
 // Add dynamic interactions to inputs
-formSteps.forEach((step, index) => {
+formSteps.forEach((step) => {
     const input = step.querySelector('select, input');
     
-    // Progress form
     if (input) {
         input.addEventListener('change', () => {
-            if (index + 1 < formSteps.length) {
-                formSteps[index + 1].classList.add('visible');
-            }
-            if (index + 2 >= formSteps.length) {
-                document.getElementById('continue-prompt').style.display = 'none';
-                document.getElementById('generate-btn').style.display = 'block';
-            }
             updateInfoPanel(step);
             validateConfigurations();
         });
@@ -518,13 +531,20 @@ function validateConfigurations() {
         Array.from(bootloader.options).forEach(opt => {
             if (opt.value.includes('uki') || opt.value === 'systemd-boot') {
                 opt.disabled = true;
+                opt.style.display = 'none';
+            } else {
+                opt.disabled = false;
+                opt.style.display = 'block';
             }
         });
         if (bootloader.value !== 'grub') {
             bootloader.value = 'grub';
         }
     } else {
-        Array.from(bootloader.options).forEach(opt => opt.disabled = false);
+        Array.from(bootloader.options).forEach(opt => {
+            opt.disabled = false;
+            opt.style.display = 'block';
+        });
     }
     
     // Toggle spoofing options if anonymisation is enabled
@@ -544,6 +564,57 @@ function validateConfigurations() {
             if (fakeBackup) fakeBackup.value = 'none';
         }
     }
+}
+
+// Upload Downloaded Guide Logic
+const uploadLink = document.getElementById('nav-upload');
+const uploadFile = document.getElementById('upload-file');
+if (uploadLink && uploadFile) {
+    uploadLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        uploadFile.click();
+    });
+    
+    uploadFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target.result;
+            const configMatch = content.match(/### CONFIG_START\n### ({.*?})\n### CONFIG_END/);
+            
+            if (configMatch && configMatch[1]) {
+                try {
+                    const configData = JSON.parse(configMatch[1]);
+                    Object.keys(configData).forEach(key => {
+                        const el = document.getElementById(key === 'initSys' ? 'init_system' : 
+                                                         key === 'kernelMain' ? 'kernel-main' :
+                                                         key === 'kernelBackup' ? 'kernel-backup' :
+                                                         key === 'secTools' ? 'securitytools' :
+                                                         key === 'anonTools' ? 'anonymisation' :
+                                                         key === 'fakeMain' ? 'kernel-fake-main' :
+                                                         key === 'fakeBackup' ? 'kernel-fake-backup' :
+                                                         key === 'spoofDir' ? 'spoof-dir' :
+                                                         key === 'format' ? 'outputformat' :
+                                                         key === 'part' ? 'partitioning' :
+                                                         key === 'disk' ? 'target-disk' :
+                                                         key === 'fw' ? 'firmware' :
+                                                         key === 'fs' ? 'filesystem' :
+                                                         key === 'boot' ? 'bootloader' : key);
+                        if (el) el.value = configData[key];
+                    });
+                    validateConfigurations();
+                    alert("Configuration successfully loaded from file!");
+                } catch (e) {
+                    alert("Error parsing configuration: " + e.message);
+                }
+            } else {
+                alert("No valid configuration metadata found in this file. Make sure it was generated by this tool.");
+            }
+        };
+        reader.readAsText(file);
+    });
 }
 
 // Initial validation
