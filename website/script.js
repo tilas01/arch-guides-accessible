@@ -54,21 +54,13 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     let cmdOnly = isScript;
     let output = "";
 
-    // Generate config metadata for uploading later
-    const configData = {
-        fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, philosophy, desktop, browser, dns, secTools, anonTools, fakeMain, fakeBackup, spoofDir, format
-    };
-    const metadataString = `### CONFIG_START\n### ${JSON.stringify(configData)}\n### CONFIG_END\n\n`;
-
     if (!cmdOnly) {
-        output += `<!--\n${metadataString}-->\n`;
         output += `# Your Custom Arch Linux Guide\n\n`;
         output += `*Review and edit your markdown directly below. This is happening entirely locally in your browser.*\n\n`;
         output += `## 1. Partitioning & Formatting (${part} + ${fs})\n`;
         output += `\`\`\`bash\n`;
     } else {
         output += `#!/bin/bash\n`;
-        output += `${metadataString}`;
         output += `# WARNING: Review all script commands before executing!\n`;
         output += `set -e\n\n`;
         output += `# 1. Partitioning & Formatting\n`;
@@ -388,24 +380,6 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
 
     document.getElementById('generated-guide').innerHTML = renderedHTML;
     
-    // Download logic
-    const downloadBtn = document.getElementById('download-btn');
-    if (downloadBtn) {
-        downloadBtn.style.display = 'block';
-        downloadBtn.onclick = () => {
-            const finalContent = isScript ? output : document.getElementById('editor').value;
-            const blob = new Blob([finalContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = isScript ? 'arch_install.sh' : 'arch_guide.md';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        };
-    }
-
     if (!isScript) {
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
@@ -425,7 +399,6 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
 });
 
 // Interactive UI Logic
-// Interactive UI Logic
 const formSteps = document.querySelectorAll('.form-step');
 const infoPanel = document.getElementById('info-panel');
 const infoContent = document.getElementById('info-panel-content');
@@ -438,33 +411,28 @@ if (toggleBtn) {
         e.preventDefault();
         tooltipsEnabled = !tooltipsEnabled;
         if (!tooltipsEnabled) {
-            toggleBtn.style.textDecoration = 'line-through';
-            toggleBtn.style.opacity = '0.5';
+            toggleBtn.style.filter = 'grayscale(1) sepia(1) hue-rotate(-50deg) saturate(5)'; // Makes it redish
             infoPanel.classList.remove('active');
             document.body.classList.remove('panel-active');
         } else {
-            toggleBtn.style.textDecoration = 'none';
-            toggleBtn.style.opacity = '1';
+            toggleBtn.style.filter = 'none';
         }
     });
 }
 
-// Remove progressive disclosure (all visible by default)
-formSteps.forEach(step => step.classList.add('visible'));
-
-// Add dynamic interactions to inputs
+// Mobile tap / Desktop hover info panel update
+const formSteps = document.querySelectorAll('.form-step');
 formSteps.forEach((step) => {
-    const input = step.querySelector('select, input');
+    step.addEventListener('mouseenter', () => updateInfoPanel(step));
+    step.addEventListener('touchstart', () => updateInfoPanel(step), {passive: true});
     
+    // Dynamic interactions
+    const input = step.querySelector('select, input');
     if (input) {
         input.addEventListener('change', () => {
             updateInfoPanel(step);
             validateConfigurations();
         });
-        
-        // Mobile tap / Desktop hover info panel update
-        step.addEventListener('mouseenter', () => updateInfoPanel(step));
-        step.addEventListener('touchstart', () => updateInfoPanel(step), {passive: true});
     }
 });
 
@@ -531,20 +499,13 @@ function validateConfigurations() {
         Array.from(bootloader.options).forEach(opt => {
             if (opt.value.includes('uki') || opt.value === 'systemd-boot') {
                 opt.disabled = true;
-                opt.style.display = 'none';
-            } else {
-                opt.disabled = false;
-                opt.style.display = 'block';
             }
         });
         if (bootloader.value !== 'grub') {
             bootloader.value = 'grub';
         }
     } else {
-        Array.from(bootloader.options).forEach(opt => {
-            opt.disabled = false;
-            opt.style.display = 'block';
-        });
+        Array.from(bootloader.options).forEach(opt => opt.disabled = false);
     }
     
     // Toggle spoofing options if anonymisation is enabled
@@ -565,6 +526,9 @@ function validateConfigurations() {
         }
     }
 }
+
+// Initial validation
+validateConfigurations();
 
 // Restore Configuration from upload.html
 const restoreConfig = sessionStorage.getItem('arch_restore_config');
@@ -590,18 +554,46 @@ if (restoreConfig) {
         });
         sessionStorage.removeItem('arch_restore_config');
         
-        // Let the user know the config was restored
+        // Show all form steps so the user sees their full config
+        document.querySelectorAll('.form-step').forEach(step => step.classList.add('visible'));
+        
         let errorDiv = document.getElementById("config-errors");
         if (!errorDiv) {
             errorDiv = document.createElement("div");
             errorDiv.id = "config-errors";
             document.getElementById("install-form").prepend(errorDiv);
         }
-        errorDiv.innerHTML = `<div class="alert info" style="margin-bottom: 1rem;"><strong>Configuration Restored!</strong> Your settings from the uploaded guide have been loaded.</div>`;
+        errorDiv.innerHTML = \<div class="alert info" style="margin-bottom: 1rem;"><strong>Configuration Restored!</strong> Your settings from the uploaded guide have been loaded.</div>\;
     } catch (e) {
         console.error("Error restoring config:", e);
     }
 }
 
-// Initial validation
-validateConfigurations();
+// Download Button Logic
+const downloadBtn = document.getElementById('download-btn');
+if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+        const generatedDiv = document.getElementById('generated-guide');
+        if (!generatedDiv || !generatedDiv.innerHTML) {
+            alert("Please generate a guide or script first.");
+            return;
+        }
+        
+        const format = document.getElementById('outputformat').value;
+        const extension = format === 'script' ? 'sh' : 'md';
+        const filename = \rch-install-\.\\;
+        
+        // Find the raw text, including our metadata block
+        const textContent = generatedDiv.innerText;
+        
+        const blob = new Blob([textContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+}
