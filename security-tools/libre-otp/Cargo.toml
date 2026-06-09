@@ -1,0 +1,9 @@
+[package]
+name = "libre-otp"
+version = "0.1.0"
+edition = "2021"
+description = "Native Rust OTP authenticator designed for PAM integration without proprietary backends."
+
+[dependencies]
+totp-rs = "5.5.1"
+rpassword = "7.3"
