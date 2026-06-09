@@ -8,51 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <div id="legal-modal-overlay">
-        <div id="legal-modal">
-            <h2 style="color: var(--accent-red); margin-top: 0;">⚖️ Legal Disclaimer</h2>
-            <p style="color: var(--fg-color);">This tool generates complex system configurations and scripts. By proceeding, you acknowledge that:</p>
-            <ul style="color: var(--fg-color); line-height: 1.5; margin-bottom: 1.5rem; margin-top: 1rem; padding-left: 1.5rem;">
-                <li>The scripts and guides are provided <strong>"AS IS"</strong>, without warranty of any kind.</li>
-                <li>The author takes <strong>no responsibility</strong> for any data loss, system breakage, or errors resulting from the use of this generator.</li>
-                <li>You take full accountability for executing any generated code.</li>
-            </ul>
-            <div class="alert info" style="margin-bottom: 1.5rem;">
-                <strong>💡 Tip:</strong> Always review commands or code from the internet before running them. It is a fundamental security best practice.
-            </div>
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--fg-color);">
-                <input type="checkbox" id="legal-checkbox" style="width: 20px; height: 20px; cursor: pointer;">
-                I agree, understand the risks, and take full accountability.
-            </label>
-            <button id="legal-accept-btn" class="btn" style="width: 100%; margin-top: 1.5rem; opacity: 0.5; cursor: not-allowed;" disabled>Enter Site</button>
-        </div>
-    </div>
-    <script>
-        if (!sessionStorage.getItem('agreed_to_tos')) {
-            const overlay = document.getElementById('legal-modal-overlay');
-            const checkbox = document.getElementById('legal-checkbox');
-            const btn = document.getElementById('legal-accept-btn');
-            
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                } else {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    btn.style.cursor = 'not-allowed';
-                }
-            });
-            
-            btn.addEventListener('click', () => {
-                sessionStorage.setItem('agreed_to_tos', 'true');
-                overlay.style.display = 'none';
-            });
-        } else {
-            document.getElementById('legal-modal-overlay').style.display = 'none';
-        }
-    </script>
     <header>
         <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
         <h1>Arch Guides Wiki & Generator</h1>
@@ -61,8 +16,8 @@
             <a href="index.html" class="nav-link">Generator</a> | 
             <a href="wiki.html" class="nav-link">Wiki / Documentation</a> | 
             <a href="upload.html" class="nav-link">Upload Guide</a>
-            <button id="toggle-tooltips" title="Toggle Tooltips" class="js-only" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-left: 10px;">💬</button>
         </nav>
+        <button id="toggle-tooltips" class="js-only" title="Toggle Tooltips" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">ℹ️</button>
     </header>
 
     <main>
@@ -75,14 +30,6 @@
         <div class="layout-container js-only">
             <section class="generator-form">
                 <form id="install-form">
-                    <div class="form-group form-step" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Make sure this is correct!">
-                        <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
-                        <input type="text" id="target-disk" value="/dev/sda" required>
-                        <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
-                            <strong>Tip:</strong> Run <code>lsblk</code> in your terminal to find your correct target disk name.
-                        </div>
-                    </div>
-
                     <div class="form-group form-step" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                         <label>Firmware Interface:</label>
                         <select id="firmware">
@@ -91,6 +38,23 @@
                         </select>
                     </div>
 
+                    <div class="form-group form-step" data-title="File System Features" data-desc="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
+                        <label>File System:</label>
+                        <select id="filesystem">
+                            <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
+                            <option value="ext4">Ext4 (Standard/Stable)</option>
+                            <option value="xfs">XFS (High Performance Large Files)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Make sure this is correct!">
+                        <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
+                        <input type="text" id="target-disk" value="/dev/sda" required>
+                        <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
+                            <strong>Tip:</strong> Run <code>lsblk</code> in your terminal to find your correct target disk name.
+                        </div>
+                    </div>
+                    
                     <div class="form-group form-step" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
                         <label>Partitioning / Encryption (Speed vs Security):</label>
                         <select id="partitioning">
@@ -98,6 +62,14 @@
                             <option value="luks1">LUKS1 (Slower unlock / Legacy GRUB Compatible / High Security)</option>
                             <option value="luks2" selected>LUKS2 (Fast modern unlock / Post-Quantum Argon2id / Max Security)</option>
                             <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes / Max Security)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group form-step" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
+                        <label>Init System (mkinitcpio Hooks):</label>
+                        <select id="init_system">
+                            <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
+                            <option value="busybox">busybox/udev init (Traditional, encrypt hook)</option>
                         </select>
                     </div>
 
@@ -108,23 +80,6 @@
                             <option value="uki-shim">UKI + Shim (Secure Boot via Microsoft Trust)</option>
                             <option value="systemd-boot">systemd-boot (Clean/Minimal)</option>
                             <option value="grub">GRUB (Legacy/Traditional BIOS/UEFI)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group form-step" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
-                        <label>Init System (mkinitcpio Hooks):</label>
-                        <select id="init_system">
-                            <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
-                            <option value="busybox">busybox/udev init (Traditional, encrypt hook)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group form-step" data-title="File System Features" data-desc="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
-                        <label>File System:</label>
-                        <select id="filesystem">
-                            <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
-                            <option value="ext4">Ext4 (Standard/Stable)</option>
-                            <option value="xfs">XFS (High Performance Large Files)</option>
                         </select>
                     </div>
 
@@ -238,8 +193,8 @@
                         </select>
                     </div>
 
-                    <button type="submit" id="generate-btn" class="btn" style="width: 100%;">Generate Script / Guide</button>
-                    <button type="button" id="download-btn" class="btn" style="width: 100%; margin-top: 10px; background: var(--accent-purple); display: none;">Download File</button>
+                    <button type="submit" id="generate-btn" class="btn form-step" style="margin-top: 1rem; width: 100%;">Generate Custom Guide</button>
+                    <button type="button" id="download-btn" class="btn form-step" style="width: 100%; margin-top: 10px; background: var(--accent-purple); display: none;">Download File</button>
                 </form>
             </section>
             
