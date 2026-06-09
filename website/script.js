@@ -637,5 +637,21 @@ if (downloadBtn) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+
+        if (format === 'both') {
+            const scriptMatches = textContent.match(/```bash\n([\s\S]*?)```/g);
+            if (scriptMatches) {
+                const scriptContent = "#!/bin/bash\n# Arch Installation Script (Extracted from Guide)\n\n" + scriptMatches.map(m => m.replace(/```bash\n/g, '').replace(/```/g, '')).join("\n");
+                const blobSh = new Blob([scriptContent], { type: 'text/plain' });
+                const urlSh = URL.createObjectURL(blobSh);
+                const aSh = document.createElement('a');
+                aSh.href = urlSh;
+                aSh.download = `arch-install-${new Date().getTime()}.sh`;
+                document.body.appendChild(aSh);
+                aSh.click();
+                document.body.removeChild(aSh);
+                URL.revokeObjectURL(urlSh);
+            }
+        }
     });
 }
