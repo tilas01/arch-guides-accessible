@@ -35,7 +35,7 @@
             <h2>⚙️ Dynamic Install Generator</h2>
             <form id="install-form">
                 
-                <div class="form-group" title="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
+                <div class="form-group" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                     <label>Firmware / Boot Mode:</label>
                     <select id="firmware">
                         <option value="uefi" selected>UEFI (Modern, Recommended)</option>
@@ -43,7 +43,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" title="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
+                <div class="form-group" data-title="File System Features" data-desc="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
                     <label>File System:</label>
                     <select id="filesystem">
                         <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
@@ -52,7 +52,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" title="Target Disk where Arch will be installed. Make sure this is correct!">
+                <div class="form-group" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Make sure this is correct!">
                     <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
                     <input type="text" id="target-disk" value="/dev/sda" required>
                     <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
@@ -60,7 +60,7 @@
                     </div>
                 </div>
                 
-                <div class="form-group" title="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
+                <div class="form-group" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
                     <label>Partitioning / Encryption (Speed vs Security):</label>
                     <select id="partitioning">
                         <option value="unencrypted">Unencrypted (Fastest load time / No Security)</option>
@@ -70,7 +70,7 @@
                     </select>
                 </div>
                 
-                <div class="form-group" title="systemd is faster and modern. busybox is traditional and modular.">
+                <div class="form-group" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
                     <label>Init System (mkinitcpio Hooks):</label>
                     <select id="init_system">
                         <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
@@ -78,7 +78,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" title="UKI is highly secure. systemd-boot is minimal. GRUB is traditional.">
+                <div class="form-group" data-title="Bootloader Choice" data-desc="UKI is highly secure. systemd-boot is minimal. GRUB is traditional.">
                     <label>Bootloader & Secure Boot:</label>
                     <select id="bootloader">
                         <option value="uki-custom" selected>UKI + Custom Keys (Fortress / Direct UEFI)</option>
@@ -88,7 +88,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" title="Hardened applies security patches. Zen is for gaming/responsiveness. Standard is balanced.">
+                <div class="form-group" data-title="Kernel Selection" data-desc="Hardened applies security patches. Zen is for gaming/responsiveness. Standard is balanced.">
                     <label>Kernel Selection:</label>
                     <select id="kernel">
                         <option value="linux-hardened linux-zen">Primary: Hardened | Backup: Zen</option>
@@ -97,7 +97,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" title="Libre is purely open source. Open Source is free software but may depend on non-free firmware. Proprietary includes closed source drivers.">
+                <div class="form-group" data-title="Driver Philosophy" data-desc="Libre is purely open source. Open Source is free software but may depend on non-free firmware. Proprietary includes closed source drivers.">
                     <label>Driver Philosophy & Graphics:</label>
                     <select id="philosophy">
                         <option value="libre" selected>Fully Libre (100% Open Source, AMD/Intel, doas, pfetch)</option>
@@ -134,11 +134,21 @@
                     </select>
                 </div>
 
-                <div class="form-group" title="Choose whether to generate an explanatory Markdown tutorial or a raw executable Bash Script.">
+                <div class="form-group" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial or a raw executable Bash Script.">
                     <label>Output Format:</label>
                     <select id="outputformat">
                         <option value="markdown" selected>Markdown Guide (Recommended, explanatory tutorial)</option>
                         <option value="script">Raw Executable Bash Script (Review commands before executing)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" data-title="Advanced Security Tools" data-desc="Integrate our custom Rust-native Libre OTP for login/boot/SSH or Anti-RubberDucky for keyboard input filtering.">
+                    <label>Rust Advanced Security Tools:</label>
+                    <select id="securitytools">
+                        <option value="none" selected>None (Standard Setup)</option>
+                        <option value="libre-otp">Libre OTP (Customizable Rust Native 2FA on Boot/Login/SSH)</option>
+                        <option value="anti-ducky">Anti-RubberDucky (Rust Input Control & Filtering)</option>
+                        <option value="both">Both Libre OTP & Anti-RubberDucky</option>
                     </select>
                 </div>
 

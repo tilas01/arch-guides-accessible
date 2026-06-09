@@ -13,6 +13,30 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const browser = document.getElementById('browser').value;
     const dns = document.getElementById('dns').value;
     const format = document.getElementById('outputformat').value;
+    const secTools = document.getElementById('securitytools') ? document.getElementById('securitytools').value : 'none';
+
+    let errors = [];
+    if (fw === "bios" && boot !== "grub") {
+        errors.push("Legacy BIOS requires the GRUB bootloader. UKI and systemd-boot are UEFI only.");
+    }
+    if (fw === "bios" && part.includes("luks2")) {
+        errors.push("GRUB has limited support for LUKS2 without an unencrypted /boot. Consider LUKS1 for BIOS.");
+    }
+    
+    let errorDiv = document.getElementById("config-errors");
+    if (!errorDiv) {
+        errorDiv = document.createElement("div");
+        errorDiv.id = "config-errors";
+        document.getElementById("install-form").prepend(errorDiv);
+    }
+    
+    if (errors.length > 0) {
+        errorDiv.innerHTML = `<div class="alert warning" style="margin-bottom: 1rem;"><strong>Invalid Configuration Detected:</strong><ul>` + errors.map(e => `<li>${e}</li>`).join("") + `</ul></div>`;
+        window.scrollTo(0, 0);
+        return; // stop execution
+    } else {
+        errorDiv.innerHTML = "";
+    }
 
     let partEfi = disk + "1";
     let partRoot = disk + "2";
@@ -231,7 +255,34 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         output += `snapper -c root create-config /\n`;
         output += `systemctl enable snapper-timeline.timer snapper-cleanup.timer\n`;
     }
-    
+    if (secTools !== "none") {
+        if (!cmdOnly) {
+            output += `\`\`\`\n\n`;
+            output += `## 7. Advanced Rust Security Tools\n`;
+            output += `\`\`\`bash\n`;
+        } else {
+            output += `\n# 7. Advanced Rust Security Tools\n`;
+        }
+        
+        output += `pacman -S --noconfirm rust cargo\n`;
+        output += `mkdir -p /opt/security-tools && cd /opt/security-tools\n`;
+        
+        if (secTools === "libre-otp" || secTools === "both") {
+            output += `git clone https://github.com/tilas01/arch-guides-dynamic.git .\n`;
+            output += `cd security-tools/libre-otp && cargo build --release\n`;
+            output += `cp target/release/libre-otp /usr/local/bin/\n`;
+            output += `# Configure Libre-OTP in PAM or systemd depending on your preference\n`;
+            output += `cd /opt/security-tools\n`;
+        }
+        
+        if (secTools === "anti-ducky" || secTools === "both") {
+            output += `git clone https://github.com/tilas01/arch-guides-dynamic.git .\n`; // In case not cloned
+            output += `cd security-tools/anti-ducky && cargo build --release\n`;
+            output += `cp target/release/anti-ducky /usr/local/bin/\n`;
+            output += `cat << 'SRV' > /etc/systemd/system/anti-ducky.service\n[Unit]\nDescription=Anti-RubberDucky Input Monitor\n[Service]\nExecStart=/usr/local/bin/anti-ducky\nRestart=always\n[Install]\nWantedBy=multi-user.target\nSRV\n`;
+            output += `systemctl enable anti-ducky.service\n`;
+        }
+    }
     if (cmdOnly) {
         output += `EOF\n`;
         output += `chmod +x /mnt/chroot_script.sh\n`;

@@ -1,0 +1,9 @@
+[package]
+name = "anti-ducky"
+version = "0.1.0"
+edition = "2021"
+description = "A Rust daemon that mitigates RubberDucky injection attacks by monitoring keystroke intervals."
+
+[dependencies]
+evdev = "0.12.0"
+nix = "0.27.1"
