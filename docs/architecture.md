@@ -1,4 +1,4 @@
-# 🏛️ Architecture & Generation Logic
+﻿# ðŸ›ï¸ Architecture & Generation Logic
 
 The `arch-guides-dynamic` deployment framework relies on a fully client-side, zero-backend architecture to generate highly secure and precisely customized Arch Linux deployment environments.
 
@@ -15,8 +15,8 @@ The Interactive Generator (`website/index.html` and `website/script.js`) works l
 
 Instead of relying on bloated, proprietary modules, this framework maintains its own suite of Rust-native security tools available during deployment:
 
-### 🦆 Anti-RubberDucky Daemon
-A daemon that interfaces directly with `/dev/input/eventX`. It profiles keystroke intervals using sub-millisecond precision (`THRESHOLD_MS=20`). If anomalous speeds are detected—symptomatic of malicious USB injection attacks—it immediately forces a `loginctl lock-sessions` intervention.
+### ðŸ¦† Anti-RubberDucky Daemon
+A daemon that interfaces directly with `/dev/input/eventX`. It profiles keystroke intervals using sub-millisecond precision (`THRESHOLD_MS=20`). If anomalous speeds are detectedâ€”symptomatic of malicious USB injection attacksâ€”it immediately forces a `loginctl lock-sessions` intervention.
 
-### 🔐 Libre-OTP
+### ðŸ” Libre-OTP
 A native CLI OTP Authenticator utilizing the `totp-rs` algorithms. It requires zero network connectivity and generates secure Base32 Shared Secrets. It can be implemented inside `/etc/pam.d/system-login` or SSH configurations to mandate a fully open-source, non-proprietary 2FA mechanism before granting shell access.
