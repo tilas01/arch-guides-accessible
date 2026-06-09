@@ -78,7 +78,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" data-title="Bootloader Choice" data-desc="UKI is highly secure. systemd-boot is minimal. GRUB is traditional.">
+                <div class="form-group" data-title="Bootloader Choice" data-desc="UKI Custom uses your own keys directly in the motherboard UEFI, giving you total control. UKI Shim relies on Microsoft's keys for convenience. systemd-boot is minimal. GRUB is legacy.">
                     <label>Bootloader & Secure Boot:</label>
                     <select id="bootloader">
                         <option value="uki-custom" selected>UKI + Custom Keys (Fortress / Direct UEFI)</option>
@@ -149,6 +149,17 @@
                         <option value="libre-otp">Libre OTP (Customizable Rust Native 2FA on Boot/Login/SSH)</option>
                         <option value="anti-ducky">Anti-RubberDucky (Rust Input Control & Filtering)</option>
                         <option value="both">Both Libre OTP & Anti-RubberDucky</option>
+                    </select>
+                </div>
+
+                <div class="form-group" data-title="Anonymisation & Anti-Evil Maid" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling. Webhooks alert you of malicious binaries. OpenSSH can be configured with strict secure crypto and Libre OTP.">
+                    <label>Anonymisation & Anti-Evil Maid Services:</label>
+                    <select id="anonymisation">
+                        <option value="none" selected>None</option>
+                        <option value="kloak">Kloak (Keystroke Anonymization)</option>
+                        <option value="webhook">Kernel Webhook Alerts (Malicious Binary Detection)</option>
+                        <option value="ssh">Hardened OpenSSH + Libre OTP</option>
+                        <option value="all">Full Anonymisation Suite (Kloak + Webhooks + Hardened SSH)</option>
                     </select>
                 </div>
 

@@ -283,6 +283,39 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
             output += `systemctl enable anti-ducky.service\n`;
         }
     }
+    
+    const anonTools = document.getElementById('anonymisation') ? document.getElementById('anonymisation').value : 'none';
+    if (anonTools !== "none") {
+        if (!cmdOnly) {
+            output += `\`\`\`\n\n`;
+            output += `## 8. Anonymisation & Anti-Evil Maid\n`;
+            output += `\`\`\`bash\n`;
+        } else {
+            output += `\n# 8. Anonymisation & Anti-Evil Maid\n`;
+        }
+
+        if (anonTools === "kloak" || anonTools === "all") {
+            output += `pacman -S --noconfirm git make gcc pkgconf\n`;
+            output += `git clone https://github.com/vmonaco/kloak.git /opt/kloak\n`;
+            output += `cd /opt/kloak && make && cp kloak /usr/local/bin/\n`;
+            output += `cat << 'SRV' > /etc/systemd/system/kloak.service\n[Unit]\nDescription=Kloak Keystroke Anonymizer\n[Service]\nExecStart=/usr/local/bin/kloak\nRestart=always\n[Install]\nWantedBy=multi-user.target\nSRV\n`;
+            output += `systemctl enable kloak.service\n`;
+        }
+
+        if (anonTools === "webhook" || anonTools === "all") {
+            output += `# Optional: Configure kernel hook webhook alerts in /etc/systemd/system/malware-alert.service\n`;
+            output += `echo 'Your custom rust/python kernel hook would be deployed here.'\n`;
+        }
+
+        if (anonTools === "ssh" || anonTools === "all") {
+            output += `pacman -S --noconfirm openssh\n`;
+            output += `sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config\n`;
+            output += `sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config\n`;
+            output += `# Integrate Libre-OTP with SSH via PAM\n`;
+            output += `echo 'auth required pam_exec.so expose_authtok /usr/local/bin/libre-otp' >> /etc/pam.d/sshd\n`;
+            output += `systemctl enable sshd.service\n`;
+        }
+    }
     if (cmdOnly) {
         output += `EOF\n`;
         output += `chmod +x /mnt/chroot_script.sh\n`;
@@ -331,4 +364,71 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     }
 
     outputSection.scrollIntoView({ behavior: 'smooth' });
+});
+
+// Dynamic JS Tooltips with Overlay
+const tooltip = document.createElement('div');
+tooltip.id = 'dynamic-tooltip';
+tooltip.style.position = 'absolute';
+tooltip.style.backgroundColor = 'var(--bg-darker)';
+tooltip.style.color = 'var(--accent-cyan)';
+tooltip.style.padding = '1rem';
+tooltip.style.borderRadius = '8px';
+tooltip.style.border = '1px solid var(--accent-blue)';
+tooltip.style.boxShadow = '0 8px 16px rgba(0,0,0,0.5)';
+tooltip.style.zIndex = '1000';
+tooltip.style.display = 'none';
+tooltip.style.pointerEvents = 'none';
+tooltip.style.maxWidth = '350px';
+tooltip.style.fontSize = '0.9rem';
+tooltip.style.lineHeight = '1.5';
+document.body.appendChild(tooltip);
+
+document.querySelectorAll('.form-group[data-title]').forEach(group => {
+    group.addEventListener('mouseenter', (e) => {
+        const title = group.getAttribute('data-title');
+        const desc = group.getAttribute('data-desc');
+        const select = group.querySelector('select');
+        let extraInfo = '';
+
+        if (select) {
+            const selectedText = select.options[select.selectedIndex].text;
+            extraInfo = `<br><br><span style="color: var(--accent-green)"><strong>Current Selection:</strong><br>${selectedText}</span>`;
+        }
+
+        tooltip.innerHTML = `<strong style="color: var(--accent-purple); font-size: 1.1rem; border-bottom: 1px solid var(--accent-blue); padding-bottom: 5px; display: block; margin-bottom: 8px;">📌 ${title}</strong>${desc}${extraInfo}`;
+        tooltip.style.display = 'block';
+    });
+
+    group.addEventListener('mousemove', (e) => {
+        // Prevent overflowing screen edges
+        let x = e.pageX + 15;
+        let y = e.pageY + 15;
+        const tooltipRect = tooltip.getBoundingClientRect();
+        
+        if (x + tooltipRect.width > window.innerWidth) {
+            x = e.pageX - tooltipRect.width - 15;
+        }
+        
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+    });
+
+    group.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+    });
+    
+    // Update tooltip content immediately if user changes select option while hovering
+    const select = group.querySelector('select');
+    if (select) {
+        select.addEventListener('change', () => {
+            if (tooltip.style.display === 'block') {
+                const title = group.getAttribute('data-title');
+                const desc = group.getAttribute('data-desc');
+                const selectedText = select.options[select.selectedIndex].text;
+                let extraInfo = `<br><br><span style="color: var(--accent-green)"><strong>Current Selection:</strong><br>${selectedText}</span>`;
+                tooltip.innerHTML = `<strong style="color: var(--accent-purple); font-size: 1.1rem; border-bottom: 1px solid var(--accent-blue); padding-bottom: 5px; display: block; margin-bottom: 8px;">📌 ${title}</strong>${desc}${extraInfo}`;
+            }
+        });
+    }
 });
