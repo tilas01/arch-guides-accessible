@@ -473,15 +473,8 @@ formSteps.forEach((step) => {
         infoPanel.classList.remove('active');
     });
     step.addEventListener('touchstart', (e) => updateInfoPanel(step, e), {passive: true});
-    
-    // Right-click on the setting to open wiki
-    step.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        const title = step.getAttribute('data-title');
-        const hash = title ? '#' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
-        window.open('wiki.html' + hash, '_blank');
-    });
-    
+    // The right click is now handled globally if the tooltip is active.
+    // However, keeping this for redundancy is fine, but we will rely on the global one.
     // Dynamic interactions
     const input = step.querySelector('select, input');
     if (input) {
@@ -502,13 +495,20 @@ if (banner) {
 
 if (toggleBtn) {
     toggleBtn.addEventListener('mouseenter', (e) => {
-        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipsEnabled ? 'ON' : 'OFF'}. Click to toggle.`, querySelector: () => null }, e);
+        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Tooltip Toggle' : `Tooltips are currently ${tooltipsEnabled ? 'ON' : 'OFF'}. Click to toggle.`, querySelector: () => null }, e, true);
     });
     toggleBtn.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
 }
 
+document.addEventListener('contextmenu', (e) => {
+    if (infoPanel.classList.contains('active') && window._currentWikiHash) {
+        e.preventDefault();
+        window.open('wiki.html' + window._currentWikiHash, '_blank');
+    }
+});
+
 document.addEventListener('mousemove', (e) => {
-    if (!tooltipsEnabled || !infoPanel.classList.contains('active')) return;
+    if (!infoPanel.classList.contains('active')) return;
     
     let x = e.clientX + 15;
     let y = e.clientY + 15;
@@ -521,16 +521,18 @@ document.addEventListener('mousemove', (e) => {
     infoPanel.style.top = y + 'px';
 });
 
-function updateInfoPanel(group, e) {
-    if (!tooltipsEnabled) return;
+function updateInfoPanel(group, e, forceShow = false) {
+    if (!tooltipsEnabled && !forceShow) return;
     
     const title = group.getAttribute('data-title');
     const desc = group.getAttribute('data-desc');
-    const select = group.querySelector('select');
+    const select = group.querySelector ? group.querySelector('select') : null;
     let extraInfo = '';
     let warnings = '';
 
     if (!title && !desc) return;
+    
+    window._currentWikiHash = title ? '#' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
 
     if (select) {
         const selectedText = select.options[select.selectedIndex].text;
@@ -543,8 +545,11 @@ function updateInfoPanel(group, e) {
     // Dynamic warnings based on current selections
     const fwEl = document.getElementById('firmware');
     const partEl = document.getElementById('partitioning');
+    const bootEl = document.getElementById('bootloader');
+    
     const fw = fwEl ? fwEl.value : '';
     const part = partEl ? partEl.value : '';
+    const boot = bootEl ? bootEl.value : '';
     
     if (group.querySelector && group.querySelector('#bootloader') && fw === 'bios') {
         warnings += `<div style="color: #ff5555; margin-top: 10px;">⚠️ <strong>Warning:</strong> You selected Legacy BIOS. UKI and systemd-boot are physically impossible to install. GRUB is enforced.</div>`;
@@ -552,11 +557,16 @@ function updateInfoPanel(group, e) {
     if (group.querySelector && group.querySelector('#partitioning') && fw === 'bios' && part === 'luks2') {
         warnings += `<div style="color: #ffb86c; margin-top: 10px;">⚠️ <strong>Notice:</strong> GRUB has limited support for LUKS2. You will need an unencrypted /boot partition.</div>`;
     }
+    
+    // Smart Setup Analysis
+    if (part === 'unencrypted' && boot !== 'uki-custom') {
+        warnings += `<div style="color: #f1fa8c; margin-top: 10px;">⚠️ <strong>Smart Setup Analysis:</strong> You chose no encryption and no secure boot. This is a highly insecure setup.</div>`;
+    }
 
     infoContent.innerHTML = `
         <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.2rem;">📌 ${title || 'Setting Details'}</h3>
         <p style="color: var(--fg-color); line-height: 1.5;">${desc || ''}</p>
-        <p style="font-size: 0.85rem; color: var(--accent-blue); margin-top: 10px;"><em>💡 Right-click this setting to read the full Wiki article.</em></p>
+        ${window._currentWikiHash ? `<p style="font-size: 0.85rem; color: var(--accent-blue); margin-top: 10px;"><em>💡 Right-click anywhere to read the full Wiki article on this topic.</em></p>` : ''}
         ${warnings}
         ${extraInfo}
     `;
