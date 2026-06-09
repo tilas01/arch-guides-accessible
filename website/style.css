@@ -218,27 +218,46 @@ noscript .js-only {
 
 .info-panel {
     display: none; 
-    position: fixed;
-    background: var(--bg-darker);
-    border: 1px solid var(--accent-blue);
-    border-radius: 8px;
-    padding: 1.5rem;
-    z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.8);
-    max-width: 350px;
-    pointer-events: none;
-    transition: opacity 0.15s ease;
-    opacity: 0;
 }
 
-.info-panel.active {
-    display: block !important;
-    opacity: 1;
+@media screen and (min-width: 769px) {
+    .info-panel.active {
+        display: block !important;
+        position: fixed;
+        background: var(--bg-darker);
+        border: 1px solid var(--accent-blue);
+        border-radius: 8px;
+        padding: 1.5rem;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        max-width: 350px;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+        opacity: 1;
+    }
 }
 
 @media screen and (max-width: 768px) {
     .layout-container {
         flex-direction: column;
+    }
+    .info-panel.active {
+        display: block !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-darker);
+        border-top: 2px solid var(--accent-blue);
+        padding: 1.5rem;
+        z-index: 2000;
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.6);
+        max-height: 40vh;
+        overflow-y: auto;
+        border-radius: 16px 16px 0 0;
+    }
+    body.panel-active {
+        padding-bottom: 45vh;
     }
 }
 
