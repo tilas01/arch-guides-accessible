@@ -85,12 +85,23 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Kernel Selection" data-desc="Hardened applies security patches. Zen is for gaming/responsiveness. Standard is balanced.">
-                        <label>Kernel Selection:</label>
-                        <select id="kernel">
-                            <option value="linux-hardened linux-zen">Primary: Hardened | Backup: Zen</option>
-                            <option value="linux linux-lts">Primary: Standard | Backup: LTS</option>
-                            <option value="linux-zen">Primary: Zen (Performance/Gaming)</option>
+                    <div class="form-group form-step" data-title="Main Kernel" data-desc="Hardened applies security patches. Zen is for gaming/responsiveness. Standard is balanced.">
+                        <label>Main Kernel:</label>
+                        <select id="kernel-main">
+                            <option value="linux-hardened" selected>linux-hardened (Maximum Security)</option>
+                            <option value="linux">linux (Standard / Regular)</option>
+                            <option value="linux-zen">linux-zen (Performance/Gaming)</option>
+                            <option value="linux-lts">linux-lts (Long Term Support/Stability)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Backup Kernel" data-desc="A fallback kernel in case your main kernel fails to boot after an update.">
+                        <label>Backup Kernel:</label>
+                        <select id="kernel-backup">
+                            <option value="linux-zen" selected>linux-zen (Fallback for Hardened)</option>
+                            <option value="linux-lts">linux-lts (Stable Fallback)</option>
+                            <option value="linux">linux (Standard)</option>
+                            <option value="none">None (No Backup)</option>
                         </select>
                     </div>
 
@@ -150,6 +161,30 @@
                             <option value="ssh">Hardened OpenSSH + Libre OTP</option>
                             <option value="all">Full Anonymisation Suite (Kloak + Webhooks + Hardened SSH)</option>
                         </select>
+                    </div>
+
+                    <div id="spoofing-options" style="display: none;">
+                        <div class="form-group form-step" data-title="Fake Main Kernel" data-desc="Spoof an Evil Maid attacker by installing a decoy main kernel.">
+                            <label>Fake Main Kernel (Decoy):</label>
+                            <select id="kernel-fake-main">
+                                <option value="none" selected>None (No Spoofing)</option>
+                                <option value="linux-lts">linux-lts (Decoy)</option>
+                                <option value="linux">linux (Decoy)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group form-step" data-title="Fake Backup Kernel" data-desc="Spoof an Evil Maid attacker by installing a decoy backup kernel.">
+                            <label>Fake Backup Kernel (Decoy):</label>
+                            <select id="kernel-fake-backup">
+                                <option value="none" selected>None</option>
+                                <option value="linux">linux (Decoy)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-step" data-title="Spoof Directory" data-desc="The directory where your real /boot or /efi is located, or where the decoy will reside depending on your setup.">
+                            <label>Spoof Directory (e.g. /boot or /efi):</label>
+                            <input type="text" id="spoof-dir" value="/boot" required>
+                        </div>
                     </div>
 
                     <div class="form-group form-step" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial or a raw executable Bash Script.">
