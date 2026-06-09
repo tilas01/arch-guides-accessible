@@ -14,12 +14,12 @@
         <h1>Arch Guides Wiki & Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
         <nav style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic Interactive Setup Generator">Generator</a> | 
-            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki" data-desc="Full Arch Linux Wiki Documentation">Wiki / Documentation</a> | 
-            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated configurations">Upload Guide</a> | 
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Project Repository" data-desc="The full source code, scripts, and documentation">Repository</a>
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic Interactive Setup Generator. Generates custom markdown and scripts.">Generator</a> | 
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki" data-desc="Full Arch Linux Wiki Documentation. Right-click anywhere in form to visit relevant sections.">Wiki / Documentation</a> | 
+            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated configurations to restore them.">Upload Guide</a> | 
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Project Repository" data-desc="The full source code, scripts, and documentation (tilas01/arch-guides-dynamic). No accountability is accepted for generated outputs.">Repository</a>
         </nav>
-        <button id="toggle-custom-scripts" type="button" class="js-only nav-tooltip" data-title="Custom Scripts Toggle" data-desc="Enable options for custom anonymisation, anti-evil maid, and Libre OTP." style="position: absolute; left: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">📜</button>
+        <button id="toggle-tooltips-btn" type="button" class="js-only" data-title="Toggle Tooltips" data-desc="Currently: Enabled" style="position: absolute; left: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">👁️</button>
     </header>
 
     <main>
@@ -105,12 +105,32 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Software Type & Graphics" data-desc="Libre is purely open source. Open Source is free software but may depend on non-free firmware. Proprietary includes closed source drivers.">
+                    <div class="form-group form-step" data-title="CPU Architecture" data-desc="Select your processor brand to ensure the correct microcode is installed.">
+                        <label>CPU Brand:</label>
+                        <select id="cpu_brand">
+                            <option value="amd" selected>AMD (amd-ucode)</option>
+                            <option value="intel">Intel (intel-ucode)</option>
+                            <option value="vm">Virtual Machine / Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="GPU Hardware" data-desc="Select your primary graphics hardware (discrete or integrated). Note: Nvidia requires proprietary or nouveau drivers.">
+                        <label>GPU Brand:</label>
+                        <select id="gpu_brand">
+                            <option value="amd" selected>AMD Radeon</option>
+                            <option value="intel">Intel Graphics (Integrated/Arc)</option>
+                            <option value="nvidia">Nvidia GeForce</option>
+                            <option value="vm">Virtual Machine (VirtIO/VMWare/QXL)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Software Type & Graphics Drivers" data-desc="Libre is purely open source without proprietary firmware. Proprietary includes closed source drivers.">
                         <label>Software Type & Graphics Drivers:</label>
                         <select id="software_type">
-                            <option value="libre" selected>Fully Libre (100% Open Source, AMD/Intel, doas, pfetch)</option>
+                            <option value="libre" selected>Fully Libre (100% Open Source, doas, pfetch)</option>
                             <option value="opensource">Open Source Only (Free Software + Firmware, Nouveau, sudo)</option>
                             <option value="proprietary">Open Source + Proprietary (Nvidia Official Drivers, sudo)</option>
+                            <option value="vm">Virtual Machine Optimization (spice-vdagent, xf86-video-qxl)</option>
                         </select>
                     </div>
 
@@ -125,13 +145,21 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select which applications you want automatically installed or detailed in the guide. Dependencies and integrity checks are managed automatically.">
+                    <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Note: All apps included are either written by me or used by me personally, and I personally recommend them.">
                         <label>Post-Install Apps & Scripts:</label>
                         <select id="post_apps">
                             <option value="none" selected>None (Minimal Base System Only)</option>
                             <option value="paru">AUR Helper (paru)</option>
                             <option value="standard">Standard Desktop (Browser, Signal, AUR Helper)</option>
-                            <option value="full">Full Deployment (Desktop, Auto-Deploy Scripts, Integrity Checks)</option>
+                            <option value="full">Full Productivity & Dev Setup</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Automatic System Updates" data-desc="Set up a cron job with unattended-upgrades to automatically update your pacman packages and AUR packages with logging.">
+                        <label>Auto Updates & Cron Logs:</label>
+                        <select id="auto_updates">
+                            <option value="no" selected>No (Manual Updates Only)</option>
+                            <option value="yes">Yes (Daily Cron + AUR Upgrade Logs)</option>
                         </select>
                     </div>
 
@@ -174,12 +202,12 @@
                     <div class="form-group form-step" data-title="Tilas01 Custom Scripts" data-desc="Enable highly advanced security tooling, decoy environments, and anonymisation scripts authored by Tilas01.">
                         <label>Use Custom Security Scripts (by Tilas01)?</label>
                         <select id="use-custom-scripts">
-                            <option value="no" selected>No (Standard Installation)</option>
-                            <option value="yes">Yes (Reveal Advanced Options)</option>
+                            <option value="no">No (Standard Installation)</option>
+                            <option value="yes" selected>Yes (Reveal Advanced Options, Recommended)</option>
                         </select>
                     </div>
 
-                    <div id="custom-scripts-container" style="display: none;">
+                    <div id="custom-scripts-container" style="display: block;">
                         <div class="form-group form-step" data-title="Advanced Security Tools" data-desc="Integrate our custom Rust-native Libre OTP for login/boot/SSH or Anti-RubberDucky for keyboard input filtering.">
                             <label>Rust Advanced Security Tools:</label>
                             <select id="securitytools">
