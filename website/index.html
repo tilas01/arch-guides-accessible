@@ -11,34 +11,62 @@
         <img src="../img/banner.png" alt="Arch Guides Banner" class="banner">
         <h1>Arch Guides Wiki & Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
+        <nav>
+            <a href="index.html" class="nav-link">Generator</a> | 
+            <a href="wiki.html" class="nav-link">Wiki / Documentation</a>
+        </nav>
     </header>
 
     <main>
         <noscript>
             <div class="alert warning">
-                JavaScript is disabled. The interactive generator requires JS, but you can still read the raw <a href="https://github.com/tilas01/arch-guides-accessible/tree/main/docs" target="_blank">Markdown files here</a>.
+                <h3>JavaScript is disabled.</h3>
+                <p>The dynamic generator requires JavaScript. However, you can still access the complete, human-readable <a href="wiki.html">Static Wiki</a> which contains all possible permutations and instructions in a raw format.</p>
             </div>
+            <!-- Static fallback guide for noscript -->
+            <section class="markdown-body">
+                <h2>Fallback Static Guide</h2>
+                <p>Since JavaScript is disabled, please read the full installation guide on the <a href="wiki.html">Wiki Page</a>.</p>
+            </section>
         </noscript>
 
-        <section id="generator">
-            <h2>⚙️ Dynamic Install Generator</h2>
+        <section id="generator" class="js-only">
+            <h2>sT,? Dynamic Install Generator</h2>
             <form id="install-form">
-                <div class="form-group">
+                
+                <div class="form-group" title="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
+                    <label>Firmware / Boot Mode:</label>
+                    <select id="firmware">
+                        <option value="uefi" selected>UEFI (Modern, Recommended)</option>
+                        <option value="bios">Legacy BIOS</option>
+                    </select>
+                </div>
+
+                <div class="form-group" title="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
+                    <label>File System:</label>
+                    <select id="filesystem">
+                        <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
+                        <option value="ext4">Ext4 (Standard/Stable)</option>
+                        <option value="xfs">XFS (High Performance Large Files)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" title="Target Disk where Arch will be installed. Make sure this is correct!">
                     <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
                     <input type="text" id="target-disk" value="/dev/sda" required>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group" title="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
                     <label>Partitioning / Encryption:</label>
                     <select id="partitioning">
-                        <option value="unencrypted">Unencrypted (Minimalist / No Security)</option>
-                        <option value="luks1">LUKS1 (Legacy GRUB Compatible / High Security)</option>
-                        <option value="luks2" selected>LUKS2 (Post-Quantum Argon2id / Max Security)</option>
+                        <option value="unencrypted">Unencrypted (Fastest load time / No Security)</option>
+                        <option value="luks1">LUKS1 (Slower / Legacy GRUB Compatible / High Security)</option>
+                        <option value="luks2" selected>LUKS2 (Post-Quantum Argon2id / Max Security / Faster unlock than LUKS1)</option>
                         <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes / Max Security)</option>
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group" title="systemd is faster and modern. busybox is traditional and modular.">
                     <label>Init System (mkinitcpio Hooks):</label>
                     <select id="init_system">
                         <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
@@ -46,18 +74,17 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" title="UKI is highly secure. systemd-boot is minimal. GRUB is traditional.">
                     <label>Bootloader & Secure Boot:</label>
                     <select id="bootloader">
                         <option value="uki-custom" selected>UKI + Custom Keys (Fortress / Direct UEFI)</option>
                         <option value="uki-shim">UKI + Shim (Secure Boot via Microsoft Trust)</option>
                         <option value="systemd-boot">systemd-boot (Clean/Minimal)</option>
                         <option value="grub">GRUB (Legacy/Traditional BIOS/UEFI)</option>
-                        <option value="grub-shim">GRUB + Shim (Legacy + Microsoft Secure Boot)</option>
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" title="Hardened applies security patches. Zen is for gaming/responsiveness. Standard is balanced.">
                     <label>Kernel Selection:</label>
                     <select id="kernel">
                         <option value="linux-hardened linux-zen">Primary: Hardened | Backup: Zen</option>
@@ -66,13 +93,40 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" title="Proprietary drivers give better gaming performance on Nvidia, but Libre is fully open source.">
                     <label>Graphics Drivers (GPU):</label>
                     <select id="gpu">
                         <option value="none" selected>None / Virtual Machine / Generic</option>
-                        <option value="amd">AMD - Libre (uses only open source dependencies recursively and is fully open source)</option>
-                        <option value="nvidia-nouveau">NVIDIA - Open Source (code is public but may depend on things that code isnt public for)</option>
-                        <option value="nvidia-prop">NVIDIA - Proprietary (code is not public)</option>
+                        <option value="amd">AMD - Libre (Fully open source)</option>
+                        <option value="nvidia-nouveau">NVIDIA - Open Source Nouveau</option>
+                        <option value="nvidia-prop">NVIDIA - Proprietary</option>
+                    </select>
+                </div>
+
+                <div class="form-group" title="Libre forces doas and pfetch. Standard gives sudo and fastfetch.">
+                    <label>System Philosophy:</label>
+                    <select id="philosophy">
+                        <option value="libre" selected>Libre / Minimalist (doas, pfetch)</option>
+                        <option value="standard">Standard (sudo, fastfetch)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Desktop Environment:</label>
+                    <select id="desktop">
+                        <option value="none" selected>None (TTY Only)</option>
+                        <option value="gnome">GNOME (Modern, Complete)</option>
+                        <option value="kde">KDE Plasma (Customizable, Fast)</option>
+                        <option value="dwm">DWM (Minimal Window Manager)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Web Browser:</label>
+                    <select id="browser">
+                        <option value="none" selected>None</option>
+                        <option value="librewolf">LibreWolf (Privacy Focused)</option>
+                        <option value="firefox">Firefox</option>
                     </select>
                 </div>
 
@@ -80,8 +134,8 @@
                     <label>DNS Caching Service:</label>
                     <select id="dns">
                         <option value="systemd-resolved" selected>systemd-resolved (Default, minimal)</option>
-                        <option value="unbound">unbound (Validating, recursive, caching DNS resolver)</option>
-                        <option value="dnscrypt-proxy">dnscrypt-proxy (Flexible DNS proxy, supports encrypted protocols)</option>
+                        <option value="unbound">unbound (Validating, recursive)</option>
+                        <option value="dnscrypt-proxy">dnscrypt-proxy (Encrypted proxy)</option>
                     </select>
                 </div>
 
@@ -89,18 +143,16 @@
             </form>
         </section>
 
-        <section id="output-section" style="display: none;">
-            <h2>📖 Your Customized Installation Guide</h2>
+        <section id="output-section" style="display: none;" class="js-only">
+            <h2>dY"- Your Customized Installation Guide</h2>
             <div class="markdown-body" id="generated-guide"></div>
         </section>
         
         <section class="links-grid">
-            <h2>📚 Wiki & References</h2>
+            <h2>dY"s Quick Links</h2>
             <ul>
-                <li><a href="../docs/maintenance.md" target="_blank">System Maintenance & Fake Kernel Strategy</a></li>
-                <li><a href="../docs/arch-command-cheatsheet.md" target="_blank">Arch Command Cheatsheet (Pacman, SSH, VMs)</a></li>
+                <li><a href="wiki.html" target="_blank">Access the Full Tokyo-Night Wiki</a></li>
                 <li><a href="../scripts/arch-installer.sh" target="_blank">Automated Bash Installer Script</a></li>
-                <li><a href="https://github.com/tilas01/arch-guides-accessible/tree/main/docs" target="_blank">Full Documentation Repo</a></li>
             </ul>
         </section>
     </main>
@@ -108,4 +160,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-

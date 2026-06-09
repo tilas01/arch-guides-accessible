@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arch Guides Wiki</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .wiki-container {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .wiki-nav {
+            flex: 0 0 250px;
+            background-color: var(--bg-darker);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--bg-lighter);
+        }
+        .wiki-nav ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .wiki-nav li {
+            margin-bottom: 0.8rem;
+        }
+        .wiki-nav a {
+            cursor: pointer;
+            color: var(--accent-blue);
+        }
+        .wiki-nav a:hover, .wiki-nav a.active {
+            color: var(--accent-cyan);
+            text-decoration: underline;
+        }
+        .wiki-content {
+            flex: 1;
+            background-color: var(--bg-darker);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--bg-lighter);
+            min-height: 500px;
+        }
+        @media (max-width: 768px) {
+            .wiki-container {
+                flex-direction: column;
+            }
+            .wiki-nav {
+                flex: auto;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="../img/banner.png" alt="Arch Guides Banner" class="banner">
+        <h1>Arch Guides | Full Static Wiki</h1>
+        <p>Complete repository documentation compiled from all iterations (v1, v2, v3, and beyond).</p>
+        <nav>
+            <a href="index.html" class="nav-link">Generator</a> | 
+            <a href="wiki.html" class="nav-link">Wiki / Documentation</a>
+        </nav>
+    </header>
+
+    <main>
+        <noscript>
+            <div class="alert warning">
+                JavaScript is disabled. Please view the raw markdown documentation directly in the <a href="https://github.com/tilas01/arch-guides-accessible/tree/main/docs" target="_blank">docs directory on GitHub</a>.
+            </div>
+        </noscript>
+
+        <div class="wiki-container js-only">
+            <aside class="wiki-nav">
+                <h3>Documentation</h3>
+                <ul id="wiki-menu">
+                    <li><a data-file="01-live-usb.md">1. Live USB Setup</a></li>
+                    <li><a data-file="02-disk-preparation.md">2. Disk Preparation (LUKS/LVM)</a></li>
+                    <li><a data-file="03-base-installation.md">3. Base Installation</a></li>
+                    <li><a data-file="06-networking.md">4. Networking & DNS</a></li>
+                    <li><a data-file="07-post-installation.md">5. Post Install & Desktop</a></li>
+                    <li><a data-file="maintenance.md">6. Maintenance & Fake Kernel</a></li>
+                    <li><a data-file="arch-command-cheatsheet.md">7. Command Cheatsheet</a></li>
+                </ul>
+            </aside>
+            <section class="wiki-content">
+                <div class="markdown-body" id="wiki-body">
+                    <h2>Welcome to the Arch Guides Wiki</h2>
+                    <p>Select a document from the left navigation menu to begin reading.</p>
+                    <p>This wiki aggregates the best methodologies from <strong>v1, v2, and v3</strong> of the Arch Guides, completely overhauled for extreme security and maximal modularity.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        document.querySelectorAll('#wiki-menu a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Update active state
+                document.querySelectorAll('#wiki-menu a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+
+                const file = this.getAttribute('data-file');
+                const wikiBody = document.getElementById('wiki-body');
+                
+                wikiBody.innerHTML = '<p>Loading...</p>';
+
+                fetch(`../docs/${file}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.text();
+                    })
+                    .then(text => {
+                        wikiBody.innerHTML = marked.parse(text);
+                    })
+                    .catch(err => {
+                        wikiBody.innerHTML = `<div class="alert warning">Failed to load ${file}. You can <a href="https://github.com/tilas01/arch-guides-accessible/tree/main/docs/${file}" target="_blank">view it on GitHub directly</a>.</div>`;
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

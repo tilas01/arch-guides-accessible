@@ -8,6 +8,12 @@
 
 ---
 
+## 🌐 Public Hosted Resources
+*   **[Interactive Dynamic Install Generator](https://tilas01.github.io/arch-guides-accessible/)** - Dynamically generates an installation guide tailored exactly to your hardware and security needs.
+*   **[Static Tokyo-Night Wiki](https://tilas01.github.io/arch-guides-accessible/wiki.html)** - A comprehensive, modular documentation repository aggregating the best of v1, v2, and v3 guides.
+
+---
+
 ## 📑 Table of Contents
 1. [Arch Dynamic Installation Setup Guide](#-arch-dynamic-installation-setup-guide)
 2. [Quick Setup: Automated Batch Installer](#-quick-setup-automated-batch-installer)
