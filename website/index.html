@@ -21,151 +21,161 @@
     <main>
         <noscript>
             <div class="alert warning">
-                <h3>JavaScript is disabled.</h3>
-                <p>The dynamic generator requires JavaScript. However, you can still access the complete, human-readable <a href="wiki.html">Static Wiki</a> which contains all possible permutations and instructions in a raw format.</p>
+                JavaScript is disabled. Please view the raw markdown documentation directly in the <a href="wiki.html">Wiki</a>.
             </div>
-            <!-- Static fallback guide for noscript -->
-            <section class="markdown-body">
-                <h2>Fallback Static Guide</h2>
-                <p>Since JavaScript is disabled, please read the full installation guide on the <a href="wiki.html">Wiki Page</a>.</p>
-            </section>
         </noscript>
 
-        <section id="generator" class="js-only">
-            <h2>⚙️ Dynamic Install Generator</h2>
-            <form id="install-form">
-                
-                <div class="form-group" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
-                    <label>Firmware / Boot Mode:</label>
-                    <select id="firmware">
-                        <option value="uefi" selected>UEFI (Modern, Recommended)</option>
-                        <option value="bios">Legacy BIOS</option>
-                    </select>
-                </div>
+        <div class="controls-bar js-only" style="text-align: right; margin-bottom: 1rem;">
+            <button id="toggle-tooltips" class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; background: var(--bg-lighter);">Disable Info Panel / Tooltips</button>
+        </div>
 
-                <div class="form-group" data-title="File System Features" data-desc="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
-                    <label>File System:</label>
-                    <select id="filesystem">
-                        <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
-                        <option value="ext4">Ext4 (Standard/Stable)</option>
-                        <option value="xfs">XFS (High Performance Large Files)</option>
-                    </select>
-                </div>
-
-                <div class="form-group" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Make sure this is correct!">
-                    <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
-                    <input type="text" id="target-disk" value="/dev/sda" required>
-                    <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
-                        <strong>Tip:</strong> Run <code>lsblk</code> in your terminal to find your correct target disk name.
+        <div class="layout-container js-only">
+            <section class="generator-form">
+                <form id="install-form">
+                    <div class="form-group form-step" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
+                        <label>Firmware Interface:</label>
+                        <select id="firmware">
+                            <option value="uefi" selected>UEFI (Modern, Recommended)</option>
+                            <option value="bios">Legacy BIOS</option>
+                        </select>
                     </div>
-                </div>
-                
-                <div class="form-group" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
-                    <label>Partitioning / Encryption (Speed vs Security):</label>
-                    <select id="partitioning">
-                        <option value="unencrypted">Unencrypted (Fastest load time / No Security)</option>
-                        <option value="luks1">LUKS1 (Slower unlock / Legacy GRUB Compatible / High Security)</option>
-                        <option value="luks2" selected>LUKS2 (Fast modern unlock / Post-Quantum Argon2id / Max Security)</option>
-                        <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes / Max Security)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
-                    <label>Init System (mkinitcpio Hooks):</label>
-                    <select id="init_system">
-                        <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
-                        <option value="busybox">busybox/udev init (Traditional, encrypt hook)</option>
-                    </select>
-                </div>
 
-                <div class="form-group" data-title="Bootloader Choice" data-desc="UKI Custom uses your own keys directly in the motherboard UEFI, giving you total control. UKI Shim relies on Microsoft's keys for convenience. systemd-boot is minimal. GRUB is legacy.">
-                    <label>Bootloader & Secure Boot:</label>
-                    <select id="bootloader">
-                        <option value="uki-custom" selected>UKI + Custom Keys (Fortress / Direct UEFI)</option>
-                        <option value="uki-shim">UKI + Shim (Secure Boot via Microsoft Trust)</option>
-                        <option value="systemd-boot">systemd-boot (Clean/Minimal)</option>
-                        <option value="grub">GRUB (Legacy/Traditional BIOS/UEFI)</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step" data-title="File System Features" data-desc="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
+                        <label>File System:</label>
+                        <select id="filesystem">
+                            <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
+                            <option value="ext4">Ext4 (Standard/Stable)</option>
+                            <option value="xfs">XFS (High Performance Large Files)</option>
+                        </select>
+                    </div>
 
-                <div class="form-group" data-title="Kernel Selection" data-desc="Hardened applies security patches. Zen is for gaming/responsiveness. Standard is balanced.">
-                    <label>Kernel Selection:</label>
-                    <select id="kernel">
-                        <option value="linux-hardened linux-zen">Primary: Hardened | Backup: Zen</option>
-                        <option value="linux linux-lts">Primary: Standard | Backup: LTS</option>
-                        <option value="linux-zen">Primary: Zen (Performance/Gaming)</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Make sure this is correct!">
+                        <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
+                        <input type="text" id="target-disk" value="/dev/sda" required>
+                        <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
+                            <strong>Tip:</strong> Run <code>lsblk</code> in your terminal to find your correct target disk name.
+                        </div>
+                    </div>
+                    
+                    <div class="form-group form-step" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
+                        <label>Partitioning / Encryption (Speed vs Security):</label>
+                        <select id="partitioning">
+                            <option value="unencrypted">Unencrypted (Fastest load time / No Security)</option>
+                            <option value="luks1">LUKS1 (Slower unlock / Legacy GRUB Compatible / High Security)</option>
+                            <option value="luks2" selected>LUKS2 (Fast modern unlock / Post-Quantum Argon2id / Max Security)</option>
+                            <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes / Max Security)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group form-step" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
+                        <label>Init System (mkinitcpio Hooks):</label>
+                        <select id="init_system">
+                            <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
+                            <option value="busybox">busybox/udev init (Traditional, encrypt hook)</option>
+                        </select>
+                    </div>
 
-                <div class="form-group" data-title="Driver Philosophy" data-desc="Libre is purely open source. Open Source is free software but may depend on non-free firmware. Proprietary includes closed source drivers.">
-                    <label>Driver Philosophy & Graphics:</label>
-                    <select id="philosophy">
-                        <option value="libre" selected>Fully Libre (100% Open Source, AMD/Intel, doas, pfetch)</option>
-                        <option value="opensource">Open Source Only (Free Software + Firmware, Nouveau, sudo)</option>
-                        <option value="proprietary">Open Source + Proprietary (Nvidia Official Drivers, sudo)</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step" data-title="Bootloader Choice" data-desc="UKI Custom uses your own keys directly in the motherboard UEFI, giving you total control. UKI Shim relies on Microsoft's keys for convenience. systemd-boot is minimal. GRUB is legacy.">
+                        <label>Bootloader & Secure Boot:</label>
+                        <select id="bootloader">
+                            <option value="uki-custom" selected>UKI + Custom Keys (Fortress / Direct UEFI)</option>
+                            <option value="uki-shim">UKI + Shim (Secure Boot via Microsoft Trust)</option>
+                            <option value="systemd-boot">systemd-boot (Clean/Minimal)</option>
+                            <option value="grub">GRUB (Legacy/Traditional BIOS/UEFI)</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label>Desktop Environment:</label>
-                    <select id="desktop">
-                        <option value="none" selected>None (TTY Only)</option>
-                        <option value="gnome">GNOME (Modern, Complete)</option>
-                        <option value="kde">KDE Plasma (Customizable, Fast)</option>
-                        <option value="dwm">DWM (Minimal Window Manager)</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step" data-title="Kernel Selection" data-desc="Hardened applies security patches. Zen is for gaming/responsiveness. Standard is balanced.">
+                        <label>Kernel Selection:</label>
+                        <select id="kernel">
+                            <option value="linux-hardened linux-zen">Primary: Hardened | Backup: Zen</option>
+                            <option value="linux linux-lts">Primary: Standard | Backup: LTS</option>
+                            <option value="linux-zen">Primary: Zen (Performance/Gaming)</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label>Web Browser:</label>
-                    <select id="browser">
-                        <option value="none" selected>None</option>
-                        <option value="librewolf">LibreWolf (Privacy Focused)</option>
-                        <option value="firefox">Firefox</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step" data-title="Driver Philosophy" data-desc="Libre is purely open source. Open Source is free software but may depend on non-free firmware. Proprietary includes closed source drivers.">
+                        <label>Driver Philosophy & Graphics:</label>
+                        <select id="philosophy">
+                            <option value="libre" selected>Fully Libre (100% Open Source, AMD/Intel, doas, pfetch)</option>
+                            <option value="opensource">Open Source Only (Free Software + Firmware, Nouveau, sudo)</option>
+                            <option value="proprietary">Open Source + Proprietary (Nvidia Official Drivers, sudo)</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label>DNS Caching Service:</label>
-                    <select id="dns">
-                        <option value="systemd-resolved" selected>systemd-resolved (Default, minimal)</option>
-                        <option value="unbound">unbound (Validating, recursive)</option>
-                        <option value="dnscrypt-proxy">dnscrypt-proxy (Encrypted proxy)</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step">
+                        <label>Desktop Environment:</label>
+                        <select id="desktop">
+                            <option value="none" selected>None (TTY Only)</option>
+                            <option value="gnome">GNOME (Modern, Complete)</option>
+                            <option value="kde">KDE Plasma (Customizable, Fast)</option>
+                            <option value="dwm">DWM (Minimal Window Manager)</option>
+                        </select>
+                    </div>
 
-                <div class="form-group" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial or a raw executable Bash Script.">
-                    <label>Output Format:</label>
-                    <select id="outputformat">
-                        <option value="markdown" selected>Markdown Guide (Recommended, explanatory tutorial)</option>
-                        <option value="script">Raw Executable Bash Script (Review commands before executing)</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step">
+                        <label>Web Browser:</label>
+                        <select id="browser">
+                            <option value="none" selected>None</option>
+                            <option value="librewolf">LibreWolf (Privacy Focused)</option>
+                            <option value="firefox">Firefox</option>
+                        </select>
+                    </div>
 
-                <div class="form-group" data-title="Advanced Security Tools" data-desc="Integrate our custom Rust-native Libre OTP for login/boot/SSH or Anti-RubberDucky for keyboard input filtering.">
-                    <label>Rust Advanced Security Tools:</label>
-                    <select id="securitytools">
-                        <option value="none" selected>None (Standard Setup)</option>
-                        <option value="libre-otp">Libre OTP (Customizable Rust Native 2FA on Boot/Login/SSH)</option>
-                        <option value="anti-ducky">Anti-RubberDucky (Rust Input Control & Filtering)</option>
-                        <option value="both">Both Libre OTP & Anti-RubberDucky</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step">
+                        <label>DNS Caching Service:</label>
+                        <select id="dns">
+                            <option value="systemd-resolved" selected>systemd-resolved (Default, minimal)</option>
+                            <option value="unbound">unbound (Validating, recursive)</option>
+                            <option value="dnscrypt-proxy">dnscrypt-proxy (Encrypted proxy)</option>
+                        </select>
+                    </div>
 
-                <div class="form-group" data-title="Anonymisation & Anti-Evil Maid" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling. Webhooks alert you of malicious binaries. OpenSSH can be configured with strict secure crypto and Libre OTP.">
-                    <label>Anonymisation & Anti-Evil Maid Services:</label>
-                    <select id="anonymisation">
-                        <option value="none" selected>None</option>
-                        <option value="kloak">Kloak (Keystroke Anonymization)</option>
-                        <option value="webhook">Kernel Webhook Alerts (Malicious Binary Detection)</option>
-                        <option value="ssh">Hardened OpenSSH + Libre OTP</option>
-                        <option value="all">Full Anonymisation Suite (Kloak + Webhooks + Hardened SSH)</option>
-                    </select>
-                </div>
+                    <div class="form-group form-step" data-title="Advanced Security Tools" data-desc="Integrate our custom Rust-native Libre OTP for login/boot/SSH or Anti-RubberDucky for keyboard input filtering.">
+                        <label>Rust Advanced Security Tools:</label>
+                        <select id="securitytools">
+                            <option value="none" selected>None (Standard Setup)</option>
+                            <option value="libre-otp">Libre OTP (Customizable Rust Native 2FA on Boot/Login/SSH)</option>
+                            <option value="anti-ducky">Anti-RubberDucky (Rust Input Control & Filtering)</option>
+                            <option value="both">Both Libre OTP & Anti-RubberDucky</option>
+                        </select>
+                    </div>
 
-                <button type="submit" class="btn">Generate Custom Guide</button>
-            </form>
-        </section>
+                    <div class="form-group form-step" data-title="Anonymisation & Anti-Evil Maid" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling. Webhooks alert you of malicious binaries. OpenSSH can be configured with strict secure crypto and Libre OTP.">
+                        <label>Anonymisation & Anti-Evil Maid Services:</label>
+                        <select id="anonymisation">
+                            <option value="none" selected>None</option>
+                            <option value="kloak">Kloak (Keystroke Anonymization)</option>
+                            <option value="webhook">Kernel Webhook Alerts (Malicious Binary Detection)</option>
+                            <option value="ssh">Hardened OpenSSH + Libre OTP</option>
+                            <option value="all">Full Anonymisation Suite (Kloak + Webhooks + Hardened SSH)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial or a raw executable Bash Script.">
+                        <label>Output Format:</label>
+                        <select id="outputformat">
+                            <option value="markdown" selected>Markdown Guide (Recommended, explanatory tutorial)</option>
+                            <option value="script">Raw Executable Bash Script (Review commands before executing)</option>
+                        </select>
+                    </div>
+
+                    <div id="continue-prompt" class="alert info form-step visible" style="margin-top: 1rem; text-align: center;">
+                        <p>Please select an option above to reveal the next step.</p>
+                        <button type="button" id="reveal-all-btn" class="btn" style="margin-top: 10px; background: var(--bg-lighter);">View full selection now</button>
+                    </div>
+
+                    <button type="submit" id="generate-btn" class="btn form-step" style="margin-top: 1rem;">Generate Custom Guide</button>
+                </form>
+            </section>
+            
+            <aside id="info-panel" class="info-panel">
+                <div id="info-panel-content">
+                    <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.2rem;">📌 Guide Information</h3>
+                    <p style="color: var(--fg-color); line-height: 1.5;">Tap or interact with any setting on the left to see advanced details, warnings, and how it affects your system setup.</p>
+                </div>
+            </aside>
+        </div>
 
         <section id="output-section" style="display: none;" class="js-only">
             <h2>📝 Your Customized Installation Guide</h2>
