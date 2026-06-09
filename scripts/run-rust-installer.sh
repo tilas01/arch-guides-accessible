@@ -4,8 +4,8 @@
 set -e
 
 echo "[+] Fetching pre-compiled Reproducible Rust Build..."
-curl -sLO https://github.com/tilas01/arch-guides-accessible/releases/download/latest/arch-installer-linux-x86_64
-curl -sLO https://github.com/tilas01/arch-guides-accessible/releases/download/latest/arch-installer-linux-x86_64.sha256
+curl -sLO https://github.com/tilas01/arch-guides-dynamic/releases/download/latest/arch-installer-linux-x86_64
+curl -sLO https://github.com/tilas01/arch-guides-dynamic/releases/download/latest/arch-installer-linux-x86_64.sha256
 
 echo "[+] Verifying Hash Signature against Git-hosted checksum..."
 if sha256sum -c arch-installer-linux-x86_64.sha256; then
