@@ -18,7 +18,9 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const dns = document.getElementById('dns').value;
     const format = document.getElementById('outputformat').value;
     const secTools = document.getElementById('securitytools') ? document.getElementById('securitytools').value : 'none';
-    const anonTools = document.getElementById('anonymisation') ? document.getElementById('anonymisation').value : 'none';
+    const anon_kloak = document.getElementById('anon_kloak') ? document.getElementById('anon_kloak').value : 'no';
+    const anon_webhook = document.getElementById('anon_webhook') ? document.getElementById('anon_webhook').value : 'no';
+    const anon_ssh = document.getElementById('anon_ssh') ? document.getElementById('anon_ssh').value : 'no';
     const fakeMain = document.getElementById('kernel-fake-main') ? document.getElementById('kernel-fake-main').value : 'none';
     const fakeBackup = document.getElementById('kernel-fake-backup') ? document.getElementById('kernel-fake-backup').value : 'none';
     const spoofDir = document.getElementById('spoof-dir') ? document.getElementById('spoof-dir').value : '/boot';
@@ -57,7 +59,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     let cmdOnly = isScript;
     let output = "";
 
-    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, desktop, swap_size, post_apps, cleanup, secTools, anonTools, fakeMain, fakeBackup, spoofDir, format };
+    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, desktop, swap_size, post_apps, cleanup, secTools, anon_kloak, anon_webhook, anon_ssh, fakeMain, fakeBackup, spoofDir, format };
     output += '### CONFIG_START\n### ' + JSON.stringify(configData) + '\n### CONFIG_END\n\n';
 
     if (!cmdOnly) {
@@ -336,8 +338,11 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         }
     }
     
-    const anonTools = document.getElementById('anonymisation') ? document.getElementById('anonymisation').value : 'none';
-    if (anonTools !== "none") {
+    const anon_kloak = document.getElementById('anon_kloak') ? document.getElementById('anon_kloak').value : 'no';
+    const anon_webhook = document.getElementById('anon_webhook') ? document.getElementById('anon_webhook').value : 'no';
+    const anon_ssh = document.getElementById('anon_ssh') ? document.getElementById('anon_ssh').value : 'no';
+    
+    if (anon_kloak === "yes" || anon_webhook === "yes" || anon_ssh === "yes" || fakeMain !== "none" || fakeBackup !== "none") {
         if (!cmdOnly) {
             output += `\`\`\`\n\n`;
             output += `## 8. Anonymisation & Anti-Evil Maid\n`;
@@ -346,7 +351,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
             output += `\n# 8. Anonymisation & Anti-Evil Maid\n`;
         }
 
-        if (anonTools === "kloak" || anonTools === "all") {
+        if (anon_kloak === "yes") {
             output += `pacman -S --noconfirm git make gcc pkgconf\n`;
             output += `git clone https://github.com/vmonaco/kloak.git /opt/kloak\n`;
             output += `cd /opt/kloak && make && cp kloak /usr/local/bin/\n`;
@@ -354,12 +359,12 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
             output += `systemctl enable kloak.service\n`;
         }
 
-        if (anonTools === "webhook" || anonTools === "all") {
+        if (anon_webhook === "yes") {
             output += `# Optional: Configure kernel hook webhook alerts in /etc/systemd/system/malware-alert.service\n`;
             output += `echo 'Your custom rust/python kernel hook would be deployed here.'\n`;
         }
 
-        if (anonTools === "ssh" || anonTools === "all") {
+        if (anon_ssh === "yes") {
             output += `pacman -S --noconfirm openssh\n`;
             output += `sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config\n`;
             output += `sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config\n`;
@@ -511,9 +516,15 @@ function updateInfoPanel(group) {
     infoContent.innerHTML = `
         <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.2rem;">📌 ${title || 'Setting Details'}</h3>
         <p style="color: var(--fg-color); line-height: 1.5;">${desc || ''}</p>
+        <p style="font-size: 0.85rem; color: var(--accent-blue); margin-top: 10px;"><em>💡 Right-click this panel to read the full Wiki article on this topic.</em></p>
         ${warnings}
         ${extraInfo}
     `;
+
+    infoPanel.oncontextmenu = (e) => {
+        e.preventDefault();
+        window.open('wiki.html', '_blank');
+    };
     
     infoPanel.classList.add('active');
     if (window.innerWidth <= 768) {
@@ -550,23 +561,6 @@ function validateConfigurations() {
         Array.from(bootloader.options).forEach(opt => opt.disabled = false);
     }
     
-    // Toggle spoofing options if anonymisation is enabled
-    const anonTools = document.getElementById('anonymisation');
-    const spoofOptions = document.getElementById('spoofing-options');
-    if (anonTools && spoofOptions) {
-        if (anonTools.value !== 'none') {
-            spoofOptions.style.display = 'block';
-            // Also ensure inner form-steps are visible if not already
-            spoofOptions.querySelectorAll('.form-step').forEach(step => step.classList.add('visible'));
-        } else {
-            spoofOptions.style.display = 'none';
-            // Reset spoofing options
-            const fakeMain = document.getElementById('kernel-fake-main');
-            const fakeBackup = document.getElementById('kernel-fake-backup');
-            if (fakeMain) fakeMain.value = 'none';
-            if (fakeBackup) fakeBackup.value = 'none';
-        }
-    }
 }
 
 // Initial validation
@@ -578,11 +572,21 @@ if (restoreConfig) {
     try {
         const configData = JSON.parse(restoreConfig);
         Object.keys(configData).forEach(key => {
+            if (key === 'anonTools') {
+                if (configData[key] === 'all') {
+                    if(document.getElementById('anon_kloak')) document.getElementById('anon_kloak').value = 'yes';
+                    if(document.getElementById('anon_webhook')) document.getElementById('anon_webhook').value = 'yes';
+                    if(document.getElementById('anon_ssh')) document.getElementById('anon_ssh').value = 'yes';
+                } else if (configData[key] !== 'none') {
+                    if(document.getElementById('anon_' + configData[key])) document.getElementById('anon_' + configData[key]).value = 'yes';
+                }
+                return;
+            }
+            
             const el = document.getElementById(key === 'initSys' ? 'init_system' : 
                                              key === 'kernelMain' ? 'kernel-main' :
                                              key === 'kernelBackup' ? 'kernel-backup' :
                                              key === 'secTools' ? 'securitytools' :
-                                             key === 'anonTools' ? 'anonymisation' :
                                              key === 'fakeMain' ? 'kernel-fake-main' :
                                              key === 'fakeBackup' ? 'kernel-fake-backup' :
                                              key === 'spoofDir' ? 'spoof-dir' :
