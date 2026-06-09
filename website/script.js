@@ -1,5 +1,4 @@
-document.getElementById('generate-btn').addEventListener('click', function(e) {
-    e.preventDefault();
+window.generateOutput = function(auto = false) {
 
     const fw = document.getElementById('firmware').value;
     const fs = document.getElementById('filesystem').value;
@@ -17,7 +16,9 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
     const browser = document.getElementById('browser').value;
     const dns = document.getElementById('dns').value;
     const format = document.getElementById('outputformat').value;
-    const format = document.getElementById('outputformat').value;
+    const cpu_brand = document.getElementById('cpu_brand') ? document.getElementById('cpu_brand').value : 'amd';
+    const gpu_brand = document.getElementById('gpu_brand') ? document.getElementById('gpu_brand').value : 'amd';
+    const auto_updates = document.getElementById('auto_updates') ? document.getElementById('auto_updates').value : 'no';
     
     const useCustomScripts = document.getElementById('use-custom-scripts') ? document.getElementById('use-custom-scripts').value === 'yes' : false;
     const secTools = (useCustomScripts && document.getElementById('securitytools')) ? document.getElementById('securitytools').value : 'none';
@@ -57,7 +58,7 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
         partRoot = disk + "p2";
     }
 
-    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, desktop, swap_size, post_apps, cleanup, secTools, libreOtpMode, anon_kloak, anon_webhook, anon_ssh, fakeEvilMaid, format };
+    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, cpu_brand, gpu_brand, desktop, swap_size, post_apps, auto_updates, cleanup, secTools, libreOtpMode, anon_kloak, anon_webhook, anon_ssh, fakeEvilMaid, format };
 
     function buildOutput(cmdOnly) {
         let output = "";
@@ -150,21 +151,28 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
         output += `\n# 2. Base Installation\n`;
     }
 
+    let cpuPackages = cpu_brand === "amd" ? "amd-ucode" : (cpu_brand === "intel" ? "intel-ucode" : "");
     let gpuPackages = "";
-    if (software_type === "libre") gpuPackages = "mesa xf86-video-amdgpu xf86-video-intel vulkan-radeon vulkan-intel";
-    else if (software_type === "opensource") gpuPackages = "mesa xf86-video-nouveau";
-    else if (software_type === "proprietary") gpuPackages = "nvidia nvidia-utils";
+    if (gpu_brand === "amd") gpuPackages = "mesa xf86-video-amdgpu vulkan-radeon";
+    else if (gpu_brand === "intel") gpuPackages = "mesa xf86-video-intel vulkan-intel";
+    else if (gpu_brand === "nvidia") {
+        if (software_type === "libre" || software_type === "opensource") gpuPackages = "mesa xf86-video-nouveau";
+        else gpuPackages = "nvidia nvidia-utils";
+    } else if (gpu_brand === "vm") {
+        gpuPackages = "spice-vdagent xf86-video-qxl";
+    }
 
-    let adminTools = software_type === "libre" ? "opendoas pfetch" : "sudo fastfetch";
+    let adminTools = software_type === "libre" ? "opendoas pfetch cronie" : "sudo fastfetch cronie";
     let fsTools = fs === "btrfs" ? "btrfs-progs snapper" : (fs === "xfs" ? "xfsprogs" : "");
 
     let allKernels = kernelMain + " " + kernelMain + "-headers";
     if (kernelBackup !== "none") allKernels += " " + kernelBackup + " " + kernelBackup + "-headers";
-    if (fakeEvilMaid === 'yes') {
+    
+    if (fakeEvilMaid === "yes") {
         allKernels += " linux-lts linux-hardened"; // Generic decoys
     }
 
-    output += `pacstrap -K /mnt base ${allKernels} ${gpuPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
+    output += `pacstrap -K /mnt base ${allKernels} ${cpuPackages} ${gpuPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
     output += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
     
     // Create chroot script to continue execution
@@ -380,6 +388,30 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
             output += `cp /boot/initramfs-linux-hardened.img /boot/fake_efi/initramfs-linux-lts.img\n`;
         }
     }
+    if (auto_updates === "yes") {
+        if (!cmdOnly) {
+            output += `\`\`\`\n\n`;
+            output += `## Unattended Upgrades & Logging\n`;
+            output += `Configure automatic pacman and AUR updates via cronie.\n\n`;
+            output += `\`\`\`bash\n`;
+        } else {
+            output += `\n# --- Unattended Upgrades & Logging ---\n`;
+        }
+        output += `systemctl enable cronie\n`;
+        output += `cat << 'CRON_SCRIPT' > /usr/local/bin/auto-update.sh\n`;
+        output += `#!/bin/bash\n`;
+        output += `LOGFILE="/var/log/auto-update.log"\n`;
+        output += `echo "Starting Update: \\$(date)" >> $LOGFILE\n`;
+        output += `pacman -Syu --noconfirm >> $LOGFILE 2>&1\n`;
+        if (post_apps !== "none") {
+            output += `su - builder -c "paru -Sua --noconfirm" >> $LOGFILE 2>&1\n`;
+        }
+        output += `echo "Update Complete: \\$(date)" >> $LOGFILE\n`;
+        output += `CRON_SCRIPT\n`;
+        output += `chmod +x /usr/local/bin/auto-update.sh\n`;
+        output += `(crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/auto-update.sh") | crontab -\n`;
+    }
+
     if (cmdOnly) {
         output += `EOF\n`;
         output += `chmod +x /mnt/chroot_script.sh\n`;
@@ -452,7 +484,14 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
         }
     }
 
-    outputSection.scrollIntoView({ behavior: 'smooth' });
+    if (!auto) {
+        outputSection.scrollIntoView({ behavior: 'smooth' });
+    }
+};
+
+document.getElementById('generate-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.generateOutput(false);
 });
 
 // Interactive UI Logic
@@ -461,21 +500,35 @@ const infoPanel = document.getElementById('info-panel');
 const infoContent = document.getElementById('info-panel-content');
 const defaultPanelHTML = infoContent.innerHTML;
 
-const customScriptsToggleBtn = document.getElementById('toggle-custom-scripts');
+let tooltipsEnabled = true;
+const tooltipToggleBtn = document.getElementById('toggle-tooltips-btn');
 const customScriptsSelect = document.getElementById('use-custom-scripts');
 const customScriptsContainer = document.getElementById('custom-scripts-container');
 const securityToolsSelect = document.getElementById('securitytools');
 const libreOtpModeContainer = document.getElementById('libre-otp-mode-container');
 
-if (customScriptsToggleBtn) {
-    customScriptsToggleBtn.addEventListener('click', () => {
-        if (customScriptsSelect) {
-            customScriptsSelect.value = customScriptsSelect.value === 'yes' ? 'no' : 'yes';
-            customScriptsSelect.dispatchEvent(new Event('change'));
+if (tooltipToggleBtn) {
+    tooltipToggleBtn.addEventListener('click', () => {
+        tooltipsEnabled = !tooltipsEnabled;
+        tooltipToggleBtn.setAttribute('data-desc', `Currently: ${tooltipsEnabled ? 'Enabled' : 'Disabled'}`);
+        tooltipToggleBtn.style.color = tooltipsEnabled ? 'var(--accent-blue)' : '#888';
+        if (tooltipsEnabled) {
+            updateInfoPanel(tooltipToggleBtn);
+        } else {
+            infoPanel.classList.remove('active');
+            document.body.classList.remove('panel-active');
         }
     });
-    customScriptsToggleBtn.addEventListener('mouseenter', (e) => updateInfoPanel(customScriptsToggleBtn, e));
-    customScriptsToggleBtn.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
+    tooltipToggleBtn.addEventListener('mouseenter', (e) => {
+        if (tooltipsEnabled) {
+            updateInfoPanel(tooltipToggleBtn, e);
+        }
+    });
+    tooltipToggleBtn.addEventListener('mouseleave', () => {
+        if (tooltipsEnabled) {
+            infoPanel.classList.remove('active');
+        }
+    });
 }
 
 if (customScriptsSelect && customScriptsContainer) {
@@ -503,18 +556,21 @@ infoPanel.addEventListener('click', () => {
 
 // Mobile tap / Desktop hover info panel update
 formSteps.forEach((step) => {
-    step.addEventListener('mouseenter', (e) => updateInfoPanel(step, e));
-    step.addEventListener('mouseleave', () => {
-        infoPanel.classList.remove('active');
+    step.addEventListener('mouseenter', (e) => {
+        if (tooltipsEnabled) updateInfoPanel(step, e);
     });
-    step.addEventListener('touchstart', (e) => updateInfoPanel(step, e), {passive: true});
-    // The right click is now handled globally if the tooltip is active.
-    // However, keeping this for redundancy is fine, but we will rely on the global one.
+    step.addEventListener('mouseleave', () => {
+        if (tooltipsEnabled) infoPanel.classList.remove('active');
+    });
+    step.addEventListener('touchstart', (e) => {
+        if (tooltipsEnabled) updateInfoPanel(step, e);
+    }, {passive: true});
+    
     // Dynamic interactions
     const input = step.querySelector('select, input');
     if (input) {
         input.addEventListener('change', () => {
-            updateInfoPanel(step);
+            if (tooltipsEnabled) updateInfoPanel(step);
             validateConfigurations();
         });
     }
@@ -522,8 +578,10 @@ formSteps.forEach((step) => {
 
 const banner = document.querySelector('.banner');
 if (banner) {
+    banner.style.cursor = 'pointer';
+    banner.addEventListener('click', () => { window.open('https://github.com/tilas01/arch-guides-dynamic', '_blank'); });
     banner.addEventListener('mouseenter', (e) => {
-        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Banner Image' : 'Click to view the source code on GitHub.', querySelector: () => null }, e);
+        updateInfoPanel({ getAttribute: (attr) => attr === 'data-title' ? 'Project Repository' : '<span style="color: var(--accent-blue);">Click to view the source code on GitHub.</span>', querySelector: () => null }, e);
     });
     banner.addEventListener('mouseleave', () => infoPanel.classList.remove('active'));
 }
@@ -553,6 +611,8 @@ document.addEventListener('mousemove', (e) => {
 });
 
 function updateInfoPanel(group, e) {
+    if (!tooltipsEnabled) return;
+
     const title = group.getAttribute('data-title');
     const desc = group.getAttribute('data-desc');
     const select = group.querySelector ? group.querySelector('select') : null;
@@ -586,7 +646,8 @@ function updateInfoPanel(group, e) {
         'Malware Detection Webhooks': 'architecture.md#anti-rubberducky-daemon',
         'Hardened SSH & OTP': 'architecture.md#anti-rubberducky-daemon',
         'Fake Evil Maid Directory': 'architecture.md#anti-rubberducky-daemon',
-        'Output Format': 'architecture.md#how-the-website-generator-works'
+        'Output Format': 'architecture.md#how-the-website-generator-works',
+        'Toggle Tooltips': 'architecture.md#how-the-website-generator-works'
     };
 
     const mappedLink = title ? wikiMap[title] : null;
@@ -708,9 +769,15 @@ function validateConfigurations() {
     const secToolsVal = document.getElementById('securitytools') ? document.getElementById('securitytools').value : 'none';
     const fakeEvilMaidVal = document.getElementById('fake-evil-maid') ? document.getElementById('fake-evil-maid').value : 'no';
     const useCustomScripts = document.getElementById('use-custom-scripts') ? document.getElementById('use-custom-scripts').value === 'yes' : false;
+    const gpuBrand = document.getElementById('gpu_brand') ? document.getElementById('gpu_brand').value : 'amd';
+    const softwareType = document.getElementById('software_type') ? document.getElementById('software_type').value : 'libre';
 
     if (part.value === 'unencrypted' && bootloader.value !== 'uki-custom') {
         warnings.push("⚠️ Smart Analysis: You chose no encryption and no secure boot ownership. This is a highly insecure setup. Anyone with physical access can tamper with your system.");
+    }
+
+    if (gpuBrand === 'nvidia' && softwareType === 'libre') {
+        warnings.push("⚠️ Compatibility Warning: You selected an Nvidia GPU but chose 'Fully Libre'. Nvidia hardware requires non-free Nouveau firmware or Proprietary drivers. We will fallback to Nouveau firmware, but this setup cannot be truly 100% Libre.");
     }
     
     if (part.value === 'luks2' && bootloader.value === 'uki-custom' && fw === 'uefi' && useCustomScripts && secToolsVal === 'both' && fakeEvilMaidVal === 'yes') {
@@ -734,6 +801,11 @@ function validateConfigurations() {
             globalWarningsDiv.innerHTML = '';
             globalWarningsDiv.style.display = 'none';
         }
+    }
+    
+    // Auto-generate preview without scrolling
+    if (typeof window.generateOutput === 'function') {
+        window.generateOutput(true);
     }
 }
 
