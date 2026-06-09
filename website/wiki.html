@@ -60,6 +60,51 @@
     </style>
 </head>
 <body>
+    <div id="legal-modal-overlay">
+        <div id="legal-modal">
+            <h2 style="color: var(--accent-red); margin-top: 0;">⚖️ Legal Disclaimer</h2>
+            <p style="color: var(--fg-color);">This tool generates complex system configurations and scripts. By proceeding, you acknowledge that:</p>
+            <ul style="color: var(--fg-color); line-height: 1.5; margin-bottom: 1.5rem; margin-top: 1rem; padding-left: 1.5rem;">
+                <li>The scripts and guides are provided <strong>"AS IS"</strong>, without warranty of any kind.</li>
+                <li>The author takes <strong>no responsibility</strong> for any data loss, system breakage, or errors resulting from the use of this generator.</li>
+                <li>You take full accountability for executing any generated code.</li>
+            </ul>
+            <div class="alert info" style="margin-bottom: 1.5rem;">
+                <strong>💡 Tip:</strong> Always review commands or code from the internet before running them. It is a fundamental security best practice.
+            </div>
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--fg-color);">
+                <input type="checkbox" id="legal-checkbox" style="width: 20px; height: 20px; cursor: pointer;">
+                I agree, understand the risks, and take full accountability.
+            </label>
+            <button id="legal-accept-btn" class="btn" style="width: 100%; margin-top: 1.5rem; opacity: 0.5; cursor: not-allowed;" disabled>Enter Site</button>
+        </div>
+    </div>
+    <script>
+        if (!sessionStorage.getItem('agreed_to_tos')) {
+            const overlay = document.getElementById('legal-modal-overlay');
+            const checkbox = document.getElementById('legal-checkbox');
+            const btn = document.getElementById('legal-accept-btn');
+            
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                }
+            });
+            
+            btn.addEventListener('click', () => {
+                sessionStorage.setItem('agreed_to_tos', 'true');
+                overlay.style.display = 'none';
+            });
+        } else {
+            document.getElementById('legal-modal-overlay').style.display = 'none';
+        }
+    </script>
     <header>
         <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
         <h1>Arch Guides | Full Static Wiki</h1>
