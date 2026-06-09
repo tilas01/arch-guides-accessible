@@ -258,12 +258,8 @@ noscript .js-only {
     }
 }
 
-/* Hide form steps */
+/* Animations */
 .form-step {
-    display: none;
-}
-.form-step.visible {
-    display: block;
     animation: fadeIn 0.4s ease-out;
 }
 
@@ -291,5 +287,7 @@ noscript .js-only {
     border-radius: 8px;
     max-width: 600px;
     width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }

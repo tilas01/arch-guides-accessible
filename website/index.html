@@ -57,10 +57,11 @@
         <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
         <h1>Arch Guides Wiki & Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
-        <nav>
+        <nav style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
             <a href="index.html" class="nav-link">Generator</a> | 
             <a href="wiki.html" class="nav-link">Wiki / Documentation</a> | 
             <a href="#" id="nav-upload" class="nav-link">Upload</a>
+            <button id="toggle-tooltips" title="Toggle Tooltips" class="js-only" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-left: 10px;">💬</button>
             <input type="file" id="upload-file" accept=".md,.sh" style="display: none;">
         </nav>
     </header>
@@ -71,10 +72,6 @@
                 JavaScript is disabled. Please view the raw markdown documentation directly in the <a href="wiki.html">Wiki</a>.
             </div>
         </noscript>
-
-        <div class="controls-bar js-only" style="text-align: right; margin-bottom: 1rem; position: absolute; right: 2rem; top: 2rem;">
-            <button id="toggle-tooltips" title="Toggle Tooltips" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">💬</button>
-        </div>
 
         <div class="layout-container js-only">
             <section class="generator-form">
