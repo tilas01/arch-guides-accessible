@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arch Guides | Accessible & Modular</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <header>
-        <img src="../img/banner.png" alt="Arch Guides Banner" class="banner">
+        <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
         <h1>Arch Guides Wiki & Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
         <nav>
@@ -31,7 +32,7 @@
         </noscript>
 
         <section id="generator" class="js-only">
-            <h2>sT,? Dynamic Install Generator</h2>
+            <h2>⚙️ Dynamic Install Generator</h2>
             <form id="install-form">
                 
                 <div class="form-group" title="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
@@ -54,14 +55,17 @@
                 <div class="form-group" title="Target Disk where Arch will be installed. Make sure this is correct!">
                     <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
                     <input type="text" id="target-disk" value="/dev/sda" required>
+                    <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
+                        <strong>Tip:</strong> Run <code>lsblk</code> in your terminal to find your correct target disk name.
+                    </div>
                 </div>
                 
                 <div class="form-group" title="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
-                    <label>Partitioning / Encryption:</label>
+                    <label>Partitioning / Encryption (Speed vs Security):</label>
                     <select id="partitioning">
                         <option value="unencrypted">Unencrypted (Fastest load time / No Security)</option>
-                        <option value="luks1">LUKS1 (Slower / Legacy GRUB Compatible / High Security)</option>
-                        <option value="luks2" selected>LUKS2 (Post-Quantum Argon2id / Max Security / Faster unlock than LUKS1)</option>
+                        <option value="luks1">LUKS1 (Slower unlock / Legacy GRUB Compatible / High Security)</option>
+                        <option value="luks2" selected>LUKS2 (Fast modern unlock / Post-Quantum Argon2id / Max Security)</option>
                         <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes / Max Security)</option>
                     </select>
                 </div>
@@ -93,21 +97,12 @@
                     </select>
                 </div>
 
-                <div class="form-group" title="Proprietary drivers give better gaming performance on Nvidia, but Libre is fully open source.">
-                    <label>Graphics Drivers (GPU):</label>
-                    <select id="gpu">
-                        <option value="none" selected>None / Virtual Machine / Generic</option>
-                        <option value="amd">AMD - Libre (Fully open source)</option>
-                        <option value="nvidia-nouveau">NVIDIA - Open Source Nouveau</option>
-                        <option value="nvidia-prop">NVIDIA - Proprietary</option>
-                    </select>
-                </div>
-
-                <div class="form-group" title="Libre forces doas and pfetch. Standard gives sudo and fastfetch.">
-                    <label>System Philosophy:</label>
+                <div class="form-group" title="Libre is purely open source. Open Source is free software but may depend on non-free firmware. Proprietary includes closed source drivers.">
+                    <label>Driver Philosophy & Graphics:</label>
                     <select id="philosophy">
-                        <option value="libre" selected>Libre / Minimalist (doas, pfetch)</option>
-                        <option value="standard">Standard (sudo, fastfetch)</option>
+                        <option value="libre" selected>Fully Libre (100% Open Source, AMD/Intel, doas, pfetch)</option>
+                        <option value="opensource">Open Source Only (Free Software + Firmware, Nouveau, sudo)</option>
+                        <option value="proprietary">Open Source + Proprietary (Nvidia Official Drivers, sudo)</option>
                     </select>
                 </div>
 
@@ -139,20 +134,28 @@
                     </select>
                 </div>
 
+                <div class="form-group" title="Choose whether to generate an explanatory Markdown tutorial or a raw executable Bash Script.">
+                    <label>Output Format:</label>
+                    <select id="outputformat">
+                        <option value="markdown" selected>Markdown Guide (Recommended, explanatory tutorial)</option>
+                        <option value="script">Raw Executable Bash Script (Review commands before executing)</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn">Generate Custom Guide</button>
             </form>
         </section>
 
         <section id="output-section" style="display: none;" class="js-only">
-            <h2>dY"- Your Customized Installation Guide</h2>
+            <h2>📝 Your Customized Installation Guide</h2>
             <div class="markdown-body" id="generated-guide"></div>
         </section>
         
         <section class="links-grid">
-            <h2>dY"s Quick Links</h2>
+            <h2>🔗 Quick Links</h2>
             <ul>
                 <li><a href="wiki.html" target="_blank">Access the Full Tokyo-Night Wiki</a></li>
-                <li><a href="../scripts/arch-installer.sh" target="_blank">Automated Bash Installer Script</a></li>
+                <li><a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/scripts/arch-installer.sh" target="_blank">Automated Bash Installer Script</a></li>
             </ul>
         </section>
     </main>

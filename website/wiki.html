@@ -55,7 +55,7 @@
 </head>
 <body>
     <header>
-        <img src="../img/banner.png" alt="Arch Guides Banner" class="banner">
+        <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
         <h1>Arch Guides | Full Static Wiki</h1>
         <p>Complete repository documentation compiled from all iterations (v1, v2, v3, and beyond).</p>
         <nav>
@@ -108,7 +108,7 @@
                 
                 wikiBody.innerHTML = '<p>Loading...</p>';
 
-                fetch(`../docs/${file}`)
+                fetch(`docs/${file}`)
                     .then(response => {
                         if (!response.ok) throw new Error('Network response was not ok');
                         return response.text();
