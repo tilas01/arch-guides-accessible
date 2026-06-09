@@ -244,8 +244,14 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         output += `## 6. Post-Install Apps & Desktop Environment\n`;
         output += `\`\`\`bash\n`;
     } else {
-        output += `\n# 6. Desktop & Apps\n`;
+        output += `\n# 6. Desktop, Apps & AUR (paru)\n`;
     }
+
+    output += `# Note: To install paru (AUR helper), you must run makepkg as a non-root user.\n`;
+    output += `# uncomment below to create a user and install paru:\n`;
+    output += `# useradd -m -G wheel -s /bin/bash archuser\n`;
+    output += `# passwd archuser\n`;
+    output += `# su - archuser -c "git clone https://aur.archlinux.org/paru.git /tmp/paru && cd /tmp/paru && makepkg -si --noconfirm"\n\n`;
 
     if (desktop === "gnome") {
         output += `pacman -S --noconfirm gnome gnome-tweaks\n`;

@@ -8,7 +8,7 @@
 
 ---
 
-## Arch Command Cheatsheet
+## 📖 Helpful Commands
 
 ### 📦 Pacman (Package Manager)
 * **Sync & Upgrade System:** `sudo pacman -Syu`
@@ -37,3 +37,12 @@
 * **Check if Secure Boot is Active:** `bootctl status`
 * **Verify UKI Signatures:** `sbverify --list /efi/EFI/arch/secure-boot-linux.efi`
 * **Check Evil Maid Logs:** `cat /var/lib/evilmaid/esp_hash.sha256`
+
+### 📦 AUR Package Manager (paru)
+
+`paru` is the recommended Rust-based Libre AUR helper.
+
+*   `paru -S <package>`: Install a package from the AUR.
+*   `paru -Syu`: Update all system and AUR packages.
+*   `paru -Rns <package>`: Remove a package and its orphaned dependencies.
+*   `paru -Sc`: Clean the paru cache.
