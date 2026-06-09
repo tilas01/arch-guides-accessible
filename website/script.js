@@ -519,7 +519,8 @@ function updateInfoPanel(group) {
 
     infoPanel.oncontextmenu = (e) => {
         e.preventDefault();
-        window.open('wiki.html', '_blank');
+        const hash = title ? '#' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
+        window.open('wiki.html' + hash, '_blank');
     };
     
     infoPanel.classList.add('active');
