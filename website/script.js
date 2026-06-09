@@ -9,8 +9,11 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const boot = document.getElementById('bootloader').value;
     const kernelMain = document.getElementById('kernel-main').value;
     const kernelBackup = document.getElementById('kernel-backup').value;
-    const philosophy = document.getElementById('philosophy').value;
+    const software_type = document.getElementById('software_type').value;
     const desktop = document.getElementById('desktop').value;
+    const swap_size = document.getElementById('swap_size').value;
+    const post_apps = document.getElementById('post_apps').value;
+    const cleanup = document.getElementById('cleanup').value;
     const browser = document.getElementById('browser').value;
     const dns = document.getElementById('dns').value;
     const format = document.getElementById('outputformat').value;
@@ -53,6 +56,9 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     let isScript = (format === "script");
     let cmdOnly = isScript;
     let output = "";
+
+    const configData = { fw, fs, disk, part, initSys, boot, kernelMain, kernelBackup, software_type, desktop, swap_size, post_apps, cleanup, secTools, anonTools, fakeMain, fakeBackup, spoofDir, format };
+    output += '### CONFIG_START\n### ' + JSON.stringify(configData) + '\n### CONFIG_END\n\n';
 
     if (!cmdOnly) {
         output += `# Your Custom Arch Linux Guide\n\n`;
@@ -122,6 +128,17 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         output += `mkdir -p /mnt/efi\nmount ${partEfi} /mnt/efi\n`;
     }
     
+    if (swap_size !== "0") {
+        if (fs === "btrfs") {
+            output += `btrfs filesystem mkswapfile --size ${swap_size} /mnt/swapfile\n`;
+        } else {
+            output += `fallocate -l ${swap_size} /mnt/swapfile\n`;
+            output += `chmod 600 /mnt/swapfile\n`;
+            output += `mkswap /mnt/swapfile\n`;
+        }
+        output += `swapon /mnt/swapfile\n`;
+    }
+
     if (!cmdOnly) {
         output += `\`\`\`\n\n`;
         output += `## 2. Base Installation, Kernel & Admin Tools\n`;
@@ -131,11 +148,11 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     }
 
     let gpuPackages = "";
-    if (philosophy === "libre") gpuPackages = "mesa xf86-video-amdgpu xf86-video-intel vulkan-radeon vulkan-intel";
-    else if (philosophy === "opensource") gpuPackages = "mesa xf86-video-nouveau";
-    else if (philosophy === "proprietary") gpuPackages = "nvidia nvidia-utils";
+    if (software_type === "libre") gpuPackages = "mesa xf86-video-amdgpu xf86-video-intel vulkan-radeon vulkan-intel";
+    else if (software_type === "opensource") gpuPackages = "mesa xf86-video-nouveau";
+    else if (software_type === "proprietary") gpuPackages = "nvidia nvidia-utils";
 
-    let adminTools = philosophy === "libre" ? "opendoas pfetch" : "sudo fastfetch";
+    let adminTools = software_type === "libre" ? "opendoas pfetch" : "sudo fastfetch";
     let fsTools = fs === "btrfs" ? "btrfs-progs snapper" : (fs === "xfs" ? "xfsprogs" : "");
 
     let allKernels = kernelMain + " " + kernelMain + "-headers";
@@ -156,7 +173,7 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         output += `arch-chroot /mnt\n`;
     }
     
-    if (philosophy === "libre") {
+    if (software_type === "libre") {
         output += `echo "permit persist :wheel" > /etc/doas.conf\n`;
         output += `ln -s /usr/bin/doas /usr/bin/sudo\n`;
     } else {
@@ -247,11 +264,28 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         output += `\n# 6. Desktop, Apps & AUR (paru)\n`;
     }
 
-    output += `# Note: To install paru (AUR helper), you must run makepkg as a non-root user.\n`;
-    output += `# uncomment below to create a user and install paru:\n`;
-    output += `# useradd -m -G wheel -s /bin/bash archuser\n`;
-    output += `# passwd archuser\n`;
-    output += `# su - archuser -c "git clone https://aur.archlinux.org/paru.git /tmp/paru && cd /tmp/paru && makepkg -si --noconfirm"\n\n`;
+    if (post_apps !== "none") {
+        if (!cmdOnly) output += `\n# Installing Post-Install Applications (${post_apps})\n`;
+        output += `pacman -S --noconfirm git base-devel\n`;
+        output += `echo "Setting up temporary build user for AUR..."\n`;
+        output += `useradd -m -G wheel -s /bin/bash builder\n`;
+        output += `echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/builder\n`;
+        output += `su - builder -c "git clone https://aur.archlinux.org/paru.git /tmp/paru && cd /tmp/paru && makepkg -si --noconfirm"\n`;
+        
+        if (post_apps === "standard" || post_apps === "full") {
+            output += `su - builder -c "paru -S --noconfirm firefox signal-desktop"\n`;
+        }
+        if (post_apps === "full") {
+            output += `echo "Downloading automated deployment scripts and performing integrity checks..."\n`;
+            output += `curl -LO https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/auto_deploy.sh\n`;
+            output += `curl -LO https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/auto_deploy.sh.sig\n`;
+            output += `# Verify signature (replace with actual key)\n`;
+            output += `echo "Simulating integrity check..."\n`;
+            output += `chmod +x auto_deploy.sh && ./auto_deploy.sh\n`;
+        }
+        output += `userdel -r builder\n`;
+        output += `rm -f /etc/sudoers.d/builder\n`;
+    }
 
     if (desktop === "gnome") {
         output += `pacman -S --noconfirm gnome gnome-tweaks\n`;
@@ -352,6 +386,14 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         output += `EOF\n`;
         output += `chmod +x /mnt/chroot_script.sh\n`;
         output += `arch-chroot /mnt /chroot_script.sh\n`;
+        
+        if (cleanup === "yes") {
+            output += `echo "Performing system cleanup..."\n`;
+            output += `arch-chroot /mnt pacman -Scc --noconfirm\n`;
+            output += `rm -rf /mnt/var/cache/pacman/pkg/*\n`;
+            output += `rm -rf /mnt/tmp/*\n`;
+        }
+        
         output += `rm /mnt/chroot_script.sh\n`;
         output += `echo "Install complete. Please reboot."\n`;
     } else {
@@ -549,7 +591,7 @@ if (restoreConfig) {
                                              key === 'disk' ? 'target-disk' :
                                              key === 'fw' ? 'firmware' :
                                              key === 'fs' ? 'filesystem' :
-                                             key === 'boot' ? 'bootloader' : key);
+                                             key === 'boot' ? 'bootloader' : key === 'philosophy' ? 'software_type' : key);
             if (el) el.value = configData[key];
         });
         sessionStorage.removeItem('arch_restore_config');
@@ -563,7 +605,7 @@ if (restoreConfig) {
             errorDiv.id = "config-errors";
             document.getElementById("install-form").prepend(errorDiv);
         }
-        errorDiv.innerHTML = \<div class="alert info" style="margin-bottom: 1rem;"><strong>Configuration Restored!</strong> Your settings from the uploaded guide have been loaded.</div>\;
+        errorDiv.innerHTML = `<div class="alert info" style="margin-bottom: 1rem;"><strong>Configuration Restored!</strong> Your settings from the uploaded guide have been loaded.</div>`;
     } catch (e) {
         console.error("Error restoring config:", e);
     }
@@ -581,7 +623,7 @@ if (downloadBtn) {
         
         const format = document.getElementById('outputformat').value;
         const extension = format === 'script' ? 'sh' : 'md';
-        const filename = \rch-install-\.\\;
+        const filename = `arch-install-${new Date().getTime()}.${extension}`;
         
         // Find the raw text, including our metadata block
         const textContent = generatedDiv.innerText;

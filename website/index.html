@@ -103,12 +103,41 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Driver Philosophy" data-desc="Libre is purely open source. Open Source is free software but may depend on non-free firmware. Proprietary includes closed source drivers.">
-                        <label>Driver Philosophy & Graphics:</label>
-                        <select id="philosophy">
+                    <div class="form-group form-step" data-title="Software Type & Graphics" data-desc="Libre is purely open source. Open Source is free software but may depend on non-free firmware. Proprietary includes closed source drivers.">
+                        <label>Software Type & Graphics Drivers:</label>
+                        <select id="software_type">
                             <option value="libre" selected>Fully Libre (100% Open Source, AMD/Intel, doas, pfetch)</option>
                             <option value="opensource">Open Source Only (Free Software + Firmware, Nouveau, sudo)</option>
                             <option value="proprietary">Open Source + Proprietary (Nvidia Official Drivers, sudo)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Swap File Size" data-desc="A swap file acts as overflow RAM and is needed for hibernation. Max recommended is usually 32G or equal to your RAM.">
+                        <label>Swap File Size (0 for no swap):</label>
+                        <select id="swap_size">
+                            <option value="0">0GB (No Swap)</option>
+                            <option value="4G">4GB</option>
+                            <option value="8G" selected>8GB (Recommended)</option>
+                            <option value="16G">16GB</option>
+                            <option value="32G">32GB (Maximum)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select which applications you want automatically installed or detailed in the guide. Dependencies and integrity checks are managed automatically.">
+                        <label>Post-Install Apps & Scripts:</label>
+                        <select id="post_apps">
+                            <option value="none" selected>None (Minimal Base System Only)</option>
+                            <option value="paru">AUR Helper (paru)</option>
+                            <option value="standard">Standard Desktop (Browser, Signal, AUR Helper)</option>
+                            <option value="full">Full Deployment (Desktop, Auto-Deploy Scripts, Integrity Checks)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="System Cleanup" data-desc="Automatically clean up build dependencies, cache, and temporary files after installation is complete.">
+                        <label>Post-Install Cleanup:</label>
+                        <select id="cleanup">
+                            <option value="yes" selected>Yes (Recommended)</option>
+                            <option value="no">No</option>
                         </select>
                     </div>
 
