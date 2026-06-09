@@ -72,7 +72,7 @@
                 }
 
                 // Check for metadata
-                const configMatch = text.match(/### CONFIG_START\n### ({.*?})\n### CONFIG_END/);
+                const configMatch = text.match(/### CONFIG_START\n### ({.*?})\n### CONFIG_END/) || text.match(/<!-- CONFIG_START\n({.*?})\nCONFIG_END -->/);
                 if (configMatch && configMatch[1]) {
                     try {
                         detectedConfig = configMatch[1];

@@ -62,7 +62,7 @@ window.generateOutput = function(auto = false) {
 
     function buildOutput(cmdOnly) {
         let output = "";
-        output += '### CONFIG_START\n### ' + JSON.stringify(configData) + '\n### CONFIG_END\n\n';
+        output += '<!-- CONFIG_START\n' + JSON.stringify(configData) + '\nCONFIG_END -->\n\n';
 
         if (!cmdOnly) {
         output += `# Your Custom Arch Linux Guide\n\n`;
@@ -179,6 +179,17 @@ window.generateOutput = function(auto = false) {
     if (cmdOnly) {
         output += `\ncat << 'EOF' > /mnt/chroot_script.sh\n`;
         output += `#!/bin/bash\n`;
+        output += `echo "============================="\n`;
+        output += `echo "User Account Configuration"\n`;
+        output += `echo "============================="\n`;
+        output += `echo "Please set a root password:"\n`;
+        output += `passwd root\n`;
+        output += `read -p "Enter a username for your daily user account: " newuser\n`;
+        output += `if [ -n "$newuser" ]; then\n`;
+        output += `  useradd -m -G wheel -s /bin/bash "$newuser"\n`;
+        output += `  echo "Please set a password for $newuser:"\n`;
+        output += `  passwd "$newuser"\n`;
+        output += `fi\n`;
     } else {
         output += `arch-chroot /mnt\n`;
     }
@@ -374,6 +385,11 @@ window.generateOutput = function(auto = false) {
             output += `pacman -S --noconfirm openssh\n`;
             output += `sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config\n`;
             output += `sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config\n`;
+            output += `if [ -n "$newuser" ]; then\n`;
+            output += `  echo "AllowUsers root $newuser" >> /etc/ssh/sshd_config\n`;
+            output += `else\n`;
+            output += `  echo "AllowUsers root" >> /etc/ssh/sshd_config\n`;
+            output += `fi\n`;
             output += `# Integrate Libre-OTP with SSH via PAM\n`;
             output += `echo 'auth required pam_exec.so expose_authtok /usr/local/bin/libre-otp' >> /etc/pam.d/sshd\n`;
             output += `systemctl enable sshd.service\n`;
@@ -382,10 +398,17 @@ window.generateOutput = function(auto = false) {
         if (fakeEvilMaid === "yes") {
             output += `\n# EVIL MAID SPOOFING: Deploy Fake Decoy Kernels\n`;
             output += `mkdir -p /boot/fake_efi\n`;
-            output += `cp /boot/vmlinuz-linux-lts /boot/fake_efi/vmlinuz-linux\n`;
-            output += `cp /boot/initramfs-linux-lts.img /boot/fake_efi/initramfs-linux.img\n`;
-            output += `cp /boot/vmlinuz-linux-hardened /boot/fake_efi/vmlinuz-linux-lts\n`;
-            output += `cp /boot/initramfs-linux-hardened.img /boot/fake_efi/initramfs-linux-lts.img\n`;
+            output += `echo "Select a kernel to use as a decoy for Evil Maid spoofing (e.g. linux-lts, linux-hardened):"\n`;
+            output += `select decoy_kernel in "linux" "linux-lts" "linux-hardened" "linux-zen"; do\n`;
+            output += `  if [ -n "$decoy_kernel" ]; then\n`;
+            output += `    echo "Using $decoy_kernel as decoy..."\n`;
+            output += `    cp /boot/vmlinuz-$decoy_kernel /boot/fake_efi/vmlinuz-linux 2>/dev/null || echo "Kernel not found!"\n`;
+            output += `    cp /boot/initramfs-$decoy_kernel.img /boot/fake_efi/initramfs-linux.img 2>/dev/null\n`;
+            output += `    break\n`;
+            output += `  else\n`;
+            output += `    echo "Invalid selection. Please try again."\n`;
+            output += `  fi\n`;
+            output += `done\n`;
         }
     }
     if (auto_updates === "yes") {
@@ -678,7 +701,7 @@ function updateInfoPanel(group, e) {
     }
     
     // Smart Setup Analysis
-    if (part === 'unencrypted' && boot !== 'uki-custom') {
+    if ((group.querySelector && (group.querySelector('#partitioning') || group.querySelector('#bootloader') || group.querySelector('#fake-evil-maid'))) && part === 'unencrypted' && boot !== 'uki-custom') {
         warnings += `<div style="color: #f1fa8c; margin-top: 10px;">⚠️ <strong>Smart Setup Analysis:</strong> You chose no encryption and no secure boot. This is a highly insecure setup.</div>`;
     }
 

@@ -16,7 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
             By using this website, its documentation, or any generated scripts, you explicitly agree to the following terms:<br><br>
             <strong>1. No Warranty or Liability:</strong> All content, scripts, and software are provided "AS IS", without warranty of any kind. Inside the <strong>tilas01/arch-guides-dynamic github repository</strong> and on this website, there is absolutely <strong>NO accountability</strong> and <strong>NO liability</strong> for any data loss, system damage, or security breaches.<br><br>
             <strong>2. AI-Assisted Content:</strong> This website, its repositories, and its generated configurations were built with the assistance of AI. You must <strong>ALWAYS review code and commands</strong> before executing them on your machine.<br><br>
-            <strong>3. User Accountability:</strong> You take full accountability for running these scripts and applying these configurations.
+            <strong>Features & Mobile Support:</strong><br>
+            • <strong>Interactive Generator:</strong> Customize and download your Arch Linux install script and markdown guide.<br>
+            • <strong>Dynamic Wiki & Uploads:</strong> View full documentation and restore previous sessions.<br>
+            • <strong>Device Support:</strong> Fully supported on Desktop (right-click tooltips) and Mobile (tap-to-open tooltips). Mobile users have access to all features except precise mouse-tracking.
         </p>
         <div style="margin-top:1.5rem; text-align:left;">
             <label style="cursor:pointer; color:var(--fg-color); display:flex; align-items:center; gap:10px;">
