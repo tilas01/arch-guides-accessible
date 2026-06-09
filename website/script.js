@@ -7,13 +7,18 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const part = document.getElementById('partitioning').value;
     const initSys = document.getElementById('init_system').value;
     const boot = document.getElementById('bootloader').value;
-    const kernels = document.getElementById('kernel').value;
+    const kernelMain = document.getElementById('kernel-main').value;
+    const kernelBackup = document.getElementById('kernel-backup').value;
     const philosophy = document.getElementById('philosophy').value;
     const desktop = document.getElementById('desktop').value;
     const browser = document.getElementById('browser').value;
     const dns = document.getElementById('dns').value;
     const format = document.getElementById('outputformat').value;
     const secTools = document.getElementById('securitytools') ? document.getElementById('securitytools').value : 'none';
+    const anonTools = document.getElementById('anonymisation') ? document.getElementById('anonymisation').value : 'none';
+    const fakeMain = document.getElementById('kernel-fake-main') ? document.getElementById('kernel-fake-main').value : 'none';
+    const fakeBackup = document.getElementById('kernel-fake-backup') ? document.getElementById('kernel-fake-backup').value : 'none';
+    const spoofDir = document.getElementById('spoof-dir') ? document.getElementById('spoof-dir').value : '/boot';
 
     let errors = [];
     if (fw === "bios" && boot !== "grub") {
@@ -133,7 +138,14 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     let adminTools = philosophy === "libre" ? "opendoas pfetch" : "sudo fastfetch";
     let fsTools = fs === "btrfs" ? "btrfs-progs snapper" : (fs === "xfs" ? "xfsprogs" : "");
 
-    output += `pacstrap -K /mnt base ${kernels} ${gpuPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
+    let allKernels = kernelMain + " " + kernelMain + "-headers";
+    if (kernelBackup !== "none") allKernels += " " + kernelBackup + " " + kernelBackup + "-headers";
+    if (anonTools !== "none") {
+        if (fakeMain !== "none") allKernels += " " + fakeMain;
+        if (fakeBackup !== "none") allKernels += " " + fakeBackup;
+    }
+
+    output += `pacstrap -K /mnt base ${allKernels} ${gpuPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
     output += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
     
     // Create chroot script to continue execution
@@ -315,6 +327,20 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
             output += `echo 'auth required pam_exec.so expose_authtok /usr/local/bin/libre-otp' >> /etc/pam.d/sshd\n`;
             output += `systemctl enable sshd.service\n`;
         }
+
+        if (fakeMain !== "none" || fakeBackup !== "none") {
+            output += `\n# EVIL MAID SPOOFING: Deploy Fake Decoy Kernels\n`;
+            output += `mkdir -p ${spoofDir}\n`;
+            if (fakeMain !== "none") {
+                output += `cp /boot/vmlinuz-${fakeMain} ${spoofDir}/vmlinuz-linux\n`;
+                output += `cp /boot/initramfs-${fakeMain}.img ${spoofDir}/initramfs-linux.img\n`;
+            }
+            if (fakeBackup !== "none") {
+                output += `cp /boot/vmlinuz-${fakeBackup} ${spoofDir}/vmlinuz-linux-lts\n`;
+                output += `cp /boot/initramfs-${fakeBackup}.img ${spoofDir}/initramfs-linux-lts.img\n`;
+            }
+            output += `echo "Fake decoy kernels successfully deployed to ${spoofDir} to trap attackers."\n`;
+        }
     }
     if (cmdOnly) {
         output += `EOF\n`;
@@ -493,6 +519,24 @@ function validateConfigurations() {
         }
     } else {
         Array.from(bootloader.options).forEach(opt => opt.disabled = false);
+    }
+    
+    // Toggle spoofing options if anonymisation is enabled
+    const anonTools = document.getElementById('anonymisation');
+    const spoofOptions = document.getElementById('spoofing-options');
+    if (anonTools && spoofOptions) {
+        if (anonTools.value !== 'none') {
+            spoofOptions.style.display = 'block';
+            // Also ensure inner form-steps are visible if not already
+            spoofOptions.querySelectorAll('.form-step').forEach(step => step.classList.add('visible'));
+        } else {
+            spoofOptions.style.display = 'none';
+            // Reset spoofing options
+            const fakeMain = document.getElementById('kernel-fake-main');
+            const fakeBackup = document.getElementById('kernel-fake-backup');
+            if (fakeMain) fakeMain.value = 'none';
+            if (fakeBackup) fakeBackup.value = 'none';
+        }
     }
 }
 
