@@ -366,69 +366,135 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     outputSection.scrollIntoView({ behavior: 'smooth' });
 });
 
-// Dynamic JS Tooltips with Overlay
-const tooltip = document.createElement('div');
-tooltip.id = 'dynamic-tooltip';
-tooltip.style.position = 'absolute';
-tooltip.style.backgroundColor = 'var(--bg-darker)';
-tooltip.style.color = 'var(--accent-cyan)';
-tooltip.style.padding = '1rem';
-tooltip.style.borderRadius = '8px';
-tooltip.style.border = '1px solid var(--accent-blue)';
-tooltip.style.boxShadow = '0 8px 16px rgba(0,0,0,0.5)';
-tooltip.style.zIndex = '1000';
-tooltip.style.display = 'none';
-tooltip.style.pointerEvents = 'none';
-tooltip.style.maxWidth = '350px';
-tooltip.style.fontSize = '0.9rem';
-tooltip.style.lineHeight = '1.5';
-document.body.appendChild(tooltip);
+// Interactive UI Logic
+const formSteps = document.querySelectorAll('.form-step');
+const infoPanel = document.getElementById('info-panel');
+const infoContent = document.getElementById('info-panel-content');
+const defaultPanelHTML = infoContent.innerHTML;
+let tooltipsEnabled = true;
 
-document.querySelectorAll('.form-group[data-title]').forEach(group => {
-    group.addEventListener('mouseenter', (e) => {
-        const title = group.getAttribute('data-title');
-        const desc = group.getAttribute('data-desc');
-        const select = group.querySelector('select');
-        let extraInfo = '';
-
-        if (select) {
-            const selectedText = select.options[select.selectedIndex].text;
-            extraInfo = `<br><br><span style="color: var(--accent-green)"><strong>Current Selection:</strong><br>${selectedText}</span>`;
+const toggleBtn = document.getElementById('toggle-tooltips');
+if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+        tooltipsEnabled = !tooltipsEnabled;
+        if (!tooltipsEnabled) {
+            toggleBtn.textContent = 'Enable Info Panel / Tooltips';
+            toggleBtn.style.background = 'var(--accent-red)';
+            infoPanel.classList.remove('active');
+            document.body.classList.remove('panel-active');
+        } else {
+            toggleBtn.textContent = 'Disable Info Panel / Tooltips';
+            toggleBtn.style.background = 'var(--bg-lighter)';
         }
-
-        tooltip.innerHTML = `<strong style="color: var(--accent-purple); font-size: 1.1rem; border-bottom: 1px solid var(--accent-blue); padding-bottom: 5px; display: block; margin-bottom: 8px;">📌 ${title}</strong>${desc}${extraInfo}`;
-        tooltip.style.display = 'block';
     });
+}
 
-    group.addEventListener('mousemove', (e) => {
-        // Prevent overflowing screen edges
-        let x = e.pageX + 15;
-        let y = e.pageY + 15;
-        const tooltipRect = tooltip.getBoundingClientRect();
-        
-        if (x + tooltipRect.width > window.innerWidth) {
-            x = e.pageX - tooltipRect.width - 15;
-        }
-        
-        tooltip.style.left = x + 'px';
-        tooltip.style.top = y + 'px';
-    });
+// Progressive Disclosure
+let currentStep = 0;
+formSteps[0].classList.add('visible');
 
-    group.addEventListener('mouseleave', () => {
-        tooltip.style.display = 'none';
-    });
+document.getElementById('reveal-all-btn').addEventListener('click', () => {
+    formSteps.forEach(step => step.classList.add('visible'));
+    document.getElementById('continue-prompt').style.display = 'none';
+    document.getElementById('generate-btn').style.display = 'block';
+});
+
+// Add dynamic interactions to inputs
+formSteps.forEach((step, index) => {
+    const input = step.querySelector('select, input');
     
-    // Update tooltip content immediately if user changes select option while hovering
-    const select = group.querySelector('select');
-    if (select) {
-        select.addEventListener('change', () => {
-            if (tooltip.style.display === 'block') {
-                const title = group.getAttribute('data-title');
-                const desc = group.getAttribute('data-desc');
-                const selectedText = select.options[select.selectedIndex].text;
-                let extraInfo = `<br><br><span style="color: var(--accent-green)"><strong>Current Selection:</strong><br>${selectedText}</span>`;
-                tooltip.innerHTML = `<strong style="color: var(--accent-purple); font-size: 1.1rem; border-bottom: 1px solid var(--accent-blue); padding-bottom: 5px; display: block; margin-bottom: 8px;">📌 ${title}</strong>${desc}${extraInfo}`;
+    // Progress form
+    if (input) {
+        input.addEventListener('change', () => {
+            if (index + 1 < formSteps.length) {
+                formSteps[index + 1].classList.add('visible');
             }
+            if (index + 2 >= formSteps.length) {
+                document.getElementById('continue-prompt').style.display = 'none';
+                document.getElementById('generate-btn').style.display = 'block';
+            }
+            updateInfoPanel(step);
+            validateConfigurations();
         });
+        
+        // Mobile tap / Desktop hover info panel update
+        step.addEventListener('mouseenter', () => updateInfoPanel(step));
+        step.addEventListener('touchstart', () => updateInfoPanel(step), {passive: true});
     }
 });
+
+function updateInfoPanel(group) {
+    if (!tooltipsEnabled) return;
+    
+    const title = group.getAttribute('data-title');
+    const desc = group.getAttribute('data-desc');
+    const select = group.querySelector('select');
+    let extraInfo = '';
+    let warnings = '';
+
+    if (!title && !desc) return;
+
+    if (select) {
+        const selectedText = select.options[select.selectedIndex].text;
+        extraInfo = `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--bg-lighter);">
+            <strong style="color: var(--accent-green)">Current Selection:</strong><br>
+            <span style="color: var(--fg-color)">${selectedText}</span>
+        </div>`;
+    }
+
+    // Dynamic warnings based on current selections
+    const fw = document.getElementById('firmware').value;
+    const part = document.getElementById('partitioning').value;
+    
+    if (group.querySelector('#bootloader') && fw === 'bios') {
+        warnings += `<div style="color: #ff5555; margin-top: 10px;">⚠️ <strong>Warning:</strong> You selected Legacy BIOS. UKI and systemd-boot are physically impossible to install. GRUB is enforced.</div>`;
+    }
+    if (group.querySelector('#partitioning') && fw === 'bios' && part === 'luks2') {
+        warnings += `<div style="color: #ffb86c; margin-top: 10px;">⚠️ <strong>Notice:</strong> GRUB has limited support for LUKS2. You will need an unencrypted /boot partition.</div>`;
+    }
+
+    infoContent.innerHTML = `
+        <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.2rem;">📌 ${title || 'Setting Details'}</h3>
+        <p style="color: var(--fg-color); line-height: 1.5;">${desc || ''}</p>
+        ${warnings}
+        ${extraInfo}
+    `;
+    
+    infoPanel.classList.add('active');
+    if (window.innerWidth <= 768) {
+        document.body.classList.add('panel-active');
+    }
+}
+
+// Close panel on clicking outside (Mobile)
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768 && tooltipsEnabled) {
+        if (!e.target.closest('.form-step') && !e.target.closest('#info-panel')) {
+            infoPanel.classList.remove('active');
+            document.body.classList.remove('panel-active');
+            infoContent.innerHTML = defaultPanelHTML;
+        }
+    }
+});
+
+// Validate configurations dynamically
+function validateConfigurations() {
+    const fw = document.getElementById('firmware').value;
+    const bootloader = document.getElementById('bootloader');
+    
+    if (fw === 'bios') {
+        Array.from(bootloader.options).forEach(opt => {
+            if (opt.value.includes('uki') || opt.value === 'systemd-boot') {
+                opt.disabled = true;
+            }
+        });
+        if (bootloader.value !== 'grub') {
+            bootloader.value = 'grub';
+        }
+    } else {
+        Array.from(bootloader.options).forEach(opt => opt.disabled = false);
+    }
+}
+
+// Initial validation
+validateConfigurations();
