@@ -250,20 +250,19 @@ noscript .js-only {
     .info-panel.active {
         display: block !important;
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        bottom: 2rem;
+        right: 1rem;
+        left: auto;
         background: var(--bg-darker);
-        border-top: 2px solid var(--accent-blue);
-        padding: 1.5rem;
+        border: 2px solid var(--accent-blue);
+        padding: 1rem;
         z-index: 2000;
-        box-shadow: 0 -5px 15px rgba(0,0,0,0.6);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        max-width: 65vw;
         max-height: 40vh;
         overflow-y: auto;
-        border-radius: 16px 16px 0 0;
-    }
-    body.panel-active {
-        padding-bottom: 45vh;
+        border-radius: 8px;
+        pointer-events: auto; /* Allow tapping! */
     }
 }
 
