@@ -8,11 +8,11 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     const initSys = document.getElementById('init_system').value;
     const boot = document.getElementById('bootloader').value;
     const kernels = document.getElementById('kernel').value;
-    const gpu = document.getElementById('gpu').value;
     const philosophy = document.getElementById('philosophy').value;
     const desktop = document.getElementById('desktop').value;
     const browser = document.getElementById('browser').value;
     const dns = document.getElementById('dns').value;
+    const format = document.getElementById('outputformat').value;
 
     let partEfi = disk + "1";
     let partRoot = disk + "2";
@@ -21,10 +21,22 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
         partRoot = disk + "p2";
     }
 
-    let output = `# Your Custom Arch Linux Guide\n\n`;
-    
-    output += `## 1. Partitioning & Formatting (${part} + ${fs})\n`;
-    output += `\`\`\`bash\n`;
+    let isScript = (format === "script");
+    let cmdOnly = isScript;
+    let output = "";
+
+    if (!cmdOnly) {
+        output += `# Your Custom Arch Linux Guide\n\n`;
+        output += `*Review and edit your markdown directly below. This is happening entirely locally in your browser.*\n\n`;
+        output += `## 1. Partitioning & Formatting (${part} + ${fs})\n`;
+        output += `\`\`\`bash\n`;
+    } else {
+        output += `#!/bin/bash\n`;
+        output += `# WARNING: Review all script commands before executing!\n`;
+        output += `set -e\n\n`;
+        output += `# 1. Partitioning & Formatting\n`;
+    }
+
     if (fw === "uefi") {
         output += `sgdisk -Z ${disk}\n`;
         output += `sgdisk -n 1:0:+512M -t 1:ef00 ${disk}\n`;
@@ -80,21 +92,33 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     if (fw === "uefi") {
         output += `mkdir -p /mnt/efi\nmount ${partEfi} /mnt/efi\n`;
     }
-    output += `\`\`\`\n\n`;
+    
+    if (!cmdOnly) {
+        output += `\`\`\`\n\n`;
+        output += `## 2. Base Installation, Kernel & Admin Tools\n`;
+        output += `\`\`\`bash\n`;
+    } else {
+        output += `\n# 2. Base Installation\n`;
+    }
 
     let gpuPackages = "";
-    if (gpu === "amd") gpuPackages = "mesa xf86-video-amdgpu vulkan-radeon";
-    else if (gpu === "nvidia-nouveau") gpuPackages = "mesa xf86-video-nouveau";
-    else if (gpu === "nvidia-prop") gpuPackages = "nvidia nvidia-utils";
+    if (philosophy === "libre") gpuPackages = "mesa xf86-video-amdgpu xf86-video-intel vulkan-radeon vulkan-intel";
+    else if (philosophy === "opensource") gpuPackages = "mesa xf86-video-nouveau";
+    else if (philosophy === "proprietary") gpuPackages = "nvidia nvidia-utils";
 
     let adminTools = philosophy === "libre" ? "opendoas pfetch" : "sudo fastfetch";
     let fsTools = fs === "btrfs" ? "btrfs-progs snapper" : (fs === "xfs" ? "xfsprogs" : "");
 
-    output += `## 2. Base Installation, Kernel & Admin Tools\n`;
-    output += `\`\`\`bash\n`;
     output += `pacstrap -K /mnt base ${kernels} ${gpuPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
     output += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
-    output += `arch-chroot /mnt\n`;
+    
+    // Create chroot script to continue execution
+    if (cmdOnly) {
+        output += `\ncat << 'EOF' > /mnt/chroot_script.sh\n`;
+        output += `#!/bin/bash\n`;
+    } else {
+        output += `arch-chroot /mnt\n`;
+    }
     
     if (philosophy === "libre") {
         output += `echo "permit persist :wheel" > /etc/doas.conf\n`;
@@ -102,11 +126,15 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     } else {
         output += `echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel\n`;
     }
-    output += `\`\`\`\n\n`;
 
-    output += `## 3. Initramfs Configuration (${initSys})\n`;
-    output += `Edit \`/etc/mkinitcpio.conf\` inside the chroot:\n`;
-    output += `\`\`\`bash\n`;
+    if (!cmdOnly) {
+        output += `\`\`\`\n\n`;
+        output += `## 3. Initramfs Configuration (${initSys})\n`;
+        output += `Edit \`/etc/mkinitcpio.conf\` inside the chroot:\n`;
+        output += `\`\`\`bash\n`;
+    } else {
+        output += `\n# 3. Initramfs Configuration\n`;
+    }
     
     let baseHooks = initSys === "systemd" 
         ? "base systemd autodetect microcode modconf kms keyboard sd-vconsole block" 
@@ -120,20 +148,24 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
     let lvmHook = part.includes("lvm") ? "lvm2" : "";
     let fsHook = fs === "btrfs" ? "btrfs filesystems fsck" : "filesystems fsck";
 
-    // Combine hooks neatly
     let allHooks = [baseHooks, cryptoHook, lvmHook, fsHook].filter(h => h).join(" ");
     
-    output += `HOOKS=(${allHooks})\n`;
+    output += `sed -i 's/^HOOKS=.*/HOOKS=(${allHooks})/' /etc/mkinitcpio.conf\n`;
     output += `mkinitcpio -P\n`;
-    output += `\`\`\`\n\n`;
-
-    output += `## 4. Bootloader & Secure Boot (${boot})\n`;
-    if (fw === "bios" || boot.includes("grub")) {
+    
+    if (!cmdOnly) {
+        output += `\`\`\`\n\n`;
+        output += `## 4. Bootloader & Secure Boot (${boot})\n`;
         output += `\`\`\`bash\n`;
-        output += `pacman -S grub efibootmgr\n`;
+    } else {
+        output += `\n# 4. Bootloader\n`;
+    }
+
+    if (fw === "bios" || boot.includes("grub")) {
+        output += `pacman -S --noconfirm grub efibootmgr\n`;
         if (fw === "uefi") {
             if (boot === "grub-shim") {
-                output += `pacman -S shim-signed\n`;
+                output += `pacman -S --noconfirm shim-signed\n`;
                 output += `grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB --modules="tpm" --disable-shim-lock\n`;
                 output += `cp /usr/share/shim-signed/shimx64.efi /efi/EFI/GRUB/bootx64.efi\n`;
             } else {
@@ -143,67 +175,109 @@ document.getElementById('install-form').addEventListener('submit', function(e) {
             output += `grub-install --target=i386-pc ${disk}\n`;
         }
         output += `grub-mkconfig -o /boot/grub/grub.cfg\n`;
-        output += `\`\`\`\n`;
     } else if (boot.includes("uki")) {
-        output += `*Note: You chose UKI. You do not need GRUB or systemd-boot to load the OS, UEFI loads it directly.*\n`;
-        output += `\`\`\`bash\n`;
-        output += `pacman -S sbsigntools efitools efibootmgr\n`;
+        output += `pacman -S --noconfirm sbsigntools efitools efibootmgr\n`;
         if (boot === "uki-shim") {
-            output += `pacman -S shim-signed\n`;
-            output += `# Copy shim to EFI and configure it to boot your UKI.\n`;
+            output += `pacman -S --noconfirm shim-signed\n`;
             output += `cp /usr/share/shim-signed/shimx64.efi /efi/EFI/arch/bootx64.efi\n`;
-        } else {
-            output += `# Use sbctl or arch-secure-boot.sh to generate Custom Keys and sign the UKI.\n`;
         }
-        output += `\`\`\`\n`;
     } else if (boot === "systemd-boot") {
-        output += `\`\`\`bash\n`;
         output += `bootctl install --esp-path=/efi\n`;
-        output += `\`\`\`\n`;
     }
 
-    output += `\n## 5. DNS Caching Service (${dns})\n`;
-    output += `\`\`\`bash\n`;
+    if (!cmdOnly) {
+        output += `\`\`\`\n\n`;
+        output += `## 5. DNS Caching Service (${dns})\n`;
+        output += `\`\`\`bash\n`;
+    } else {
+        output += `\n# 5. DNS Setup\n`;
+    }
+
     if (dns === "unbound") {
-        output += `pacman -S unbound\n`;
+        output += `pacman -S --noconfirm unbound\n`;
         output += `systemctl enable unbound\n`;
     } else if (dns === "dnscrypt-proxy") {
-        output += `pacman -S dnscrypt-proxy\n`;
+        output += `pacman -S --noconfirm dnscrypt-proxy\n`;
         output += `systemctl enable dnscrypt-proxy\n`;
     } else {
         output += `systemctl enable systemd-resolved\n`;
     }
-    output += `\`\`\`\n`;
 
-    output += `\n## 6. Post-Install Apps & Desktop Environment\n`;
-    output += `\`\`\`bash\n`;
+    if (!cmdOnly) {
+        output += `\`\`\`\n\n`;
+        output += `## 6. Post-Install Apps & Desktop Environment\n`;
+        output += `\`\`\`bash\n`;
+    } else {
+        output += `\n# 6. Desktop & Apps\n`;
+    }
+
     if (desktop === "gnome") {
-        output += `pacman -S gnome gnome-tweaks\n`;
+        output += `pacman -S --noconfirm gnome gnome-tweaks\n`;
         output += `systemctl enable gdm\n`;
     } else if (desktop === "kde") {
-        output += `pacman -S plasma-desktop sddm\n`;
+        output += `pacman -S --noconfirm plasma-desktop sddm\n`;
         output += `systemctl enable sddm\n`;
     } else if (desktop === "dwm") {
-        output += `pacman -S xorg-server xorg-xinit base-devel libx11 libxinerama libxft\n`;
-        output += `# Compile dwm from source manually\n`;
+        output += `pacman -S --noconfirm xorg-server xorg-xinit base-devel libx11 libxinerama libxft\n`;
     }
 
     if (browser === "librewolf") {
-        output += `pacman -S librewolf\n`;
+        output += `pacman -S --noconfirm librewolf\n`;
     } else if (browser === "firefox") {
-        output += `pacman -S firefox\n`;
+        output += `pacman -S --noconfirm firefox\n`;
     }
     
     if (fs === "btrfs") {
-        output += `# Configure Snapper\n`;
         output += `snapper -c root create-config /\n`;
         output += `systemctl enable snapper-timeline.timer snapper-cleanup.timer\n`;
     }
-    output += `\`\`\`\n`;
+    
+    if (cmdOnly) {
+        output += `EOF\n`;
+        output += `chmod +x /mnt/chroot_script.sh\n`;
+        output += `arch-chroot /mnt /chroot_script.sh\n`;
+        output += `rm /mnt/chroot_script.sh\n`;
+        output += `echo "Install complete. Please reboot."\n`;
+    } else {
+        output += `\`\`\`\n`;
+        output += `\n*Guide complete. Ensure networking and passwords are set before rebooting into your tailored environment.*`;
+    }
 
-    output += `\n*Guide complete. Ensure networking and passwords are set before rebooting into your tailored environment.*`;
+    // Editable text area setup
+    const outputSection = document.getElementById('output-section');
+    outputSection.style.display = 'block';
+    
+    let renderedHTML = "";
+    if (isScript) {
+        renderedHTML = `
+            <div class="alert warning">Review all script commands below. You can edit this script directly in your browser.</div>
+            <textarea id="editor" spellcheck="false" style="width: 100%; height: 500px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue);">${output}</textarea>
+        `;
+    } else {
+        renderedHTML = `
+            <div class="alert warning">You may edit the markdown guide locally before confirming/saving.</div>
+            <textarea id="editor" spellcheck="false" style="width: 100%; height: 200px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue); margin-bottom: 1rem;">${output}</textarea>
+            <h3>Live Preview:</h3>
+            <div id="preview" style="border: 1px solid var(--bg-lighter); padding: 1rem;"></div>
+        `;
+    }
 
-    document.getElementById('generated-guide').textContent = output;
-    document.getElementById('output-section').style.display = 'block';
-    document.getElementById('output-section').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('generated-guide').innerHTML = renderedHTML;
+    
+    if (!isScript) {
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        
+        // Ensure marked.js is loaded
+        if (typeof marked !== 'undefined') {
+            preview.innerHTML = marked.parse(editor.value);
+            editor.addEventListener('input', function() {
+                preview.innerHTML = marked.parse(editor.value);
+            });
+        } else {
+            preview.innerHTML = "<p>Markdown parsing unavailable (marked.js not loaded).</p>";
+        }
+    }
+
+    outputSection.scrollIntoView({ behavior: 'smooth' });
 });

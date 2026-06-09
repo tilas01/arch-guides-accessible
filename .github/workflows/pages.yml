@@ -27,6 +27,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
         
+      - name: Prepare Website Assets
+        run: |
+          cp -r docs website/
+          cp -r img website/
+        
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
