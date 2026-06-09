@@ -12,7 +12,15 @@
 
 # Post-Installation & Desktop
 
-## 1. Fast Wi-Fi & DNS
+## 1. Minimalist System Tools (`doas` & `pfetch`)
+To adhere to the minimalist philosophy, we use `doas` instead of `sudo`. If you included `opendoas` and `pfetch` during `pacstrap`, configure them now:
+```bash
+echo "permit persist :wheel" > /etc/doas.conf
+ln -s /usr/bin/doas /usr/bin/sudo
+echo "pfetch" >> /etc/profile
+```
+
+## 2. Fast Wi-Fi & DNS
 ```bash
 pacman -S iwd systemd-resolvconf
 systemctl enable iwd systemd-resolved
