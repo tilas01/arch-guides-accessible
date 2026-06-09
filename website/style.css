@@ -178,3 +178,62 @@ noscript .js-only {
     font-weight: bold;
     margin: 0 10px;
 }
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 1rem;
+        font-size: 0.95rem;
+    }
+
+    header {
+        margin-bottom: 2rem;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+
+    section {
+        padding: 1.2rem;
+    }
+
+    .btn {
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+    }
+
+    .markdown-body {
+        padding: 1rem;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+
+    /* Adjust Tooltips for small screens */
+    [title]:hover::after {
+        width: 250px;
+        left: 0;
+        transform: none;
+        font-size: 0.75rem;
+    }
+
+    .nav-link {
+        display: block;
+        margin: 0.5rem 0;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    body {
+        padding: 0.5rem;
+    }
+
+    h1 {
+        font-size: 1.4rem;
+    }
+
+    /* Disable hover tooltips on extremely small screens to prevent overlap */
+    [title]:hover::after {
+        display: none;
+    }
+}
