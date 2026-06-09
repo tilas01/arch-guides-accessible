@@ -20,3 +20,24 @@ A daemon that interfaces directly with `/dev/input/eventX`. It profiles keystrok
 
 ### ðŸ” Libre-OTP
 A native CLI OTP Authenticator utilizing the `totp-rs` algorithms. It requires zero network connectivity and generates secure Base32 Shared Secrets. It can be implemented inside `/etc/pam.d/system-login` or SSH configurations to mandate a fully open-source, non-proprietary 2FA mechanism before granting shell access.
+
+## How Your Choices Affect The Installation
+
+Every choice you make in the interactive generator fundamentally shapes the required commands and compatibility for later steps. The dynamic generator handles these complexities, but here is what happens under the hood:
+
+### 1. Firmware (UEFI vs BIOS)
+- **UEFI:** Unlocks the ability to use **systemd-boot**, **Unified Kernel Images (UKI)**, and **Secure Boot** methodologies. It allows for the modern ESP (EFI System Partition) structure.
+- **Legacy BIOS:** If you select BIOS, the system enforces **GRUB** as the bootloader because UKI and systemd-boot cannot interface with MBR/Legacy systems.
+
+### 2. Encryption (LUKS1 vs LUKS2 vs Unencrypted)
+- **LUKS2:** The modern post-quantum secure standard. However, GRUB has extremely limited support for LUKS2 PBKDF2 formats and zero support for Argon2. If you select GRUB with LUKS2, you **must** use an unencrypted /boot partition. If you use UKI or systemd-boot, full disk encryption is seamless.
+- **Unencrypted:** Bypasses LUKS cryptsetup altogether, resulting in a completely raw filesystem mount. **Warning: If paired with no Secure Boot, this is a highly insecure setup.**
+
+### 3. Init Systems (systemd vs busybox)
+- **systemd hook:** Faster boot times and deeper integration with systemd-boot and sd-encrypt. It handles LVM and LUKS mounting inherently via systemd targets.
+- **busybox hook:** The traditional mkinitcpio setup. Requires specific bash hooks (encrypt, lvm2) placed in specific order before ilesystems inside /etc/mkinitcpio.conf.
+
+### 4. Bootloaders & Secure Boot
+- **Unified Kernel Image (UKI):** Bundles the kernel, initramfs, and cmdline into a single .efi executable. This entirely bypasses traditional bootloaders like GRUB, directly booting from the motherboard's UEFI. This allows for Custom Keys Secure Boot where you take ownership of the motherboard PK/KEK keys.
+- **systemd-boot:** A minimal boot manager that reads text entries. Cannot natively boot Windows without chainloading if Secure Boot is enforced.
+- **GRUB:** Essential for BIOS, but on UEFI it relies heavily on shim-signed to fake Secure Boot validation via Microsoft's certificates.
