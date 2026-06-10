@@ -4,63 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arch Guides | Accessible & Modular</title>
+    <meta name="description" content="The ultimate dynamically customizable, highly secure guide to installing Arch Linux. Generate custom scripts and markdown tutorials.">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="legal.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
-
-    <style>
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: var(--bg-darker);
-        min-width: 250px;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
-        z-index: 1;
-        border: 1px solid var(--accent-purple);
-        border-radius: 5px;
-    }
-    .dropdown-content a {
-        color: var(--fg-color);
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-        font-size: 0.9rem;
-    }
-    .dropdown-content a:hover {
-        background-color: var(--bg-lighter);
-        color: var(--accent-cyan);
-    }
-    .dropdown:hover .dropdown-content {
-        display: block;
-    }
-    </style>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
 </head>
 <body>
     <header>
+        <button id="history-btn" type="button" class="js-only" title="View generation history" onclick="toggleHistoryModal()">🕓</button>
         <a href="https://github.com/tilas01/arch-guides-dynamic" title="View Source on GitHub" target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
         <h1>Arch Guides Wiki & Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
         <nav style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic Interactive Setup Generator. Generates custom markdown and scripts.">Generator</a> | 
-            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki" data-desc="Full Arch Linux Wiki Documentation. Right-click anywhere in form to visit relevant sections.">Wiki / Documentation</a> | 
-            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated configurations to restore them.">Upload Guide</a> | 
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Project Repository" data-desc="The full source code, scripts, and documentation (tilas01/arch-guides-dynamic). No accountability is accepted for generated outputs.">Repository</a>
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic Interactive Setup Generator.">Generator</a> | 
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki" data-desc="Full Arch Linux Wiki Documentation.">Wiki / Documentation</a> | 
+            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated configurations to restore.">Upload Guide</a> | 
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub.">Repository</a>
         </nav>
-        <button id="toggle-tooltips-btn" type="button" class="js-only" data-title="Toggle Tooltips" data-desc="Currently: Enabled" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">ℹ️</button>
+        <button id="toggle-tooltips-btn" type="button" class="js-only" data-title="Toggle Tooltips" data-desc="Toggle info tooltips on/off" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">ℹ️</button>
     </header>
+
+    <!-- History Modal -->
+    <div id="history-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10000; background:var(--bg-darker); border:2px solid var(--accent-purple); border-radius:16px; padding:1.5rem; max-width:500px; width:90%; max-height:70vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.8);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="color:var(--accent-purple); margin:0;">🕓 Generation History</h3>
+            <button class="btn" style="width:auto; padding:0.3rem 0.8rem; font-size:0.85rem; background:var(--accent-red);" onclick="toggleHistoryModal()">✕ Close</button>
+        </div>
+        <div id="history-panel"></div>
+        <button class="btn" style="margin-top:0.8rem; font-size:0.85rem; background:var(--accent-red);" onclick="sessionStorage.removeItem('arch_gen_history'); renderHistoryPanel();">Clear All History</button>
+    </div>
 
     <main>
         <noscript>
             <div class="alert warning">
-                JavaScript is disabled. Please view the raw markdown documentation directly in the <a href="wiki.html">Wiki</a>.
+                JavaScript is disabled. Please view the raw markdown documentation in the <a href="wiki.html">Wiki</a>.
             </div>
         </noscript>
 
@@ -75,172 +56,167 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="File System Features" data-desc="BTRFS supports instant snapshots (snapper) and compression. Ext4 is traditional.">
+                    <div class="form-group form-step" data-title="File System Features" data-desc="BTRFS supports instant snapshots and compression. Ext4 is traditional and stable.">
                         <label>File System:</label>
                         <select id="filesystem">
-                            <option value="btrfs" selected>BTRFS (Recommended for Snapshots & Snapper)</option>
+                            <option value="btrfs" selected>BTRFS (Snapshots & Snapper)</option>
                             <option value="ext4">Ext4 (Standard/Stable)</option>
-                            <option value="xfs">XFS (High Performance Large Files)</option>
+                            <option value="xfs">XFS (High Performance)</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Make sure this is correct!">
+                    <div class="form-group form-step" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Run lsblk to find the correct device.">
                         <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
                         <input type="text" id="target-disk" value="/dev/sda" required>
-                        <div class="alert warning" style="margin-top: 5px; padding: 0.5rem; font-size: 0.85rem;">
-                            <strong>Tip:</strong> Run <code>lsblk</code> in your terminal to find your correct target disk name.
-                        </div>
                     </div>
                     
-                    <div class="form-group form-step" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure but requires modern bootloaders. LUKS1 works with GRUB. Unencrypted is faster but insecure.">
-                        <label>Partitioning / Encryption (Speed vs Security):</label>
+                    <div class="form-group form-step" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure. LUKS1 works with legacy GRUB. LVM adds flexible volumes.">
+                        <label>Encryption:</label>
                         <select id="partitioning">
-                            <option value="unencrypted">Unencrypted (Fastest load time / No Security)</option>
-                            <option value="luks1">LUKS1 (Slower unlock / Legacy GRUB Compatible / High Security)</option>
-                            <option value="luks2" selected>LUKS2 (Fast modern unlock / Post-Quantum Argon2id / Max Security)</option>
-                            <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes / Max Security)</option>
+                            <option value="unencrypted">Unencrypted (No Security)</option>
+                            <option value="luks1">LUKS1 (GRUB Compatible)</option>
+                            <option value="luks2" selected>LUKS2 (Post-Quantum Argon2id)</option>
+                            <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes)</option>
                         </select>
                     </div>
                     
                     <div class="form-group form-step" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
-                        <label>Init System (mkinitcpio Hooks):</label>
+                        <label>Init System:</label>
                         <select id="init_system">
-                            <option value="systemd" selected>systemd init (Modern, fast, sd-encrypt)</option>
-                            <option value="busybox">busybox/udev init (Traditional, encrypt hook)</option>
+                            <option value="systemd" selected>systemd (Modern, sd-encrypt)</option>
+                            <option value="busybox">busybox/udev (Traditional)</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Bootloader Choice" data-desc="UKI Custom uses your own keys directly in the motherboard UEFI, giving you total control. UKI Shim relies on Microsoft's keys for convenience. systemd-boot is minimal. GRUB is legacy.">
+                    <div class="form-group form-step" data-title="Bootloader Choice" data-desc="UKI Custom uses your own keys in UEFI. UKI Shim uses Microsoft trust chain. systemd-boot is minimal. GRUB is legacy.">
                         <label>Bootloader & Secure Boot:</label>
                         <select id="bootloader">
-                            <option value="uki-custom" selected>UKI + Custom Keys (Fortress / Direct UEFI)</option>
-                            <option value="uki-shim">UKI + Shim (Secure Boot via Microsoft Trust)</option>
-                            <option value="systemd-boot">systemd-boot (Clean/Minimal)</option>
-                            <option value="grub">GRUB (Legacy/Traditional BIOS/UEFI)</option>
+                            <option value="uki-custom" selected>UKI + Custom Keys (Fortress)</option>
+                            <option value="uki-shim">UKI + Shim (Microsoft Trust)</option>
+                            <option value="systemd-boot">systemd-boot (Minimal)</option>
+                            <option value="grub">GRUB (Legacy)</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Main Kernel" data-desc="Hardened applies security patches. Zen is for gaming/responsiveness. Standard is balanced.">
+                    <div class="form-group form-step" data-title="Main Kernel" data-desc="Hardened has security patches. Zen is for gaming. Standard is balanced. LTS is stable.">
                         <label>Main Kernel:</label>
                         <select id="kernel-main">
-                            <option value="linux-hardened" selected>linux-hardened (Maximum Security)</option>
-                            <option value="linux">linux (Standard / Regular)</option>
-                            <option value="linux-zen">linux-zen (Performance/Gaming)</option>
-                            <option value="linux-lts">linux-lts (Long Term Support/Stability)</option>
+                            <option value="linux-hardened" selected>linux-hardened (Max Security)</option>
+                            <option value="linux">linux (Standard)</option>
+                            <option value="linux-zen">linux-zen (Performance)</option>
+                            <option value="linux-lts">linux-lts (Stability)</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Backup Kernel" data-desc="A fallback kernel in case your main kernel fails to boot after an update.">
+                    <div class="form-group form-step" data-title="Backup Kernel" data-desc="Fallback kernel in case your main kernel fails to boot after an update.">
                         <label>Backup Kernel:</label>
                         <select id="kernel-backup">
-                            <option value="linux-zen" selected>linux-zen (Fallback for Hardened)</option>
+                            <option value="linux-zen" selected>linux-zen (Fallback)</option>
                             <option value="linux-lts">linux-lts (Stable Fallback)</option>
                             <option value="linux">linux (Standard)</option>
-                            <option value="none">None (No Backup)</option>
+                            <option value="none">None</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="CPU Architecture" data-desc="Select your processor brand to ensure the correct microcode is installed.">
+                    <div class="form-group form-step" data-title="CPU Architecture" data-desc="Select your CPU brand for correct microcode.">
                         <label>CPU Brand:</label>
                         <select id="cpu_brand">
-                            <option value="amd" selected>AMD (amd-ucode)</option>
-                            <option value="intel">Intel (intel-ucode)</option>
-                            <option value="vm">Virtual Machine / Other</option>
+                            <option value="amd" selected>AMD</option>
+                            <option value="intel">Intel</option>
+                            <option value="vm">VM / Other</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="GPU Hardware" data-desc="Select your primary graphics hardware (discrete or integrated). Note: Nvidia requires proprietary or nouveau drivers.">
+                    <div class="form-group form-step" data-title="GPU Hardware" data-desc="Select your GPU. Nvidia requires proprietary or nouveau drivers.">
                         <label>GPU Brand:</label>
                         <select id="gpu_brand">
                             <option value="amd" selected>AMD Radeon</option>
-                            <option value="intel">Intel Graphics (Integrated/Arc)</option>
+                            <option value="intel">Intel Graphics</option>
                             <option value="nvidia">Nvidia GeForce</option>
-                            <option value="vm">Virtual Machine (VirtIO/VMWare/QXL)</option>
+                            <option value="vm">Virtual Machine</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Virtual Machine Guest Setup" data-desc="If installing inside a VM, select the hypervisor to automatically install and enable Guest Additions (clipboard, dynamic resolution, etc).">
+                    <div class="form-group form-step" data-title="Virtual Machine Guest Setup" data-desc="If in a VM, select hypervisor for Guest Additions.">
                         <label>VM Guest Setup:</label>
                         <select id="vm_guest">
                             <option value="none" selected>None (Bare Metal)</option>
-                            <option value="vbox">VirtualBox Guest Additions</option>
-                            <option value="vmware">VMware Tools (open-vm-tools)</option>
-                            <option value="qemu">QEMU / KVM Guest Agent</option>
+                            <option value="vbox">VirtualBox</option>
+                            <option value="vmware">VMware</option>
+                            <option value="qemu">QEMU/KVM</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Software Type & Graphics Drivers" data-desc="Libre is purely open source without proprietary firmware. Proprietary includes closed source drivers.">
-                        <label>Software Type & Graphics Drivers:</label>
+                    <div class="form-group form-step" data-title="Software Type & Graphics Drivers" data-desc="Libre is purely open source (doas, pfetch). Proprietary includes closed source drivers (nvidia, sudo).">
+                        <label>Software Type:</label>
                         <select id="software_type">
-                            <option value="libre" selected>Fully Libre (100% Open Source, doas, pfetch)</option>
-                            <option value="opensource">Open Source Only (Free Software + Firmware, Nouveau, sudo)</option>
-                            <option value="proprietary">Open Source + Proprietary (Nvidia Official Drivers, sudo)</option>
-                            <option value="vm">Virtual Machine Optimization (spice-vdagent, xf86-video-qxl)</option>
+                            <option value="libre" selected>Fully Libre (100% Open Source)</option>
+                            <option value="opensource">Open Source + Firmware</option>
+                            <option value="proprietary">Open Source + Proprietary</option>
+                            <option value="vm">Virtual Machine</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Swap File Size" data-desc="A swap file acts as overflow RAM and is needed for hibernation. Max recommended is usually 32G or equal to your RAM.">
-                        <label>Swap File Size (0 for no swap):</label>
+                    <div class="form-group form-step" data-title="Swap File Size" data-desc="Swap acts as overflow RAM. Needed for hibernation.">
+                        <label>Swap Size:</label>
                         <select id="swap_size">
                             <option value="0">0GB (No Swap)</option>
                             <option value="4G">4GB</option>
-                            <option value="8G" selected>8GB (Recommended)</option>
+                            <option value="8G" selected>8GB</option>
                             <option value="16G">16GB</option>
-                            <option value="32G">32GB (Maximum)</option>
+                            <option value="32G">32GB</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install after base system setup. All libre-only users will see notes about what they cannot install. Apps are linked to their official pages.">
-                        <label>Post-Install Apps & Scripts:</label>
-                        <div id="post_apps_container" style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-dark); padding: 1rem; border: 1px solid var(--accent-purple); border-radius:8px;">
-                            <strong style="color:var(--accent-cyan);font-size:0.85rem;">AUR / Libre Tools</strong>
-                            <label title="paru: Fast Rust-based AUR helper. Visit: https://github.com/Morganamilo/paru"><input type="checkbox" name="post_apps" value="paru" checked> <a href="https://github.com/Morganamilo/paru" target="_blank" style="color:var(--fg-color)">paru</a> — AUR Helper (Rust, Libre)</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.85rem;margin-top:0.5rem;">Browsers</strong>
-                            <label title="Firefox: Visit https://mozilla.org"><input type="checkbox" name="post_apps" value="firefox" checked> <a href="https://www.mozilla.org/firefox/" target="_blank" style="color:var(--fg-color)">Firefox</a> — Standard privacy browser</label>
-                            <label title="LibreWolf: Hardened Firefox fork. Visit: https://librewolf.net"><input type="checkbox" name="post_apps" value="librewolf"> <a href="https://librewolf.net/" target="_blank" style="color:var(--fg-color)">LibreWolf</a> — Privacy-hardened Firefox fork</label>
-                            <label title="Tor Browser: Anonymity browser. Visit: https://torproject.org"><input type="checkbox" name="post_apps" value="tor-browser"> <a href="https://www.torproject.org/" target="_blank" style="color:var(--fg-color)">Tor Browser</a> — Maximum anonymity (AUR)</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.85rem;margin-top:0.5rem;">Security / Privacy</strong>
-                            <label title="Signal: E2E encrypted messaging. Visit: https://signal.org"><input type="checkbox" name="post_apps" value="signal"> <a href="https://signal.org/" target="_blank" style="color:var(--fg-color)">Signal Desktop</a> — E2E encrypted messaging</label>
-                            <label title="KeePassXC: Offline password manager. Visit: https://keepassxc.org"><input type="checkbox" name="post_apps" value="keepassxc"> <a href="https://keepassxc.org/" target="_blank" style="color:var(--fg-color)">KeePassXC</a> — Offline password manager</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.85rem;margin-top:0.5rem;">Development / Terminal</strong>
-                            <label title="Neovim: Extensible text editor. Visit: https://neovim.io"><input type="checkbox" name="post_apps" value="neovim" checked> <a href="https://neovim.io/" target="_blank" style="color:var(--fg-color)">Neovim</a> — Extensible text editor + dev tools</label>
-                            <label title="Alacritty: GPU-accelerated terminal. Visit: https://alacritty.org"><input type="checkbox" name="post_apps" value="alacritty"> <a href="https://alacritty.org/" target="_blank" style="color:var(--fg-color)">Alacritty</a> — Fast GPU-accelerated terminal</label>
-                            <label title="Zsh: Feature-rich shell"><input type="checkbox" name="post_apps" value="zsh"> Zsh + Completions — Modern shell</label>
-                            <label title="VSCodium: Open source VS Code without Microsoft telemetry"><input type="checkbox" name="post_apps" value="vscodium"> <a href="https://vscodium.com/" target="_blank" style="color:var(--fg-color)">VSCodium</a> — Open Source VS Code (AUR)</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.85rem;margin-top:0.5rem;">Media / Files</strong>
-                            <label title="Thunar: XFCE lightweight file manager"><input type="checkbox" name="post_apps" value="thunar"> Thunar — Lightweight file manager (for X11 WMs)</label>
-                            <label title="mpv: Minimal media player. Visit: https://mpv.io"><input type="checkbox" name="post_apps" value="mpv"> <a href="https://mpv.io/" target="_blank" style="color:var(--fg-color)">mpv</a> — Minimal media player</label>
-                            <label title="OBS Studio: Screen recording and streaming"><input type="checkbox" name="post_apps" value="obs"> <a href="https://obsproject.com/" target="_blank" style="color:var(--fg-color)">OBS Studio</a> — Screen recording / streaming</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.85rem;margin-top:0.5rem;">System</strong>
-                            <label title="Flatpak: Universal app format from Flathub"><input type="checkbox" name="post_apps" value="flatpak"> Flatpak — Universal apps via Flathub</label>
+                    <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Libre-only users will see compatibility notes.">
+                        <label>Post-Install Apps:</label>
+                        <div id="post_apps_container" style="display:flex; flex-direction:column; gap:0.15rem; background: var(--bg-dark); padding: 0.8rem; border: 1px solid var(--accent-purple); border-radius:8px;">
+                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">AUR</strong>
+                            <label title="paru: Rust AUR helper"><input type="checkbox" name="post_apps" value="paru" checked> <a href="https://github.com/Morganamilo/paru" target="_blank" style="color:var(--fg-color)">paru</a> — AUR Helper</label>
+                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">Browsers</strong>
+                            <label><input type="checkbox" name="post_apps" value="firefox" checked> <a href="https://mozilla.org/firefox/" target="_blank" style="color:var(--fg-color)">Firefox</a></label>
+                            <label><input type="checkbox" name="post_apps" value="librewolf"> <a href="https://librewolf.net/" target="_blank" style="color:var(--fg-color)">LibreWolf</a> — Privacy-hardened</label>
+                            <label><input type="checkbox" name="post_apps" value="tor-browser"> <a href="https://torproject.org/" target="_blank" style="color:var(--fg-color)">Tor Browser</a> — Max anonymity</label>
+                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">Security</strong>
+                            <label><input type="checkbox" name="post_apps" value="signal"> <a href="https://signal.org/" target="_blank" style="color:var(--fg-color)">Signal</a> — E2E messaging</label>
+                            <label><input type="checkbox" name="post_apps" value="keepassxc"> <a href="https://keepassxc.org/" target="_blank" style="color:var(--fg-color)">KeePassXC</a> — Password manager</label>
+                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">Dev / Terminal</strong>
+                            <label><input type="checkbox" name="post_apps" value="neovim" checked> <a href="https://neovim.io/" target="_blank" style="color:var(--fg-color)">Neovim</a> + dev tools</label>
+                            <label><input type="checkbox" name="post_apps" value="alacritty"> <a href="https://alacritty.org/" target="_blank" style="color:var(--fg-color)">Alacritty</a> — GPU terminal</label>
+                            <label><input type="checkbox" name="post_apps" value="zsh"> Zsh — Modern shell</label>
+                            <label><input type="checkbox" name="post_apps" value="vscodium"> <a href="https://vscodium.com/" target="_blank" style="color:var(--fg-color)">VSCodium</a> — FOSS VS Code</label>
+                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">Media / Files</strong>
+                            <label><input type="checkbox" name="post_apps" value="thunar"> Thunar — File manager</label>
+                            <label><input type="checkbox" name="post_apps" value="mpv"> <a href="https://mpv.io/" target="_blank" style="color:var(--fg-color)">mpv</a> — Media player</label>
+                            <label><input type="checkbox" name="post_apps" value="obs"> <a href="https://obsproject.com/" target="_blank" style="color:var(--fg-color)">OBS Studio</a> — Recording</label>
+                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">System</strong>
+                            <label><input type="checkbox" name="post_apps" value="flatpak"> Flatpak — Flathub apps</label>
                         </div>
-                        <p style="font-size:0.8rem;color:var(--accent-red);margin-top:0.5rem;">⚠️ Libre users: Firefox (non-libre firmware), Flatpak (proprietary apps), and Signal may conflict with strict libre philosophy. Tor Browser and LibreWolf are fully libre-compatible.</p>
+                        <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre: Firefox firmware, Flatpak proprietary apps, Signal may conflict with strict libre.</p>
                     </div>
 
-                    <div class="form-group form-step" data-title="Automatic System Updates" data-desc="Set up a cron job with unattended-upgrades to automatically update your pacman packages and AUR packages with logging.">
-                        <label>Auto Updates & Cron Logs:</label>
+                    <div class="form-group form-step" data-title="Automatic System Updates" data-desc="Daily cron job to auto-update pacman packages with logging.">
+                        <label>Auto Updates:</label>
                         <select id="auto_updates">
-                            <option value="no" selected>No (Manual Updates Only)</option>
-                            <option value="yes">Yes (Daily Cron + AUR Upgrade Logs)</option>
+                            <option value="no" selected>No (Manual)</option>
+                            <option value="yes">Yes (Daily Cron)</option>
                         </select>
                     </div>
 
-                    
-                    <div class="form-group form-step" data-title="Multi-User Setup" data-desc="Select the number of regular non-root users. Max 1 root account. Select how you want to use root over SSH.">
-                        <label>Regular Non-Root Users (count):</label>
-                        <input type="number" id="user_count" min="1" max="5" value="1" style="margin-bottom: 1rem;">
-                        
+                    <div class="form-group form-step" data-title="Multi-User Setup" data-desc="Number of regular non-root users and SSH root access policy.">
+                        <label>Regular Users:</label>
+                        <input type="number" id="user_count" min="1" max="5" value="1" style="margin-bottom:0.5rem;">
                         <label>Root SSH Access:</label>
                         <select id="root_ssh">
-                            <option value="no" selected>No (Only sudo/doas allowed over SSH)</option>
-                            <option value="yes">Yes (Allow direct root SSH)</option>
+                            <option value="no" selected>No (sudo/doas only)</option>
+                            <option value="yes">Yes (Allow root SSH)</option>
                         </select>
                     </div>
     
-                    <div class="form-group form-step" data-title="System Cleanup" data-desc="Automatically clean up build dependencies, cache, and temporary files after installation is complete.">
+                    <div class="form-group form-step" data-title="System Cleanup" data-desc="Auto-clean build deps, cache, and temp files after install.">
                         <label>Post-Install Cleanup:</label>
                         <select id="cleanup">
-                            <option value="yes" selected>Yes (Recommended)</option>
+                            <option value="yes" selected>Yes</option>
                             <option value="no">No</option>
                         </select>
                     </div>
@@ -249,65 +225,65 @@
                         <label>Desktop Environment:</label>
                         <select id="desktop">
                             <option value="none" selected>None (TTY Only)</option>
-                            <option value="gnome">GNOME (Modern, Complete)</option>
-                            <option value="kde">KDE Plasma (Customizable, Fast)</option>
-                            <option value="dwm">DWM (Minimal Window Manager)</option>
-                            <option value="dusky">Dusky OS (Fully riced fast OS - dusklinux/dusky)</option>
+                            <option value="gnome">GNOME</option>
+                            <option value="kde">KDE Plasma</option>
+                            <option value="dwm">DWM (Minimal WM)</option>
+                            <option value="dusky">Dusky OS (dusklinux/dusky)</option>
                         </select>
                     </div>
 
-            <div class="form-step" data-title="Display Server" data-desc="Choose between modern Wayland or legacy Xorg. Dusky OS and DWM require Xorg.">
-                <div class="form-group">
-                    <label for="display_server">Display Server Protocol</label>
-                    <select id="display_server">
-                        <option value="auto">Auto (Depends on DE)</option>
-                        <option value="wayland">Wayland (Modern & Secure)</option>
-                        <option value="xorg">Xorg (Legacy & Compatible, Minimal Setup)</option>
-                    </select>
-                </div>
-            </div>
+                    <div class="form-step" data-title="Display Server" data-desc="Wayland is modern and secure. Xorg is legacy but required for DWM/Dusky.">
+                        <div class="form-group">
+                            <label>Display Server:</label>
+                            <select id="display_server">
+                                <option value="auto">Auto (Depends on DE)</option>
+                                <option value="wayland">Wayland (Modern)</option>
+                                <option value="xorg">Xorg (Legacy)</option>
+                            </select>
+                        </div>
+                    </div>
     
                     <div class="form-group form-step">
                         <label>Web Browser:</label>
                         <select id="browser">
                             <option value="none" selected>None</option>
-                            <option value="librewolf">LibreWolf (Privacy Focused)</option>
+                            <option value="librewolf">LibreWolf</option>
                             <option value="firefox">Firefox</option>
                         </select>
                     </div>
 
                     <div class="form-group form-step">
-                        <label>DNS Caching Service:</label>
+                        <label>DNS Caching:</label>
                         <select id="dns">
-                            <option value="systemd-resolved" selected>systemd-resolved (Default, minimal)</option>
-                            <option value="unbound">unbound (Validating, recursive)</option>
-                            <option value="dnscrypt-proxy">dnscrypt-proxy (Encrypted proxy)</option>
-                            <option value="bind">BIND (Authoritative / Complex)</option>
-                            <option value="dnsmasq">dnsmasq (Lightweight)</option>
+                            <option value="systemd-resolved" selected>systemd-resolved</option>
+                            <option value="unbound">unbound</option>
+                            <option value="dnscrypt-proxy">dnscrypt-proxy</option>
+                            <option value="bind">BIND</option>
+                            <option value="dnsmasq">dnsmasq</option>
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Tilas01 Custom Scripts" data-desc="Enable highly advanced security tooling, decoy environments, and anonymisation scripts authored by Tilas01.">
-                        <label>Use Custom Security Scripts (by Tilas01)?</label>
+                    <div class="form-group form-step" data-title="Tilas01 Custom Scripts" data-desc="Enable advanced security tooling from the Arch Rusty Security Suite by tilas01.">
+                        <label>Use Arch Rusty Security Suite?</label>
                         <select id="use-custom-scripts">
-                            <option value="no">No (Standard Installation)</option>
-                            <option value="yes" selected>Yes (Reveal Advanced Options, Recommended)</option>
+                            <option value="no">No (Standard)</option>
+                            <option value="yes" selected>Yes (Recommended)</option>
                         </select>
                     </div>
 
                     <div id="custom-scripts-container" style="display: block;">
-                        <div class="form-group form-step" data-title="Advanced Security Tools" data-desc="Integrate our custom Rust-native Libre OTP for login/boot/SSH or Anti-RubberDucky for keyboard input filtering.">
-                            <label>Rust Advanced Security Tools:</label>
+                        <div class="form-group form-step" data-title="Advanced Security Tools" data-desc="Libre OTP for 2FA on login/boot/SSH. Input Guard (anti-ducky) for USB HID sandboxing.">
+                            <label>Security Tools:</label>
                             <select id="securitytools">
-                                <option value="none" selected>None (Standard Setup)</option>
-                                <option value="libre-otp">Libre OTP (Customizable Rust Native 2FA on Boot/Login/SSH)</option>
-                                <option value="anti-ducky">Anti-RubberDucky (Rust Input Control & Filtering)</option>
-                                <option value="both">Both Libre OTP & Anti-RubberDucky</option>
+                                <option value="none" selected>None</option>
+                                <option value="libre-otp">Libre OTP (2FA Boot/Login/SSH)</option>
+                                <option value="anti-ducky">Input Guard (Anti-RubberDucky)</option>
+                                <option value="both">Both OTP & Input Guard</option>
                             </select>
                         </div>
 
-                        <div class="form-group form-step" id="libre-otp-mode-container" style="display: none;" data-title="Libre OTP Mode" data-desc="Choose where to require the Libre OTP two-factor authentication.">
-                            <label>Libre OTP Mode:</label>
+                        <div class="form-group form-step" id="libre-otp-mode-container" style="display: none;" data-title="Libre OTP Mode" data-desc="Where to require OTP two-factor authentication.">
+                            <label>OTP Mode:</label>
                             <select id="libre_otp_mode">
                                 <option value="login" selected>Login Only</option>
                                 <option value="boot">Boot Only</option>
@@ -315,77 +291,75 @@
                             </select>
                         </div>
 
-                        <div class="form-group form-step" id="otp-sha-container" data-title="Libre OTP SHA Algorithm" data-desc="Select the hashing algorithm for OTP. SHA1 is standard.">
-                            <label>OTP Hash Algorithm:</label>
+                        <div class="form-group form-step" data-title="OTP Hash Algorithm" data-desc="SHA1 is standard. SHA256/512 are more secure but less compatible with authenticator apps.">
+                            <label>OTP Algorithm:</label>
                             <select id="otp_sha">
-                                <option value="sha1" selected>SHA1 (Default / Highest Compatibility)</option>
-                                <option value="sha256">SHA256 (High Security)</option>
-                                <option value="sha512">SHA512 (Maximum Security)</option>
+                                <option value="sha1" selected>SHA1 (Compatible)</option>
+                                <option value="sha256">SHA256</option>
+                                <option value="sha512">SHA512</option>
                             </select>
                         </div>
     
-                    <div class="form-group form-step" data-title="Keystroke Anonymisation" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling.">
-                        <label>Keystroke Anonymisation (Kloak):</label>
-                        <select id="anon_kloak">
-                            <option value="no" selected>No</option>
-                            <option value="yes">Yes</option>
-                        </select>
+                        <div class="form-group form-step" data-title="Keystroke Anonymisation" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling.">
+                            <label>Kloak:</label>
+                            <select id="anon_kloak">
+                                <option value="no" selected>No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-step" data-title="Malware Detection Webhooks" data-desc="Systemd service to alert via webhook if malicious binaries detected.">
+                            <label>Webhook Alerts:</label>
+                            <select id="anon_webhook">
+                                <option value="no" selected>No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-step" data-title="Hardened SSH & OTP" data-desc="Configure OpenSSH with strict crypto and Libre OTP 2FA.">
+                            <label>Hardened SSH + OTP:</label>
+                            <select id="anon_ssh">
+                                <option value="no" selected>No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-step" data-title="Anti-Evil Maid" data-desc="Generate decoy kernel entries and backup kernels to detect physical tampering.">
+                            <label>Anti-Evil Maid:</label>
+                            <select id="fake-evil-maid">
+                                <option value="no" selected>No</option>
+                                <option value="yes">Yes (Decoy environment)</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="form-group form-step" data-title="Malware Detection Webhooks" data-desc="Configure a systemd service to alert you via webhook if malicious binaries are detected.">
-                        <label>Kernel Webhook Alerts:</label>
-                        <select id="anon_webhook">
-                            <option value="no" selected>No</option>
-                            <option value="yes">Yes</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group form-step" data-title="Hardened SSH & OTP" data-desc="Configure OpenSSH with strict crypto and Libre OTP for 2FA.">
-                        <label>Hardened OpenSSH + Libre OTP:</label>
-                        <select id="anon_ssh">
-                            <option value="no" selected>No</option>
-                            <option value="yes">Yes</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group form-step" data-title="Fake Evil Maid Directory" data-desc="Do you want to use anti evil maid script author tilas01 on github? Enable automated script logic to build backup kernels and decoy environments preventing physical tampering detection.">
-                        <label>Anti-Evil Maid Post-Install Setup:</label>
-                        <select id="fake-evil-maid">
-                            <option value="no" selected>No (Standard Installation)</option>
-                            <option value="yes">Yes (Generate decoy environment & backup kernels)</option>
-                        </select>
-                    </div>
-                    </div> <!-- End Custom Scripts Container -->
-
-                    
-                    <div class="form-group form-step" data-title="Arch ISO Setup Utilities" data-desc="Start SSH server on Arch ISO to remotely run this script, and optionally download curl.">
-                        <label>Arch ISO Pre-Install Setup:</label>
+                    <div class="form-group form-step" data-title="Arch ISO Setup Utilities" data-desc="Start SSH on Arch ISO so you can run this script remotely.">
+                        <label>Arch ISO Pre-Install:</label>
                         <select id="iso_setup">
-                            <option value="none" selected>None (Running locally on ISO)</option>
-                            <option value="ssh">Start SSHd & Print Password (Run over SSH)</option>
-                            <option value="ssh_curl">Start SSHd + Download curl via pacman</option>
+                            <option value="none" selected>None (Local)</option>
+                            <option value="ssh">Start SSHd</option>
+                            <option value="ssh_curl">SSHd + curl</option>
                         </select>
                     </div>
     
-                    <div class="form-group form-step" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial, a raw executable Bash Script, or both.">
+                    <div class="form-group form-step" data-title="Output Format" data-desc="Markdown tutorial, executable Bash script, or both.">
                         <label>Output Format:</label>
                         <select id="outputformat">
-                            <option value="both" selected>Both (Markdown Guide + Executable Script)</option>
-                            <option value="markdown">Markdown Guide (Recommended, explanatory tutorial)</option>
-                            <option value="script">Raw Executable Bash Script (Review commands before executing)</option>
+                            <option value="both" selected>Both (Guide + Script)</option>
+                            <option value="markdown">Markdown Guide</option>
+                            <option value="script">Bash Script</option>
                         </select>
                     </div>
 
-                    <div id="global-warnings" style="margin-bottom: 1rem;"></div>
-                    <button type="button" id="generate-btn" class="btn form-step" style="margin-top: 1rem; width: 100%;">Generate Custom Guide</button>
-                    <button type="button" id="download-btn" class="btn form-step" style="width: 100%; margin-top: 10px; background: var(--accent-purple); display: none;">Download File</button>
+                    <div id="global-warnings" style="margin-bottom: 0.8rem;"></div>
+                    <button type="button" id="generate-btn" class="btn form-step" style="margin-top: 0.8rem;">Generate Custom Guide</button>
                 </form>
             </section>
             
             <aside id="info-panel" class="info-panel">
                 <div id="info-panel-content">
-                    <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.2rem;">📌 Guide Information</h3>
-                    <p style="color: var(--fg-color); line-height: 1.5;">Tap or interact with any setting on the left to see advanced details, warnings, and how it affects your system setup.</p>
+                    <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.1rem;">📌 Guide Info</h3>
+                    <p style="color: var(--fg-color); line-height: 1.4;">Hover or tap any setting to see details.</p>
                 </div>
             </aside>
         </div>
@@ -394,62 +368,50 @@
             <h2>📝 Your Customized Installation Guide</h2>
             <div id="generated-guide"></div>
         </section>
-        
-        <section class="links-grid">
-            <h2>🔗 Quick Links</h2>
-            <ul>
-                <li><a href="wiki.html" target="_blank">Access the Full Tokyo-Night Wiki</a></li>
-                <li><a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/scripts/arch-installer.sh" target="_blank">Automated Bash Installer Script</a></li>
-            </ul>
-        </section>
     </main>
 
     <script src="script.js"></script>
 
-    <footer style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--bg-lighter); text-align: center; font-size: 0.9rem; color: var(--accent-cyan);">
-        <h3>Credits & Acknowledgements</h3>
-        <p>Built dynamically with AI. <a href="https://github.com/tilas01/arch-guides-dynamic">tilas01 GitHub Repo</a></p>
-        <p>Security Tools: Libre-OTP & Anti-RubberDucky authored by <a href="https://github.com/tilas01">tilas01</a></p>
-        <p>Rice & OS: Dusky OS by <a href="https://github.com/dusklinux/dusky">dusklinux</a> | <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c">YouTube Demo</a></p>
-        <p>Keystroke Anonymization: <a href="https://github.com/vmonaco/kloak">kloak by vmonaco</a></p>
+    <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--bg-lighter); text-align: center;">
+        <h3 style="color: var(--accent-purple); margin-bottom: 1rem;">Credits & Acknowledgements</h3>
+        <div class="credits-grid">
+            <a href="https://github.com/tilas01" target="_blank" class="credit-card" style="text-decoration:none;">
+                <img src="https://github.com/tilas01.png?size=80" alt="tilas01">
+                <div class="credit-info">
+                    <span class="credit-name">tilas01</span>
+                    <span class="credit-role">Author — Arch Rusty Security Suite, this repo</span>
+                </div>
+            </a>
+            <div class="credit-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI" style="border-color:var(--accent-cyan);">
+                <div class="credit-info">
+                    <span class="credit-name">AI</span>
+                    <span class="credit-role">Co-developer — Multiple models, all reviewed by tilas01</span>
+                </div>
+            </div>
+            <a href="https://github.com/dusklinux" target="_blank" class="credit-card" style="text-decoration:none;">
+                <img src="https://github.com/dusklinux.png?size=80" alt="dusklinux">
+                <div class="credit-info">
+                    <span class="credit-name">dusklinux</span>
+                    <span class="credit-role">Creator of <a href="https://github.com/dusklinux/dusky">Dusky OS</a> · <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c">YT Demo</a></span>
+                </div>
+            </a>
+            <a href="https://github.com/vmonaco" target="_blank" class="credit-card" style="text-decoration:none;">
+                <img src="https://github.com/vmonaco.png?size=80" alt="vmonaco">
+                <div class="credit-info">
+                    <span class="credit-name">vmonaco</span>
+                    <span class="credit-role">Creator of <a href="https://github.com/vmonaco/kloak">kloak</a> — Keystroke anonymizer</span>
+                </div>
+            </a>
+            <a href="https://github.com/maximbaz" target="_blank" class="credit-card" style="text-decoration:none;">
+                <img src="https://github.com/maximbaz.png?size=80" alt="maximbaz">
+                <div class="credit-info">
+                    <span class="credit-name">maximbaz</span>
+                    <span class="credit-role">Inspiration — Security & modularity patterns</span>
+                </div>
+            </a>
+        </div>
+        <p style="font-size:0.8rem; color:var(--fg-color); margin-top:1rem;">Anti-RubberDucky concepts from the open-source community. MIT License.</p>
     </footer>
-    
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const restoredConfigStr = sessionStorage.getItem('arch_restore_config');
-            if (restoredConfigStr) {
-                try {
-                    const config = JSON.parse(restoredConfigStr);
-                    for (const key in config) {
-                        const el = document.getElementById(key);
-                        if (el) {
-                            if (el.tagName === 'SELECT' || el.tagName === 'INPUT') {
-                                // For text/select
-                                if (el.type !== 'checkbox') {
-                                    el.value = config[key];
-                                }
-                            }
-                        } else if (key === 'post_apps') {
-                            // handle checkboxes
-                            const cbs = document.querySelectorAll('input[name="post_apps"]');
-                            cbs.forEach(cb => {
-                                if (config[key].includes(cb.value)) {
-                                    cb.checked = true;
-                                } else {
-                                    cb.checked = false;
-                                }
-                            });
-                        }
-                    }
-                    // Trigger generate manually after restore? Or just let user review
-                    sessionStorage.removeItem('arch_restore_config');
-                } catch(e) {
-                    console.error("Failed to restore config", e);
-                }
-            }
-        });
-    </script>
 </body>
-
 </html>

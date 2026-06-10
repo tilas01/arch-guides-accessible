@@ -1,0 +1,28 @@
+[workspace]
+members = [
+    "anti-ducky",
+    "libre-otp",
+    "arch-iso-verifier",
+]
+resolver = "2"
+
+[package]
+name = "arch-rusty-security-suite"
+version = "1.0.0"
+edition = "2021"
+description = "Arch Rusty Security Suite by tilas01 — a unified security toolkit combining USB HID input protection, TOTP/OTP 2FA, ISO verification, and release integrity checking."
+license = "GPL-3.0-or-later"
+
+[[bin]]
+name = "arch-rusty-security-suite"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+sha2 = "0.10"
+hex = "0.4"
+
+# Workspace member crates
+anti-ducky = { path = "anti-ducky" }
+libre-otp = { path = "libre-otp" }
+arch-iso-verifier = { path = "arch-iso-verifier" }

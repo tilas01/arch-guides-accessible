@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arch Guides Wiki</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta name="description" content="Full static wiki documentation for Arch Linux installation, security tools, and system configuration.">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -14,53 +14,35 @@
             gap: 2rem;
             align-items: flex-start;
             max-width: 1800px;
-            width: 98%;
+            width: 100%;
             margin: 0 auto;
         }
         .wiki-nav {
-            flex: 0 0 250px;
+            flex: 0 0 260px;
             background-color: var(--bg-darker);
-            padding: 1.5rem;
-            border-radius: 8px;
+            padding: 1.2rem;
+            border-radius: 12px;
             border: 1px solid var(--bg-lighter);
+            position: sticky;
+            top: 1rem;
         }
-        .wiki-nav ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        .wiki-nav li {
-            margin-bottom: 0.8rem;
-        }
-        .wiki-nav a {
-            cursor: pointer;
-            color: var(--accent-blue);
-        }
-        .wiki-nav a:hover, .wiki-nav a.active {
-            color: var(--accent-cyan);
-            text-decoration: underline;
-        }
+        .wiki-nav ul { list-style: none; padding-left: 0; }
+        .wiki-nav li { margin-bottom: 0.6rem; }
+        .wiki-nav a { cursor: pointer; color: var(--accent-blue); font-size: 0.9rem; }
+        .wiki-nav a:hover, .wiki-nav a.active { color: var(--accent-cyan); text-decoration: underline; }
         .wiki-content {
             flex: 1;
             background-color: var(--bg-darker);
             padding: 2rem;
-            border-radius: 8px;
+            border-radius: 12px;
             border: 1px solid var(--bg-lighter);
             min-height: 500px;
+            min-width: 0;
         }
         @media (max-width: 768px) {
-            .wiki-container {
-                flex-direction: column;
-            }
-            .wiki-nav {
-                flex: auto;
-                width: 100%;
-                margin-bottom: 1rem;
-            }
-            .wiki-content {
-                padding: 1rem;
-                overflow-x: auto;
-                width: 100%;
-            }
+            .wiki-container { flex-direction: column; }
+            .wiki-nav { flex: auto; width: 100%; margin-bottom: 1rem; position: static; }
+            .wiki-content { padding: 1rem; overflow-x: auto; width: 100%; }
         }
     </style>
     <script src="legal.js"></script>
@@ -69,8 +51,8 @@
 
     <header>
         <a href="https://github.com/tilas01/arch-guides-dynamic" title="View Source on GitHub" target="_blank" style="text-decoration: none;">
-            <div class="banner" style="font-size: 2.5rem; font-weight: bold; color: var(--accent-purple); padding: 1.5rem; border: 2px dashed var(--accent-blue); display: inline-block; cursor: pointer; margin-bottom: 1rem; border-radius: 8px; background-color: var(--bg-darker); text-transform: uppercase; letter-spacing: 2px;">
-                Arch Guides Banner
+            <div class="banner" style="font-size: 2rem; font-weight: bold; color: var(--accent-purple); padding: 1.2rem; border: 2px dashed var(--accent-blue); display: inline-block; cursor: pointer; margin-bottom: 1rem; border-radius: 12px; background-color: var(--bg-darker); text-transform: uppercase; letter-spacing: 2px;">
+                Arch Guides Dynamic
             </div>
         </a>
         <h1>Arch Guides | Full Static Wiki</h1>
@@ -124,14 +106,18 @@
                         </ul>
                     </li>
                     <li><a data-file="maintenance.md" id="link-fake-main-kernel">🛠️ 7. Maintenance & Kernels</a></li>
-                    <li><a data-file="helpful-commands.md" id="link-advanced-security-tools">📜 8. Security & Commands</a></li>
+                    <li><a data-file="helpful-commands.md" id="link-advanced-security-tools">📜 8. Commands & Cheatsheets</a></li>
+                    <li><a data-file="dusky-cheatsheet.md">🎨 9. Dusky OS Cheatsheet</a></li>
+                    <li><a data-file="xorg-vs-wayland.md">🖥️ 10. Xorg vs Wayland</a></li>
+                    <li><a data-file="10-generator-selections-and-dusky.md">⚙️ 11. Generator Selections</a></li>
                 </ul>
             </aside>
             <section class="wiki-content">
                 <div class="markdown-body" id="wiki-body">
                     <h2>Welcome to the Arch Guides Wiki</h2>
-                    <p>Select a document from the left navigation menu to begin reading.</p>
-                    <p>This wiki aggregates the best methodologies from <strong>v1, v2, and v3</strong> of the Arch Guides, completely overhauled for extreme security and maximal modularity.</p>
+                    <p>Select a document from the left navigation to begin reading.</p>
+                    <p>This wiki provides comprehensive, modular documentation covering every aspect of the Arch Linux installation process — from pre-installation to advanced security hardening with the <strong>Arch Rusty Security Suite by tilas01</strong>.</p>
+                    <p>The auto script generator is optional. Follow the manual guides if you prefer native tools and want to minimize external downloads.</p>
                 </div>
             </section>
         </div>
@@ -141,89 +127,78 @@
         document.querySelectorAll('#wiki-menu a').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                
-                // Update active state
                 document.querySelectorAll('#wiki-menu a').forEach(a => a.classList.remove('active'));
                 this.classList.add('active');
 
                 const file = this.getAttribute('data-file');
                 const wikiBody = document.getElementById('wiki-body');
-                
                 wikiBody.innerHTML = '<p>Loading...</p>';
 
                 fetch(`docs/${file}`)
                     .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
+                        if (!response.ok) throw new Error('Not found');
                         return response.text();
                     })
                     .then(data => {
-                const contentDiv = document.getElementById('wiki-body');
-                contentDiv.innerHTML = marked.parse(data);
-                
-                // Add id attributes to all headings for anchors
-                const headings = contentDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
-                const navUl = document.querySelector('.wiki-nav ul');
-                let tocHTML = '';
-                
-                headings.forEach(heading => {
-                    const id = heading.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                    heading.id = id;
-                    if (heading.tagName === 'H2' || heading.tagName === 'H3') {
-                        const padding = heading.tagName === 'H3' ? '15px' : '0';
-                        tocHTML += `<li style="padding-left: ${padding}"><a href="#${id}">${heading.innerText}</a></li>`;
-                    }
-                });
-                
-                navUl.innerHTML = tocHTML;
+                        wikiBody.innerHTML = marked.parse(data);
+                        
+                        // Build TOC from headings
+                        const headings = wikiBody.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                        const navUl = document.querySelector('.wiki-nav ul');
+                        let tocHTML = '';
+                        
+                        headings.forEach(heading => {
+                            const id = heading.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                            heading.id = id;
+                            if (heading.tagName === 'H2' || heading.tagName === 'H3') {
+                                const pad = heading.tagName === 'H3' ? '15px' : '0';
+                                tocHTML += `<li style="padding-left: ${pad}"><a href="#${id}">${heading.innerText}</a></li>`;
+                            }
+                        });
+                        
+                        navUl.innerHTML = tocHTML;
 
-                document.querySelectorAll('.wiki-nav a').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const targetId = link.getAttribute('href').substring(1);
-                        const targetElem = document.getElementById(targetId);
-                        if (targetElem) {
-                            window.scrollTo({ top: targetElem.offsetTop - 20, behavior: 'smooth' });
-                            window.history.pushState(null, null, '#' + targetId);
+                        // Re-attach TOC click handlers
+                        document.querySelectorAll('.wiki-nav a').forEach(tocLink => {
+                            tocLink.addEventListener('click', (ev) => {
+                                ev.preventDefault();
+                                const targetId = tocLink.getAttribute('href')?.substring(1);
+                                const targetElem = targetId ? document.getElementById(targetId) : null;
+                                if (targetElem) {
+                                    window.scrollTo({ top: targetElem.offsetTop - 20, behavior: 'smooth' });
+                                    window.history.pushState(null, null, '#' + targetId);
+                                }
+                            });
+                        });
+                        
+                        // Auto-scroll to hash
+                        if (window.location.hash) {
+                            setTimeout(() => {
+                                const el = document.getElementById(window.location.hash.substring(1));
+                                if (el) window.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' });
+                            }, 100);
                         }
-                    });
-                });
-                
-                // Scroll to hash if present in URL on direct link
-                if (window.location.hash) {
-                    setTimeout(() => {
-                        const targetId = window.location.hash.substring(1);
-                        const targetElem = document.getElementById(targetId);
-                        if (targetElem) {
-                            window.scrollTo({ top: targetElem.offsetTop - 20, behavior: 'smooth' });
-                        }
-                    }, 100);
-                }
                     })
                     .catch(err => {
-                        wikiBody.innerHTML = `<div class="alert warning">Failed to load ${file}. You can <a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/docs/${file}" target="_blank">view it on GitHub directly</a>.</div>`;
+                        wikiBody.innerHTML = `<div class="alert warning">Failed to load ${file}. <a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/docs/${file}" target="_blank">View on GitHub</a>.</div>`;
                     });
             });
         });
-        // Auto-load based on hash or page param
+
+        // Auto-load from URL params
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const page = urlParams.get('page');
             
             if (page) {
                 const link = document.querySelector(`a[data-file="${page}"]`);
-                if (link) {
-                    link.click();
-                    return;
-                }
+                if (link) { link.click(); return; }
             }
             
             const hash = window.location.hash.replace('#', '');
             if (hash) {
                 const link = document.getElementById('link-' + hash);
-                if (link) {
-                    link.click();
-                    return;
-                }
+                if (link) { link.click(); return; }
             }
         });
     </script>
