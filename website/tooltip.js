@@ -1,143 +1,166 @@
-// tooltip.js — Shared floating tooltip system (Tokyo Night theme)
-// Supports: .nav-tooltip, .form-step, .btn-tooltip elements
-// Attributes: data-title, data-desc, data-current
-// Toggle: sessionStorage('tooltips_enabled'), default true
-// Elements with class 'tooltip-always' bypass the toggle
-// ─────────────────────────────────────────────────────────
+// tooltip.js — UNIFIED tooltip engine (Tokyo Night)
+// ONE panel. Zero overlap. Replaces both the old floating tooltip AND the info-panel sidebar.
+// Attributes:  data-title, data-desc, data-current, data-wiki (optional URL fragment)
+// Classes:     .nav-tooltip | .form-step | .btn-tooltip | .tooltip-always
+// Toggle:      sessionStorage('tooltips_enabled') — default true
+//              .tooltip-always bypasses toggle (used for history & info buttons)
+// Right-click: any active tooltip opens its wiki link if data-wiki is set
+// ─────────────────────────────────────────────────────────────────────────────
 (function () {
     'use strict';
 
-    // ── CSS Variables ────────────────────────────────────
-    const VARS = {
-        bgDarker:     'var(--bg-darker, #16161e)',
-        accentBlue:   'var(--accent-blue, #7aa2f7)',
-        accentPurple: 'var(--accent-purple, #bb9af7)',
-        fgColor:      'var(--fg-color, #a9b1d6)',
-        accentCyan:   'var(--accent-cyan, #7dcfff)',
+    // ── CSS variables (match Tokyo Night) ────────────────
+    const C = {
+        bg:      'var(--bg-darker,#16161e)',
+        border:  'var(--accent-blue,#7aa2f7)',
+        title:   'var(--accent-purple,#bb9af7)',
+        body:    'var(--fg-color,#a9b1d6)',
+        cyan:    'var(--accent-cyan,#7dcfff)',
+        green:   'var(--accent-green,#9ece6a)',
+        blue:    'var(--accent-blue,#7aa2f7)',
     };
 
-    // ── Tooltip selectors ────────────────────────────────
-    // Note: .form-step is handled by the sidebar info-panel (script.js).
-    // Only .nav-tooltip and .btn-tooltip use this floating tooltip panel
-    // to avoid two tooltip elements appearing simultaneously.
-    const TOOLTIP_SELECTOR = '.nav-tooltip, .btn-tooltip, .tooltip-always';
-    const OFFSET = 14;           // px offset from cursor
-    const PANEL_MAX_W = 320;     // max width on desktop
-    const MOBILE_BP = 768;       // mobile breakpoint
+    // ── Configuration ─────────────────────────────────────
+    const SELECTOR  = '.nav-tooltip, .form-step, .btn-tooltip, .tooltip-always';
+    const OFFSET    = 16;    // px from cursor
+    const MAX_W     = 340;   // max desktop width
+    const MOBILE_BP = 768;
 
-    // ── Toggle state ─────────────────────────────────────
-    // Read persisted preference; default to enabled
-    function readToggle() {
-        const stored = sessionStorage.getItem('tooltips_enabled');
-        return stored === null ? true : stored === 'true';
+    // ── State ─────────────────────────────────────────────
+    function readEnabled() {
+        const v = sessionStorage.getItem('tooltips_enabled');
+        return v === null ? true : v === 'true';
     }
+    window.tooltipsEnabled = readEnabled();
+    let activeEl   = null;
+    let currentWikiUrl = null;
+    const BOUND    = '_ttBound';
 
-    /** @type {boolean} Global flag other scripts can inspect */
-    window.tooltipsEnabled = readToggle();
-
-    // ── Create tooltip panel ─────────────────────────────
+    // ── Build panel ───────────────────────────────────────
     const panel = document.createElement('div');
-    panel.id = 'tooltip-panel';
+    panel.id = 'tt-panel';
     panel.setAttribute('role', 'tooltip');
-    panel.setAttribute('aria-hidden', 'true');
+    panel.setAttribute('aria-live', 'polite');
     Object.assign(panel.style, {
-        position:       'fixed',
-        zIndex:         '9999',
-        background:     VARS.bgDarker,
-        border:         '1px solid ' + VARS.accentBlue,
-        borderRadius:   '10px',
-        padding:        '12px 16px',
-        maxWidth:       PANEL_MAX_W + 'px',
-        pointerEvents:  'none',
-        opacity:        '0',
-        transition:     'opacity 0.18s ease, transform 0.18s ease',
-        boxShadow:      '0 4px 24px rgba(0,0,0,0.5)',
-        fontFamily:     "'JetBrains Mono', monospace",
-        lineHeight:     '1.45',
-        transform:      'translateY(4px)',
-        willChange:     'opacity, transform',
+        position:      'fixed',
+        zIndex:        '99999',
+        background:    C.bg,
+        border:        '1px solid ' + C.border,
+        borderRadius:  '10px',
+        padding:       '10px 14px',
+        maxWidth:      MAX_W + 'px',
+        pointerEvents: 'none',
+        opacity:       '0',
+        transition:    'opacity 0.15s ease, transform 0.15s ease',
+        boxShadow:     '0 6px 28px rgba(0,0,0,0.6)',
+        fontFamily:    "'JetBrains Mono',monospace",
+        lineHeight:    '1.45',
+        transform:     'translateY(6px)',
+        willChange:    'opacity,transform',
+        backdropFilter:'blur(4px)',
     });
     document.body.appendChild(panel);
 
-    // ── Internal state ───────────────────────────────────
-    let activeEl = null;   // currently hovered / tapped element
-    let isMobile = () => window.innerWidth <= MOBILE_BP;
+    // ── Wiki map (title → wiki page) ──────────────────────
+    const WIKI = {
+        'Firmware Selection':         '?page=architecture.md',
+        'File System Features':       '?page=02-partitioning/',
+        'Target Installation Disk':   '?page=01-pre-installation.md',
+        'Encryption Options':         '?page=02-partitioning/',
+        'Init System':                '?page=architecture.md',
+        'Bootloader Choice':          '?page=04-bootloaders/',
+        'Main Kernel':                '?page=03-base-installation.md',
+        'Backup Kernel':              '?page=03-base-installation.md',
+        'CPU Architecture':           '?page=03-base-installation.md',
+        'GPU Hardware':               '?page=03-base-installation.md',
+        'Virtual Machine Guest Setup':'?page=03-base-installation.md',
+        'Software Type & Graphics Drivers':'?page=10-generator-selections-and-dusky.md',
+        'Swap File Size':             '?page=02-partitioning/',
+        'Post-Install Apps & Scripts':'?page=10-generator-selections-and-dusky.md',
+        'Automatic System Updates':   '?page=07-post-installation.md',
+        'Multi-User Setup':           '?page=10-generator-selections-and-dusky.md',
+        'System Cleanup':             '?page=07-post-installation.md',
+        'Tilas01 Custom Scripts':     '?page=architecture.md',
+        'Advanced Security Tools':    '?page=architecture.md',
+        'Display Server':             '?page=xorg-vs-wayland.md',
+        'Output Format':              '?page=architecture.md',
+        'Post-Install Apps':          '?page=10-generator-selections-and-dusky.md',
+    };
 
-    // ── Helpers ──────────────────────────────────────────
-
-    /**
-     * Determine if a tooltip should display for the given element
-     * based on the global toggle and the 'tooltip-always' override.
-     */
+    // ── Helpers ───────────────────────────────────────────
     function shouldShow(el) {
         if (el.classList.contains('tooltip-always')) return true;
         return window.tooltipsEnabled;
     }
 
-    /**
-     * Build the inner HTML of the tooltip panel.
-     *  - Bold title in purple
-     *  - Description in fg-color
-     *  - Optional "Current: xxx" line in cyan
-     */
-    function buildContent(el) {
-        const title   = el.getAttribute('data-title');
-        const desc    = el.getAttribute('data-desc');
-        const current = el.getAttribute('data-current');
+    function getCurrentSelection(el) {
+        const sel = el.querySelector ? el.querySelector('select') : null;
+        if (sel && sel.options[sel.selectedIndex]) return sel.options[sel.selectedIndex].text;
+        return null;
+    }
+
+    function buildHTML(el) {
+        const title   = el.getAttribute('data-title') || '';
+        const desc    = el.getAttribute('data-desc')  || '';
+        const current = el.getAttribute('data-current') || getCurrentSelection(el) || '';
+        const wikiKey = title.replace(/ — .*/, ''); // strip subtitle for lookup
+        const wikiUrl = WIKI[wikiKey] || WIKI[title] || el.getAttribute('data-wiki') || '';
+
+        currentWikiUrl = wikiUrl ? 'wiki.html' + wikiUrl : null;
 
         if (!title && !desc) return null;
 
         let html = '';
 
+        // Title bar
         if (title) {
-            html += '<strong style="display:block;color:' + VARS.accentPurple +
-                    ';font-size:0.95rem;margin-bottom:2px;">' + title + '</strong>';
+            html += `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">
+  <strong style="color:${C.title};font-size:0.9rem;display:block;">${title}</strong>
+  ${wikiUrl ? `<span style="color:${C.cyan};font-size:0.68rem;white-space:nowrap;opacity:0.8;">right-click→wiki</span>` : ''}
+</div>`;
         }
 
+        // Body
         if (desc) {
-            html += '<span style="display:block;color:' + VARS.fgColor +
-                    ';font-size:0.82rem;">' + desc + '</span>';
+            html += `<span style="display:block;color:${C.body};font-size:0.8rem;line-height:1.5;">${desc}</span>`;
         }
 
+        // Current selection
         if (current) {
-            html += '<span style="display:block;margin-top:6px;color:' +
-                    VARS.accentCyan + ';font-size:0.8rem;">Current: ' +
-                    current + '</span>';
+            html += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(122,162,247,0.2);display:flex;gap:6px;align-items:center;">
+  <strong style="color:${C.green};font-size:0.76rem;">Current:</strong>
+  <span style="color:${C.blue};font-size:0.76rem;">${current}</span>
+</div>`;
         }
 
-        return html;
+        return html || null;
     }
 
-    // ── Position helpers ─────────────────────────────────
-
-    /** Desktop: position near cursor with boundary clamping */
+    // ── Positioning ───────────────────────────────────────
     function positionDesktop(x, y) {
-        const rect = panel.getBoundingClientRect();
-        const pw = rect.width  || PANEL_MAX_W;
-        const ph = rect.height || 80;
+        // Reveal at opacity 0 first to measure
+        panel.style.visibility = 'hidden';
+        panel.style.opacity    = '1';
+        const pw = panel.offsetWidth  || MAX_W;
+        const ph = panel.offsetHeight || 80;
+        panel.style.visibility = '';
+        panel.style.opacity    = '0'; // will be set properly by show()
+
         const vw = window.innerWidth;
         const vh = window.innerHeight;
-
-        let left = x + OFFSET;
-        let top  = y + OFFSET;
-
-        // Right edge overflow
-        if (left + pw > vw - 8) left = x - pw - OFFSET;
-        // Bottom edge overflow
-        if (top + ph > vh - 8)  top  = y - ph - OFFSET;
-        // Left edge clamp
-        if (left < 8) left = 8;
-        // Top edge clamp
-        if (top < 8)  top  = 8;
-
-        panel.style.left     = left + 'px';
-        panel.style.top      = top  + 'px';
-        panel.style.right    = 'auto';
-        panel.style.bottom   = 'auto';
-        panel.style.maxWidth = PANEL_MAX_W + 'px';
+        let L = x + OFFSET;
+        let T = y + OFFSET;
+        if (L + pw > vw - 8) L = x - pw - OFFSET;
+        if (T + ph > vh - 8) T = y - ph - OFFSET;
+        if (L < 8) L = 8;
+        if (T < 8) T = 8;
+        panel.style.left   = L + 'px';
+        panel.style.top    = T + 'px';
+        panel.style.right  = 'auto';
+        panel.style.bottom = 'auto';
+        panel.style.maxWidth = MAX_W + 'px';
     }
 
-    /** Mobile: fixed at viewport bottom, full width with margins */
     function positionMobile() {
         panel.style.left     = '10px';
         panel.style.right    = '10px';
@@ -146,123 +169,107 @@
         panel.style.maxWidth = 'calc(100vw - 20px)';
     }
 
-    // ── Show / Hide ──────────────────────────────────────
-
-    function show(el, e) {
+    // ── Show / hide ───────────────────────────────────────
+    function show(el, x, y) {
         if (!shouldShow(el)) return;
-
-        const html = buildContent(el);
+        const html = buildHTML(el);
         if (!html) return;
 
         panel.innerHTML = html;
+        activeEl = el;
 
-        // Make visible so we can measure for boundary checks
+        if (window.innerWidth <= MOBILE_BP) {
+            positionMobile();
+        } else {
+            positionDesktop(x, y);
+        }
+
         panel.style.opacity   = '1';
         panel.style.transform = 'translateY(0)';
         panel.setAttribute('aria-hidden', 'false');
-        activeEl = el;
-
-        if (isMobile()) {
-            positionMobile();
-        } else if (e) {
-            positionDesktop(e.clientX, e.clientY);
-        }
     }
 
     function hide() {
         panel.style.opacity   = '0';
-        panel.style.transform = 'translateY(4px)';
+        panel.style.transform = 'translateY(6px)';
         panel.setAttribute('aria-hidden', 'true');
-        activeEl = null;
+        activeEl       = null;
+        currentWikiUrl = null;
     }
 
-    // ── Mouse follow (desktop) ───────────────────────────
-
-    function onMouseMove(e) {
-        if (!activeEl || isMobile()) return;
-        positionDesktop(e.clientX, e.clientY);
+    function move(x, y) {
+        if (!activeEl || window.innerWidth <= MOBILE_BP) return;
+        positionDesktop(x, y);
     }
 
-    // ── Bind events to a single element ──────────────────
+    // ── Bind one element ──────────────────────────────────
+    function bindEl(el) {
+        if (el[BOUND]) return;
+        el[BOUND] = true;
 
-    const BOUND_FLAG = '_ttBound';   // prevent double-binding
-
-    function bindElement(el) {
-        if (el[BOUND_FLAG]) return;
-        el[BOUND_FLAG] = true;
-
-        // Desktop — hover
-        el.addEventListener('mouseenter', function (e) {
-            show(el, e);
-        });
-        el.addEventListener('mousemove', function (e) {
-            if (activeEl === el) onMouseMove(e);
-        });
+        // Desktop hover
+        el.addEventListener('mouseenter', e => show(el, e.clientX, e.clientY));
+        el.addEventListener('mousemove',  e => { if (activeEl === el) move(e.clientX, e.clientY); });
         el.addEventListener('mouseleave', hide);
 
-        // Touch — tap to toggle
-        el.addEventListener('touchstart', function (e) {
-            if (activeEl === el) {
-                hide();
-            } else {
-                show(el, e.touches[0]);
-            }
+        // Mobile tap-toggle
+        el.addEventListener('touchstart', e => {
+            if (activeEl === el) { hide(); }
+            else { show(el, 0, 0); }
         }, { passive: true });
+
+        // Form-change: update "Current" in tooltip if visible
+        const sel = el.querySelector ? el.querySelector('select') : null;
+        if (sel) {
+            sel.addEventListener('change', () => {
+                if (activeEl === el) {
+                    const html = buildHTML(el);
+                    if (html) panel.innerHTML = html;
+                }
+                if (typeof validateConfigurations === 'function') validateConfigurations();
+            });
+        }
     }
 
-    // ── Scan & bind all matching elements ────────────────
-
-    function scanAndBind() {
-        document.querySelectorAll(TOOLTIP_SELECTOR).forEach(bindElement);
+    // ── Scan & bind ───────────────────────────────────────
+    function scan() {
+        document.querySelectorAll(SELECTOR).forEach(bindEl);
     }
 
-    /** @public Re-scan the DOM for new tooltip elements */
-    window.refreshTooltips = function () {
-        scanAndBind();
-    };
+    window.refreshTooltips = scan;
+    scan();
 
-    // Initial scan
-    scanAndBind();
+    // ── MutationObserver for dynamic content ──────────────
+    new MutationObserver(muts => {
+        let needs = false;
+        muts.forEach(m => m.addedNodes.forEach(n => {
+            if (n.nodeType !== 1) return;
+            if (n.matches && n.matches(SELECTOR)) bindEl(n);
+            if (n.querySelectorAll && n.querySelectorAll(SELECTOR).length) needs = true;
+        }));
+        if (needs) scan();
+    }).observe(document.body, { childList: true, subtree: true });
 
-    // ── MutationObserver for dynamic elements ────────────
-
-    const observer = new MutationObserver(function (mutations) {
-        let needsScan = false;
-        for (let i = 0; i < mutations.length; i++) {
-            const added = mutations[i].addedNodes;
-            for (let j = 0; j < added.length; j++) {
-                const node = added[j];
-                if (node.nodeType !== 1) continue;           // element nodes only
-                if (node.matches && node.matches(TOOLTIP_SELECTOR)) {
-                    bindElement(node);
-                }
-                // Also check children of inserted subtrees
-                if (node.querySelectorAll) {
-                    const children = node.querySelectorAll(TOOLTIP_SELECTOR);
-                    if (children.length) needsScan = true;
-                }
-            }
-        }
-        if (needsScan) scanAndBind();
+    // ── Global dismiss ────────────────────────────────────
+    document.addEventListener('click', e => {
+        if (activeEl && !e.target.closest(SELECTOR)) hide();
     });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // ── Global dismiss listeners ─────────────────────────
-
-    // Tap/click elsewhere dismisses tooltip
-    document.addEventListener('click', function (e) {
-        if (activeEl && !e.target.closest(TOOLTIP_SELECTOR)) {
-            hide();
-        }
-    });
-
-    // Scroll dismisses tooltip
     window.addEventListener('scroll', hide, { passive: true });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && activeEl) hide(); });
 
-    // Escape key dismisses tooltip
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && activeEl) hide();
+    // ── Right-click → wiki ────────────────────────────────
+    document.addEventListener('contextmenu', e => {
+        if (currentWikiUrl) {
+            e.preventDefault();
+            window.open(currentWikiUrl, '_blank');
+        }
     });
+
+    // ── Tooltip toggle (called from script.js) ────────────
+    window.setTooltipsEnabled = function(enabled) {
+        window.tooltipsEnabled = enabled;
+        sessionStorage.setItem('tooltips_enabled', enabled);
+        if (!enabled) hide();
+    };
 
 })();

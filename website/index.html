@@ -9,7 +9,6 @@
     <link rel="preload" href="img/banner.png" as="image">
     <link rel="preload" href="style.css" as="style">
     <link rel="prefetch" href="wiki.html">
-    <link rel="prefetch" href="upload.html">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="legal.js"></script>
@@ -20,9 +19,15 @@
 <body>
     <header>
         <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository containing this website, all tilas01-authored scripts, Arch installation guides, and the Arch Rusty Security Suite." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
+        <!-- Emoji header controls: absolute top-right, always visible -->
         <div id="header-controls" class="js-only">
-            <button id="history-btn" type="button" class="tooltip-always" data-title="Generation History" data-desc="View and restore previous generation configs from this session. No cookies — resets on tab close." onclick="toggleHistoryModal()">🕓 History</button>
-            <button id="toggle-tooltips-btn" type="button" class="tooltip-always" data-title="Tooltips: Enabled" data-desc="Toggle info tooltips on/off. Tooltips use no cookies.">ℹ️ Tooltips</button>
+            <button id="history-btn" type="button" class="tooltip-always"
+                data-title="🕓 Generation History"
+                data-desc="View and restore previous generations from this session. Session-only — no cookies, resets when tab closes."
+                onclick="toggleHistoryModal()">&#x1F553;</button>
+            <button id="toggle-tooltips-btn" type="button" class="tooltip-always"
+                data-title="ℹ️ Tooltips: ON"
+                data-desc="Tooltips are ON. Hover any element for details. Tap to disable. This button always shows regardless of toggle.">&#x2139;️</button>
         </div>
         <h1>Arch Guides Wiki &amp; Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
@@ -416,26 +421,26 @@
                 </section>
             </section>
 
-            <aside id="info-panel" class="info-panel">
-                <div id="info-panel-content">
-                    <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.1rem;">📌 Guide Info</h3>
-                    <p style="color: var(--fg-color); line-height: 1.4;">Hover or tap any setting to see details.</p>
-                </div>
-            </aside>
+            </section>
         </div>
 
 
         <!-- ── OUTPUT PAGE (shown instead of generator) ── -->
-        <section id="output-section" style="display: none;" class="js-only">
-            <!-- Top action bar -->
+        <section id="output-section" style="display:none;" class="js-only">
+            <!-- Action bar: Back left, Clear + Downloads right -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.2rem;">
-                <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-                    <button type="button" id="back-to-gen-btn" class="btn btn-tooltip" data-title="Return to Generator" data-desc="Go back to the generator form to adjust your options. Your current output is saved in history." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-purple); font-size:0.9rem;">← Back to Generator</button>
-                    <button type="button" id="clear-output-btn" class="btn btn-tooltip" data-title="Clear Output" data-desc="Clear the generated output. Your generation history above is preserved." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-red); font-size:0.9rem;">🗑️ Clear Output</button>
+                <button type="button" id="back-to-gen-btn" class="btn tooltip-always"
+                    data-title="← Return to Generator"
+                    data-desc="Go back to the generator form. Your output was auto-saved to session history — no cookies, resets on tab close."
+                    style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-purple); font-size:0.9rem;">← Back to Generator</button>
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+                    <div id="download-btns" style="display:flex; gap:0.6rem; flex-wrap:wrap;"></div>
+                    <button type="button" id="clear-output-btn" class="btn tooltip-always"
+                        data-title="🗑️ Clear Output"
+                        data-desc="Clear generated output and return to generator. Your output was auto-saved to session history (no cookies) before clearing."
+                        style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-red); font-size:0.9rem;">🗑️ Clear</button>
                 </div>
-                <div id="download-btns" style="display:flex; gap:0.6rem; flex-wrap:wrap;"></div>
             </div>
-
             <div id="generated-guide"></div>
         </section>
 
@@ -471,12 +476,15 @@
                 </div>
             </div>
 
-            <!-- tom5760: arch-install inspiration -->
-            <a href="https://github.com/tom5760/arch-install" target="_blank" class="credit-card nav-tooltip" data-title="tom5760 — arch-install" data-desc="Inspiration for the minimal Arch installation approach and modular guide structure used throughout this project." style="text-decoration:none;">
-                <img src="https://github.com/tom5760.png?size=80" alt="tom5760" style="width:48px; height:48px;">
+            <!-- max-baz: arch-secure-boot -->
+            <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" class="credit-card nav-tooltip"
+               data-title="max-baz — arch-secure-boot"
+               data-desc="Creator of arch-secure-boot — an automated Unified Kernel Image (UKI) and Secure Boot signing solution for Arch Linux. Directly used as reference for the Secure Boot section of this project."
+               style="text-decoration:none;">
+                <img src="https://github.com/max-baz.png?size=80" alt="max-baz" style="width:48px; height:48px;">
                 <div class="credit-info">
-                    <span class="credit-name">tom5760</span>
-                    <span class="credit-role">Inspiration — <a href="https://github.com/tom5760/arch-install" target="_blank" style="color:var(--accent-blue); font-size:0.75rem;">arch-install</a><br>Minimal Arch scripting approach</span>
+                    <span class="credit-name">max-baz</span>
+                    <span class="credit-role">Author of <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">arch-secure-boot</a><br>Secure Boot &amp; UKI automation for Arch</span>
                 </div>
             </a>
 

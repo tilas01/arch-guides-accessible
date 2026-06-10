@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // Arch Guides Dynamic - Main Script
 // Arch Rusty Security Suite by tilas01
 // =============================================
@@ -531,107 +531,63 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
     window.generateOutput(false);
 });
 
-// Back to generator button
-const backBtn = document.getElementById('back-to-gen-btn');
-if (backBtn) backBtn.addEventListener('click', window.returnToGenerator);
-
-// Clear output button (on output page)
-const clearBtn = document.getElementById('clear-output-btn');
-if (clearBtn) clearBtn.addEventListener('click', window.clearGeneratedOutput);
-
-// â”€â”€ Tooltips â”€â”€
+// ── Tooltip toggle (emoji button, always-enabled) ──
 let tooltipsEnabled = sessionStorage.getItem('tooltips_enabled') !== 'false';
-const infoPanel = document.getElementById('info-panel');
-const infoContent = document.getElementById('info-panel-content');
-const defaultPanelHTML = infoContent ? infoContent.innerHTML : '';
 const tooltipToggleBtn = document.getElementById('toggle-tooltips-btn');
 
-// Sync initial state
+function syncTooltipBtn() {
+    if (!tooltipToggleBtn) return;
+    const on = window.tooltipsEnabled !== false;
+    tooltipToggleBtn.classList.toggle('disabled', !on);
+    tooltipToggleBtn.setAttribute('data-title', on ? 'ℹ️ Tooltips: ON' : 'ℹ️ Tooltips: OFF');
+    tooltipToggleBtn.setAttribute('data-desc', on
+        ? 'Tooltips are ON. Hover (desktop) or tap (mobile) any element for info. Click to disable.'
+        : 'Tooltips are OFF. Only ℹ️ and 🕓 always show. Click to re-enable.');
+}
+
 if (tooltipToggleBtn) {
-    if (!tooltipsEnabled) tooltipToggleBtn.classList.add('disabled');
-    tooltipToggleBtn.setAttribute('data-title', tooltipsEnabled ? 'Tooltips: Enabled' : 'Tooltips: Disabled');
+    syncTooltipBtn();
     tooltipToggleBtn.addEventListener('click', () => {
-        tooltipsEnabled = !tooltipsEnabled;
-        sessionStorage.setItem('tooltips_enabled', tooltipsEnabled);
-        window.tooltipsEnabled = tooltipsEnabled;
-        tooltipToggleBtn.classList.toggle('disabled', !tooltipsEnabled);
-        tooltipToggleBtn.setAttribute('data-title', tooltipsEnabled ? 'Tooltips: Enabled' : 'Tooltips: Disabled');
-        tooltipToggleBtn.setAttribute('data-desc', tooltipsEnabled
-            ? 'Tooltips are ON. Hover (desktop) or tap (mobile) elements for info.'
-            : 'Tooltips are OFF. Only this button and the history button still show tooltips. Tap to re-enable.');
-        if (!tooltipsEnabled && infoPanel) infoPanel.classList.remove('active');
+        const nowOn = !window.tooltipsEnabled;
+        if (window.setTooltipsEnabled) window.setTooltipsEnabled(nowOn);
+        else { window.tooltipsEnabled = nowOn; sessionStorage.setItem('tooltips_enabled', nowOn); }
+        syncTooltipBtn();
     });
 }
 
+// wiki map kept for parity (used by unified tooltip.js)
 const wikiMap = {
-    'Firmware Selection': '?page=architecture.md',
-    'File System Features': '?page=02-partitioning/',
-    'Target Installation Disk': '?page=01-pre-installation.md',
-    'Encryption Options': '?page=02-partitioning/',
-    'Init System': '?page=architecture.md',
-    'Bootloader Choice': '?page=04-bootloaders/',
-    'Main Kernel': '?page=03-base-installation.md',
-    'Backup Kernel': '?page=03-base-installation.md',
-    'CPU Architecture': '?page=03-base-installation.md',
-    'GPU Hardware': '?page=03-base-installation.md',
-    'Virtual Machine Guest Setup': '?page=03-base-installation.md',
+    'Firmware Selection':           '?page=architecture.md',
+    'File System Features':         '?page=02-partitioning/',
+    'Target Installation Disk':     '?page=01-pre-installation.md',
+    'Encryption Options':           '?page=02-partitioning/',
+    'Init System':                  '?page=architecture.md',
+    'Bootloader Choice':            '?page=04-bootloaders/',
+    'Main Kernel':                  '?page=03-base-installation.md',
+    'Backup Kernel':                '?page=03-base-installation.md',
+    'CPU Architecture':             '?page=03-base-installation.md',
+    'GPU Hardware':                 '?page=03-base-installation.md',
+    'Virtual Machine Guest Setup':  '?page=03-base-installation.md',
     'Software Type & Graphics Drivers': '?page=10-generator-selections-and-dusky.md',
-    'Swap File Size': '?page=02-partitioning/',
-    'Post-Install Apps & Scripts': '?page=10-generator-selections-and-dusky.md',
-    'Automatic System Updates': '?page=07-post-installation.md',
-    'Multi-User Setup': '?page=10-generator-selections-and-dusky.md',
-    'System Cleanup': '?page=07-post-installation.md',
-    'Tilas01 Custom Scripts': '?page=architecture.md',
-    'Advanced Security Tools': '?page=architecture.md',
-    'Display Server': '?page=xorg-vs-wayland.md',
+    'Swap File Size':               '?page=02-partitioning/',
+    'Post-Install Apps & Scripts':  '?page=10-generator-selections-and-dusky.md',
+    'Automatic System Updates':     '?page=07-post-installation.md',
+    'Multi-User Setup':             '?page=10-generator-selections-and-dusky.md',
+    'System Cleanup':               '?page=07-post-installation.md',
+    'Tilas01 Custom Scripts':       '?page=architecture.md',
+    'Advanced Security Tools':      '?page=architecture.md',
+    'Display Server':               '?page=xorg-vs-wayland.md',
 };
+// Note: updateInfoPanel sidebar removed — unified tooltip.js handles all tooltips
 
-function updateInfoPanel(group, e) {
-    if (!tooltipsEnabled || !infoPanel || !infoContent) return;
-    const title = group.getAttribute ? group.getAttribute('data-title') : null;
-    const desc = group.getAttribute ? group.getAttribute('data-desc') : null;
-    if (!title && !desc) return;
+// Back to generator button
+const backToGenBtn = document.getElementById('back-to-gen-btn');
+if (backToGenBtn) backToGenBtn.addEventListener('click', window.returnToGenerator);
 
-    const mappedLink = wikiMap[title] || '';
-    window._currentWikiHash = mappedLink;
-    const sel = group.querySelector ? group.querySelector('select') : null;
-    let extra = '';
-    if (sel && sel.options[sel.selectedIndex]) {
-        extra = `<div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--bg-lighter);"><strong style="color:var(--accent-green)">Current:</strong> <span style="color:var(--accent-blue)">${sel.options[sel.selectedIndex].text}</span></div>`;
-    }
+// Clear output button (far right of output bar)
+const clearOutputBtn = document.getElementById('clear-output-btn');
+if (clearOutputBtn) clearOutputBtn.addEventListener('click', window.clearGeneratedOutput);
 
-    infoContent.innerHTML = `
-        <h3 style="color:var(--accent-purple);margin-top:0;font-size:1rem;">ðŸ“Œ ${title || 'Info'}</h3>
-        <p style="color:var(--fg-color);line-height:1.4;font-size:0.85rem;">${desc || ''}</p>
-        ${mappedLink ? '<p style="font-size:0.75rem;color:var(--accent-blue);margin-top:6px;"><em>ðŸ’¡ Right-click to open Wiki section</em></p>' : ''}
-        ${extra}
-    `;
-    infoPanel.classList.add('active');
-    // Note: no floating position â€” sidebar stays in place; tooltip.js handles floating tooltip
-}
-
-document.querySelectorAll('.form-step, .nav-tooltip').forEach(step => {
-    step.addEventListener('mouseenter', e => updateInfoPanel(step, e));
-    step.addEventListener('mouseleave', () => { if (infoPanel) infoPanel.classList.remove('active'); });
-    step.addEventListener('touchstart', e => updateInfoPanel(step, e), { passive: true });
-    const input = step.querySelector ? step.querySelector('select, input') : null;
-    if (input) input.addEventListener('change', () => { updateInfoPanel(step); validateConfigurations(); });
-});
-
-// Info panel: right-click opens wiki section
-document.addEventListener('contextmenu', e => {
-    if (window.innerWidth > 768 && infoPanel && infoPanel.classList.contains('active') && window._currentWikiHash) {
-        e.preventDefault();
-        window.open('wiki.html' + window._currentWikiHash, '_blank');
-    }
-});
-
-// Mobile: click outside hides info panel
-document.addEventListener('click', e => {
-    if (window.innerWidth <= 768 && infoPanel && !e.target.closest('.form-step') && !e.target.closest('#info-panel')) {
-        infoPanel.classList.remove('active');
-    }
-});
 
 // â”€â”€ Custom scripts toggle â”€â”€
 const customScriptsSelect = document.getElementById('use-custom-scripts');

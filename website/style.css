@@ -21,9 +21,10 @@ body {
     color: var(--fg-color);
     font-family: var(--font-mono);
     line-height: 1.6;
-    padding: 2rem;
+    padding: clamp(0.8rem, 3vw, 2rem);
     max-width: 1800px;
     margin: 0 auto;
+    font-size: clamp(0.82rem, 1.4vw, 1rem);
 }
 
 a { color: var(--accent-blue); text-decoration: none; transition: color 0.2s; }
@@ -33,42 +34,46 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 
 .banner {
     width: 100%;
-    max-width: 420px;
+    max-width: clamp(320px, 40vw, 480px);
     margin: 0 auto 0.6rem;
     display: block;
     transition: transform 0.2s, filter 0.2s;
     background: transparent;
+    image-rendering: auto;
 }
-.banner:hover { transform: scale(1.02); filter: brightness(1.08); }
+.banner:hover { transform: scale(1.015); filter: brightness(1.07); }
 .banner-link { display: block; text-align: center; text-decoration: none; }
 
-/* ─── Header Controls (history + tooltip toggle) ─── */
+/* ─── Header Controls: emoji-only, absolute top-right ─── */
 #header-controls {
+    position: absolute;
+    top: 12px;
+    right: 16px;
     display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin: 0 0 0.5rem 0;
-    flex-wrap: wrap;
+    gap: 10px;
+    z-index: 100;
 }
 #header-controls button {
-    background: var(--bg-darker);
-    border: 1px solid var(--bg-lighter);
-    font-size: 0.85rem;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
     cursor: pointer;
-    padding: 0.3rem 0.75rem;
-    border-radius: 20px;
-    transition: background 0.2s, border-color 0.2s, transform 0.1s;
-    color: var(--fg-color);
-    font-family: var(--font-mono);
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: transform 0.15s, filter 0.15s;
+    line-height: 1;
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    color: inherit;
+    filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
 }
-#header-controls button:hover { background: var(--bg-lighter); transform: scale(1.03); }
-#history-btn { border-color: var(--accent-purple); color: var(--accent-purple); }
-#history-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
-#toggle-tooltips-btn { border-color: var(--accent-blue); color: var(--accent-blue); }
-#toggle-tooltips-btn.disabled { border-color: var(--accent-red); color: var(--accent-red); }
+#header-controls button:hover  { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--accent-cyan)); }
+#history-btn          { color: var(--accent-purple); }
+#history-btn:hover    { color: var(--accent-cyan); }
+/* Info button: white normally, red when tooltips disabled */
+#toggle-tooltips-btn           { color: #ffffff; }
+#toggle-tooltips-btn.disabled  { color: var(--accent-red); }
 
 /* ─── Nav ─── */
 .main-nav {
@@ -329,57 +334,29 @@ noscript .js-only { display: none !important; }
     margin-top: 0.3rem !important;
 }
 
-/* ─── Layout Container & Info Panel ─── */
+/* ─── Layout Container (no sidebar) ─── */
 .layout-container { display: flex; gap: 2rem; align-items: flex-start; }
 .generator-form { flex: 1; min-width: 0; }
-.info-panel { display: none; }
+/* info-panel removed — unified tooltip.js used instead */
 
 @media screen and (min-width: 769px) {
-    .info-panel.active {
-        display: block !important;
-        position: fixed;
-        background: var(--bg-darker);
-        border: 1px solid var(--accent-blue);
-        border-radius: 8px;
-        padding: 1.2rem;
-        z-index: 9999;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.8);
-        max-width: 350px;
-        pointer-events: none;
-        transition: opacity 0.15s ease;
-        opacity: 1;
-    }
+    .layout-container { flex-direction: row; }
 }
 
 @media screen and (max-width: 768px) {
-    body { padding: 0.8rem; font-size: 0.92rem; }
+    body { padding: 0.8rem; }
     header { margin-bottom: 1.5rem; }
-    h1 { font-size: 1.5rem; }
+    h1 { font-size: 1.4rem; }
     section { padding: 1rem; }
     .btn { padding: 0.7rem 1rem; font-size: 0.95rem; }
     .markdown-body { padding: 0.8rem; font-size: 0.82rem; overflow-x: auto; }
     .nav-link { display: block; margin: 0.4rem 0; }
     .nav-sep { display: none; }
     .layout-container { flex-direction: column; }
-    .info-panel.active {
-        display: block !important;
-        position: fixed;
-        bottom: 1.5rem;
-        right: 0.8rem;
-        left: auto;
-        background: var(--bg-darker);
-        border: 2px solid var(--accent-blue);
-        padding: 0.8rem;
-        z-index: 2000;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-        max-width: 65vw;
-        max-height: 40vh;
-        overflow-y: auto;
-        border-radius: 8px;
-        pointer-events: auto;
-    }
     .output-box { padding: 0.8rem; font-size: 0.8rem; border-radius: 12px; }
     .output-title { font-size: 0.95rem; }
+    #header-controls { top: 8px; right: 10px; gap: 8px; }
+    #header-controls button { font-size: 1.3rem; }
 }
 
 @media screen and (max-width: 480px) {
