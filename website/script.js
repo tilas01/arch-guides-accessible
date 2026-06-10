@@ -10,14 +10,27 @@ window.generateOutput = function(auto = false) {
     const kernelBackup = document.getElementById('kernel-backup').value;
     const software_type = document.getElementById('software_type').value;
     const desktop = document.getElementById('desktop').value;
+    const displayServer = document.getElementById('display_server') ? document.getElementById('display_server').value : 'auto';
     const swap_size = document.getElementById('swap_size').value;
     const post_apps = document.getElementById('post_apps').value;
     const cleanup = document.getElementById('cleanup').value;
     const browser = document.getElementById('browser').value;
     const dns = document.getElementById('dns').value;
     const format = document.getElementById('outputformat').value;
+
+    const user_count = document.getElementById('user_count') ? document.getElementById('user_count').value : '1';
+    const root_ssh = document.getElementById('root_ssh') ? document.getElementById('root_ssh').value : 'no';
+    const otp_sha = document.getElementById('otp_sha') ? document.getElementById('otp_sha').value : 'sha1';
+    const iso_setup = document.getElementById('iso_setup') ? document.getElementById('iso_setup').value : 'none';
+    
+    // Get checkboxes for post_apps
+    let post_apps = [];
+    const appCheckboxes = document.querySelectorAll('input[name="post_apps"]:checked');
+    appCheckboxes.forEach((cb) => post_apps.push(cb.value));
+    
     const cpu_brand = document.getElementById('cpu_brand') ? document.getElementById('cpu_brand').value : 'amd';
     const gpu_brand = document.getElementById('gpu_brand') ? document.getElementById('gpu_brand').value : 'amd';
+    const vm_guest = document.getElementById('vm_guest') ? document.getElementById('vm_guest').value : 'none';
     const auto_updates = document.getElementById('auto_updates') ? document.getElementById('auto_updates').value : 'no';
     
     const useCustomScripts = document.getElementById('use-custom-scripts') ? document.getElementById('use-custom-scripts').value === 'yes' : false;
@@ -162,6 +175,11 @@ window.generateOutput = function(auto = false) {
         gpuPackages = "spice-vdagent xf86-video-qxl";
     }
 
+    let vmPackages = "";
+    if (vm_guest === "vbox") vmPackages = "virtualbox-guest-utils";
+    else if (vm_guest === "vmware") vmPackages = "open-vm-tools";
+    else if (vm_guest === "qemu") vmPackages = "qemu-guest-agent";
+
     let adminTools = software_type === "libre" ? "opendoas pfetch cronie" : "sudo fastfetch cronie";
     let fsTools = fs === "btrfs" ? "btrfs-progs snapper" : (fs === "xfs" ? "xfsprogs" : "");
 
@@ -172,7 +190,7 @@ window.generateOutput = function(auto = false) {
         allKernels += " linux-lts linux-hardened"; // Generic decoys
     }
 
-    output += `pacstrap -K /mnt base ${allKernels} ${cpuPackages} ${gpuPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
+    output += `pacstrap -K /mnt base ${allKernels} ${cpuPackages} ${gpuPackages} ${vmPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
     output += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
     
     // Create chroot script to continue execution
@@ -314,6 +332,19 @@ window.generateOutput = function(auto = false) {
     } else if (desktop === "kde") {
         output += `pacman -S --noconfirm plasma-desktop sddm\n`;
         output += `systemctl enable sddm\n`;
+    if (desktop === "dusky") {
+        if (displayServer === "wayland") {
+            output += `pacman -S --noconfirm git base-devel wayland xorg-xwayland\n`;
+        } else {
+            output += `pacman -S --noconfirm git base-devel xorg-server xorg-xinit\n`;
+        }
+        if (software_type === "libre") {
+            // Auto replace sudo with doas in dusky scripts
+            output += `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && sed -i 's/sudo/doas/g' install.sh && ./install.sh"\n`;
+        } else {
+            output += `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && ./install.sh"\n`;
+        }
+    }
     } else if (desktop === "dwm") {
         output += `pacman -S --noconfirm xorg-server xorg-xinit base-devel libx11 libxinerama libxft\n`;
     }
@@ -328,6 +359,15 @@ window.generateOutput = function(auto = false) {
         output += `snapper -c root create-config /\n`;
         output += `systemctl enable snapper-timeline.timer snapper-cleanup.timer\n`;
     }
+
+    if (vm_guest === "vbox") {
+        output += `systemctl enable vboxservice.service\n`;
+    } else if (vm_guest === "vmware") {
+        output += `systemctl enable vmtoolsd.service\n`;
+    } else if (vm_guest === "qemu") {
+        output += `systemctl enable qemu-guest-agent.service\n`;
+    }
+    
     if (secTools !== "none") {
         if (!cmdOnly) {
             output += `\`\`\`\n\n`;
@@ -461,52 +501,88 @@ window.generateOutput = function(auto = false) {
     const outputSection = document.getElementById('output-section');
     outputSection.style.display = 'block';
     
+    
+    let isoSetupCmd = "";
+    if (iso_setup === "ssh") {
+        isoSetupCmd = "systemctl start sshd
+echo 'root:arch' | chpasswd
+# Now connect via: ssh root@<ip-address>";
+    } else if (iso_setup === "ssh_curl") {
+        isoSetupCmd = "pacman -Sy --noconfirm curl
+systemctl start sshd
+echo 'root:arch' | chpasswd
+# Now connect via: ssh root@<ip-address>";
+    }
+    
+    let sshDeployCommand = `curl -sL https://YOUR_WEBSITE_URL/install.sh | bash`; // This will be dynamic based on user upload/hosting
+    
     let renderedHTML = "";
+    
+    // Create live syntax-highlighted containers with Tokyo Night scheme and word-wrap
+    const wrapStyle = "word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; background: #0a0e17; padding: 2rem; border: 2px solid var(--accent-blue); border-radius: 20px; max-width: 100%; box-sizing: border-box; box-shadow: inset 0 0 15px rgba(0,0,0,0.8);";
+    const titleStyle = "color: var(--accent-cyan); font-weight: bold; border-bottom: 2px solid var(--accent-blue); padding-bottom: 0.5rem; margin-bottom: 1rem;";
+    
     if (format === "script") {
         let scriptOutput = buildOutput(true);
         renderedHTML = `
-            <div class="alert warning">Review all script commands below. You can edit this script directly in your browser.</div>
-            <textarea id="editor" spellcheck="false" style="width: 100%; height: 500px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue);">${scriptOutput}</textarea>
+            ${isoSetupCmd ? `<div class="alert warning"><strong>Arch ISO Pre-Setup:</strong><br><pre><code>${isoSetupCmd}</code></pre></div>` : ''}
+            <div class="alert info">Review the executable bash script below. It is syntax highlighted.</div>
+            <h3 style="{titleStyle}">Raw Executable Bash Script:</h3>
+            <div style="position: relative;">
+                <button class="btn" style="position: absolute; top: 10px; right: 10px; width: auto; padding: 0.5rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-script-code').innerText)">Copy</button>
+                <pre style="${wrapStyle}"><code id="raw-script-code" class="language-bash" contenteditable="true">${scriptOutput.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
+            </div>
+            <div style="margin-top: 1rem; padding: 1rem; border: 1px solid var(--accent-cyan); border-radius: 8px; background: rgba(125, 207, 255, 0.1);">
+                <strong>Interactive Deploy Command (Copy/Paste this into your Arch ISO over SSH):</strong><br>
+                <code style="word-wrap: break-word;">cat &lt;&lt; 'EOF' &gt; install.sh<br>${scriptOutput.replace(/</g, "&lt;").replace(/>/g, "&gt;")}<br>EOF<br>bash install.sh</code>
+            </div>
         `;
     } else if (format === "both") {
         let mdOutput = buildOutput(false);
         let scriptOutput = buildOutput(true);
         renderedHTML = `
-            <div class="alert info">You chose BOTH. Below is the Markdown Guide. Underneath it is the Raw Script.</div>
-            <textarea id="editor" spellcheck="false" style="width: 100%; height: 200px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue); margin-bottom: 1rem;">${mdOutput}</textarea>
-            <h3>Live Preview:</h3>
-            <div id="preview" style="border: 1px solid var(--bg-lighter); padding: 1rem; margin-bottom: 2rem;"></div>
+            ${isoSetupCmd ? `<div class="alert warning"><strong>Arch ISO Pre-Setup:</strong><br><pre><code>${isoSetupCmd}</code></pre></div>` : ''}
+            <div class="alert info">You chose BOTH. Below is the Markdown Guide. Underneath it is the Raw Script. <strong>You can edit the code directly in the highlighted boxes!</strong></div>
             
-            <h3>Raw Executable Bash Script:</h3>
-            <textarea id="script-editor" spellcheck="false" style="width: 100%; height: 300px; background: var(--bg-dark); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue);">${scriptOutput}</textarea>
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <h3 style="{titleStyle}">Markdown Guide Editor:</h3>
+                <button class="btn" style="width: auto; padding: 0.5rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-md-code').innerText)">Copy MD</button>
+            </div>
+            <textarea id="editor" style="display:none;">${mdOutput}</textarea>
+            <pre style="${wrapStyle}"><code id="raw-md-code" class="language-markdown" contenteditable="true">${mdOutput.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
+            
+            <h3 style="{titleStyle}">Live Preview (Generated from Markdown):</h3>
+            <div id="preview" style="${wrapStyle} margin-bottom: 2rem;" class="markdown-body"></div>
+            
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <h3 style="{titleStyle}">Raw Executable Bash Script:</h3>
+                <button class="btn" style="width: auto; padding: 0.5rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-script-code').innerText)">Copy Script</button>
+            </div>
+            <pre style="${wrapStyle}"><code id="raw-script-code" class="language-bash" contenteditable="true">${scriptOutput.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
+            
+            <div style="margin-top: 1rem; padding: 1rem; border: 1px solid var(--accent-cyan); border-radius: 8px; background: rgba(125, 207, 255, 0.1);">
+                <strong>Interactive Deploy Command (Copy/Paste this into your Arch ISO over SSH):</strong><br>
+                <code style="word-wrap: break-word;">cat &lt;&lt; 'EOF' &gt; install.sh<br>${scriptOutput.replace(/</g, "&lt;").replace(/>/g, "&gt;")}<br>EOF<br>bash install.sh</code>
+            </div>
         `;
     } else {
         let mdOutput = buildOutput(false);
         renderedHTML = `
             <div class="alert warning">You may edit the markdown guide locally before confirming/saving.</div>
-            <textarea id="editor" spellcheck="false" style="width: 100%; height: 200px; background: var(--bg-color); color: var(--fg-color); font-family: var(--font-mono); padding: 1rem; border: 1px solid var(--accent-blue); margin-bottom: 1rem;">${mdOutput}</textarea>
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <h3 style="{titleStyle}">Markdown Guide Editor:</h3>
+                <button class="btn" style="width: auto; padding: 0.5rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-md-code').innerText)">Copy MD</button>
+            </div>
+            <textarea id="editor" style="display:none;">${mdOutput}</textarea>
+            <pre style="${wrapStyle}"><code id="raw-md-code" class="language-markdown" contenteditable="true">${mdOutput.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
             <h3>Live Preview:</h3>
-            <div id="preview" style="border: 1px solid var(--bg-lighter); padding: 1rem;"></div>
+            <div id="preview" style="${wrapStyle}" class="markdown-body"></div>
         `;
     }
 
     document.getElementById('generated-guide').innerHTML = renderedHTML;
+    if (window.Prism) Prism.highlightAll();
     
-    if (format !== "script") {
-        const editor = document.getElementById('editor');
-        const preview = document.getElementById('preview');
-        
-        // Ensure marked.js is loaded
-        if (typeof marked !== 'undefined') {
-            preview.innerHTML = marked.parse(editor.value);
-            editor.addEventListener('input', function() {
-                preview.innerHTML = marked.parse(editor.value);
-            });
-        } else {
-            preview.innerHTML = "<p>Markdown parsing unavailable (marked.js not loaded).</p>";
-        }
-    }
-
     if (!auto) {
         outputSection.scrollIntoView({ behavior: 'smooth' });
     }
@@ -633,11 +709,18 @@ document.addEventListener('mousemove', (e) => {
     infoPanel.style.top = y + 'px';
 });
 
-function updateInfoPanel(group, e) {
-    if (!tooltipsEnabled) return;
+
+// Global array for smart analysis
+window.smartAnalysisWarnings = [];
+
+function updateInfoPanel(group, e, force = false) {
+    if (!tooltipsEnabled && !force) return;
 
     const title = group.getAttribute('data-title');
     const desc = group.getAttribute('data-desc');
+    const warningCount = window.smartAnalysisWarnings.length;
+    let warningText = warningCount > 0 ? `<br><br><strong style="color:var(--accent-red);">${warningCount} Warnings. Scroll to bottom to view Smart Analysis reason.</strong>` : '';
+
     const select = group.querySelector ? group.querySelector('select') : null;
     let extraInfo = '';
     let warnings = '';
@@ -887,6 +970,17 @@ const downloadBtn = document.getElementById('download-btn');
 if (downloadBtn) {
     downloadBtn.addEventListener('click', () => {
         const format = document.getElementById('outputformat').value;
+
+    const user_count = document.getElementById('user_count') ? document.getElementById('user_count').value : '1';
+    const root_ssh = document.getElementById('root_ssh') ? document.getElementById('root_ssh').value : 'no';
+    const otp_sha = document.getElementById('otp_sha') ? document.getElementById('otp_sha').value : 'sha1';
+    const iso_setup = document.getElementById('iso_setup') ? document.getElementById('iso_setup').value : 'none';
+    
+    // Get checkboxes for post_apps
+    let post_apps = [];
+    const appCheckboxes = document.querySelectorAll('input[name="post_apps"]:checked');
+    appCheckboxes.forEach((cb) => post_apps.push(cb.value));
+    
         const ts = new Date().getTime();
 
         const triggerDownload = (content, filename) => {
@@ -916,3 +1010,25 @@ if (downloadBtn) {
         }
     });
 }
+
+
+// Handle Right Click / Tap on form groups to open Wiki
+document.querySelectorAll('.form-step').forEach(group => {
+    // Desktop Right Click
+    group.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        window.open('wiki.html#10-generator-selections-and-dusky', '_blank');
+    });
+    // Mobile Tap (if it doesn't break form inputs)
+    // We will hook the label clicks
+    const label = group.querySelector('label');
+    if (label) {
+        label.addEventListener('click', (e) => {
+            // Check if mobile
+            if (window.innerWidth <= 768) {
+                // If they tap the label, go to wiki
+                window.open('wiki.html#10-generator-selections-and-dusky', '_blank');
+            }
+        });
+    }
+});

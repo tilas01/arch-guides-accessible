@@ -1,0 +1,58 @@
+--- website/script.js
++++ website/script.js
+@@ -18,6 +18,7 @@
+     const format = document.getElementById('outputformat').value;
+     const cpu_brand = document.getElementById('cpu_brand') ? document.getElementById('cpu_brand').value : 'amd';
+     const gpu_brand = document.getElementById('gpu_brand') ? document.getElementById('gpu_brand').value : 'amd';
++    const vm_guest = document.getElementById('vm_guest') ? document.getElementById('vm_guest').value : 'none';
+     const auto_updates = document.getElementById('auto_updates') ? document.getElementById('auto_updates').value : 'no';
+     
+     const useCustomScripts = document.getElementById('use-custom-scripts') ? document.getElementById('use-custom-scripts').value === 'yes' : false;
+@@ -165,13 +166,18 @@
+         gpuPackages = "spice-vdagent xf86-video-qxl";
+     }
+ 
++    let vmPackages = "";
++    if (vm_guest === "vbox") vmPackages = "virtualbox-guest-utils";
++    else if (vm_guest === "vmware") vmPackages = "open-vm-tools";
++    else if (vm_guest === "qemu") vmPackages = "qemu-guest-agent";
++
+     let adminTools = software_type === "libre" ? "opendoas pfetch cronie" : "sudo fastfetch cronie";
+     let fsTools = fs === "btrfs" ? "btrfs-progs snapper" : (fs === "xfs" ? "xfsprogs" : "");
+ 
+     let allKernels = kernelMain + " " + kernelMain + "-headers";
+     if (kernelBackup !== "none") allKernels += " " + kernelBackup + " " + kernelBackup + "-headers";
+     
+     if (fakeEvilMaid === "yes") {
+         allKernels += " linux-lts linux-hardened"; // Generic decoys
+     }
+ 
+-    output += `pacstrap -K /mnt base ${allKernels} ${cpuPackages} ${gpuPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
++    output += `pacstrap -K /mnt base ${allKernels} ${cpuPackages} ${gpuPackages} ${vmPackages} linux-firmware neovim ${adminTools} git ${fsTools}\n`;
+     output += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
+@@ -328,6 +334,14 @@
+     if (fs === "btrfs") {
+         output += `snapper -c root create-config /\n`;
+         output += `systemctl enable snapper-timeline.timer snapper-cleanup.timer\n`;
+     }
++
++    if (vm_guest === "vbox") {
++        output += `systemctl enable vboxservice.service\n`;
++    } else if (vm_guest === "vmware") {
++        output += `systemctl enable vmtoolsd.service\n`;
++    } else if (vm_guest === "qemu") {
++        output += `systemctl enable qemu-guest-agent.service\n`;
++    }
++
+     if (secTools !== "none") {
+@@ -632,8 +646,8 @@
+     infoPanel.style.top = y + 'px';
+ });
+ 
+-function updateInfoPanel(group, e) {
+-    if (!tooltipsEnabled) return;
++function updateInfoPanel(group, e, force = false) {
++    if (!tooltipsEnabled && !force) return;
+ 
+     const title = group.getAttribute('data-title');
+     const desc = group.getAttribute('data-desc');

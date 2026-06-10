@@ -8,6 +8,40 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="legal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+    <style>
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: var(--bg-darker);
+        min-width: 250px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+        z-index: 1;
+        border: 1px solid var(--accent-purple);
+        border-radius: 5px;
+    }
+    .dropdown-content a {
+        color: var(--fg-color);
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        font-size: 0.9rem;
+    }
+    .dropdown-content a:hover {
+        background-color: var(--bg-lighter);
+        color: var(--accent-cyan);
+    }
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+    </style>
+    
 </head>
 <body>
     <header>
@@ -20,7 +54,7 @@
             <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated configurations to restore them.">Upload Guide</a> | 
             <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Project Repository" data-desc="The full source code, scripts, and documentation (tilas01/arch-guides-dynamic). No accountability is accepted for generated outputs.">Repository</a>
         </nav>
-        <button id="toggle-tooltips-btn" type="button" class="js-only" data-title="Toggle Tooltips" data-desc="Currently: Enabled" style="position: absolute; left: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">ℹ️</button>
+        <button id="toggle-tooltips-btn" type="button" class="js-only" data-title="Toggle Tooltips" data-desc="Currently: Enabled" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">ℹ️</button>
     </header>
 
     <main>
@@ -125,6 +159,16 @@
                         </select>
                     </div>
 
+                    <div class="form-group form-step" data-title="Virtual Machine Guest Setup" data-desc="If installing inside a VM, select the hypervisor to automatically install and enable Guest Additions (clipboard, dynamic resolution, etc).">
+                        <label>VM Guest Setup:</label>
+                        <select id="vm_guest">
+                            <option value="none" selected>None (Bare Metal)</option>
+                            <option value="vbox">VirtualBox Guest Additions</option>
+                            <option value="vmware">VMware Tools (open-vm-tools)</option>
+                            <option value="qemu">QEMU / KVM Guest Agent</option>
+                        </select>
+                    </div>
+
                     <div class="form-group form-step" data-title="Software Type & Graphics Drivers" data-desc="Libre is purely open source without proprietary firmware. Proprietary includes closed source drivers.">
                         <label>Software Type & Graphics Drivers:</label>
                         <select id="software_type">
@@ -148,12 +192,13 @@
 
                     <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Note: All apps included are either written by me or used by me personally, and I personally recommend them.">
                         <label>Post-Install Apps & Scripts:</label>
-                        <select id="post_apps">
-                            <option value="none" selected>None (Minimal Base System Only)</option>
-                            <option value="paru">AUR Helper (paru)</option>
-                            <option value="standard">Standard Desktop (Browser, Signal, AUR Helper)</option>
-                            <option value="full">Full Productivity & Dev Setup</option>
-                        </select>
+                        <div id="post_apps_container" style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-dark); padding: 1rem; border: 1px solid var(--accent-purple); border-radius:4px;">
+                            <label><input type="checkbox" name="post_apps" value="paru" checked> AUR Helper (paru)</label>
+                            <label><input type="checkbox" name="post_apps" value="firefox" checked> Firefox Web Browser</label>
+                            <label><input type="checkbox" name="post_apps" value="librewolf"> LibreWolf Web Browser</label>
+                            <label><input type="checkbox" name="post_apps" value="signal"> Signal Desktop</label>
+                            <label><input type="checkbox" name="post_apps" value="neovim" checked> Neovim / Dev Tools</label>
+                        </div>
                     </div>
 
                     <div class="form-group form-step" data-title="Automatic System Updates" data-desc="Set up a cron job with unattended-upgrades to automatically update your pacman packages and AUR packages with logging.">
@@ -164,6 +209,18 @@
                         </select>
                     </div>
 
+                    
+                    <div class="form-group form-step" data-title="Multi-User Setup" data-desc="Select the number of regular non-root users. Max 1 root account. Select how you want to use root over SSH.">
+                        <label>Regular Non-Root Users (count):</label>
+                        <input type="number" id="user_count" min="1" max="5" value="1" style="margin-bottom: 1rem;">
+                        
+                        <label>Root SSH Access:</label>
+                        <select id="root_ssh">
+                            <option value="no" selected>No (Only sudo/doas allowed over SSH)</option>
+                            <option value="yes">Yes (Allow direct root SSH)</option>
+                        </select>
+                    </div>
+    
                     <div class="form-group form-step" data-title="System Cleanup" data-desc="Automatically clean up build dependencies, cache, and temporary files after installation is complete.">
                         <label>Post-Install Cleanup:</label>
                         <select id="cleanup">
@@ -179,9 +236,21 @@
                             <option value="gnome">GNOME (Modern, Complete)</option>
                             <option value="kde">KDE Plasma (Customizable, Fast)</option>
                             <option value="dwm">DWM (Minimal Window Manager)</option>
+                            <option value="dusky">Dusky OS (Fully riced fast OS - dusklinux/dusky)</option>
                         </select>
                     </div>
 
+            <div class="form-step" data-title="Display Server" data-desc="Choose between modern Wayland or legacy Xorg. Dusky OS and DWM require Xorg.">
+                <div class="form-group">
+                    <label for="display_server">Display Server Protocol</label>
+                    <select id="display_server">
+                        <option value="auto">Auto (Depends on DE)</option>
+                        <option value="wayland">Wayland (Modern & Secure)</option>
+                        <option value="xorg">Xorg (Legacy & Compatible, Minimal Setup)</option>
+                    </select>
+                </div>
+            </div>
+    
                     <div class="form-group form-step">
                         <label>Web Browser:</label>
                         <select id="browser">
@@ -197,6 +266,8 @@
                             <option value="systemd-resolved" selected>systemd-resolved (Default, minimal)</option>
                             <option value="unbound">unbound (Validating, recursive)</option>
                             <option value="dnscrypt-proxy">dnscrypt-proxy (Encrypted proxy)</option>
+                            <option value="bind">BIND (Authoritative / Complex)</option>
+                            <option value="dnsmasq">dnsmasq (Lightweight)</option>
                         </select>
                     </div>
 
@@ -228,6 +299,15 @@
                             </select>
                         </div>
 
+                        <div class="form-group form-step" id="otp-sha-container" data-title="Libre OTP SHA Algorithm" data-desc="Select the hashing algorithm for OTP. SHA1 is standard.">
+                            <label>OTP Hash Algorithm:</label>
+                            <select id="otp_sha">
+                                <option value="sha1" selected>SHA1 (Default / Highest Compatibility)</option>
+                                <option value="sha256">SHA256 (High Security)</option>
+                                <option value="sha512">SHA512 (Maximum Security)</option>
+                            </select>
+                        </div>
+    
                     <div class="form-group form-step" data-title="Keystroke Anonymisation" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling.">
                         <label>Keystroke Anonymisation (Kloak):</label>
                         <select id="anon_kloak">
@@ -261,6 +341,16 @@
                     </div>
                     </div> <!-- End Custom Scripts Container -->
 
+                    
+                    <div class="form-group form-step" data-title="Arch ISO Setup Utilities" data-desc="Start SSH server on Arch ISO to remotely run this script, and optionally download curl.">
+                        <label>Arch ISO Pre-Install Setup:</label>
+                        <select id="iso_setup">
+                            <option value="none" selected>None (Running locally on ISO)</option>
+                            <option value="ssh">Start SSHd & Print Password (Run over SSH)</option>
+                            <option value="ssh_curl">Start SSHd + Download curl via pacman</option>
+                        </select>
+                    </div>
+    
                     <div class="form-group form-step" data-title="Output Format" data-desc="Choose whether to generate an explanatory Markdown tutorial, a raw executable Bash Script, or both.">
                         <label>Output Format:</label>
                         <select id="outputformat">
@@ -286,7 +376,7 @@
 
         <section id="output-section" style="display: none;" class="js-only">
             <h2>📝 Your Customized Installation Guide</h2>
-            <div class="markdown-body" id="generated-guide"></div>
+            <div id="generated-guide"></div>
         </section>
         
         <section class="links-grid">
@@ -299,5 +389,51 @@
     </main>
 
     <script src="script.js"></script>
+
+    <footer style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--bg-lighter); text-align: center; font-size: 0.9rem; color: var(--accent-cyan);">
+        <h3>Credits & Acknowledgements</h3>
+        <p>Built dynamically with AI. <a href="https://github.com/tilas01/arch-guides-dynamic">tilas01 GitHub Repo</a></p>
+        <p>Security Tools: Libre-OTP & Anti-RubberDucky authored by <a href="https://github.com/tilas01">tilas01</a></p>
+        <p>Rice & OS: Dusky OS by <a href="https://github.com/dusklinux/dusky">dusklinux</a> | <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c">YouTube Demo</a></p>
+        <p>Keystroke Anonymization: <a href="https://github.com/vmonaco/kloak">kloak by vmonaco</a></p>
+    </footer>
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const restoredConfigStr = sessionStorage.getItem('arch_restore_config');
+            if (restoredConfigStr) {
+                try {
+                    const config = JSON.parse(restoredConfigStr);
+                    for (const key in config) {
+                        const el = document.getElementById(key);
+                        if (el) {
+                            if (el.tagName === 'SELECT' || el.tagName === 'INPUT') {
+                                // For text/select
+                                if (el.type !== 'checkbox') {
+                                    el.value = config[key];
+                                }
+                            }
+                        } else if (key === 'post_apps') {
+                            // handle checkboxes
+                            const cbs = document.querySelectorAll('input[name="post_apps"]');
+                            cbs.forEach(cb => {
+                                if (config[key].includes(cb.value)) {
+                                    cb.checked = true;
+                                } else {
+                                    cb.checked = false;
+                                }
+                            });
+                        }
+                    }
+                    // Trigger generate manually after restore? Or just let user review
+                    sessionStorage.removeItem('arch_restore_config');
+                } catch(e) {
+                    console.error("Failed to restore config", e);
+                }
+            }
+        });
+    </script>
 </body>
+
 </html>
