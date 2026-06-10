@@ -1,25 +1,25 @@
-/// anti-ducky v0.2.0 — Intelligent USB HID Input Manager
-///
-/// Architecture:
-///   1. Monitors ALL keyboard-capable /dev/input/event* devices
-///   2. Maintains a registry of "approved" inputs (devices that have been
-///      verified by the user through 2-of-N approval consensus)
-///   3. When a NEW device appears (e.g. a newly plugged USB HID device):
-///      - It is SANDBOXED: keystrokes are captured but NOT forwarded
-///      - All captured keystrokes are logged to /var/log/anti-ducky/sandbox.log
-///      - Payload signatures are analysed (speed, patterns, embedded commands)
-///      - User is alerted via systemd-notify / wall / optional webhook
-///      - The device remains sandboxed until 2 currently approved devices
-///        confirm approval (or until the daemon is stopped)
-///   4. If a RubberDucky payload signature is detected in a sandboxed device:
-///      - The full payload is written to /var/log/anti-ducky/payload_<ts>.log
-///      - The device node is grabbed exclusively (preventing OS from seeing it)
-///      - An alert is sent via wall broadcast and optional webhook
-///   5. SSH is required as a backup input (verified at startup)
-///   6. Libre-OTP integration is enforced for new device approval
-///
-/// IMPORTANT: This daemon must run as root (or with CAP_INPUT_RAW).
-/// Install as systemd service: see /etc/systemd/system/anti-ducky.service
+//! anti-ducky v0.2.0 — Intelligent USB HID Input Manager
+//!
+//! Architecture:
+//!   1. Monitors ALL keyboard-capable /dev/input/event* devices
+//!   2. Maintains a registry of "approved" inputs (devices that have been
+//!      verified by the user through 2-of-N approval consensus)
+//!   3. When a NEW device appears (e.g. a newly plugged USB HID device):
+//!      - It is SANDBOXED: keystrokes are captured but NOT forwarded
+//!      - All captured keystrokes are logged to /var/log/anti-ducky/sandbox.log
+//!      - Payload signatures are analysed (speed, patterns, embedded commands)
+//!      - User is alerted via systemd-notify / wall / optional webhook
+//!      - The device remains sandboxed until 2 currently approved devices
+//!        confirm approval (or until the daemon is stopped)
+//!   4. If a RubberDucky payload signature is detected in a sandboxed device:
+//!      - The full payload is written to /var/log/anti-ducky/payload_<ts>.log
+//!      - The device node is grabbed exclusively (preventing OS from seeing it)
+//!      - An alert is sent via wall broadcast and optional webhook
+//!   5. SSH is required as a backup input (verified at startup)
+//!   6. Libre-OTP integration is enforced for new device approval
+//!
+//! IMPORTANT: This daemon must run as root (or with CAP_INPUT_RAW).
+//! Install as systemd service: see /etc/systemd/system/anti-ducky.service
 
 use evdev::{Device, EventType, Key, InputEvent};
 use std::collections::{HashMap, VecDeque};
@@ -72,7 +72,7 @@ enum DeviceState {
 
 #[derive(Debug, Clone)]
 struct MonitoredDevice {
-    event_path: String,
+    _event_path: String,
     record: DeviceRecord,
     state: DeviceState,
     /// Rolling window of keystroke timestamps (used for speed analysis)
@@ -132,6 +132,7 @@ fn load_approved_registry() -> HashMap<String, DeviceRecord> {
         .collect()
 }
 
+#[allow(dead_code)]
 fn save_approved_registry(registry: &HashMap<String, DeviceRecord>) {
     let dir = Path::new("/etc/anti-ducky");
     let _ = fs::create_dir_all(dir);
@@ -160,7 +161,7 @@ fn dump_payload(device_name: &str, payload: &[u8]) {
     let ts = timestamp_str();
     let log_path = format!("{}/payload_{}.log", LOG_DIR, ts);
     let mut out = String::new();
-    out.push_str(&format!("# RubberDucky Payload Capture\n"));
+    out.push_str("# RubberDucky Payload Capture\n");
     out.push_str(&format!("# Device: {}\n", device_name));
     out.push_str(&format!("# Timestamp: {}\n", ts));
     out.push_str(&format!("# Payload length: {} bytes\n\n", payload.len()));
@@ -175,7 +176,7 @@ fn dump_payload(device_name: &str, payload: &[u8]) {
     let hash = hex::encode(hasher.finalize());
     out.push_str(&format!("\n# SHA-256: {}\n", hash));
 
-    if let Ok(mut f) = OpenOptions::new().create(true).write(true).open(&log_path) {
+    if let Ok(mut f) = OpenOptions::new().create(true).truncate(true).write(true).open(&log_path) {
         let _ = f.write_all(out.as_bytes());
     }
     log(&format!("Payload dumped to {} (SHA-256: {})", log_path, hash));
@@ -188,7 +189,7 @@ fn enumerate_keyboards() -> Vec<(String, Device)> {
         let path = format!("/dev/input/event{}", i);
         if let Ok(device) = Device::open(&path) {
             let has_keys = device.supported_keys()
-                .map_or(false, |k| k.contains(Key::KEY_ENTER));
+                .is_some_and(|k| k.contains(Key::KEY_ENTER));
             if has_keys {
                 result.push((path, device));
             }
@@ -232,7 +233,7 @@ fn register_device(
     });
 
     monitored.insert(path.to_string(), MonitoredDevice {
-        event_path: path.to_string(),
+        _event_path: path.to_string(),
         record,
         state,
         timing_window: VecDeque::new(),
