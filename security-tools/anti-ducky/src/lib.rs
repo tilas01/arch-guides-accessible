@@ -436,7 +436,7 @@ pub fn run() {
         for path in paths {
             // Re-open device each loop iteration (simple approach; production
             // would use epoll/inotify for efficiency)
-            let device = match Device::open(&path) {
+            let mut device = match Device::open(&path) {
                 Ok(d) => d,
                 Err(_) => {
                     // Device disappeared (unplugged)
