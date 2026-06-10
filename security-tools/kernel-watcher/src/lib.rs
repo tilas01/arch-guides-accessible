@@ -7,18 +7,22 @@ use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use rpassword::prompt_password;
 use std::fs;
 use std::path::Path;
+use std::process::Command;
 use std::sync::mpsc::channel;
+use zeroize::Zeroize;
 
 const TAMPER_HASH_FILE: &str = "/etc/arch-rusty-security-suite/tamper.hash";
 
 pub fn run_setup() {
     println!("=== Kernel Watcher Tamper Protection Setup ===");
-    let password = prompt_password("Enter a new master password for Tamper Protection: ")
+    let mut password = prompt_password("Enter a new master password for Tamper Protection: ")
         .expect("Failed to read password");
-    let confirm = prompt_password("Confirm master password: ")
+    let mut confirm = prompt_password("Confirm master password: ")
         .expect("Failed to read password");
 
     if password != confirm {
+        password.zeroize();
+        confirm.zeroize();
         eprintln!("Passwords do not match. Aborting setup.");
         std::process::exit(1);
     }
@@ -29,6 +33,9 @@ pub fn run_setup() {
         .hash_password(password.as_bytes(), &salt)
         .expect("Failed to hash password")
         .to_string();
+
+    password.zeroize();
+    confirm.zeroize();
 
     // Ensure directory exists
     if let Some(parent) = Path::new(TAMPER_HASH_FILE).parent() {
@@ -47,13 +54,15 @@ pub fn verify_tamper_password() -> bool {
             std::process::exit(1);
         });
 
-    let password = prompt_password("Enter Master Password to authorize this action: ")
+    let mut password = prompt_password("Enter Master Password to authorize this action: ")
         .expect("Failed to read password");
 
     let parsed_hash = PasswordHash::new(hash_str.trim()).expect("Invalid hash format in file");
     let argon2 = Argon2::default();
     
-    argon2.verify_password(password.as_bytes(), &parsed_hash).is_ok()
+    let is_valid = argon2.verify_password(password.as_bytes(), &parsed_hash).is_ok();
+    password.zeroize();
+    is_valid
 }
 
 pub fn start_watcher() {
@@ -96,9 +105,30 @@ fn handle_event(event: Event) {
     // In a full EDR, we would analyze the PID that caused the event via auditd or eBPF.
     // For this semi-EDR file watcher, we just log suspicious file mutations.
     if event.kind.is_modify() || event.kind.is_remove() {
+        let mut alert_msg = String::from("Arch Rusty Security Suite [ALERT]: Suspicious activity detected on monitored paths:\n");
         println!("[ALERT] Suspicious activity detected on monitored paths:");
         for path in event.paths {
-            println!("  -> {:?}", path);
+            let path_str = format!("  -> {:?}\n", path);
+            println!("{}", path_str.trim());
+            alert_msg.push_str(&path_str);
         }
+        send_ntfy_alert(&alert_msg);
     }
+}
+
+fn send_ntfy_alert(message: &str) {
+    let topic = fs::read_to_string("/etc/arch-rusty-security-suite/ntfy_topic.conf")
+        .unwrap_or_else(|_| String::from("arch_rusty_security_alerts_default"));
+
+    let topic = topic.trim();
+    if topic.is_empty() {
+        return;
+    }
+
+    let url = format!("https://ntfy.sh/{}", topic);
+    let _ = Command::new("curl")
+        .arg("-d")
+        .arg(message)
+        .arg(&url)
+        .output();
 }
