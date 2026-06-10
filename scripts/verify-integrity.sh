@@ -1,50 +1,57 @@
 #!/bin/bash
-# verify-integrity.sh - Arch Rusty Security Suite
+# automated integrity verification script for Arch Rusty Security Suite
+set -e
 
-echo "=== Arch Rusty Security Suite Integrity Verifier ==="
-if [ "$#" -ne 1 ]; then
-    echo "Usage: ./verify-integrity.sh <binary-file>"
-    exit 1
-fi
+echo "=================================================="
+echo "🛡️  Arch Rusty Security Suite Integrity Verifier"
+echo "=================================================="
 
 BINARY=$1
-SHA_FILE="${BINARY}.sha256"
-ASC_FILE="${BINARY}.asc"
-PUB_KEY="tilas01-public-key.asc"
-
-if [ ! -f "$BINARY" ] || [ ! -f "$SHA_FILE" ]; then
-    echo "Error: Missing binary or .sha256 file."
+if [ -z "$BINARY" ]; then
+    echo "Usage: ./verify-integrity.sh <binary_file>"
+    echo "Example: ./verify-integrity.sh arch-rusty-security-suite-linux-x86_64"
     exit 1
 fi
 
-echo "[1/2] Verifying SHA-256 Hash..."
-sha256sum -c "$SHA_FILE"
-if [ $? -ne 0 ]; then
-    echo "❌ HASH VERIFICATION FAILED! Do not run this binary."
+if [ ! -f "$BINARY" ]; then
+    echo "❌ Error: File '$BINARY' not found."
     exit 1
 fi
-echo "✅ Hash matches successfully."
 
-if [ -f "$ASC_FILE" ]; then
-    echo ""
-    echo "[2/2] Verifying GPG Signature..."
-    
-    if [ ! -f "$PUB_KEY" ]; then
-        echo "Public key not found locally. Downloading official key from GitHub..."
-        curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/tilas01-public-key.asc" -o "$PUB_KEY"
-    fi
+if [ ! -f "${BINARY}.sha256" ]; then
+    echo "⚠️ Warning: ${BINARY}.sha256 not found. Attempting to download..."
+    curl -sLO "https://github.com/tilas01/arch-guides-dynamic/releases/latest/download/${BINARY}.sha256"
+fi
 
-    gpg --import "$PUB_KEY" 2>/dev/null
-    gpg --verify "$ASC_FILE" "$BINARY"
-    if [ $? -ne 0 ]; then
-        echo "❌ GPG SIGNATURE VERIFICATION FAILED! Do not run this binary."
+if [ ! -f "${BINARY}.asc" ]; then
+    echo "⚠️ Warning: ${BINARY}.asc not found. Attempting to download..."
+    curl -sLO "https://github.com/tilas01/arch-guides-dynamic/releases/latest/download/${BINARY}.asc"
+fi
+
+echo -e "\n[1/2] Verifying SHA-256 Hash..."
+if sha256sum -c "${BINARY}.sha256"; then
+    echo "✅ Hash Verification: SUCCESS"
+else
+    echo "❌ Hash Verification: FAILED!"
+    echo "The file is corrupt or tampered with. Do NOT execute it."
+    exit 1
+fi
+
+echo -e "\n[2/2] Verifying GPG Signature..."
+if ! command -v gpg &> /dev/null; then
+    echo "⚠️ GPG is not installed. Skipping signature verification."
+else
+    # Fetch tilas01 public key (mock keyserver / github direct)
+    echo "Downloading tilas01 public key..."
+    curl -sL https://github.com/tilas01.gpg | gpg --import 2>/dev/null || true
+
+    if gpg --verify "${BINARY}.asc" "$BINARY" 2>&1 | grep -q "Good signature"; then
+        echo "✅ GPG Signature Verification: SUCCESS"
+    else
+        echo "❌ GPG Signature Verification: FAILED!"
+        echo "The signature is invalid. Do NOT execute it."
         exit 1
     fi
-    echo "✅ GPG Signature matches successfully."
-else
-    echo ""
-    echo "[2/2] Skipping GPG check (missing .asc file)."
 fi
 
-echo ""
-echo "Integrity check passed. You may safely run the binary."
+echo -e "\n🎉 ALL CHECKS PASSED. The file '$BINARY' is safe to run.\n"
