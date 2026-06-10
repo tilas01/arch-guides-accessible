@@ -1,4 +1,4 @@
-use totp_rs::{Algorithm, TOTP, Secret};
+use totp_rs::{Algorithm, Secret, TOTP};
 use std::env;
 use std::fs;
 use rpassword::read_password;
@@ -42,7 +42,8 @@ pub fn run() {
     let config_path = "/etc/libre-otp/secret.txt";
 
     // Detect algorithm from env or args
-    let algo_str = args.iter()
+    let algo_str = args
+        .iter()
         .find(|a| a.starts_with("--algo="))
         .map(|a| a.trim_start_matches("--algo=").to_uppercase())
         .unwrap_or_else(|| env::var("OTP_ALGO").unwrap_or_else(|_| "SHA1".to_string()));
@@ -78,13 +79,7 @@ pub fn run() {
         }
     };
 
-    let totp = TOTP::new(
-        algo,
-        6,
-        1,
-        30,
-        secret_bytes.clone(),
-    ).unwrap();
+    let totp = TOTP::new(algo, 6, 1, 30, secret_bytes.clone()).unwrap();
 
     print!("Enter OTP Code: ");
     std::io::Write::flush(&mut std::io::stdout()).unwrap();

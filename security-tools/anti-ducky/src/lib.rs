@@ -21,7 +21,7 @@
 //! IMPORTANT: This daemon must run as root (or with CAP_INPUT_RAW).
 //! Install as systemd service: see /etc/systemd/system/anti-ducky.service
 
-use evdev::{Device, EventType, Key, InputEvent};
+use evdev::{Device, EventType, InputEvent, Key};
 use std::collections::{HashMap, VecDeque};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
