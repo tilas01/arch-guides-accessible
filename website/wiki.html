@@ -6,8 +6,11 @@
     <title>Arch Guides Wiki</title>
     <meta name="description" content="Full static wiki documentation for Arch Linux installation, security tools, and system configuration.">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="img/banner.png" as="image">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <style>
         .wiki-container {
             display: flex;
@@ -50,25 +53,24 @@
 <body>
 
     <header>
-        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub. Created and maintained by tilas01." target="_blank" style="text-decoration: none;">
-            <div class="banner" style="font-size: 1.6rem; font-weight: bold; color: var(--accent-purple); padding: 0.8rem 1.5rem; border: 2px dashed var(--accent-blue); display: inline-block; cursor: pointer; margin-bottom: 0.8rem; border-radius: 12px; background-color: var(--bg-darker); text-transform: uppercase; letter-spacing: 2px; max-width: 700px; width: 100%;">
-                Arch Guides Dynamic
-            </div>
-        </a>
+        <div id="header-controls" class="js-only" style="position:absolute;right:15px;top:15px;display:flex;gap:6px;z-index:1000;">
+            <button id="toggle-tooltips-btn" type="button" class="tooltip-always" data-title="Tooltips: Enabled" data-desc="Toggle tooltips on/off." style="background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--accent-blue);padding:4px;border-radius:6px;">ℹ️</button>
+        </div>
+        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository containing this website, all tilas01-authored scripts, and Arch installation guides." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
         <h1>Arch Guides | Full Static Wiki</h1>
         <p>Comprehensive documentation &mdash; same parity as the generator. Follow manually or use the script generator.</p>
         <nav class="main-nav">
-            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">&#9881;&#65039; Generator</a>
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">⚙️ Generator</a>
             <span class="nav-sep">|</span>
-            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="You are here. Full documentation with same parity as the generator. Every option is explained so you can manually configure your system.">&#128214; Wiki / Documentation</a>
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="You are here. Full documentation with same parity as the generator. Every option is explained so you can manually configure your system.">📖 Wiki / Documentation</a>
             <span class="nav-sep">|</span>
-            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload" data-desc="Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.">&#128228; Upload</a>
+            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload" data-desc="Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.">📤 Upload</a>
             <span class="nav-sep">|</span>
-            <a href="#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">&#128203; Cheatsheets</a>
+            <a href="#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes. Optional GPG verification. See Wiki for how to build from source.">&#128230; Releases</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite.">📦 Releases</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01. The README contains the same information as this website.">&#128279; Repository</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01.">🔗 Repository</a>
         </nav>
     </header>
 
@@ -184,7 +186,10 @@
                             }
                         });
                         
-                        navUl.innerHTML = tocHTML;
+                        navUl.innerHTML = '<li style="margin-bottom:0.8rem;"><a href="wiki.html" style="color:var(--accent-purple);font-weight:bold;">← Back to all docs</a></li>' + tocHTML;
+
+                        // Highlight code blocks
+                        if (window.Prism) Prism.highlightAllUnder(wikiBody);
 
                         // Re-attach TOC click handlers
                         document.querySelectorAll('.wiki-nav a').forEach(tocLink => {
