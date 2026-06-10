@@ -16,14 +16,19 @@
 <body>
     <header>
         <button id="history-btn" type="button" class="js-only" title="View generation history" onclick="toggleHistoryModal()">🕓</button>
-        <a href="https://github.com/tilas01/arch-guides-dynamic" title="View Source on GitHub" target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
+        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
         <h1>Arch Guides Wiki & Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
-        <nav style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic Interactive Setup Generator.">Generator</a> | 
-            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki" data-desc="Full Arch Linux Wiki Documentation.">Wiki / Documentation</a> | 
-            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated configurations to restore.">Upload Guide</a> | 
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub.">Repository</a>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic Interactive Setup Generator. Select your options and generate a custom install script + guide.">⚙️ Generator</a>
+            <span class="nav-sep">|</span>
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Manual Guide" data-desc="Full Arch Linux documentation. Use to manually follow your own config — same parity as the generator. Every generator option is explained in depth.">📖 Wiki</a>
+            <span class="nav-sep">|</span>
+            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated .sh and/or .md configs to restore and edit.">📤 Upload</a>
+            <span class="nav-sep">|</span>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="Download reproducible pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes and GPG signatures. See Wiki for how to verify integrity or build from source.">📦 Releases</a>
+            <span class="nav-sep">|</span>
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. The README contains all the same information as this website.">🔗 Repo</a>
         </nav>
         <button id="toggle-tooltips-btn" type="button" class="js-only" data-title="Toggle Tooltips" data-desc="Toggle info tooltips on/off" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">ℹ️</button>
     </header>
@@ -168,31 +173,46 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Libre-only users will see compatibility notes.">
+                    <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Libre-only users will see compatibility notes. All apps are 100% open source unless noted.">
                         <label>Post-Install Apps:</label>
-                        <div id="post_apps_container" style="display:flex; flex-direction:column; gap:0.15rem; background: var(--bg-dark); padding: 0.8rem; border: 1px solid var(--accent-purple); border-radius:8px;">
-                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">AUR</strong>
-                            <label title="paru: Rust AUR helper"><input type="checkbox" name="post_apps" value="paru" checked> <a href="https://github.com/Morganamilo/paru" target="_blank" style="color:var(--fg-color)">paru</a> — AUR Helper</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">Browsers</strong>
-                            <label><input type="checkbox" name="post_apps" value="firefox" checked> <a href="https://mozilla.org/firefox/" target="_blank" style="color:var(--fg-color)">Firefox</a></label>
-                            <label><input type="checkbox" name="post_apps" value="librewolf"> <a href="https://librewolf.net/" target="_blank" style="color:var(--fg-color)">LibreWolf</a> — Privacy-hardened</label>
-                            <label><input type="checkbox" name="post_apps" value="tor-browser"> <a href="https://torproject.org/" target="_blank" style="color:var(--fg-color)">Tor Browser</a> — Max anonymity</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">Security</strong>
-                            <label><input type="checkbox" name="post_apps" value="signal"> <a href="https://signal.org/" target="_blank" style="color:var(--fg-color)">Signal</a> — E2E messaging</label>
-                            <label><input type="checkbox" name="post_apps" value="keepassxc"> <a href="https://keepassxc.org/" target="_blank" style="color:var(--fg-color)">KeePassXC</a> — Password manager</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">Dev / Terminal</strong>
-                            <label><input type="checkbox" name="post_apps" value="neovim" checked> <a href="https://neovim.io/" target="_blank" style="color:var(--fg-color)">Neovim</a> + dev tools</label>
-                            <label><input type="checkbox" name="post_apps" value="alacritty"> <a href="https://alacritty.org/" target="_blank" style="color:var(--fg-color)">Alacritty</a> — GPU terminal</label>
-                            <label><input type="checkbox" name="post_apps" value="zsh"> Zsh — Modern shell</label>
-                            <label><input type="checkbox" name="post_apps" value="vscodium"> <a href="https://vscodium.com/" target="_blank" style="color:var(--fg-color)">VSCodium</a> — FOSS VS Code</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">Media / Files</strong>
-                            <label><input type="checkbox" name="post_apps" value="thunar"> Thunar — File manager</label>
-                            <label><input type="checkbox" name="post_apps" value="mpv"> <a href="https://mpv.io/" target="_blank" style="color:var(--fg-color)">mpv</a> — Media player</label>
-                            <label><input type="checkbox" name="post_apps" value="obs"> <a href="https://obsproject.com/" target="_blank" style="color:var(--fg-color)">OBS Studio</a> — Recording</label>
-                            <strong style="color:var(--accent-cyan);font-size:0.8rem;">System</strong>
-                            <label><input type="checkbox" name="post_apps" value="flatpak"> Flatpak — Flathub apps</label>
+                        <div id="post_apps_container" class="app-grid-container">
+                            <div class="app-category-header">📦 AUR</div>
+                            <label class="app-item" title="paru: Rust-based AUR helper — build & install AUR packages"><input type="checkbox" name="post_apps" value="paru" checked> <span class="app-icon">🦀</span> <a href="https://github.com/Morganamilo/paru" target="_blank">paru</a> <span class="app-desc">AUR Helper</span></label>
+                            <div class="app-category-header">🌐 Browsers</div>
+                            <label class="app-item" title="Firefox: Open source web browser by Mozilla"><input type="checkbox" name="post_apps" value="firefox" checked> <span class="app-icon">🦊</span> <a href="https://mozilla.org/firefox/" target="_blank">Firefox</a> <span class="app-desc">Browser</span></label>
+                            <label class="app-item" title="LibreWolf: Privacy-hardened Firefox fork — no telemetry"><input type="checkbox" name="post_apps" value="librewolf"> <span class="app-icon">🐺</span> <a href="https://librewolf.net/" target="_blank">LibreWolf</a> <span class="app-desc">Privacy</span></label>
+                            <label class="app-item" title="Tor Browser: Anonymous web browsing via Tor network"><input type="checkbox" name="post_apps" value="tor-browser"> <span class="app-icon">🧅</span> <a href="https://torproject.org/" target="_blank">Tor Browser</a> <span class="app-desc">Anon</span></label>
+                            <label class="app-item" title="Chromium: Open source browser engine (ungoogled available via AUR)"><input type="checkbox" name="post_apps" value="chromium"> <span class="app-icon">🔵</span> <a href="https://www.chromium.org/" target="_blank">Chromium</a> <span class="app-desc">Browser</span></label>
+                            <div class="app-category-header">🔒 Security</div>
+                            <label class="app-item" title="Signal: End-to-end encrypted messaging app"><input type="checkbox" name="post_apps" value="signal"> <span class="app-icon">💬</span> <a href="https://signal.org/" target="_blank">Signal</a> <span class="app-desc">E2E Msg</span></label>
+                            <label class="app-item" title="KeePassXC: Offline password manager with TOTP support"><input type="checkbox" name="post_apps" value="keepassxc"> <span class="app-icon">🔑</span> <a href="https://keepassxc.org/" target="_blank">KeePassXC</a> <span class="app-desc">Passwords</span></label>
+                            <label class="app-item" title="ClamAV: Open source antivirus engine"><input type="checkbox" name="post_apps" value="clamav"> <span class="app-icon">🛡️</span> <a href="https://www.clamav.net/" target="_blank">ClamAV</a> <span class="app-desc">Antivirus</span></label>
+                            <label class="app-item" title="Firejail: SUID sandbox for restricting app access"><input type="checkbox" name="post_apps" value="firejail"> <span class="app-icon">🏰</span> <a href="https://firejail.wordpress.com/" target="_blank">Firejail</a> <span class="app-desc">Sandbox</span></label>
+                            <div class="app-category-header">💻 Dev / Terminal</div>
+                            <label class="app-item" title="Neovim: Hyperextensible terminal text editor"><input type="checkbox" name="post_apps" value="neovim" checked> <span class="app-icon">📝</span> <a href="https://neovim.io/" target="_blank">Neovim</a> <span class="app-desc">Editor</span></label>
+                            <label class="app-item" title="Alacritty: GPU-accelerated terminal emulator written in Rust"><input type="checkbox" name="post_apps" value="alacritty"> <span class="app-icon">⬛</span> <a href="https://alacritty.org/" target="_blank">Alacritty</a> <span class="app-desc">Terminal</span></label>
+                            <label class="app-item" title="kitty: Fast GPU-based terminal with image support"><input type="checkbox" name="post_apps" value="kitty"> <span class="app-icon">🐱</span> <a href="https://sw.kovidgoyal.net/kitty/" target="_blank">kitty</a> <span class="app-desc">Terminal</span></label>
+                            <label class="app-item" title="Zsh: Feature-rich shell with autocomplete and themes"><input type="checkbox" name="post_apps" value="zsh"> <span class="app-icon">🐚</span> Zsh <span class="app-desc">Shell</span></label>
+                            <label class="app-item" title="VSCodium: Telemetry-free VS Code"><input type="checkbox" name="post_apps" value="vscodium"> <span class="app-icon">📘</span> <a href="https://vscodium.com/" target="_blank">VSCodium</a> <span class="app-desc">IDE</span></label>
+                            <label class="app-item" title="Git: Version control system"><input type="checkbox" name="post_apps" value="git" checked> <span class="app-icon">🔀</span> <a href="https://git-scm.com/" target="_blank">Git</a> <span class="app-desc">VCS</span></label>
+                            <label class="app-item" title="tmux: Terminal multiplexer — split panes and sessions"><input type="checkbox" name="post_apps" value="tmux"> <span class="app-icon">🪟</span> tmux <span class="app-desc">Multiplex</span></label>
+                            <label class="app-item" title="htop: Interactive process viewer"><input type="checkbox" name="post_apps" value="htop" checked> <span class="app-icon">📊</span> htop <span class="app-desc">Monitor</span></label>
+                            <div class="app-category-header">🎬 Media / Files</div>
+                            <label class="app-item" title="Thunar: Lightweight GTK file manager (Xfce)"><input type="checkbox" name="post_apps" value="thunar"> <span class="app-icon">📁</span> Thunar <span class="app-desc">Files</span></label>
+                            <label class="app-item" title="Nautilus: GNOME's default file manager"><input type="checkbox" name="post_apps" value="nautilus"> <span class="app-icon">📂</span> Nautilus <span class="app-desc">Files</span></label>
+                            <label class="app-item" title="mpv: Minimal, scriptable media player"><input type="checkbox" name="post_apps" value="mpv"> <span class="app-icon">▶️</span> <a href="https://mpv.io/" target="_blank">mpv</a> <span class="app-desc">Player</span></label>
+                            <label class="app-item" title="VLC: Universal media player"><input type="checkbox" name="post_apps" value="vlc"> <span class="app-icon">🔶</span> <a href="https://www.videolan.org/" target="_blank">VLC</a> <span class="app-desc">Player</span></label>
+                            <label class="app-item" title="OBS Studio: Screen recording and streaming"><input type="checkbox" name="post_apps" value="obs"> <span class="app-icon">🎥</span> <a href="https://obsproject.com/" target="_blank">OBS Studio</a> <span class="app-desc">Record</span></label>
+                            <label class="app-item" title="GIMP: Open source image editor"><input type="checkbox" name="post_apps" value="gimp"> <span class="app-icon">🎨</span> <a href="https://gimp.org/" target="_blank">GIMP</a> <span class="app-desc">Images</span></label>
+                            <label class="app-item" title="LibreOffice: Full office suite — Libre alternative to Microsoft Office"><input type="checkbox" name="post_apps" value="libreoffice"> <span class="app-icon">📄</span> <a href="https://www.libreoffice.org/" target="_blank">LibreOffice</a> <span class="app-desc">Office</span></label>
+                            <div class="app-category-header">🔧 System</div>
+                            <label class="app-item" title="Flatpak: Sandboxed app distribution via Flathub"><input type="checkbox" name="post_apps" value="flatpak"> <span class="app-icon">📦</span> Flatpak <span class="app-desc">Apps</span></label>
+                            <label class="app-item" title="Timeshift: System snapshot and restore (works with BTRFS)"><input type="checkbox" name="post_apps" value="timeshift"> <span class="app-icon">⏪</span> Timeshift <span class="app-desc">Backup</span></label>
+                            <label class="app-item" title="NetworkManager: Network connection manager with GUI support"><input type="checkbox" name="post_apps" value="networkmanager" checked> <span class="app-icon">📡</span> NetworkManager <span class="app-desc">Network</span></label>
+                            <label class="app-item" title="Bluetooth (bluez + bluez-utils): Bluetooth stack"><input type="checkbox" name="post_apps" value="bluetooth"> <span class="app-icon">🔵</span> Bluetooth <span class="app-desc">bluez</span></label>
+                            <label class="app-item" title="PipeWire: Modern audio/video server replacing PulseAudio"><input type="checkbox" name="post_apps" value="pipewire" checked> <span class="app-icon">🔊</span> PipeWire <span class="app-desc">Audio</span></label>
                         </div>
-                        <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre: Firefox firmware, Flatpak proprietary apps, Signal may conflict with strict libre.</p>
+                        <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre users: Firefox firmware blobs, Flatpak proprietary apps, Signal Electron build, and Chromium may conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                     </div>
 
                     <div class="form-group form-step" data-title="Automatic System Updates" data-desc="Daily cron job to auto-update pacman packages with logging.">
