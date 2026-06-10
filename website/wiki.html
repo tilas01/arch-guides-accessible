@@ -266,19 +266,24 @@
         <!-- Author: tilas01 | Main Developer & Maintainer -->
         <h3 style="color:var(--accent-purple); margin-bottom:1rem;">Credits &amp; Acknowledgements</h3>
         <div class="credits-grid">
-            <!-- tilas01: main author — single self-contained card -->
-            <a href="https://github.com/tilas01" target="_blank" class="credit-card nav-tooltip"
-               data-title="tilas01 — Main Author"
-               data-desc="Main author, developer &amp; maintainer of Arch Guides, the Arch Rusty Security Suite, and all project code. All scripts, website, security tooling, and documentation by tilas01."
-               style="text-decoration:none; border-color:var(--accent-purple); order:-1;">
+            <!-- tilas01: main author -->
+            <div class="credit-card nav-tooltip"
+                 data-title="tilas01 — Main Author"
+                 data-desc="Main author, developer & maintainer of Arch Guides, the Arch Rusty Security Suite, and all project code. All scripts, website, security tooling, and documentation by tilas01."
+                 style="border-color:var(--accent-purple); cursor:pointer; order:-1;"
+                 onclick="window.open('https://github.com/tilas01','_blank')">
                 <img src="https://github.com/tilas01.png?size=80" alt="tilas01" style="border-color:var(--accent-purple); width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name" style="font-size:1.05rem; color:var(--accent-purple);">tilas01</span>
-                    <span class="credit-role">Main Author, Developer &amp; Maintainer<br>Arch Rusty Security Suite · Website · All Scripts</span>
+                    <span class="credit-role">
+                        Main Author, Developer & Maintainer<br>
+                        <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple);font-size:0.75rem;" onclick="event.stopPropagation()">GitHub</a>
+                        · Arch Rusty Security Suite
+                    </span>
                 </div>
-            </a>
+            </div>
 
-            <!-- dusklinux: Dusky OS — single card with all links -->
+            <!-- dusklinux: Dusky OS -->
             <div class="credit-card nav-tooltip"
                  data-title="dusklinux — Dusky OS"
                  data-desc="Creator of Dusky OS — a minimal Arch-based distro with automated Hyprland setup, custom dotfiles and theming. Inspiration for the Dusky desktop option and cheatsheet in this project."
@@ -289,70 +294,38 @@
                     <span class="credit-name" style="color:var(--accent-blue);">dusklinux</span>
                     <span class="credit-role">
                         Creator of Dusky OS 🎨 — Arch + Hyprland<br>
-                        <a href="https://github.com/dusklinux" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">GitHub</a>
-                        · <a href="https://github.com/dusklinux/dusky" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">dusky repo</a>
-                        · <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">YouTube guide</a>
+                        <a href="https://github.com/dusklinux" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">GitHub</a>
+                        · <a href="https://github.com/dusklinux/dusky" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">dusky repo</a>
+                        · <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">YouTube guide</a>
                     </span>
                 </div>
             </div>
 
-            <!-- max-baz: arch-secure-boot (Secure Boot + UKI) -->
-            <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" class="credit-card nav-tooltip"
-               data-title="max-baz — arch-secure-boot"
-               data-desc="Creator of arch-secure-boot — automated Unified Kernel Image (UKI) signing and Secure Boot key management for Arch Linux. Referenced directly for the Secure Boot section of this project."
-               style="text-decoration:none;">
-                <img src="https://github.com/max-baz.png?size=80" alt="max-baz" style="width:48px; height:48px;">
+            <!-- Integrated Tools: arch-secure-boot, kloak, Snapper -->
+            <div class="credit-card nav-tooltip"
+                 data-title="Integrated Security Tools"
+                 data-desc="Core external tools integrated into the generator: arch-secure-boot (UKI/Secure Boot) by max-baz, kloak (Keystroke Anonymizer) by vmonaco, and Snapper (BTRFS Rollbacks)."
+                 style="border-color:var(--accent-green);">
+                <img src="https://cdn-icons-png.flaticon.com/512/1250/1250615.png" alt="Integrated Tools" style="border-color:var(--accent-green); width:48px; height:48px;">
                 <div class="credit-info">
-                    <span class="credit-name">max-baz</span>
+                    <span class="credit-name" style="color:var(--accent-green);">Integrated Tools</span>
                     <span class="credit-role">
-                        Secure Boot &amp; UKI automation 🔒<br>
-                        <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">arch-secure-boot</a>
-                        — UKI signing, sbctl, Secure Boot keys
+                        <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">arch-secure-boot (max-baz)</a><br>
+                        <a href="https://github.com/vmonaco/kloak" target="_blank" style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">kloak (vmonaco)</a><br>
+                        <a href="https://github.com/openSUSE/snapper" target="_blank" style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">Snapper</a>
                     </span>
                 </div>
-            </a>
-
-            <!-- vmonaco: kloak (keystroke anonymizer) — integrated tool -->
-            <a href="https://github.com/vmonaco/kloak" target="_blank" class="credit-card nav-tooltip"
-               data-title="vmonaco — kloak"
-               data-desc="Creator of kloak — an open-source keystroke and mouse timing anonymizer. Obfuscates typing patterns to prevent behavioral biometric tracking. Integrated into the Arch Rusty Security Suite as an optional security module."
-               style="text-decoration:none;">
-                <img src="https://github.com/vmonaco.png?size=80" alt="vmonaco" style="width:48px; height:48px;">
-                <div class="credit-info">
-                    <span class="credit-name">vmonaco</span>
-                    <span class="credit-role">
-                        Keystroke &amp; mouse anonymizer 🛡️<br>
-                        <a href="https://github.com/vmonaco/kloak" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">kloak repo</a>
-                        — Timing obfuscation, anti-tracking
-                    </span>
-                </div>
-            </a>
-
-            <!-- Snapper: integration reference (not credit) -->
-            <a href="https://github.com/openSUSE/snapper" target="_blank" class="credit-card nav-tooltip"
-               data-title="Snapper — BTRFS Snapshot Integration"
-               data-desc="Snapper provides automated BTRFS filesystem snapshots before and after every pacman transaction. Enables one-command system rollback if an update breaks your system. Integrated into the generator as an optional system tool — not a credit, but an important security tool you should consider."
-               style="text-decoration:none;">
-                <img src="https://cdn-icons-png.flaticon.com/512/1250/1250615.png" alt="Snapper" style="width:48px; height:48px;">
-                <div class="credit-info">
-                    <span class="credit-name">Snapper</span>
-                    <span class="credit-role">
-                        BTRFS snapshot &amp; rollback 📸<br>
-                        <a href="https://github.com/openSUSE/snapper" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">snapper</a>
-                        · <a href="https://github.com/jrabinow/snapper-rollback" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">snapper-rollback</a>
-                        — Integrated security tool
-                    </span>
-                </div>
-            </a>
+            </div>
 
             <!-- AI Assistance -->
             <div class="credit-card nav-tooltip"
                  data-title="AI Assistance — Co-development"
-                 data-desc="Multiple AI models (Gemini, Claude) used during development. ALL output has been reviewed, tested, curated and authored by tilas01. No AI output ships unreviewed.">
+                 data-desc="Multiple AI models (Gemini, Claude) used during development. ALL output has been reviewed, tested, curated and authored by tilas01. No AI output ships unreviewed."
+                 style="border-color:var(--accent-cyan);">
                 <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI" style="border-color:var(--accent-cyan); width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name" style="color:var(--accent-cyan);">AI Assistance</span>
-                    <span class="credit-role">Co-development (Gemini · Claude)<br>All output reviewed &amp; curated by tilas01</span>
+                    <span class="credit-role">Co-development (Gemini · Claude)<br>All output reviewed & curated by tilas01</span>
                 </div>
             </div>
         </div>
