@@ -25,7 +25,7 @@ fn base32_encode(data: &[u8]) -> String {
         result.push(ALPHABET[idx] as char);
     }
     // Pad to multiple of 8
-    while result.len() % 8 != 0 {
+    while !result.len().is_multiple_of(8) {
         result.push('=');
     }
     result
