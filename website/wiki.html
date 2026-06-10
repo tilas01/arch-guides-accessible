@@ -119,6 +119,24 @@
                     <li><a data-file="dusky-cheatsheet.md">🎨 9. Dusky OS Cheatsheet</a></li>
                     <li><a data-file="xorg-vs-wayland.md">🖥️ 10. Xorg vs Wayland</a></li>
                     <li><a data-file="10-generator-selections-and-dusky.md">⚙️ 11. All Generator Selections Explained</a></li>
+                    <li style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>🦀 Arch Rusty Security Suite</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a data-file="security-suite.md" id="link-security-suite">🦀 Suite Overview</a></li>
+                            <li><a data-file="security-suite.md" data-section="libre-otp">🔐 Libre OTP</a></li>
+                            <li><a data-file="security-suite.md" data-section="input-guard-anti-ducky">🛡️ Input Guard (Anti-Ducky)</a></li>
+                            <li><a data-file="security-suite.md" data-section="iso-verifier">🔍 ISO Verifier</a></li>
+                            <li><a data-file="security-suite.md" data-section="panic-password-emergency-wipe">☠️ Panic Password</a></li>
+                            <li><a data-file="security-suite.md" data-section="webhooks-notifications">📱 Webhooks & Notifications</a></li>
+                            <li><a data-file="security-suite.md" data-section="kloak-keystroke-anonymiser">⌨️ Kloak</a></li>
+                            <li><a data-file="security-suite.md" data-section="anti-evil-maid-decoys">🕵️ Anti-Evil Maid</a></li>
+                            <li><a data-file="security-suite.md" data-section="hardened-ssh-otp">🔒 Hardened SSH + OTP</a></li>
+                        </ul>
+                    </li>
+                    <li style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📱 Notification Setup</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a data-file="ntfy-setup.md" id="link-notification-setup">📱 ntfy, Bark & Webhooks</a></li>
+                        </ul>
+                    </li>
                     <li id="cheatsheets" style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📋 Cheatsheets</strong>
                         <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
                             <li><a data-file="helpful-commands.md">🐧 Arch Linux Commands</a></li>
@@ -161,6 +179,7 @@
                 this.classList.add('active');
 
                 const file = this.getAttribute('data-file');
+                const targetSection = this.getAttribute('data-section');
                 const wikiBody = document.getElementById('wiki-body');
                 wikiBody.innerHTML = '<p>Loading...</p>';
 
@@ -204,12 +223,16 @@
                             });
                         });
                         
-                        // Auto-scroll to hash
-                        if (window.location.hash) {
+                        // Auto-scroll to data-section or URL hash
+                        const scrollTarget = targetSection || (window.location.hash ? window.location.hash.substring(1) : null);
+                        if (scrollTarget) {
                             setTimeout(() => {
-                                const el = document.getElementById(window.location.hash.substring(1));
-                                if (el) window.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' });
-                            }, 100);
+                                const el = document.getElementById(scrollTarget);
+                                if (el) {
+                                    window.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' });
+                                    window.history.pushState(null, null, '#' + scrollTarget);
+                                }
+                            }, 150);
                         }
                     })
                     .catch(err => {
@@ -243,24 +266,22 @@
         <!-- Author: tilas01 | Main Developer & Maintainer -->
         <h3 style="color:var(--accent-purple); margin-bottom:1rem;">Credits &amp; Acknowledgements</h3>
         <div class="credits-grid">
+            <!-- tilas01: main author — single self-contained card -->
             <a href="https://github.com/tilas01" target="_blank" class="credit-card nav-tooltip"
                data-title="tilas01 — Main Author"
-               data-desc="Main author, developer &amp; maintainer of Arch Guides, all scripts, and the Arch Rusty Security Suite."
+               data-desc="Main author, developer &amp; maintainer of Arch Guides, the Arch Rusty Security Suite, and all project code. All scripts, website, security tooling, and documentation by tilas01."
                style="text-decoration:none; border-color:var(--accent-purple); order:-1;">
                 <img src="https://github.com/tilas01.png?size=80" alt="tilas01" style="border-color:var(--accent-purple); width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name" style="font-size:1.05rem; color:var(--accent-purple);">tilas01</span>
-                    <span class="credit-role">Main Author, Developer &amp; Maintainer<br>
-                        <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple);font-size:0.75rem;">GitHub</a>
-                        · <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" style="color:var(--accent-purple);font-size:0.75rem;">arch-guides-dynamic</a><br>
-                        Arch Rusty Security Suite · Website · All Scripts
-                    </span>
+                    <span class="credit-role">Main Author, Developer &amp; Maintainer<br>Arch Rusty Security Suite · Website · All Scripts</span>
                 </div>
             </a>
-            <!-- dusklinux: merged single card -->
+
+            <!-- dusklinux: Dusky OS — single card with all links -->
             <div class="credit-card nav-tooltip"
                  data-title="dusklinux — Dusky OS"
-                 data-desc="Creator of Dusky OS — a minimal Arch-based distro with automated Hyprland setup, custom dotfiles and theming. Inspiration for the Dusky desktop option and cheatsheet. Right-click to open the dusky GitHub repo."
+                 data-desc="Creator of Dusky OS — a minimal Arch-based distro with automated Hyprland setup, custom dotfiles and theming. Inspiration for the Dusky desktop option and cheatsheet in this project."
                  style="border-color:var(--accent-blue); cursor:pointer;"
                  onclick="window.open('https://github.com/dusklinux/dusky','_blank')">
                 <img src="https://github.com/dusklinux.png?size=80" alt="dusklinux" style="border-color:var(--accent-blue); width:48px; height:48px;">
@@ -274,7 +295,8 @@
                     </span>
                 </div>
             </div>
-            <!-- max-baz: arch-secure-boot -->
+
+            <!-- max-baz: arch-secure-boot (Secure Boot + UKI) -->
             <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" class="credit-card nav-tooltip"
                data-title="max-baz — arch-secure-boot"
                data-desc="Creator of arch-secure-boot — automated Unified Kernel Image (UKI) signing and Secure Boot key management for Arch Linux. Referenced directly for the Secure Boot section of this project."
@@ -289,10 +311,11 @@
                     </span>
                 </div>
             </a>
-            <!-- vmonaco: kloak -->
+
+            <!-- vmonaco: kloak (keystroke anonymizer) — integrated tool -->
             <a href="https://github.com/vmonaco/kloak" target="_blank" class="credit-card nav-tooltip"
                data-title="vmonaco — kloak"
-               data-desc="Creator of kloak — an open-source keystroke and mouse timing anonymizer. Obfuscates typing patterns to prevent behavioral biometric tracking. Included in the Arch Rusty Security Suite."
+               data-desc="Creator of kloak — an open-source keystroke and mouse timing anonymizer. Obfuscates typing patterns to prevent behavioral biometric tracking. Integrated into the Arch Rusty Security Suite as an optional security module."
                style="text-decoration:none;">
                 <img src="https://github.com/vmonaco.png?size=80" alt="vmonaco" style="width:48px; height:48px;">
                 <div class="credit-info">
@@ -304,21 +327,24 @@
                     </span>
                 </div>
             </a>
-            <!-- bprsk: snapper-rollback (BTRFS filesystem restore) -->
-            <a href="https://github.com/jrabinow/snapper-rollback" target="_blank" class="credit-card nav-tooltip"
-               data-title="Snapper / bprsk — BTRFS Snapshots"
-               data-desc="Reference for BTRFS snapper-rollback integration — automated filesystem restore points before and after every pacman transaction. Enables one-command system rollback."
+
+            <!-- Snapper: integration reference (not credit) -->
+            <a href="https://github.com/openSUSE/snapper" target="_blank" class="credit-card nav-tooltip"
+               data-title="Snapper — BTRFS Snapshot Integration"
+               data-desc="Snapper provides automated BTRFS filesystem snapshots before and after every pacman transaction. Enables one-command system rollback if an update breaks your system. Integrated into the generator as an optional system tool — not a credit, but an important security tool you should consider."
                style="text-decoration:none;">
-                <img src="https://github.com/jrabinow.png?size=80" alt="snapper-rollback" style="width:48px; height:48px;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1250/1250615.png'">
+                <img src="https://cdn-icons-png.flaticon.com/512/1250/1250615.png" alt="Snapper" style="width:48px; height:48px;">
                 <div class="credit-info">
-                    <span class="credit-name">Snapper / bprsk</span>
+                    <span class="credit-name">Snapper</span>
                     <span class="credit-role">
                         BTRFS snapshot &amp; rollback 📸<br>
                         <a href="https://github.com/openSUSE/snapper" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">snapper</a>
                         · <a href="https://github.com/jrabinow/snapper-rollback" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">snapper-rollback</a>
+                        — Integrated security tool
                     </span>
                 </div>
             </a>
+
             <!-- AI Assistance -->
             <div class="credit-card nav-tooltip"
                  data-title="AI Assistance — Co-development"

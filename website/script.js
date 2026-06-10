@@ -55,7 +55,7 @@ window.toggleHistoryModal = function() {
 
 
 // â”€â”€â”€ Page switching: Generator â†” Output â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function showOutputPage(mdContent, shContent, format) {
+function showOutputPage(mdContent, shContent, format, scContent) {
     const genArea   = document.querySelector('.layout-container');
     const outputSec = document.getElementById('output-section');
     if (!outputSec) return;
@@ -74,7 +74,7 @@ function showOutputPage(mdContent, shContent, format) {
             b.setAttribute('data-title', 'Download Markdown Guide');
             b.setAttribute('data-desc', 'Download the generated installation guide as a .md file.');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-cyan);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = 'â¬‡ Download .md';
+            b.textContent = '⬇ Download .md';
             b.onclick = () => downloadFile(mdContent, 'arch-install-guide.md');
             dlContainer.appendChild(b);
         }
@@ -84,8 +84,18 @@ function showOutputPage(mdContent, shContent, format) {
             b.setAttribute('data-title', 'Download Shell Script');
             b.setAttribute('data-desc', 'Download the generated Bash install script as a .sh file. REVIEW before executing!');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-blue);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = 'â¬‡ Download .sh';
+            b.textContent = '⬇ Download .sh';
             b.onclick = () => downloadFile(shContent, 'arch-install.sh');
+            dlContainer.appendChild(b);
+        }
+        if (scContent) {
+            const b = document.createElement('button');
+            b.className = 'btn btn-tooltip';
+            b.setAttribute('data-title', 'Download Selection Config (.sc)');
+            b.setAttribute('data-desc', 'Download your exact form selections as a .sc JSON file so you can restore them later.');
+            b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-purple);color:var(--bg-color);font-size:0.88rem;';
+            b.textContent = '⬇ Download .sc';
+            b.onclick = () => downloadFile(scContent, 'arch-config.sc');
             dlContainer.appendChild(b);
         }
         if (window.refreshTooltips) window.refreshTooltips();
@@ -186,17 +196,28 @@ window.generateOutput = function(auto = false) {
     const auto_updates = gv('auto_updates','no');
 
     const useCustomScripts = gv('use-custom-scripts','no') === 'yes';
-    const secTools = useCustomScripts ? gv('securitytools','none') : 'none';
-    const libreOtpMode = gv('libre_otp_mode','login');
-    const anon_kloak = useCustomScripts ? gv('anon_kloak','no') : 'no';
-    const anon_webhook = useCustomScripts ? gv('anon_webhook','no') : 'no';
-    const anon_ssh = useCustomScripts ? gv('anon_ssh','no') : 'no';
-    const fakeEvilMaid = useCustomScripts ? gv('fake-evil-maid','no') : 'no';
-    const otherSecTools = gv('other_security_tools','no');
 
-    // Post-install apps (checkboxes)
+    // Checkboxes arrays
     const post_apps = [];
     document.querySelectorAll('input[name="post_apps"]:checked').forEach(cb => post_apps.push(cb.value));
+
+    const arss_tools = [];
+    if (useCustomScripts) {
+        document.querySelectorAll('input[name="arss_tools"]:checked').forEach(cb => arss_tools.push(cb.value));
+    }
+
+    const other_sec_tools = [];
+    document.querySelectorAll('input[name="other_sec_tools"]:checked').forEach(cb => other_sec_tools.push(cb.value));
+
+    // ARSS sub-options
+    const libreOtpMode = gv('libre_otp_mode','login');
+    const otp_recovery = gv('otp_recovery','5');
+    const webhook_provider = gv('webhook_provider','ntfy');
+    const webhook_url = gv('webhook_url','');
+    const aem_main = gv('aem-kernel-main','linux');
+    const aem_backup = gv('aem-kernel-backup','none');
+
+    const configJSON = JSON.stringify(getFormValues(), null, 2);
 
     // â”€â”€ Validation â”€â”€
     const errors = [];
@@ -220,7 +241,8 @@ window.generateOutput = function(auto = false) {
     function buildOutput(cmdOnly) {
         let o = "";
         // Hidden config (only in raw source, stripped from preview)
-        const configObj = { fw,fs,disk,part,initSys,boot,kernelMain,kernelBackup,software_type,cpu_brand,gpu_brand,desktop,displayServer,swap_size,post_apps,auto_updates,cleanup,browser,dns,secTools,libreOtpMode,anon_kloak,anon_webhook,anon_ssh,fakeEvilMaid,otherSecTools,format,user_count,root_ssh,otp_sha,iso_setup };
+        // Hidden config inside markdown for Live Editor compatibility
+        const configObj = getFormValues();
         o += '<!-- CONFIG_START\n' + JSON.stringify(configObj) + '\nCONFIG_END -->\n\n';
 
         if (!cmdOnly) {
@@ -264,6 +286,13 @@ window.generateOutput = function(auto = false) {
             if (fs === "btrfs") o += `btrfs filesystem mkswapfile --size ${swap_size} /mnt/swapfile\n`;
             else o += `fallocate -l ${swap_size} /mnt/swapfile\nchmod 600 /mnt/swapfile\nmkswap /mnt/swapfile\n`;
             o += `swapon /mnt/swapfile\n`;
+        }
+
+        if (useCustomScripts && arss_tools.includes("iso-verifier")) {
+            if (!cmdOnly) o += `\`\`\`\n\n## ISO Verification\n> *It is highly recommended to verify the Arch ISO integrity before installing.*\n\`\`\`bash\n`;
+            o += `curl -sLO https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt\n`;
+            o += `echo "Verifying ISO Hash..."\n`;
+            o += `sha256sum -c sha256sums.txt --ignore-missing || { echo "ISO HASH VERIFICATION FAILED!"; exit 1; }\n`;
         }
 
         if (!cmdOnly) o += `\`\`\`\n\n## 2. Base Installation\n\`\`\`bash\n`;
@@ -444,7 +473,7 @@ window.generateOutput = function(auto = false) {
         if (needsAUR) o += `userdel -r builder\nrm -f /etc/sudoers.d/builder\n`;
 
         // Security tools (now Arch Rusty Security Suite)
-        if (secTools !== "none") {
+        if (useCustomScripts && arss_tools.length > 0) {
             if (!cmdOnly) o += `\`\`\`\n\n## 7. Arch Rusty Security Suite by tilas01\n\`\`\`bash\n`;
             else o += `\n# 7. Arch Rusty Security Suite\n`;
             o += `# Download the latest release from GitHub\n`;
@@ -455,33 +484,29 @@ window.generateOutput = function(auto = false) {
             o += `chmod +x arch-rusty-security-suite-linux-x86_64\n`;
             o += `cp arch-rusty-security-suite-linux-x86_64 /usr/local/bin/arch-rusty-security-suite\n`;
 
-            if (secTools === "libre-otp" || secTools === "both") {
-                o += `arch-rusty-security-suite otp --setup --algo ${otp_sha}\n`;
-                if (libreOtpMode === "login" || libreOtpMode === "both") {
-                    o += `echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/login\n`;
-                }
-                if (libreOtpMode === "boot" || libreOtpMode === "both") {
-                    o += `echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/system-auth\n`;
-                }
+            if (arss_tools.includes("webhooks")) {
+                o += `\n# Configuring Webhooks\nmkdir -p /etc/arch-security/\ncat << 'WH' > /etc/arch-security/webhook.conf\nPROVIDER=${webhook_provider}\nURL=${webhook_url}\nWH\n`;
+                o += `arch-rusty-security-suite webhooks --install-service\n`;
             }
-            if (secTools === "anti-ducky" || secTools === "both") {
-                o += `arch-rusty-security-suite input-guard --init\n`;
-                o += `cat << 'SRV' > /etc/systemd/system/input-guard.service\n[Unit]\nDescription=Arch Rusty Security Suite - Input Guard\nAfter=sshd.service\nRequires=sshd.service\n[Service]\nExecStart=/usr/local/bin/arch-rusty-security-suite input-guard\nRestart=always\nUser=root\n[Install]\nWantedBy=multi-user.target\nSRV\nsystemctl enable input-guard.service\n`;
+            if (arss_tools.includes("libre-otp")) {
+                o += `\n# Configuring Libre OTP\narch-rusty-security-suite libre-otp --setup --mode ${libreOtpMode} --hash ${otp_sha} --recovery-codes ${otp_recovery}\n`;
+            }
+            if (arss_tools.includes("panic-password")) {
+                o += `\n# Configuring Panic Password\narch-rusty-security-suite panic --setup\n`;
+            }
+            if (arss_tools.includes("evil-maid")) {
+                o += `\n# Configuring Anti-Evil Maid\narch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup}\n`;
+            }
+            if (arss_tools.includes("anti-ducky")) {
+                o += `\n# Configuring Input Guard (Anti-Ducky)\narch-rusty-security-suite ducky --approve-current\n`;
+            }
+            if (arss_tools.includes("hardened-ssh")) {
+                o += `\n# Hardening SSH Server\narch-rusty-security-suite ssh --harden\n`;
+            }
+            if (arss_tools.includes("kloak")) {
+                o += `\n# Installing Kloak (Keystroke Anonymisation)\npacman -S --noconfirm kloak\nsystemctl enable kloak\n`;
             }
         }
-
-        // Anonymisation
-        if (anon_kloak === "yes" || anon_ssh === "yes" || fakeEvilMaid === "yes") {
-            if (!cmdOnly) o += `\`\`\`\n\n## 8. Anonymisation & Hardening\n\`\`\`bash\n`;
-            else o += `\n# 8. Anonymisation\n`;
-            if (anon_kloak === "yes") {
-                o += `git clone https://github.com/vmonaco/kloak.git /opt/kloak && cd /opt/kloak && make && cp kloak /usr/local/bin/\n`;
-                o += `cat << 'SRV' > /etc/systemd/system/kloak.service\n[Unit]\nDescription=Kloak Keystroke Anonymizer\n[Service]\nExecStart=/usr/local/bin/kloak\nRestart=always\n[Install]\nWantedBy=multi-user.target\nSRV\nsystemctl enable kloak.service\n`;
-            }
-            if (anon_ssh === "yes") {
-                o += `pacman -S --noconfirm openssh\nsed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config\n`;
-                if (root_ssh === "no") o += `sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config\n`;
-                if (secTools === "libre-otp" || secTools === "both") o += `echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/sshd\n`;
                 o += `systemctl enable sshd.service\n`;
             }
             if (fakeEvilMaid === "yes") {
@@ -597,10 +622,89 @@ window.generateOutput = function(auto = false) {
 
     if (!auto) {
         saveToHistory(mdOutput, scriptOutput, format);
-        // Switch to output page view
-        showOutputPage(mdOutput, scriptOutput, format);
+        const configJSON = window.getFormValues();
+        showOutputPage(mdOutput, scriptOutput, format, configJSON);
     }
 };
+
+// ── Form Serialization & Preview Logic ──
+window.getFormValues = function() {
+    const data = {
+        version: 1,
+        generator: "arch-guides-dynamic",
+        selects: {},
+        inputs: {},
+        checkboxes: {}
+    };
+    document.querySelectorAll('#install-form select').forEach(el => data.selects[el.id] = el.value);
+    document.querySelectorAll('#install-form input[type="text"], #install-form input[type="number"]').forEach(el => data.inputs[el.id] = el.value);
+    document.querySelectorAll('#install-form input[type="checkbox"]').forEach(el => {
+        if (!data.checkboxes[el.name]) data.checkboxes[el.name] = [];
+        if (el.checked) data.checkboxes[el.name].push(el.value);
+    });
+    return data;
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('install-form');
+    if (form) {
+        form.addEventListener('change', () => {
+            const pre = document.getElementById('sc-preview-json');
+            if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
+        });
+        // Initial populate
+        const pre = document.getElementById('sc-preview-json');
+        if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
+    }
+
+    // Handle .sc upload
+    const scInput = document.getElementById('upload-sc-input');
+    if (scInput) {
+        scInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (data.generator !== "arch-guides-dynamic") throw new Error("Invalid format");
+                    
+                    // Restore Selects
+                    if (data.selects) {
+                        for (const [id, val] of Object.entries(data.selects)) {
+                            const el = document.getElementById(id);
+                            if (el) el.value = val;
+                        }
+                    }
+                    // Restore Inputs
+                    if (data.inputs) {
+                        for (const [id, val] of Object.entries(data.inputs)) {
+                            const el = document.getElementById(id);
+                            if (el) el.value = val;
+                        }
+                    }
+                    // Restore Checkboxes
+                    if (data.checkboxes) {
+                        document.querySelectorAll('#install-form input[type="checkbox"]').forEach(cb => cb.checked = false);
+                        for (const [name, vals] of Object.entries(data.checkboxes)) {
+                            vals.forEach(v => {
+                                const cb = document.querySelector(`input[name="${name}"][value="${v}"]`);
+                                if (cb) cb.checked = true;
+                            });
+                        }
+                    }
+                    // Trigger UI updates
+                    document.querySelectorAll('#install-form select').forEach(sel => sel.dispatchEvent(new Event('change')));
+                    document.querySelectorAll('#install-form input[type="checkbox"]').forEach(cb => cb.dispatchEvent(new Event('change')));
+                    alert('Configuration restored successfully.');
+                } catch (err) {
+                    alert('Error parsing .sc config file. Is it valid JSON?');
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+});
 
 // ====================================================================
 // UI EVENT HANDLERS
@@ -637,25 +741,29 @@ if (tooltipToggleBtn) {
 // wiki map kept for parity (used by unified tooltip.js)
 const wikiMap = {
     'Firmware Selection':           '?page=architecture.md',
-    'File System Features':         '?page=02-partitioning/',
+    'File System Features':         '?page=02-partitioning/luks2.md',
     'Target Installation Disk':     '?page=01-pre-installation.md',
-    'Encryption Options':           '?page=02-partitioning/',
-    'Init System':                  '?page=architecture.md',
-    'Bootloader Choice':            '?page=04-bootloaders/',
-    'Main Kernel':                  '?page=03-base-installation.md',
-    'Backup Kernel':                '?page=03-base-installation.md',
+    'Encryption Options':           '?page=02-partitioning/luks2.md',
+    'Init System':                  '?page=03-base-installation.md',
+    'Bootloader Choice':            '?page=04-bootloaders/uki-no-grub.md',
+    'Main Kernel':                  '?page=maintenance.md',
+    'Backup Kernel':                '?page=maintenance.md',
     'CPU Architecture':             '?page=03-base-installation.md',
     'GPU Hardware':                 '?page=03-base-installation.md',
     'Virtual Machine Guest Setup':  '?page=03-base-installation.md',
     'Software Type & Graphics Drivers': '?page=10-generator-selections-and-dusky.md',
-    'Swap File Size':               '?page=02-partitioning/',
+    'Swap File Size':               '?page=02-partitioning/luks2.md',
     'Post-Install Apps & Scripts':  '?page=10-generator-selections-and-dusky.md',
     'Automatic System Updates':     '?page=07-post-installation.md',
     'Multi-User Setup':             '?page=10-generator-selections-and-dusky.md',
     'System Cleanup':               '?page=07-post-installation.md',
-    'Tilas01 Custom Scripts':       '?page=architecture.md',
-    'Advanced Security Tools':      '?page=architecture.md',
+    'Desktop Environment':          '?page=07-post-installation.md',
+    'DNS Caching':                  '?page=07-post-installation.md',
     'Display Server':               '?page=xorg-vs-wayland.md',
+    '🦀 Arch Rusty Security Suite': '?page=security-suite.md',
+    'ARSS — Security Tools':        '?page=security-suite.md',
+    'Anti-Evil Maid Decoys':        '?page=security-suite.md',
+    'Other Security Tools':         '?page=security-suite.md',
 };
 // Note: updateInfoPanel sidebar removed — unified tooltip.js handles all tooltips
 

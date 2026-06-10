@@ -127,8 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── STEP 2: Welcome Notice ────────────────────────────────────────────────
-  function showWelcome() {
+  // ─── STEP 3: Combined Desktop Overlay ──────────────────────────────────────
+  function showCombined() {
     const overlay = makeOverlay();
     const modal   = makeModal('var(--accent-purple,#bb9af7)');
 
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
           to create a custom install script and guide, follow the
           <strong style="color:var(--accent-cyan,#7dcfff);">Wiki</strong> to configure
           manually, or <strong style="color:var(--accent-cyan,#7dcfff);">Upload</strong>
-          a previous config to restore it below the generator.
+          a previous config to restore it.
         </p>
       </div>
 
@@ -153,23 +153,52 @@ document.addEventListener('DOMContentLoaded', () => {
         <p style="margin:0;font-size:0.83rem;">${tooltipHint}</p>
       </div>
 
-      <div style="background:var(--bg-lighter,#24283b);border-radius:8px;padding:1rem;margin-bottom:1.2rem;font-size:0.82rem;">
-        <span style="color:var(--accent-cyan,#7dcfff);">🍪 No Cookies:</span>
-        This site stores nothing permanently. Generation history and your preferences
-        use <code>sessionStorage</code> only — everything clears when you close the tab.
+      <h3 style="color:var(--accent-red,#f7768e);margin:1.5rem 0 1rem 0;font-size:1.1rem;text-align:center;">
+        ⚖️ Legal Disclaimer, AI Notice &amp; Liability Waiver
+      </h3>
+
+      <div style="background:var(--bg-lighter,#24283b);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:0.83rem;line-height:1.6;">
+        <ol style="padding-left:1.2rem;margin:0;">
+          <li style="margin-bottom:0.6rem;">
+            <strong style="color:var(--heading-color,#c0caf5);">No Warranty.</strong>
+            All content in <em>tilas01/arch-guides-dynamic</em> — including every section of this website, all files, code, scripts, security tools, and releases in the repository — is provided
+            <strong>"AS IS"</strong> without warranty of any kind. Use at your own risk.
+          </li>
+          <li style="margin-bottom:0.6rem;">
+            <strong style="color:var(--heading-color,#c0caf5);">⚖️ AI-Assisted Content.</strong>
+            This project was developed with AI assistance. All output has been reviewed by
+            tilas01, but you <strong>MUST review all generated scripts</strong> before
+            executing them. Always test in a VM first.
+          </li>
+          <li style="margin-bottom:0.6rem;">
+            <strong style="color:var(--heading-color,#c0caf5);">Full Liability Waiver.</strong>
+            By continuing, you waive all liability claims against the authors for any
+            damage, data loss, or issues arising from use of any part of this website, repository,
+            scripts, or tools.
+          </li>
+          <li>
+            <strong style="color:var(--accent-cyan,#7dcfff);">🍪 No Cookies.</strong>
+            This site uses <code>sessionStorage</code> only. No persistent cookies are used.
+            If you check "Don't ask me again", it will only last until you close this tab. You may be prompted again in future sessions.
+          </li>
+        </ol>
       </div>
 
       <div style="margin-bottom:1.2rem;">
+        <label style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;margin-bottom:0.7rem;">
+          <input type="checkbox" id="combined-cb" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent-green,#9ece6a);">
+          I have read and accept all liability, waivers, and conditions above.
+        </label>
         <label style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;color:var(--accent-cyan,#7dcfff);font-size:0.82rem;">
-          <input type="checkbox" id="welcome-skip" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--accent-cyan,#7dcfff);">
-          Don't show this welcome message again this session (no cookies — resets on tab close)
+          <input type="checkbox" id="combined-skip" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--accent-cyan,#7dcfff);">
+          Don't ask me again (Applies to this session only; no cookies are saved)
         </label>
       </div>
 
-      <button id="welcome-btn" style="width:100%;padding:0.7rem;border:none;border-radius:8px;
+      <button id="combined-btn" disabled style="width:100%;padding:0.7rem;border:none;border-radius:8px;
         font-family:'JetBrains Mono',monospace;font-size:0.95rem;font-weight:600;
-        background:var(--accent-purple,#bb9af7);color:#1a1b26;cursor:pointer;transition:all 0.2s;">
-        Get Started →
+        background:var(--bg-lighter,#24283b);color:#555;cursor:not-allowed;transition:all 0.2s;">
+        Accept &amp; Continue →
       </button>
     `;
 
@@ -177,21 +206,40 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    const skip = modal.querySelector('#welcome-skip');
-    const btn  = modal.querySelector('#welcome-btn');
+    const cb  = modal.querySelector('#combined-cb');
+    const skip = modal.querySelector('#combined-skip');
+    const btn  = modal.querySelector('#combined-btn');
+
+    cb.addEventListener('change', () => {
+      btn.disabled = !cb.checked;
+      btn.style.background  = cb.checked ? 'var(--accent-green,#9ece6a)' : 'var(--bg-lighter,#24283b)';
+      btn.style.color       = cb.checked ? '#1a1b26' : '#555';
+      btn.style.cursor      = cb.checked ? 'pointer' : 'not-allowed';
+    });
 
     btn.addEventListener('click', () => {
-      if (skip.checked) sessionStorage.setItem(WELCOME_KEY, 'true');
+      if (!cb.checked) return;
+      if (skip.checked) {
+        sessionStorage.setItem(LEGAL_KEY, 'true');
+        sessionStorage.setItem(WELCOME_KEY, 'true');
+      }
       overlay.remove();
       document.body.style.overflow = '';
     });
   }
 
   // ─── Entry point ───────────────────────────────────────────────────────────
-  if (!legalDone) {
-    // Show legal first; on accept show welcome (unless already seen)
-    showLegal(() => { if (!welcomeDone) showWelcome(); });
-  } else if (!welcomeDone) {
-    showWelcome();
+  if (isMobile) {
+    if (!legalDone) {
+      // Show legal first; on accept show welcome (unless already seen)
+      showLegal(() => { if (!welcomeDone) showWelcome(); });
+    } else if (!welcomeDone) {
+      showWelcome();
+    }
+  } else {
+    // Desktop: combined view
+    if (!legalDone || !welcomeDone) {
+      showCombined();
+    }
   }
 });
