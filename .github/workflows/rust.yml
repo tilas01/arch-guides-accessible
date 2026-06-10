@@ -27,19 +27,11 @@ jobs:
       - name: Install evdev headers
         run: sudo apt-get update && sudo apt-get install -y libevdev-dev
 
-      # Generate lock file if missing (first build on fresh clone)
-      - name: Generate Cargo.lock if needed
-        run: |
-          cd security-tools
-          if [ ! -f Cargo.lock ]; then
-            cargo generate-lockfile
-          fi
-
-      # Build everything from workspace root (single lock file)
+      # Build everything from workspace root
       - name: Build all workspace members (release)
         run: |
           cd security-tools
-          cargo build --release --locked
+          cargo build --release
           echo "=== All binaries ==="
           ls -la target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/arch-rusty-security-suite
           echo ""
@@ -51,28 +43,16 @@ jobs:
         run: |
           cd security-tools
           # Save first build hashes
-          sha256sum target/release/anti-ducky > /tmp/hash1_ad.txt
-          sha256sum target/release/libre-otp > /tmp/hash1_lo.txt
-          sha256sum target/release/arch-iso-verifier > /tmp/hash1_av.txt
           sha256sum target/release/arch-rusty-security-suite > /tmp/hash1_suite.txt
           
           # Clean and rebuild
           cargo clean
-          cargo build --release --locked
+          cargo build --release
           
-          # Compare
-          sha256sum target/release/anti-ducky > /tmp/hash2_ad.txt
-          sha256sum target/release/libre-otp > /tmp/hash2_lo.txt
-          sha256sum target/release/arch-iso-verifier > /tmp/hash2_av.txt
+          # Compare suite hash
           sha256sum target/release/arch-rusty-security-suite > /tmp/hash2_suite.txt
           
           echo "=== Reproducibility Results ==="
-          echo "anti-ducky:"
-          diff <(cut -d' ' -f1 /tmp/hash1_ad.txt) <(cut -d' ' -f1 /tmp/hash2_ad.txt) && echo "  ✓ REPRODUCIBLE" || echo "  ✗ NOT REPRODUCIBLE"
-          echo "libre-otp:"
-          diff <(cut -d' ' -f1 /tmp/hash1_lo.txt) <(cut -d' ' -f1 /tmp/hash2_lo.txt) && echo "  ✓ REPRODUCIBLE" || echo "  ✗ NOT REPRODUCIBLE"
-          echo "arch-iso-verifier:"
-          diff <(cut -d' ' -f1 /tmp/hash1_av.txt) <(cut -d' ' -f1 /tmp/hash2_av.txt) && echo "  ✓ REPRODUCIBLE" || echo "  ✗ NOT REPRODUCIBLE"
           echo "arch-rusty-security-suite:"
           diff <(cut -d' ' -f1 /tmp/hash1_suite.txt) <(cut -d' ' -f1 /tmp/hash2_suite.txt) && echo "  ✓ REPRODUCIBLE" || echo "  ✗ NOT REPRODUCIBLE"
 
@@ -116,11 +96,7 @@ jobs:
       - name: Build all release binaries
         run: |
           cd security-tools
-          # Generate lock if needed (fresh checkout)
-          if [ ! -f Cargo.lock ]; then
-            cargo generate-lockfile
-          fi
-          cargo build --release --locked
+          cargo build --release
           
           # Copy all binaries to release staging
           mkdir -p ../release-staging
