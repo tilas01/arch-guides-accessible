@@ -457,10 +457,14 @@ pub fn run() {
                 log(&format!("Sandbox grab requested for: {}", path));
             }
 
-            // Process events
-            if let Ok(events) = device.fetch_events() {
+            // Process events — collect immediately to release borrow on device
+            let events: Vec<InputEvent> = match device.fetch_events() {
+                Ok(iter) => iter.collect(),
+                Err(_) => vec![],
+            };
+            if !events.is_empty() {
                 let entry = monitored.get_mut(&path).unwrap();
-                process_events(entry, events.collect(), &mut approved_registry);
+                process_events(entry, events, &mut approved_registry);
             }
         }
 
