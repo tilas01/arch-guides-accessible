@@ -16,19 +16,21 @@
 <body>
     <header>
         <button id="history-btn" type="button" class="js-only" title="View generation history" onclick="toggleHistoryModal()">🕓</button>
-        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
+        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub. Created and maintained by tilas01." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
         <h1>Arch Guides Wiki & Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
         <nav class="main-nav">
-            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic Interactive Setup Generator. Select your options and generate a custom install script + guide.">⚙️ Generator</a>
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">⚙️ Generator</a>
             <span class="nav-sep">|</span>
-            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Manual Guide" data-desc="Full Arch Linux documentation. Use to manually follow your own config — same parity as the generator. Every generator option is explained in depth.">📖 Wiki</a>
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="Full Arch Linux documentation with same parity as the generator. Every generator option is explained so you can manually configure your system. Links to the official Arch Wiki where relevant.">📖 Wiki / Documentation</a>
             <span class="nav-sep">|</span>
-            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated .sh and/or .md configs to restore and edit.">📤 Upload</a>
+            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload" data-desc="Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.">📤 Upload</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="Download reproducible pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes and GPG signatures. See Wiki for how to verify integrity or build from source.">📦 Releases</a>
+            <a href="wiki.html#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. The README contains all the same information as this website.">🔗 Repo</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes. Optional GPG verification. See Wiki for how to build from source.">📦 Releases</a>
+            <span class="nav-sep">|</span>
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01. The README contains the same information as this website.">🔗 Repository</a>
         </nav>
         <button id="toggle-tooltips-btn" type="button" class="js-only" data-title="Toggle Tooltips" data-desc="Toggle info tooltips on/off" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent-blue); z-index: 1000; padding: 5px;">ℹ️</button>
     </header>
@@ -393,45 +395,46 @@
     <script src="script.js"></script>
 
     <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--bg-lighter); text-align: center;">
+        <!-- Author: tilas01 | Main Developer & Maintainer -->
         <h3 style="color: var(--accent-purple); margin-bottom: 1rem;">Credits & Acknowledgements</h3>
         <div class="credits-grid">
-            <a href="https://github.com/tilas01" target="_blank" class="credit-card" style="text-decoration:none;">
-                <img src="https://github.com/tilas01.png?size=80" alt="tilas01">
+            <a href="https://github.com/tilas01" target="_blank" class="credit-card" style="text-decoration:none; border-color: var(--accent-purple); order: -1;">
+                <img src="https://github.com/tilas01.png?size=80" alt="tilas01" style="border-color: var(--accent-purple); width: 48px; height: 48px;">
                 <div class="credit-info">
-                    <span class="credit-name">tilas01</span>
-                    <span class="credit-role">Author — Arch Rusty Security Suite, this repo</span>
+                    <span class="credit-name" style="font-size: 1.05rem; color: var(--accent-purple);">tilas01</span>
+                    <span class="credit-role">Main Author, Developer & Maintainer<br>Arch Rusty Security Suite · This Repository · Website</span>
                 </div>
             </a>
-            <div class="credit-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI" style="border-color:var(--accent-cyan);">
-                <div class="credit-info">
-                    <span class="credit-name">AI</span>
-                    <span class="credit-role">Co-developer — Multiple models, all reviewed by tilas01</span>
-                </div>
-            </div>
             <a href="https://github.com/dusklinux" target="_blank" class="credit-card" style="text-decoration:none;">
                 <img src="https://github.com/dusklinux.png?size=80" alt="dusklinux">
                 <div class="credit-info">
                     <span class="credit-name">dusklinux</span>
-                    <span class="credit-role">Creator of <a href="https://github.com/dusklinux/dusky">Dusky OS</a> · <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c">YT Demo</a></span>
+                    <span class="credit-role">Creator of Dusky OS<br><a href="https://github.com/dusklinux/dusky" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">GitHub</a> · <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">YouTube Demo</a></span>
+                </div>
+            </a>
+            <a href="https://github.com/tom5760/arch-install" target="_blank" class="credit-card" style="text-decoration:none;">
+                <img src="https://github.com/tom5760.png?size=80" alt="arch-minimal-install">
+                <div class="credit-info">
+                    <span class="credit-name">arch-minimal-install</span>
+                    <span class="credit-role">Inspiration — Minimal Arch install scripts</span>
                 </div>
             </a>
             <a href="https://github.com/vmonaco" target="_blank" class="credit-card" style="text-decoration:none;">
                 <img src="https://github.com/vmonaco.png?size=80" alt="vmonaco">
                 <div class="credit-info">
                     <span class="credit-name">vmonaco</span>
-                    <span class="credit-role">Creator of <a href="https://github.com/vmonaco/kloak">kloak</a> — Keystroke anonymizer</span>
+                    <span class="credit-role">Creator of <a href="https://github.com/vmonaco/kloak" target="_blank" style="color:var(--accent-blue)">kloak</a> — Keystroke anonymizer</span>
                 </div>
             </a>
-            <a href="https://github.com/maximbaz" target="_blank" class="credit-card" style="text-decoration:none;">
-                <img src="https://github.com/maximbaz.png?size=80" alt="maximbaz">
+            <div class="credit-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI" style="border-color:var(--accent-cyan);">
                 <div class="credit-info">
-                    <span class="credit-name">maximbaz</span>
-                    <span class="credit-role">Inspiration — Security & modularity patterns</span>
+                    <span class="credit-name">AI Assistance</span>
+                    <span class="credit-role">Co-development — Multiple models, all reviewed by tilas01</span>
                 </div>
-            </a>
+            </div>
         </div>
-        <p style="font-size:0.8rem; color:var(--fg-color); margin-top:1rem;">Anti-RubberDucky concepts from the open-source community. MIT License.</p>
+        <p style="font-size:0.8rem; color:var(--fg-color); margin-top:1rem;">All security concepts from the open-source community. GPL-3.0 License.</p>
     </footer>
 </body>
 </html>

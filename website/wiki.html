@@ -50,23 +50,25 @@
 <body>
 
     <header>
-        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub." target="_blank" style="text-decoration: none;">
+        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub. Created and maintained by tilas01." target="_blank" style="text-decoration: none;">
             <div class="banner" style="font-size: 1.6rem; font-weight: bold; color: var(--accent-purple); padding: 0.8rem 1.5rem; border: 2px dashed var(--accent-blue); display: inline-block; cursor: pointer; margin-bottom: 0.8rem; border-radius: 12px; background-color: var(--bg-darker); text-transform: uppercase; letter-spacing: 2px; max-width: 700px; width: 100%;">
                 Arch Guides Dynamic
             </div>
         </a>
         <h1>Arch Guides | Full Static Wiki</h1>
-        <p>Comprehensive documentation — same parity as the generator. Follow manually or use the script generator.</p>
+        <p>Comprehensive documentation &mdash; same parity as the generator. Follow manually or use the script generator.</p>
         <nav class="main-nav">
-            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic Interactive Setup Generator. Select your options and generate a custom install script + guide.">⚙️ Generator</a>
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">&#9881;&#65039; Generator</a>
             <span class="nav-sep">|</span>
-            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Manual Guide" data-desc="You are here. Full documentation with same parity as the generator. Every option is explained so you can manually configure your system.">📖 Wiki</a>
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="You are here. Full documentation with same parity as the generator. Every option is explained so you can manually configure your system.">&#128214; Wiki / Documentation</a>
             <span class="nav-sep">|</span>
-            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload Guide" data-desc="Upload previously generated .sh and/or .md configs to restore and edit.">📤 Upload</a>
+            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload" data-desc="Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.">&#128228; Upload</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="Download reproducible pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes and GPG signatures. See the Integrity & Releases section in this wiki for how to verify or build from source.">📦 Releases</a>
+            <a href="#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">&#128203; Cheatsheets</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. The README contains all the same information as this website.">🔗 Repo</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes. Optional GPG verification. See Wiki for how to build from source.">&#128230; Releases</a>
+            <span class="nav-sep">|</span>
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01. The README contains the same information as this website.">&#128279; Repository</a>
         </nav>
     </header>
 
@@ -115,6 +117,16 @@
                     <li><a data-file="dusky-cheatsheet.md">🎨 9. Dusky OS Cheatsheet</a></li>
                     <li><a data-file="xorg-vs-wayland.md">🖥️ 10. Xorg vs Wayland</a></li>
                     <li><a data-file="10-generator-selections-and-dusky.md">⚙️ 11. All Generator Selections Explained</a></li>
+                    <li id="cheatsheets" style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📋 Cheatsheets</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a data-file="helpful-commands.md">🐧 Arch Linux Commands</a></li>
+                            <li><a data-file="dusky-cheatsheet.md">🎨 Dusky OS Shortcuts</a></li>
+                            <li><a data-file="helpful-commands.md" data-section="dwm-shortcuts">⌨️ DWM Shortcuts</a></li>
+                            <li><a data-file="helpful-commands.md" data-section="gnome-shortcuts">🖥️ GNOME Shortcuts</a></li>
+                            <li><a data-file="helpful-commands.md" data-section="kde-shortcuts">💎 KDE Plasma Shortcuts</a></li>
+                            <li><a data-file="xorg-vs-wayland.md">🖥️ Xorg vs Wayland</a></li>
+                        </ul>
+                    </li>
                     <li style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📦 Releases & Integrity</strong>
                         <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
                             <li><a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank">⬇️ Download Latest Release</a></li>
