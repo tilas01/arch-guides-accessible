@@ -17,7 +17,10 @@
     };
 
     // ── Tooltip selectors ────────────────────────────────
-    const TOOLTIP_SELECTOR = '.nav-tooltip, .form-step, .btn-tooltip';
+    // Note: .form-step is handled by the sidebar info-panel (script.js).
+    // Only .nav-tooltip and .btn-tooltip use this floating tooltip panel
+    // to avoid two tooltip elements appearing simultaneously.
+    const TOOLTIP_SELECTOR = '.nav-tooltip, .btn-tooltip, .tooltip-always';
     const OFFSET = 14;           // px offset from cursor
     const PANEL_MAX_W = 320;     // max width on desktop
     const MOBILE_BP = 768;       // mobile breakpoint
