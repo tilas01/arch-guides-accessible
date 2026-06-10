@@ -120,7 +120,7 @@ jobs:
       - name: Build all release binaries
         run: |
           cd security-tools
-          cargo build --release
+          cargo build --release --workspace
           
           # Copy all binaries to release staging
           mkdir -p ../release-staging
