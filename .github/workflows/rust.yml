@@ -1,42 +1,196 @@
-name: Rust Reproducible Builds
+name: Security Tools CI & Release
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  # ── Job 1: Build & Test all Rust security tools ─────────────────────────────
+  build-security-tools:
+    name: Build Security Tools
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Rust (Stable)
-      uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust (Stable, pinned)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
 
-    - name: Build Anti-RubberDucky
-      run: |
-        cd security-tools/anti-ducky
-        cargo build --release --locked
-        
-    - name: Build Libre-OTP
-      run: |
-        cd security-tools/libre-otp
-        cargo build --release --locked
+      - name: Install Linux evdev headers
+        run: sudo apt-get install -y libevdev-dev
 
-    - name: Upload Anti-Ducky Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: anti-ducky-linux-x86_64
-        path: security-tools/anti-ducky/target/release/anti-ducky
-        
-    - name: Upload Libre-OTP Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: libre-otp-linux-x86_64
-        path: security-tools/libre-otp/target/release/libre-otp
+      - name: Build anti-ducky
+        run: |
+          cd security-tools/anti-ducky
+          cargo build --release --locked
+          sha256sum target/release/anti-ducky > target/release/anti-ducky.sha256
+          echo "anti-ducky SHA256:"
+          cat target/release/anti-ducky.sha256
+
+      - name: Build libre-otp
+        run: |
+          cd security-tools/libre-otp
+          cargo build --release --locked
+          sha256sum target/release/libre-otp > target/release/libre-otp.sha256
+          echo "libre-otp SHA256:"
+          cat target/release/libre-otp.sha256
+
+      - name: Clippy (anti-ducky)
+        run: cd security-tools/anti-ducky && cargo clippy -- -D warnings
+
+      - name: Clippy (libre-otp)
+        run: cd security-tools/libre-otp && cargo clippy -- -D warnings
+
+      # Upload artifacts for next job
+      - name: Upload anti-ducky binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: anti-ducky-linux-x86_64
+          path: |
+            security-tools/anti-ducky/target/release/anti-ducky
+            security-tools/anti-ducky/target/release/anti-ducky.sha256
+
+      - name: Upload libre-otp binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: libre-otp-linux-x86_64
+          path: |
+            security-tools/libre-otp/target/release/libre-otp
+            security-tools/libre-otp/target/release/libre-otp.sha256
+
+  # ── Job 2: Release to GitHub Releases (only on push to main, not PRs) ───────
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-security-tools
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust (Stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux evdev headers
+        run: sudo apt-get install -y libevdev-dev
+
+      # Re-build to produce artifacts in workspace root for release
+      - name: Build anti-ducky (release)
+        run: |
+          cd security-tools/anti-ducky
+          cargo build --release --locked
+          cp target/release/anti-ducky ../../anti-ducky-linux-x86_64
+          cd ../..
+          sha256sum anti-ducky-linux-x86_64 > anti-ducky-linux-x86_64.sha256
+
+      - name: Build libre-otp (release)
+        run: |
+          cd security-tools/libre-otp
+          cargo build --release --locked
+          cp target/release/libre-otp ../../libre-otp-linux-x86_64
+          cd ../..
+          sha256sum libre-otp-linux-x86_64 > libre-otp-linux-x86_64.sha256
+
+      - name: GPG Sign Binaries
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          if [ -n "$GPG_PRIVATE_KEY" ]; then
+            echo "$GPG_PRIVATE_KEY" | gpg --import
+            for f in anti-ducky-linux-x86_64 libre-otp-linux-x86_64; do
+              gpg --batch --pinentry-mode loopback \
+                  --passphrase "$GPG_PASSPHRASE" \
+                  --detach-sign --armor "$f"
+              gpg --batch --pinentry-mode loopback \
+                  --passphrase "$GPG_PASSPHRASE" \
+                  --detach-sign --armor "${f}.sha256"
+            done
+            echo "GPG_SIGNED=true" >> $GITHUB_ENV
+          else
+            echo "GPG_PRIVATE_KEY secret not set — skipping GPG signing"
+            echo "GPG_SIGNED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Generate version tag
+        id: version
+        run: |
+          VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: "Security Tools ${{ steps.version.outputs.version }}"
+          body: |
+            ## Arch Guides Dynamic — Security Tools Release
+
+            ### Included Tools
+            | Tool | Description |
+            |------|-------------|
+            | `anti-ducky-linux-x86_64` | Intelligent USB HID Input Manager & RubberDucky Detector |
+            | `libre-otp-linux-x86_64` | Native Rust TOTP/OTP 2FA for PAM (Boot/Login/SSH) |
+
+            ### Integrity Verification
+
+            **Quick (automatic):**
+            ```bash
+            sha256sum -c anti-ducky-linux-x86_64.sha256
+            sha256sum -c libre-otp-linux-x86_64.sha256
+            ```
+
+            **GPG Signature Verification (if signed):**
+            ```bash
+            # Import the public key (get fingerprint from README)
+            gpg --recv-keys <KEY_ID>
+            gpg --verify anti-ducky-linux-x86_64.asc anti-ducky-linux-x86_64
+            gpg --verify libre-otp-linux-x86_64.asc libre-otp-linux-x86_64
+            ```
+
+            **Manual SHA256 check:**
+            ```bash
+            sha256sum anti-ducky-linux-x86_64
+            # Compare output to contents of anti-ducky-linux-x86_64.sha256
+            ```
+
+            ### Reproducible Build
+            Clone the repo and build yourself to verify:
+            ```bash
+            git clone https://github.com/tilas01/arch-guides-dynamic.git
+            cd arch-guides-dynamic/security-tools/anti-ducky
+            cargo build --release --locked
+            sha256sum target/release/anti-ducky  # must match release hash
+            ```
+
+            Built with Rust `stable` toolchain. Use `cargo build --release --locked` 
+            with the pinned `Cargo.lock` to get the exact same binary hash.
+
+            *Commit: ${{ github.sha }}*
+          files: |
+            anti-ducky-linux-x86_64
+            anti-ducky-linux-x86_64.sha256
+            libre-otp-linux-x86_64
+            libre-otp-linux-x86_64.sha256
+            ${{ env.GPG_SIGNED == 'true' && 'anti-ducky-linux-x86_64.asc' || '' }}
+            ${{ env.GPG_SIGNED == 'true' && 'anti-ducky-linux-x86_64.sha256.asc' || '' }}
+            ${{ env.GPG_SIGNED == 'true' && 'libre-otp-linux-x86_64.asc' || '' }}
+            ${{ env.GPG_SIGNED == 'true' && 'libre-otp-linux-x86_64.sha256.asc' || '' }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
