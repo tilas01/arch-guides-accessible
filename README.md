@@ -14,10 +14,12 @@
 
 ---
 
-## Legal Disclaimer
+## Legal Disclaimer & Waiver
 
-> **AI-GENERATED CONTENT & NO WARRANTY:**
-> This repository was built with the assistance of AI (multiple models), with manual curation, review, and authorship by **tilas01**. All scripts are **"AS IS"** without warranty. You must review every command before execution. Test in a VM first. Licensed under [MIT License](LICENSE).
+> **AI-GENERATED CONTENT & STRICT LIABILITY WAIVER:**
+> This repository was built with the assistance of AI (multiple models), with manual curation, review, and authorship by **tilas01**. All scripts are **"AS IS"** without warranty. You must review every command before execution. Test in a VM first. 
+> 
+> **Licensing & Commercial Use:** This project is licensed under the **GNU AGPLv3**. This mathematically prevents theft and closing of the source code. You are strictly forbidden from copying the full application, changing the title, and re-releasing it or selling it as a proprietary product without fully open-sourcing all modifications under the AGPLv3 and providing attribution to `tilas01`.
 
 ---
 
@@ -243,8 +245,8 @@ echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-securit
 
 | Cheatsheet | Link |
 |------------|------|
-| **Arch Commands** (pacman, systemd, disk, security) | [docs/helpful-commands.md](docs/helpful-commands.md) |
-| **Dusky OS Shortcuts** | [docs/dusky-cheatsheet.md](docs/dusky-cheatsheet.md) |
+| **Arch Commands** (pacman, systemd, disk, security) | [docs/cheatsheets/arch-commands.md](docs/cheatsheets/arch-commands.md) |
+| **Dusky OS Shortcuts** | [docs/cheatsheets/duskyos-hyprland.md](docs/cheatsheets/duskyos-hyprland.md) |
 | **DWM Window Manager** | [docs/helpful-commands.md#-dwm-window-manager-cheatsheet](docs/helpful-commands.md#-dwm-window-manager-cheatsheet) |
 | **GNOME Keyboard Shortcuts** | [docs/helpful-commands.md#-gnome-keyboard-shortcuts](docs/helpful-commands.md#-gnome-keyboard-shortcuts) |
 | **KDE Plasma Shortcuts** | [docs/helpful-commands.md#-kde-plasma-shortcuts](docs/helpful-commands.md#-kde-plasma-shortcuts) |
@@ -281,6 +283,9 @@ echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-securit
 
 ---
 
-## License
+## License & Copyright
 
-This project is licensed under the [MIT License](LICENSE).
+**Copyright (c) 2026 tilas01**
+
+This project is licensed under the **[GNU Affero General Public License v3.0 (AGPLv3)](LICENSE)**.
+By using, modifying, or distributing this software, you agree to the strict terms of the AGPLv3, which mandates that any derivative works or network services built upon this codebase must also release their full source code under the AGPLv3 and provide explicit attribution.

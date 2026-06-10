@@ -138,10 +138,38 @@
         <h3>Detection Capabilities:</h3>
         <ul>
             <li><strong>Infostealers:</strong> Immediately detects unauthorized reads to `~/.config/google-chrome/Default/Login Data`, `~/.mozilla/firefox`, and `~/.ssh/`.</li>
-            <li><strong>Software Keyloggers:</strong> Monitors `/dev/input/` for unauthorized attachment of raw input grabbers.</li>
-            <li><strong>Rootkits / Exploits:</strong> Watches `/etc/ld.so.preload` and `/var/spool/cron` to detect userland library hijacking and malicious persistence.</li>
+            <li><strong>Keyloggers:</strong> Detects processes silently hooking into `/dev/input/` without owning the active TTY.</li>
+            <li><strong>Rootkits:</strong> Monitors `kprobes` and `/sys/module/` for unauthorized, unsigned kernel module injections.</li>
         </ul>
-        <p>Upon detection, the watcher sends an instant push notification to your phone via the Webhooks module.</p>
+    </div>
+
+
+    <div class="section" id="cheatsheets">
+        <h2><span class="icon">📄</span> Quick-Reference Cheatsheets</h2>
+        <p>Use these cheatsheets to quickly reference Arch Linux commands and Desktop Environment workflows.</p>
+        
+        <h3>Arch Linux Commands</h3>
+        <ul>
+            <li><strong>Update System:</strong> <code>sudo pacman -Syu</code> (or <code>paru -Syu</code> for AUR)</li>
+            <li><strong>Install Package:</strong> <code>sudo pacman -S package_name</code></li>
+            <li><strong>Remove Package:</strong> <code>sudo pacman -Rns package_name</code></li>
+            <li><strong>Enable Service:</strong> <code>sudo systemctl enable --now service_name</code></li>
+            <li><strong>Check Service Logs:</strong> <code>journalctl -u service_name -e</code></li>
+            <li><strong>Create BTRFS Snapshot:</strong> <code>sudo snapper create -c timeline -d "Manual backup"</code></li>
+        </ul>
+
+        <h3>DuskyOS / Hyprland Workflow</h3>
+        <p><em>(The SUPER key is your Windows key)</em></p>
+        <ul>
+            <li><strong>Open Terminal:</strong> <code>SUPER + Enter</code></li>
+            <li><strong>Open App Launcher:</strong> <code>SUPER + D</code></li>
+            <li><strong>Close Window:</strong> <code>SUPER + Q</code></li>
+            <li><strong>Toggle Fullscreen:</strong> <code>SUPER + F</code></li>
+            <li><strong>Move Focus:</strong> <code>SUPER + Arrow Keys</code></li>
+            <li><strong>Switch Workspaces:</strong> <code>SUPER + [1-9]</code></li>
+            <li><strong>Lock Screen:</strong> <code>SUPER + L</code></li>
+            <li><strong>Logout / Power:</strong> <code>SUPER + Shift + E</code></li>
+        </ul>
     </div>
 
     <div class="section" id="scarecrow">
