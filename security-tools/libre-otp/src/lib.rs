@@ -81,7 +81,8 @@ fn save_state(state: &OtpState) {
     perms.set_mode(0o600);
     file.set_permissions(perms).unwrap();
 
-    file.write_all(json.as_bytes()).expect("Failed to write state");
+    file.write_all(json.as_bytes())
+        .expect("Failed to write state");
 }
 
 fn load_state() -> OtpState {
@@ -111,7 +112,11 @@ pub fn run() {
         let num_recovery: usize = args
             .iter()
             .find(|a| a.starts_with("--recovery-codes="))
-            .map(|a| a.trim_start_matches("--recovery-codes=").parse().unwrap_or(5))
+            .map(|a| {
+                a.trim_start_matches("--recovery-codes=")
+                    .parse()
+                    .unwrap_or(5)
+            })
             .unwrap_or(5);
 
         let secret = Secret::generate_secret();
@@ -144,11 +149,17 @@ pub fn run() {
 
     // Verify OTP
     let mut state = load_state();
-    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
 
     if now < state.lockout_until {
         let mins_left = (state.lockout_until - now) / 60;
-        println!("System locked due to too many failed attempts. Try again in {} minutes.", mins_left);
+        println!(
+            "System locked due to too many failed attempts. Try again in {} minutes.",
+            mins_left
+        );
         std::process::exit(1);
     }
 
@@ -164,7 +175,10 @@ pub fn run() {
     std::io::Write::flush(&mut std::io::stdout()).unwrap();
 
     let mut user_input = read_password().unwrap();
-    let current_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+    let current_time = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
 
     // Check if input is a valid OTP
     let mut success = totp.check(&user_input, current_time);
@@ -174,7 +188,10 @@ pub fn run() {
         if let Some(idx) = state.recovery_codes.iter().position(|c| c == &user_input) {
             success = true;
             state.recovery_codes.remove(idx); // Consume the code
-            println!("Recovery code accepted and consumed. {} codes remaining.", state.recovery_codes.len());
+            println!(
+                "Recovery code accepted and consumed. {} codes remaining.",
+                state.recovery_codes.len()
+            );
         }
     }
 
@@ -190,15 +207,21 @@ pub fn run() {
         state.failed_attempts += 1;
         if state.failed_attempts >= MAX_ATTEMPTS {
             state.lockout_until = now + (state.lockout_duration_mins * 60);
-            println!("Too many failed attempts. Locked out for {} minutes.", state.lockout_duration_mins);
-            
+            println!(
+                "Too many failed attempts. Locked out for {} minutes.",
+                state.lockout_duration_mins
+            );
+
             // Double the penalty up to 24 hours (1440 mins)
             state.lockout_duration_mins = (state.lockout_duration_mins * 2).min(1440);
             state.failed_attempts = 0; // Reset attempt counter to wait for lockout
         } else {
-            println!("Invalid OTP code. Attempt {}/{}", state.failed_attempts, MAX_ATTEMPTS);
+            println!(
+                "Invalid OTP code. Attempt {}/{}",
+                state.failed_attempts, MAX_ATTEMPTS
+            );
         }
-        
+
         save_state(&state);
         state.secret_bytes.zeroize();
         std::process::exit(1);

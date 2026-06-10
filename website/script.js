@@ -769,13 +769,34 @@ window.generateOutput = function(auto = false) {
             }
         }
 
-        // Auto-download .sc configuration
+        // Generate .sc config string
         const configJSONText = JSON.stringify(window.getFormValues(), null, 2);
-        downloadFile(configJSONText, 'arch-config.sc');
 
-        // Scroll to Live Editor smoothly
-        const liveEditorNav = document.getElementById('live-editor');
-        if (liveEditorNav) liveEditorNav.scrollIntoView({ behavior: 'smooth' });
+        // Populate the download buttons dynamically
+        const downloadBtnsContainer = document.getElementById('download-btns');
+        if (downloadBtnsContainer) {
+            let btnsHTML = '';
+            if (format === 'markdown' || format === 'both') {
+                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="ðŸ“  Download Guide" data-desc="Save the step-by-step tutorial as a markdown file." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); font-size:0.9rem;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">ðŸ’¾ .md Guide</button>`;
+            }
+            if (format === 'script' || format === 'both') {
+                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="âš¡ Download Script" data-desc="Save the executable auto-install Bash script." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:#000; font-size:0.9rem; font-weight:bold;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">ðŸ’¾ .sh Script</button>`;
+            }
+            // Always show the .sc config download option
+            btnsHTML += `<button type="button" class="btn tooltip-always" data-title="âš™ï¸  Save Configuration" data-desc="Download your selections as a .sc file so you can upload and restore them later." style="width:auto; padding:0.5rem 1.2rem; background:var(--bg-lighter); border:1px solid var(--accent-cyan); color:var(--accent-cyan); font-size:0.9rem;" onclick="downloadFile(JSON.stringify(window.getFormValues(), null, 2), 'arch-config.sc')">ðŸ’¾ .sc Config</button>`;
+            
+            downloadBtnsContainer.innerHTML = btnsHTML;
+            if (window.syncTooltipBtn) syncTooltipBtn(); // Re-bind tooltips
+        }
+
+        // Show output page instead of generator
+        const genForm = document.getElementById('install-form');
+        const outputSec = document.getElementById('output-section');
+        if (genForm && outputSec) {
+            genForm.style.display = 'none';
+            outputSec.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }
 };
 
