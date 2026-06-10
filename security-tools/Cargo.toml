@@ -2,7 +2,7 @@
 members = [
     "anti-ducky",
     "libre-otp",
-    "arch-iso-verifier", "kernel-watcher",
+    "arch-iso-verifier", "kernel-watcher", "scarecrow",
 ]
 resolver = "2"
 
@@ -26,3 +26,4 @@ anti-ducky = { path = "anti-ducky" }
 libre-otp = { path = "libre-otp" }
 arch-iso-verifier = { path = "arch-iso-verifier" }
 kernel-watcher = { path = "kernel-watcher" }
+scarecrow = { path = "scarecrow" }

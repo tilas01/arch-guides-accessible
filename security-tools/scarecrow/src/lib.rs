@@ -58,13 +58,13 @@ pub fn start_scarecrow() {
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn();
-            
+
             println!("  -> Spawned dummy process: {}", proc_name);
         }
     }
 
     println!("Libre-Cyber-ScareCrow active. System now appears highly hostile to malware.");
-    
+
     // Keep main thread alive if run as daemon
     loop {
         thread::sleep(Duration::from_secs(86400));

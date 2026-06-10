@@ -76,6 +76,10 @@ enum Commands {
         #[arg(long)]
         start: bool,
     },
+
+    /// Run the Libre-Cyber-ScareCrow Fake VM/Analysis Environment daemon
+    #[command(name = "scarecrow")]
+    ScareCrow,
 }
 
 fn main() {
@@ -107,6 +111,9 @@ fn main() {
             } else {
                 println!("Please specify either --setup or --start");
             }
+        }
+        Commands::ScareCrow => {
+            scarecrow::start_scarecrow();
         }
     }
 }
