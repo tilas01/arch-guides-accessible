@@ -53,13 +53,64 @@ window.toggleHistoryModal = function() {
     if (!vis) renderHistoryPanel();
 };
 
-// ---- Clear Generated Output ----
-window.clearGeneratedOutput = function() {
-    const section = document.getElementById('output-section');
-    const guide = document.getElementById('generated-guide');
-    if (guide) guide.innerHTML = '';
-    if (section) section.style.display = 'none';
+
+// ─── Page switching: Generator ↔ Output ──────────────────────────────────────
+function showOutputPage(mdContent, shContent, format) {
+    const genArea   = document.querySelector('.layout-container');
+    const outputSec = document.getElementById('output-section');
+    if (!outputSec) return;
+
+    // Hide generator, show output
+    if (genArea) genArea.style.display = 'none';
+    outputSec.style.display = 'block';
+
+    // Build dynamic download buttons
+    const dlContainer = document.getElementById('download-btns');
+    if (dlContainer) {
+        dlContainer.innerHTML = '';
+        if (mdContent && format !== 'script') {
+            const b = document.createElement('button');
+            b.className = 'btn btn-tooltip';
+            b.setAttribute('data-title', 'Download Markdown Guide');
+            b.setAttribute('data-desc', 'Download the generated installation guide as a .md file.');
+            b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-cyan);color:var(--bg-color);font-size:0.88rem;';
+            b.textContent = '⬇ Download .md';
+            b.onclick = () => downloadFile(mdContent, 'arch-install-guide.md');
+            dlContainer.appendChild(b);
+        }
+        if (shContent && format !== 'markdown') {
+            const b = document.createElement('button');
+            b.className = 'btn btn-tooltip';
+            b.setAttribute('data-title', 'Download Shell Script');
+            b.setAttribute('data-desc', 'Download the generated Bash install script as a .sh file. REVIEW before executing!');
+            b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-blue);color:var(--bg-color);font-size:0.88rem;';
+            b.textContent = '⬇ Download .sh';
+            b.onclick = () => downloadFile(shContent, 'arch-install.sh');
+            dlContainer.appendChild(b);
+        }
+        if (window.refreshTooltips) window.refreshTooltips();
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.returnToGenerator = function() {
+    const genArea   = document.querySelector('.layout-container');
+    const outputSec = document.getElementById('output-section');
+    if (genArea)   genArea.style.display = '';
+    if (outputSec) outputSec.style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
+
+window.clearGeneratedOutput = function() {
+    const guide     = document.getElementById('generated-guide');
+    const dlBtns    = document.getElementById('download-btns');
+    if (guide)  guide.innerHTML = '';
+    if (dlBtns) dlBtns.innerHTML = '';
+    window.returnToGenerator();
+};
+
+
 
 // ---- Update History Button Tooltip Count ----
 function updateHistoryTooltip() {
@@ -403,8 +454,12 @@ window.generateOutput = function(auto = false) {
     }
 
     // ── Render ──
+    // For auto-mode (re-generate on form change): keep output section in whatever state it's in
+    // For manual generate: showOutputPage() is called after this function builds the HTML
     const outputSection = document.getElementById('output-section');
-    outputSection.style.display = 'block';
+    if (auto && outputSection && outputSection.style.display !== 'none') {
+        // Stay visible if already showing
+    }
 
     let mdOutput = "", scriptOutput = "";
     if (format === "script" || format === "both") scriptOutput = buildOutput(true);
@@ -456,20 +511,15 @@ window.generateOutput = function(auto = false) {
         `;
     }
 
-    // ── History + Back ──
-    html += `
-    <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
-        <a href="index.html" class="btn" style="display:inline-block;width:auto;padding:0.5rem 1.2rem;text-decoration:none;">🔧 Back to Generator</a>
-    </div>
-    `;
-
+    // ── History + state ──
     document.getElementById('generated-guide').innerHTML = html;
     if (window.Prism) Prism.highlightAll();
     updatePreview();
 
     if (!auto) {
         saveToHistory(mdOutput, scriptOutput, format);
-        outputSection.scrollIntoView({ behavior: 'smooth' });
+        // Switch to output page view
+        showOutputPage(mdOutput, scriptOutput, format);
     }
 };
 
@@ -480,6 +530,14 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
     e.preventDefault();
     window.generateOutput(false);
 });
+
+// Back to generator button
+const backBtn = document.getElementById('back-to-gen-btn');
+if (backBtn) backBtn.addEventListener('click', window.returnToGenerator);
+
+// Clear output button (on output page)
+const clearBtn = document.getElementById('clear-output-btn');
+if (clearBtn) clearBtn.addEventListener('click', window.clearGeneratedOutput);
 
 // ── Tooltips ──
 let tooltipsEnabled = sessionStorage.getItem('tooltips_enabled') !== 'false';
@@ -671,3 +729,87 @@ if (banner) banner.style.cursor = 'pointer';
 
 // Update history tooltip on load
 updateHistoryTooltip();
+
+// ─── Inline Upload Handler ────────────────────────────────────────────────────
+(function initInlineUpload() {
+    const mdInput      = document.getElementById('upload-md-input');
+    const shInput      = document.getElementById('upload-sh-input');
+    const uploadClearBtn = document.getElementById('upload-clear-btn');
+    const statusEl     = document.getElementById('upload-status');
+    const restoreWrap  = document.getElementById('upload-restore-btn-wrapper');
+    const restoreBtn   = document.getElementById('upload-restore-btn');
+    if (!mdInput && !shInput) return;
+
+    let uploadedMd = '', uploadedSh = '', parsedConfig = null;
+
+    function updateStatus() {
+        const parts = [];
+        if (uploadedMd) parts.push('.md guide loaded ✓');
+        if (uploadedSh) parts.push('.sh script loaded ✓');
+        if (statusEl) statusEl.textContent = parts.length ? parts.join(' | ') : '';
+        if (uploadClearBtn) uploadClearBtn.style.display = parts.length ? '' : 'none';
+        if (restoreWrap)    restoreWrap.style.display     = parsedConfig ? '' : 'none';
+    }
+
+    function tryParseConfig(text) {
+        const m = text.match(/<!--\s*CONFIG_START\s*([\s\S]*?)\s*CONFIG_END\s*-->/);
+        if (m) { try { return JSON.parse(m[1]); } catch(e) {} }
+        const m2 = text.match(/###\s*CONFIG_START\s*([\s\S]*?)\s*###\s*CONFIG_END/);
+        if (m2) { try { return JSON.parse(m2[1]); } catch(e) {} }
+        return null;
+    }
+
+    function readFile(file, cb) {
+        const r = new FileReader();
+        r.onload = e => cb(e.target.result);
+        r.readAsText(file);
+    }
+
+    if (mdInput) mdInput.addEventListener('change', function() {
+        const f = this.files[0]; if (!f) return;
+        readFile(f, text => {
+            uploadedMd = text;
+            const cfg = tryParseConfig(text);
+            if (cfg) parsedConfig = cfg;
+            updateStatus();
+        });
+    });
+
+    if (shInput) shInput.addEventListener('change', function() {
+        const f = this.files[0]; if (!f) return;
+        readFile(f, text => {
+            uploadedSh = text;
+            const cfg = tryParseConfig(text);
+            if (cfg) parsedConfig = cfg;
+            updateStatus();
+        });
+    });
+
+    if (uploadClearBtn) uploadClearBtn.addEventListener('click', () => {
+        uploadedMd = uploadedSh = '';
+        parsedConfig = null;
+        if (mdInput) mdInput.value = '';
+        if (shInput) shInput.value = '';
+        updateStatus();
+    });
+
+    if (restoreBtn) restoreBtn.addEventListener('click', () => {
+        if (!parsedConfig) return;
+        const map = { initSys:'init_system', kernelMain:'kernel-main', kernelBackup:'kernel-backup',
+                      secTools:'securitytools', fakeEvilMaid:'fake-evil-maid', format:'outputformat',
+                      part:'partitioning', disk:'target-disk', fw:'firmware', fs:'filesystem', boot:'bootloader' };
+        Object.keys(parsedConfig).forEach(k => {
+            if (k === 'post_apps' && Array.isArray(parsedConfig[k])) {
+                document.querySelectorAll('input[name="post_apps"]').forEach(cb => {
+                    cb.checked = parsedConfig[k].includes(cb.value);
+                });
+                return;
+            }
+            const el = document.getElementById(map[k] || k);
+            if (el) el.value = parsedConfig[k];
+        });
+        if (statusEl) { statusEl.textContent = '✓ Config restored! Adjust and re-generate.'; statusEl.style.color = 'var(--accent-green)'; }
+        setTimeout(() => { if (statusEl) { statusEl.textContent = ''; statusEl.style.color = 'var(--accent-cyan)'; } }, 4000);
+        validateConfigurations();
+    });
+})();

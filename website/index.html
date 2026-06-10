@@ -19,25 +19,23 @@
 </head>
 <body>
     <header>
-        <div id="header-controls" class="js-only">
-            <button id="history-btn" type="button" class="tooltip-always" data-title="Generation History" data-desc="View and restore previous generation configs from this session." onclick="toggleHistoryModal()">🕓</button>
-            <button id="toggle-tooltips-btn" type="button" class="tooltip-always" data-title="Tooltips: Enabled" data-desc="Toggle info tooltips on/off. When disabled, only this button and the history button show tooltips.">ℹ️</button>
-        </div>
         <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository containing this website, all tilas01-authored scripts, Arch installation guides, and the Arch Rusty Security Suite." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
-        <h1>Arch Guides Wiki & Generator</h1>
+        <div id="header-controls" class="js-only">
+            <button id="history-btn" type="button" class="tooltip-always" data-title="Generation History" data-desc="View and restore previous generation configs from this session. No cookies — resets on tab close." onclick="toggleHistoryModal()">🕓 History</button>
+            <button id="toggle-tooltips-btn" type="button" class="tooltip-always" data-title="Tooltips: Enabled" data-desc="Toggle info tooltips on/off. Tooltips use no cookies.">ℹ️ Tooltips</button>
+        </div>
+        <h1>Arch Guides Wiki &amp; Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
         <nav class="main-nav">
             <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">⚙️ Generator</a>
             <span class="nav-sep">|</span>
-            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="Full Arch Linux documentation with same parity as the generator. Every generator option is explained so you can manually configure your system. Links to the official Arch Wiki where relevant.">📖 Wiki / Documentation</a>
-            <span class="nav-sep">|</span>
-            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload" data-desc="Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.">📤 Upload</a>
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="Full Arch Linux documentation with same parity as the generator. Every generator option is explained so you can manually configure your system.">📖 Wiki</a>
             <span class="nav-sep">|</span>
             <a href="wiki.html#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes. Optional GPG verification. See Wiki for how to build from source.">📦 Releases</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Includes SHA256 hashes and optional GPG verification.">📦 Releases</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01. The README contains the same information as this website.">🔗 Repository</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01.">🔗 Repository</a>
         </nav>
     </header>
 
@@ -380,10 +378,33 @@
                     </div>
 
                     <div id="global-warnings" style="margin-bottom: 0.8rem;"></div>
-                    <button type="button" id="generate-btn" class="btn form-step" style="margin-top: 0.8rem;">Generate Custom Guide</button>
+                    <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="margin-top: 0.8rem;">⚙️ Generate Custom Guide</button>
                 </form>
+
+                <!-- ── Inline Upload Section ── -->
+                <section id="inline-upload-section" style="margin-top:1.5rem; background:var(--bg-darker); border:1px solid var(--bg-lighter); border-radius:12px; padding:1.2rem;">
+                    <h3 class="nav-tooltip" data-title="Upload Previous Config" data-desc="Upload a previously generated .sh and/or .md file to restore your settings, view, and edit the output. No data is sent to any server — everything is processed locally in your browser." style="color:var(--accent-cyan); margin:0 0 0.8rem 0; font-size:1rem;">📤 Upload Previous Config</h3>
+                    <p style="font-size:0.82rem; color:var(--fg-color); margin-bottom:0.8rem;">
+                        Upload a <code>.sh</code> script, <code>.md</code> guide, or both that were previously generated here. Files are parsed locally — nothing is sent to any server.
+                    </p>
+                    <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.6rem;">
+                        <label class="btn btn-tooltip" data-title="Upload .md File" data-desc="Upload a previously generated Markdown guide file." style="cursor:pointer; width:auto; padding:0.5rem 1rem; background:var(--accent-cyan); color:var(--bg-color); font-size:0.88rem; display:inline-flex; align-items:center; gap:0.4rem;">
+                            📄 Upload .md
+                            <input type="file" id="upload-md-input" accept=".md,.txt" style="display:none">
+                        </label>
+                        <label class="btn btn-tooltip" data-title="Upload .sh File" data-desc="Upload a previously generated Bash script file." style="cursor:pointer; width:auto; padding:0.5rem 1rem; background:var(--accent-blue); color:var(--bg-color); font-size:0.88rem; display:inline-flex; align-items:center; gap:0.4rem;">
+                            🖥️ Upload .sh
+                            <input type="file" id="upload-sh-input" accept=".sh,.bash,.txt" style="display:none">
+                        </label>
+                        <button type="button" id="upload-clear-btn" class="btn btn-tooltip" data-title="Clear Upload" data-desc="Clear any uploaded files." style="width:auto; padding:0.5rem 1rem; background:var(--accent-red); font-size:0.88rem; display:none;">✕ Clear Upload</button>
+                    </div>
+                    <div id="upload-status" style="font-size:0.82rem; color:var(--accent-cyan); min-height:1.2rem;"></div>
+                    <div id="upload-restore-btn-wrapper" style="display:none; margin-top:0.6rem;">
+                        <button type="button" id="upload-restore-btn" class="btn" style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:var(--bg-color); font-size:0.88rem;">↩ Restore Config to Generator</button>
+                    </div>
+                </section>
             </section>
-            
+
             <aside id="info-panel" class="info-panel">
                 <div id="info-panel-content">
                     <h3 style="color: var(--accent-purple); margin-top: 0; font-size: 1.1rem;">📌 Guide Info</h3>
@@ -392,13 +413,21 @@
             </aside>
         </div>
 
+
+        <!-- ── OUTPUT PAGE (shown instead of generator) ── -->
         <section id="output-section" style="display: none;" class="js-only">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
-                <h2 style="margin:0;">📝 Your Customized Installation Guide</h2>
-                <button type="button" id="clear-output-btn" class="btn btn-tooltip" data-title="Clear Output" data-desc="Clear the generated guide and return to the generator form. Your generation history is preserved." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-red); font-size:0.9rem;" onclick="clearGeneratedOutput()">🗑️ Clear Output</button>
+            <!-- Top action bar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.2rem;">
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                    <button type="button" id="back-to-gen-btn" class="btn btn-tooltip" data-title="Return to Generator" data-desc="Go back to the generator form to adjust your options. Your current output is saved in history." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-purple); font-size:0.9rem;">← Back to Generator</button>
+                    <button type="button" id="clear-output-btn" class="btn btn-tooltip" data-title="Clear Output" data-desc="Clear the generated output. Your generation history above is preserved." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-red); font-size:0.9rem;">🗑️ Clear Output</button>
+                </div>
+                <div id="download-btns" style="display:flex; gap:0.6rem; flex-wrap:wrap;"></div>
             </div>
+
             <div id="generated-guide"></div>
         </section>
+
     </main>
 
     <script src="script.js"></script>
