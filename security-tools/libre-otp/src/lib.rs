@@ -84,8 +84,6 @@ pub fn run() {
         1,
         30,
         secret_bytes.clone(),
-        Some("LibreOTP".to_string()),
-        "arch-user".to_string(),
     ).unwrap();
 
     print!("Enter OTP Code: ");
