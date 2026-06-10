@@ -64,6 +64,18 @@ enum Commands {
         /// Path to the .sha256 checksum file (format: "<hash>  <filename>" or just a raw hash)
         sha256_file: String,
     },
+
+    /// Manage the Malicious Kernel Behavior Watcher (Semi-EDR)
+    #[command(name = "kernel-watcher")]
+    KernelWatcher {
+        /// Setup the Master Tamper Protection Password
+        #[arg(long)]
+        setup: bool,
+
+        /// Start the Kernel Watcher background daemon
+        #[arg(long)]
+        start: bool,
+    },
 }
 
 fn main() {
@@ -81,6 +93,20 @@ fn main() {
         }
         Commands::VerifyRelease { file, sha256_file } => {
             verify_release(&file, &sha256_file);
+        }
+        Commands::KernelWatcher { setup, start } => {
+            if setup {
+                kernel_watcher::run_setup();
+            } else if start {
+                if kernel_watcher::verify_tamper_password() {
+                    kernel_watcher::start_watcher();
+                } else {
+                    eprintln!("Authentication failed. Tamper protection activated.");
+                    std::process::exit(1);
+                }
+            } else {
+                println!("Please specify either --setup or --start");
+            }
         }
     }
 }
