@@ -22,14 +22,14 @@
 //! Install as systemd service: see /etc/systemd/system/anti-ducky.service
 
 use evdev::{Device, EventType, InputEvent, Key};
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::collections::{HashMap, VecDeque};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
-use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -87,14 +87,20 @@ struct MonitoredDevice {
 
 impl MonitoredDevice {
     fn is_sandboxed(&self) -> bool {
-        matches!(self.state, DeviceState::PendingApproval(_) | DeviceState::Quarantined)
+        matches!(
+            self.state,
+            DeviceState::PendingApproval(_) | DeviceState::Quarantined
+        )
     }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 fn timestamp_epoch() -> u64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs()
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
 }
 
 fn timestamp_str() -> String {
@@ -123,7 +129,9 @@ fn device_fingerprint(sys_path: &str, name: &str) -> String {
 
 fn load_approved_registry() -> HashMap<String, DeviceRecord> {
     let path = Path::new(APPROVED_REGISTRY);
-    if !path.exists() { return HashMap::new(); }
+    if !path.exists() {
+        return HashMap::new();
+    }
     let raw = fs::read_to_string(path).unwrap_or_default();
     serde_json::from_str::<Vec<DeviceRecord>>(&raw)
         .unwrap_or_default()
@@ -176,10 +184,18 @@ fn dump_payload(device_name: &str, payload: &[u8]) {
     let hash = hex::encode(hasher.finalize());
     out.push_str(&format!("\n# SHA-256: {}\n", hash));
 
-    if let Ok(mut f) = OpenOptions::new().create(true).truncate(true).write(true).open(&log_path) {
+    if let Ok(mut f) = OpenOptions::new()
+        .create(true)
+        .truncate(true)
+        .write(true)
+        .open(&log_path)
+    {
         let _ = f.write_all(out.as_bytes());
     }
-    log(&format!("Payload dumped to {} (SHA-256: {})", log_path, hash));
+    log(&format!(
+        "Payload dumped to {} (SHA-256: {})",
+        log_path, hash
+    ));
 }
 
 /// Scan all /dev/input/event* and return those that have keyboard keys
@@ -188,7 +204,8 @@ fn enumerate_keyboards() -> Vec<(String, Device)> {
     for i in 0..64 {
         let path = format!("/dev/input/event{}", i);
         if let Ok(device) = Device::open(&path) {
-            let has_keys = device.supported_keys()
+            let has_keys = device
+                .supported_keys()
                 .is_some_and(|k| k.contains(Key::KEY_ENTER));
             if has_keys {
                 result.push((path, device));
@@ -218,29 +235,43 @@ fn register_device(
     let fingerprint = device_fingerprint(path, &name);
 
     let state = if approved_registry.contains_key(&fingerprint) {
-        log(&format!("✓ Approved device: {} [{}]", name, &fingerprint[..12]));
+        log(&format!(
+            "✓ Approved device: {} [{}]",
+            name,
+            &fingerprint[..12]
+        ));
         DeviceState::Approved
     } else {
-        log(&format!("⚠ New/unknown device: {} [{}] — entering sandbox", name, &fingerprint[..12]));
+        log(&format!(
+            "⚠ New/unknown device: {} [{}] — entering sandbox",
+            name,
+            &fingerprint[..12]
+        ));
         DeviceState::PendingApproval(vec![])
     };
 
-    let record = approved_registry.get(&fingerprint).cloned().unwrap_or(DeviceRecord {
-        sys_path: path.to_string(),
-        name: name.clone(),
-        fingerprint: fingerprint.clone(),
-        approved_at_epoch: 0,
-    });
+    let record = approved_registry
+        .get(&fingerprint)
+        .cloned()
+        .unwrap_or(DeviceRecord {
+            sys_path: path.to_string(),
+            name: name.clone(),
+            fingerprint: fingerprint.clone(),
+            approved_at_epoch: 0,
+        });
 
-    monitored.insert(path.to_string(), MonitoredDevice {
-        _event_path: path.to_string(),
-        record,
-        state,
-        timing_window: VecDeque::new(),
-        rapid_count: 0,
-        payload_buf: vec![],
-        grabbed: false,
-    });
+    monitored.insert(
+        path.to_string(),
+        MonitoredDevice {
+            _event_path: path.to_string(),
+            record,
+            state,
+            timing_window: VecDeque::new(),
+            rapid_count: 0,
+            payload_buf: vec![],
+            grabbed: false,
+        },
+    );
 }
 
 // ─── Event Processing ─────────────────────────────────────────────────────────
@@ -381,13 +412,16 @@ pub fn run() {
         alert_wall(
             "[anti-ducky] WARNING: sshd is NOT running! SSH is required as a \
              backup input channel for new device approval. \
-             Run: systemctl start sshd"
+             Run: systemctl start sshd",
         );
     }
 
     // ── Load approved device registry ────────────────────────────────────────
     let mut approved_registry: HashMap<String, DeviceRecord> = load_approved_registry();
-    log(&format!("{} approved devices in registry", approved_registry.len()));
+    log(&format!(
+        "{} approved devices in registry",
+        approved_registry.len()
+    ));
 
     // ── Enumerate initial keyboards ──────────────────────────────────────────
     let mut monitored: HashMap<String, MonitoredDevice> = HashMap::new();
@@ -404,7 +438,10 @@ pub fn run() {
     log(&format!(
         "Monitoring {} input device(s). Approved: {}, Sandboxed: {}",
         monitored.len(),
-        monitored.values().filter(|d| d.state == DeviceState::Approved).count(),
+        monitored
+            .values()
+            .filter(|d| d.state == DeviceState::Approved)
+            .count(),
         monitored.values().filter(|d| d.is_sandboxed()).count(),
     ));
 
@@ -420,7 +457,8 @@ pub fn run() {
                 if !monitored.contains_key(&path) {
                     log(&format!("New input device detected: {}", path));
                     register_device(&path, &approved_registry, &mut monitored);
-                    let new_fingerprint = monitored.get(&path).map(|d| d.record.fingerprint.clone());
+                    let new_fingerprint =
+                        monitored.get(&path).map(|d| d.record.fingerprint.clone());
                     if let Some(fp) = new_fingerprint {
                         if !approved_registry.contains_key(&fp) {
                             broadcast_new_device_alert(&monitored[&path]);

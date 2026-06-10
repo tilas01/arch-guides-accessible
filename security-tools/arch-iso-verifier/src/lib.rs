@@ -39,10 +39,14 @@ pub fn run() {
         println!("  arch-rusty-security-suite verify-iso <ISO_FILE> [SHA256SUMS_FILE]");
         println!();
         println!("Examples:");
-        println!("  arch-rusty-security-suite verify-iso archlinux-2026.06.01-x86_64.iso sha256sums.txt");
+        println!(
+            "  arch-rusty-security-suite verify-iso archlinux-2026.06.01-x86_64.iso sha256sums.txt"
+        );
         println!("  arch-rusty-security-suite verify-iso archlinux-2026.06.01-x86_64.iso");
         println!();
-        println!("If no SHA256SUMS file is given, you will be prompted to paste the expected hash.");
+        println!(
+            "If no SHA256SUMS file is given, you will be prompted to paste the expected hash."
+        );
         return;
     }
 
@@ -107,7 +111,9 @@ fn sha256_file(path: &str) -> io::Result<String> {
 
     loop {
         let n = reader.read(&mut buf)?;
-        if n == 0 { break; }
+        if n == 0 {
+            break;
+        }
         hasher.update(&buf[..n]);
     }
 

@@ -1,7 +1,7 @@
-use totp_rs::{Algorithm, Secret, TOTP};
+use rpassword::read_password;
 use std::env;
 use std::fs;
-use rpassword::read_password;
+use totp_rs::{Algorithm, Secret, TOTP};
 use zeroize::Zeroize;
 
 /// Simple base32 encoder (RFC 4648) — no external dependency needed
