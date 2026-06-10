@@ -21,7 +21,7 @@
 /// IMPORTANT: This daemon must run as root (or with CAP_INPUT_RAW).
 /// Install as systemd service: see /etc/systemd/system/anti-ducky.service
 
-use evdev::{Device, EventType, KeyCode, InputEvent};
+use evdev::{Device, EventType, Key, InputEvent};
 use std::collections::{HashMap, VecDeque};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
@@ -188,7 +188,7 @@ fn enumerate_keyboards() -> Vec<(String, Device)> {
         let path = format!("/dev/input/event{}", i);
         if let Ok(device) = Device::open(&path) {
             let has_keys = device.supported_keys()
-                .map_or(false, |k| k.contains(KeyCode::KEY_ENTER));
+                .map_or(false, |k| k.contains(Key::KEY_ENTER));
             if has_keys {
                 result.push((path, device));
             }
