@@ -3,6 +3,19 @@
 // Arch Rusty Security Suite by tilas01
 // =============================================
 
+// ---- Form Initialization & "No Selection" Injection ----
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('select').forEach(select => {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.textContent = "No Selection Provided";
+        // Insert at the top
+        select.insertBefore(defaultOption, select.firstChild);
+    });
+});
+
 // ---- Generation History (sessionStorage, clears on reload) ----
 const HISTORY_KEY = 'arch_gen_history';
 
@@ -221,21 +234,96 @@ window.generateOutput = function(auto = false) {
 
     // â”€â”€ Validation â”€â”€
     const errors = [];
+    
+    // Clear previous highlights
+    document.querySelectorAll('select').forEach(sel => sel.style.border = '');
+
+    // Strict dropdown checking
+    const requiredSelects = Array.from(document.querySelectorAll('select')).filter(sel => {
+        // Only validate visible selects
+        return sel.closest('.form-group') && sel.closest('.form-group').style.display !== 'none';
+    });
+
+    let firstErrorEl = null;
+
+    requiredSelects.forEach(sel => {
+        if (!sel.value) {
+            const stepName = sel.closest('.form-step')?.getAttribute('data-title') || sel.id;
+            errors.push(`<a href="#" style="color:var(--accent-red);text-decoration:underline;" onclick="document.getElementById('${sel.id}').scrollIntoView({behavior:'smooth', block:'center'}); document.getElementById('${sel.id}').focus(); return false;">Must complete step: ${stepName}</a>`);
+            sel.style.border = '2px solid var(--accent-red)';
+            if (!firstErrorEl) firstErrorEl = sel;
+        }
+    });
+
     if (fw === "bios" && boot !== "grub") errors.push("Legacy BIOS requires GRUB. UKI/systemd-boot are UEFI only.");
     if (fw === "bios" && part.includes("luks2")) errors.push("GRUB has limited LUKS2 support on BIOS. Use LUKS1.");
 
     let errorDiv = document.getElementById("config-errors");
     if (!errorDiv) { errorDiv = document.createElement("div"); errorDiv.id = "config-errors"; document.getElementById("install-form").prepend(errorDiv); }
     if (errors.length > 0) {
-        errorDiv.innerHTML = `<div class="alert warning"><strong>âš  Invalid Configuration:</strong><ul>${errors.map(e=>`<li>${e}</li>`).join("")}</ul></div>`;
-        window.scrollTo(0, 0);
+        errorDiv.innerHTML = `<div class="alert warning" style="border-left-color:var(--accent-red);"><strong>âš  Generation Blocked (Missing Selections):</strong><ul style="margin-top:0.5rem;line-height:1.6;">${errors.map(e=>`<li>${e}</li>`).join("")}</ul></div>`;
+        if (firstErrorEl) {
+            firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            window.scrollTo(0, 0);
+        }
         return;
     }
     errorDiv.innerHTML = "";
 
+    // Default Profiles Check for Apps & Security
+    const hasApps = document.querySelectorAll('input[name="post_apps"]:checked').length > 0;
+    const hasSec = document.querySelectorAll('input[name="arss_tools"]:checked').length > 0 || document.querySelectorAll('input[name="other_sec_tools"]:checked').length > 0;
+    
+    if (!hasApps || !hasSec) {
+        if (!confirm("You have not selected any Apps or Security Tools. Default minimal profiles will be automatically applied. Proceed?")) {
+            return;
+        }
+        // Auto-tick minimal defaults if they agreed
+        if (!hasApps) {
+            const defApps = ['openssh', 'fastfetch'];
+            defApps.forEach(val => {
+                const cb = document.querySelector(`input[name="post_apps"][value="${val}"]`);
+                if (cb) cb.checked = true;
+            });
+        }
+        if (!hasSec) {
+            const defSec = ['iso-verifier', 'input-guard'];
+            defSec.forEach(val => {
+                const cb = document.querySelector(`input[name="arss_tools"][value="${val}"]`);
+                if (cb) cb.checked = true;
+            });
+        }
+    }
+
     // Partition paths
     let partEfi = disk + (disk.includes("nvme") ? "p1" : "1");
     let partRoot = disk + (disk.includes("nvme") ? "p2" : "2");
+
+    // â”€â”€ Proprietary Software Analysis â”€â”€
+    const propAppsDB = {
+        'discord': 'Discord is closed-source and tracks user activity. Use WebCord or matrix-bridges for a libre alternative.',
+        'steam': 'Steam is a proprietary storefront and DRM client by Valve.',
+        'spotify': 'Spotify is a closed-source streaming client with proprietary DRM.',
+        'vmware': 'VMware Tools (open-vm-tools is libre, but VMware hypervisor is proprietary).',
+        'vbox': 'VirtualBox Extension Pack contains proprietary code (PUEL license).'
+    };
+    if (gpu_brand === 'nvidia') propAppsDB['nvidia'] = 'NVIDIA drivers contain heavily proprietary closed-source blobs.';
+
+    const selectedPropApps = post_apps.filter(app => propAppsDB[app]);
+    if (gpu_brand === 'nvidia') selectedPropApps.push('nvidia');
+    if (browser === 'chrome') {
+        propAppsDB['chrome'] = 'Google Chrome is proprietary spyware. Chromium or LibreWolf is libre.';
+        selectedPropApps.push('chrome');
+    }
+
+    // Strict Libre enforcement
+    if (software_type === 'libre' && selectedPropApps.length > 0) {
+        const reasons = selectedPropApps.map(a => `\n- ${a.toUpperCase()}: ${propAppsDB[a]}`).join('');
+        if (!confirm(`âš  STRICT LIBRE WARNING âš \n\nYou selected "Libre + Open Source 100% Only", but have selected software containing proprietary code:\n${reasons}\n\nDo you want to override your Libre setting and allow these proprietary blobs?`)) {
+            return;
+        }
+    }
 
     // Build output
     function buildOutput(cmdOnly) {
@@ -562,6 +650,23 @@ window.generateOutput = function(auto = false) {
             o += `CRON_SCRIPT\nchmod +x /usr/local/bin/auto-update.sh\n(crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/auto-update.sh") | crontab -\n`;
         }
 
+        // â”€â”€ Download Cheatsheets â”€â”€
+        if (cmdOnly) {
+            o += `\n# Downloading Cheatsheets\n`;
+            o += `mkdir -p /home/$NEWUSER/cheatsheets\n`;
+            o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/arch-commands.md" -o /home/$NEWUSER/cheatsheets/arch-commands.md\n`;
+            if (desktop === 'dusky') {
+                o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/duskyos-hyprland.md" -o /home/$NEWUSER/cheatsheets/duskyos-hyprland.md\n`;
+            }
+            o += `chown -R $NEWUSER:$NEWUSER /home/$NEWUSER/cheatsheets\n`;
+        } else {
+            o += `\n### 11. Download Cheatsheets\n\`\`\`bash\nmkdir -p ~/cheatsheets\ncurl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/arch-commands.md" -o ~/cheatsheets/arch-commands.md\n`;
+            if (desktop === 'dusky') {
+                o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/duskyos-hyprland.md" -o ~/cheatsheets/duskyos-hyprland.md\n`;
+            }
+            o += `\`\`\`\n`;
+        }
+
         if (cmdOnly) {
             o += `EOF\nchmod +x /mnt/chroot_script.sh\narch-chroot /mnt /chroot_script.sh\n`;
             if (cleanup === "yes") o += `arch-chroot /mnt pacman -Scc --noconfirm\nrm -rf /mnt/var/cache/pacman/pkg/* /mnt/tmp/*\n`;
@@ -589,6 +694,13 @@ window.generateOutput = function(auto = false) {
     let isoHTML = "";
     if (iso_setup === "ssh") isoHTML = `<div class="alert warning"><strong>ðŸ“¡ Run on Arch ISO first:</strong><pre><code>systemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
     else if (iso_setup === "ssh_curl") isoHTML = `<div class="alert warning"><strong>ðŸ“¡ Run on Arch ISO first:</strong><pre><code>pacman -Sy --noconfirm curl\nsystemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
+
+    // â”€â”€ Append Proprietary Warnings to Markdown Output â”€â”€
+    if (selectedPropApps.length > 0 && software_type !== 'libre') {
+        let warnStr = `\n\n## âš  Proprietary Software Notice\n> You have chosen to include software containing proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
+        selectedPropApps.forEach(a => warnStr += `- **${a.toUpperCase()}**: ${propAppsDB[a]}\n`);
+        mdOutput += warnStr;
+    }
 
     let html = isoHTML;
 
@@ -638,8 +750,32 @@ window.generateOutput = function(auto = false) {
 
     if (!auto) {
         saveToHistory(mdOutput, scriptOutput, format);
-        const configJSON = window.getFormValues();
-        showOutputPage(mdOutput, scriptOutput, format, configJSON);
+        
+        // Push output into the Live Editor directly
+        const uploadEditor = document.getElementById('upload-editor');
+        if (uploadEditor) {
+            uploadEditor.value = format === 'script' ? scriptOutput : mdOutput;
+            // Trigger input event to update preview
+            uploadEditor.dispatchEvent(new Event('input'));
+            
+            // Show the live editor UI
+            document.getElementById('upload-editor-wrapper').style.display = 'block';
+            document.getElementById('upload-clear-btn').style.display = 'block';
+            
+            const statusEl = document.getElementById('upload-status');
+            if (statusEl) {
+                statusEl.textContent = 'âœ“ New generation applied to Live Editor.';
+                statusEl.style.color = 'var(--accent-green)';
+            }
+        }
+
+        // Auto-download .sc configuration
+        const configJSONText = JSON.stringify(window.getFormValues(), null, 2);
+        downloadFile(configJSONText, 'arch-config.sc');
+
+        // Scroll to Live Editor smoothly
+        const liveEditorNav = document.getElementById('live-editor');
+        if (liveEditorNav) liveEditorNav.scrollIntoView({ behavior: 'smooth' });
     }
 };
 
@@ -808,6 +944,25 @@ if (securityToolsSelect && libreOtpModeContainer) {
     });
 }
 
+// â”€â”€ Full Suite Toggle â”€â”€
+const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
+if (fullSuiteToggle) {
+    fullSuiteToggle.addEventListener('change', () => {
+        const arssCheckboxes = document.querySelectorAll('input[name="arss_tools"]');
+        arssCheckboxes.forEach(cb => {
+            if (fullSuiteToggle.checked) {
+                cb.checked = true;
+                cb.disabled = true;
+                cb.parentElement.style.opacity = '0.6';
+            } else {
+                cb.disabled = false;
+                cb.parentElement.style.opacity = '1';
+            }
+            cb.dispatchEvent(new Event('change'));
+        });
+    });
+}
+
 // â”€â”€ Smart Analysis â”€â”€
 window.smartAnalysisWarnings = [];
 function validateConfigurations() {
@@ -835,9 +990,24 @@ function validateConfigurations() {
     const desktop = document.getElementById('desktop')?.value || 'none';
     const displayServer = document.getElementById('display_server')?.value || 'auto';
 
-    if (part.value === 'unencrypted') warnings.push("âš ï¸ No encryption â€” physical access = full compromise.");
-    if (gpuBrand === 'nvidia' && softwareType === 'libre') warnings.push("âš ï¸ Nvidia + Libre = Nouveau only. Limited performance.");
-    if (displayServer === 'wayland' && (desktop === 'dusky' || desktop === 'dwm')) warnings.push(`âš ï¸ ${desktop} requires X11/Xorg. Wayland will break it.`);
+    // DuskyOS Automation Lock
+    const duskyAppCb = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
+    if (desktop === 'dusky') {
+        if (duskyAppCb) {
+            duskyAppCb.checked = true;
+            duskyAppCb.disabled = true;
+            duskyAppCb.parentElement.style.opacity = '0.6';
+        }
+    } else {
+        if (duskyAppCb) {
+            duskyAppCb.disabled = false;
+            duskyAppCb.parentElement.style.opacity = '1';
+        }
+    }
+
+    if (part.value === 'unencrypted') warnings.push("⚠️ No encryption — physical access = full compromise.");
+    if (gpuBrand === 'nvidia' && softwareType === 'libre') warnings.push("⚠️ Nvidia + Libre = Nouveau only. Limited performance.");
+    if (displayServer === 'wayland' && (desktop === 'dusky' || desktop === 'dwm')) warnings.push(`⚠️ ${desktop} requires X11/Xorg. Wayland will break it.`);
 
     window.smartAnalysisWarnings = warnings;
     const div = document.getElementById('global-warnings');
@@ -1017,4 +1187,15 @@ updateHistoryTooltip();
             if (sec) sec.scrollIntoView({ behavior: 'smooth' });
         });
     }
+    }
 })();
+
+// â”€â”€â”€ Bind Generate Button â”€â”€â”€
+const generateBtn = document.getElementById('generate-btn');
+if (generateBtn) {
+    generateBtn.addEventListener('click', () => {
+        if (typeof window.generateOutput === 'function') {
+            window.generateOutput(false);
+        }
+    });
+}
