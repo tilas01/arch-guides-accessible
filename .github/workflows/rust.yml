@@ -50,10 +50,10 @@ jobs:
           cd security-tools
           cargo build --release 2>&1 | tee /tmp/cargo-build-output.txt
           echo "=== All binaries ==="
-          ls -la target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/arch-rusty-security-suite || echo "Some binaries missing"
+          ls -la target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/scarecrow target/release/kernel-watcher target/release/arch-rusty-security-suite || echo "Some binaries missing"
           echo ""
           echo "=== SHA256 Hashes ==="
-          sha256sum target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/arch-rusty-security-suite || true
+          sha256sum target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/scarecrow target/release/kernel-watcher target/release/arch-rusty-security-suite || true
 
       - name: Upload build output on failure
         if: failure()
@@ -95,6 +95,8 @@ jobs:
             security-tools/target/release/anti-ducky
             security-tools/target/release/libre-otp
             security-tools/target/release/arch-iso-verifier
+            security-tools/target/release/scarecrow
+            security-tools/target/release/kernel-watcher
             security-tools/target/release/arch-rusty-security-suite
 
   # ── Job 2: Release (only on push to main, after CI passes) ──────────────────
@@ -127,6 +129,8 @@ jobs:
           cp target/release/anti-ducky ../release-staging/anti-ducky-linux-x86_64
           cp target/release/libre-otp ../release-staging/libre-otp-linux-x86_64
           cp target/release/arch-iso-verifier ../release-staging/arch-iso-verifier-linux-x86_64
+          cp target/release/scarecrow ../release-staging/scarecrow-linux-x86_64
+          cp target/release/kernel-watcher ../release-staging/kernel-watcher-linux-x86_64
           cp target/release/arch-rusty-security-suite ../release-staging/arch-rusty-security-suite-linux-x86_64
           
           # Generate SHA256 for each
@@ -180,7 +184,9 @@ jobs:
 
             | Binary | Description | Use |
             |--------|-------------|-----|
-            | `arch-rusty-security-suite-linux-x86_64` | **Full Suite (Recommended)** — all tools in one binary | `./arch-rusty-security-suite otp`, `input-guard`, `verify-iso`, `verify-release` |
+            | `arch-rusty-security-suite-linux-x86_64` | **Full Suite (Recommended)** — all tools in one binary | `./arch-rusty-security-suite otp`, `input-guard`, `scarecrow`, `kernel-watcher`... |
+            | `kernel-watcher-linux-x86_64` | Kernel Watcher standalone | Semi-EDR daemon, Rootkit/Infostealer monitoring |
+            | `scarecrow-linux-x86_64` | Libre-Cyber-ScareCrow standalone | Malware sandbox spoofing (VBox, Wireshark, etc.) |
             | `anti-ducky-linux-x86_64` | Input Guard standalone | USB HID sandbox & RubberDucky detector |
             | `libre-otp-linux-x86_64` | Libre OTP standalone | TOTP/OTP 2FA for PAM |
             | `arch-iso-verifier-linux-x86_64` | ISO Verifier standalone | Verify Arch ISO integrity |
