@@ -31,9 +31,21 @@ jobs:
       - name: Check workspace compiles
         run: |
           cd security-tools
-          cargo check --workspace 2>&1
+          cargo check --workspace 2>&1 | tee /tmp/cargo-check-output.txt || true
+          echo "EXIT_CODE=${PIPESTATUS[0]}" >> $GITHUB_ENV
+          if [ "${PIPESTATUS[0]}" != "0" ]; then
+            echo "::error::cargo check failed — see output above"
+            exit 1
+          fi
         env:
           RUST_BACKTRACE: 1
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-check-output
+          path: /tmp/cargo-check-output.txt
 
       # Build everything from workspace root
       - name: Build all workspace members (release)
