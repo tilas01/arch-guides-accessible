@@ -65,6 +65,13 @@
 
         <div class="layout-container js-only">
             <section class="generator-form">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--bg-lighter);">
+                    <h3 style="margin:0; color:var(--accent-cyan); font-size:1.1rem;">Generator Settings</h3>
+                    <label class="btn nav-tooltip" data-title="Upload Selection Config (.sc)" data-desc="Restore all generator form settings from a previously downloaded .sc JSON config file. This is distinct from the Live Editor which handles .sh/.md files." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem;">
+                        📤 Upload .sc Config
+                        <input type="file" id="upload-sc-input" accept=".sc" style="display:none">
+                    </label>
+                </div>
                 <form id="install-form">
                     <div class="form-group form-step" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                         <label>Firmware Interface:</label>
@@ -305,7 +312,7 @@
                     <!-- ─── Arch Rusty Security Suite ─── -->
                     <div class="form-group form-step"
                          data-title="🦀 Arch Rusty Security Suite"
-                         data-desc="The Arch Rusty Security Suite is a Rust-based security toolkit authored by tilas01 (github.com/tilas01). It includes: Libre OTP 2FA for boot/login/SSH, Input Guard (Anti-RubberDucky USB HID sandboxing), Kloak keystroke anonymiser, and malware detection webhooks. MIT/GPL-3.0.">
+                         data-desc="The Arch Rusty Security Suite is a Rust-based security toolkit authored by tilas01 (github.com/tilas01). Select individual tools below. Each tool can be used standalone or as part of the unified suite binary. MIT/GPL-3.0.">
                         <label>
                             Use Arch Rusty Security Suite?
                             <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank"
@@ -319,94 +326,200 @@
                     </div>
 
                     <div id="custom-scripts-container" style="display: block;">
+                        <!-- ARSS Tools App-Grid (checkboxes) -->
                         <div class="form-group form-step"
                              data-title="ARSS — Security Tools"
-                             data-desc="Libre OTP: TOTP 2FA for login, boot, or SSH using PAM. SHA1/256/512 hash support. Input Guard: USB HID sandboxing — blocks rubber ducky / bad USB attacks. Right-click to open the Arch Rusty Security Suite wiki.">
-                            <label>ARSS Security Module:</label>
-                            <select id="securitytools">
-                                <option value="none" selected>None</option>
-                                <option value="libre-otp">Libre OTP (2FA — Boot/Login/SSH)</option>
-                                <option value="anti-ducky">Input Guard (Anti-RubberDucky USB)</option>
-                                <option value="both">Both OTP &amp; Input Guard</option>
-                            </select>
+                             data-desc="Select which ARSS security modules to include. Each tool has its own sub-options that appear when enabled. All tools are combined into the unified arch-rusty-security-suite binary. Right-click to visit the wiki.">
+                            <label style="margin-bottom:0.6rem;">🦀 ARSS Security Modules:</label>
+                            <div class="app-grid" id="arss-tools-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:0.6rem;">
+                                <!-- Libre OTP -->
+                                <label class="app-card nav-tooltip" data-title="Libre OTP — 2FA Authentication" data-desc="TOTP-based two-factor authentication for Linux login, boot, and SSH via PAM integration. Supports SHA1/256/512 hashing. Compatible with Google Authenticator, Aegis, and other TOTP apps. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="libre-otp" id="arss-libre-otp" style="accent-color:var(--accent-purple); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">🔐</span>
+                                    <div>
+                                        <strong style="color:var(--accent-purple); font-size:0.88rem;">Libre OTP</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">2FA for boot/login/SSH</div>
+                                    </div>
+                                </label>
+                                <!-- Input Guard -->
+                                <label class="app-card nav-tooltip" data-title="Input Guard — Anti-Ducky" data-desc="USB HID sandboxing and Rubber Ducky detection. Approves current input devices at install, blocks new unknown USB HID devices, detects device ID spoofing and inhuman typing speeds. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="anti-ducky" id="arss-anti-ducky" style="accent-color:var(--accent-purple); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">🛡️</span>
+                                    <div>
+                                        <strong style="color:var(--accent-purple); font-size:0.88rem;">Input Guard</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">USB HID sandbox &amp; ducky detector</div>
+                                    </div>
+                                </label>
+                                <!-- ISO Verifier -->
+                                <label class="app-card nav-tooltip" data-title="Arch ISO Verification" data-desc="Verify Arch Linux ISO integrity via SHA-256 hash comparison against official Arch mirrors. Recommended as the first step before any install when security tools are enabled. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="iso-verifier" id="arss-iso-verifier" style="accent-color:var(--accent-purple); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">🔍</span>
+                                    <div>
+                                        <strong style="color:var(--accent-purple); font-size:0.88rem;">ISO Verifier</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Verify Arch ISO integrity</div>
+                                    </div>
+                                </label>
+                                <!-- Panic Password -->
+                                <label class="app-card nav-tooltip" data-title="Panic Password" data-desc="Duress-activated emergency disk wipe. If compelled to decrypt under duress, entering the panic password twice triggers a DoD 3-pass overwrite of the LUKS partition. Irreversible. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="panic-password" id="arss-panic-password" style="accent-color:var(--accent-red); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">☠️</span>
+                                    <div>
+                                        <strong style="color:var(--accent-red); font-size:0.88rem;">Panic Password</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Emergency DoD wipe on duress</div>
+                                    </div>
+                                </label>
+                                <!-- Notification Webhooks -->
+                                <label class="app-card nav-tooltip" data-title="Notification Webhooks" data-desc="Real-time push notifications for security events. Recommended: ntfy.sh (free, no self-hosting). Also supports Bark, Discord, Telegram, Slack, and custom webhook URLs. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="webhooks" id="arss-webhooks" style="accent-color:var(--accent-cyan); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">📱</span>
+                                    <div>
+                                        <strong style="color:var(--accent-cyan); font-size:0.88rem;">Notification Webhooks</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">ntfy / bark / discord / custom alerts</div>
+                                    </div>
+                                </label>
+                                <!-- Hardened SSH -->
+                                <label class="app-card nav-tooltip" data-title="ARSS Hardened SSH + OTP" data-desc="Strict SSH: Ed25519 only, ChaCha20-Poly1305, no root login, no password auth. Combined with OTP 2FA via PAM. Requires Libre OTP for full effect. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="hardened-ssh" id="arss-hardened-ssh" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">🔒</span>
+                                    <div>
+                                        <strong style="color:var(--accent-blue); font-size:0.88rem;">Hardened SSH + OTP</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Ed25519 + ChaCha20 + 2FA</div>
+                                    </div>
+                                </label>
+                                <!-- Anti-Evil Maid -->
+                                <label class="app-card nav-tooltip" data-title="Anti-Evil Maid Decoys" data-desc="Detects physical boot-level tampering. Creates decoy kernel entries and backup EFI images. Verifies checksums on each boot and alerts via webhook if tampered. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="evil-maid" id="arss-evil-maid" style="accent-color:var(--accent-orange, #ff9e64); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">🕵️</span>
+                                    <div>
+                                        <strong style="color:var(--accent-orange, #ff9e64); font-size:0.88rem;">Anti-Evil Maid</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Decoy kernels &amp; tamper detection</div>
+                                    </div>
+                                </label>
+                                <!-- Kloak -->
+                                <label class="app-card nav-tooltip" data-title="Keystroke Anonymisation — kloak" data-desc="kloak by vmonaco randomizes keystroke timing to prevent behavioral biometric profiling. Makes your typing pattern unidentifiable. Recommended for high-privacy setups. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="kloak" id="arss-kloak" style="accent-color:var(--accent-green); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">⌨️</span>
+                                    <div>
+                                        <strong style="color:var(--accent-green); font-size:0.88rem;">Kloak</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Keystroke &amp; mouse anonymiser</div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
-                        <div class="form-group form-step" id="libre-otp-mode-container" style="display: none;"
-                             data-title="OTP Enforcement Mode"
-                             data-desc="Login Only: OTP required on TTY/display manager login. Boot: OTP checked in initramfs before kernel continues. Both: maximum 2FA coverage.">
-                            <label>OTP Mode:</label>
-                            <select id="libre_otp_mode">
-                                <option value="login" selected>Login Only</option>
-                                <option value="boot">Boot Only</option>
-                                <option value="both">Both Boot &amp; Login</option>
-                            </select>
+                        <!-- ── Dynamic Sub-Options (appear when parent checked) ── -->
+
+                        <!-- OTP sub-options (visible when libre-otp checked) -->
+                        <div id="arss-otp-options" style="display:none; margin-left:0.8rem; padding-left:0.8rem; border-left:2px solid var(--accent-purple);">
+                            <div class="form-group form-step" data-title="OTP Enforcement Mode" data-desc="Login Only: OTP at TTY/display manager. Boot: OTP in initramfs before kernel. Both: maximum coverage. SSH: if Hardened SSH also enabled.">
+                                <label>OTP Mode:</label>
+                                <select id="libre_otp_mode">
+                                    <option value="login" selected>Login Only</option>
+                                    <option value="boot">Boot Only</option>
+                                    <option value="both">Both Boot &amp; Login</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-step" data-title="OTP Hash Algorithm" data-desc="SHA1 is universally compatible (Google Auth, Aegis). SHA256/SHA512 offer stronger hashing but fewer apps support them. Recommended: SHA1.">
+                                <label>OTP Algorithm:</label>
+                                <select id="otp_sha">
+                                    <option value="sha1" selected>SHA1 (Max compatibility)</option>
+                                    <option value="sha256">SHA256 (More secure)</option>
+                                    <option value="sha512">SHA512 (Maximum)</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-step" data-title="OTP Recovery Codes" data-desc="Generate 5 backup recovery codes during setup. Each code is single-use. If a recovery code is used, an alert is sent via webhook.">
+                                <label>Recovery Codes:</label>
+                                <select id="otp_recovery">
+                                    <option value="5" selected>5 codes (Recommended)</option>
+                                    <option value="10">10 codes</option>
+                                    <option value="0">None (not recommended)</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="form-group form-step"
-                             data-title="OTP Hash Algorithm"
-                             data-desc="SHA1 is universally compatible with authenticator apps (Google Auth, Aegis). SHA256/SHA512 offer stronger hashing but fewer apps support them. Recommended: SHA1 for compatibility.">
-                            <label>OTP Algorithm:</label>
-                            <select id="otp_sha">
-                                <option value="sha1" selected>SHA1 (Max compatibility)</option>
-                                <option value="sha256">SHA256 (More secure)</option>
-                                <option value="sha512">SHA512 (Maximum)</option>
-                            </select>
+                        <!-- Webhook sub-options (visible when webhooks checked) -->
+                        <div id="arss-webhook-options" style="display:none; margin-left:0.8rem; padding-left:0.8rem; border-left:2px solid var(--accent-cyan);">
+                            <div class="form-group form-step" data-title="Webhook Provider" data-desc="ntfy.sh is recommended — free, no self-hosting, iOS + Android apps. Bark needs a server. Discord/Telegram/Slack use their webhook APIs. Custom sends POST to any URL.">
+                                <label>Provider:</label>
+                                <select id="webhook_provider">
+                                    <option value="ntfy" selected>ntfy.sh (Recommended — Free)</option>
+                                    <option value="bark">Bark (Needs server)</option>
+                                    <option value="discord">Discord Webhook</option>
+                                    <option value="telegram">Telegram Bot</option>
+                                    <option value="slack">Slack Webhook</option>
+                                    <option value="custom">Custom URL</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-step" data-title="Webhook Topic/URL" data-desc="For ntfy: enter your topic name (e.g. arch-security-abc123). For others: enter the full webhook URL. This is stored in /etc/arch-security/webhook.conf on the target system.">
+                                <label id="webhook-url-label">ntfy Topic:</label>
+                                <input type="text" id="webhook_url" placeholder="arch-security-your-topic" style="width:100%; padding:0.5rem; background:var(--bg-color); color:var(--fg-color); border:1px solid var(--bg-lighter); border-radius:8px; font-family:var(--font-mono); font-size:0.85rem;">
+                            </div>
                         </div>
 
-                        <div class="form-group form-step"
-                             data-title="Keystroke Anonymisation — kloak"
-                             data-desc="kloak by vmonaco randomizes keystroke timing to prevent behavioral biometric profiling. Makes your typing pattern unidentifiable. Recommended for high-privacy setups.">
-                            <label>Kloak Keystroke Anonymiser:</label>
-                            <select id="anon_kloak">
-                                <option value="no" selected>No</option>
-                                <option value="yes">Yes — Enable kloak</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group form-step"
-                             data-title="Malware Detection Webhooks"
-                             data-desc="Systemd service that monitors for malicious binaries and sends alerts via webhook (Discord/Slack/custom). Useful for headless servers and high-security setups.">
-                            <label>Webhook Alerts:</label>
-                            <select id="anon_webhook">
-                                <option value="no" selected>No</option>
-                                <option value="yes">Yes — Enable webhook alerts</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group form-step"
-                             data-title="Hardened SSH via ARSS + OTP"
-                             data-desc="Configures OpenSSH with strict crypto (Ed25519 only, ChaCha20, no root login) AND adds ARSS OTP 2FA to the sshd PAM stack. Requires Libre OTP to be enabled above.">
-                            <label>ARSS Hardened SSH + OTP:</label>
-                            <select id="anon_ssh">
-                                <option value="no" selected>No</option>
-                                <option value="yes">Yes — SSH with OTP 2FA</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group form-step"
-                             data-title="Anti-Evil Maid Decoys"
-                             data-desc="Creates decoy kernel entries and backup EFI images to detect physical boot-level tampering (evil maid attacks). Recommended for high-threat environments.">
-                            <label>Anti-Evil Maid Decoys:</label>
-                            <select id="fake-evil-maid">
-                                <option value="no" selected>No</option>
-                                <option value="yes">Yes — Decoy environment</option>
-                            </select>
+                        <!-- Anti-Evil Maid kernel sub-options (visible when evil-maid checked) -->
+                        <div id="arss-evilmaid-options" style="display:none; margin-left:0.8rem; padding-left:0.8rem; border-left:2px solid var(--accent-orange, #ff9e64);">
+                            <div class="form-group form-step" data-title="Anti-Evil Maid — Main Kernel" data-desc="Select the primary kernel for the Anti-Evil Maid decoy environment. This kernel is monitored for tampering.">
+                                <label>AEM Main Kernel:</label>
+                                <select id="aem-kernel-main">
+                                    <option value="linux" selected>linux (Standard)</option>
+                                    <option value="linux-lts">linux-lts (Long Term)</option>
+                                    <option value="linux-hardened">linux-hardened</option>
+                                    <option value="linux-zen">linux-zen (Performance)</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-step" data-title="Anti-Evil Maid — Backup Kernel" data-desc="Optional backup kernel for AEM. If the main kernel is tampered with, the backup kernel is used. Select 'None' to skip.">
+                                <label>AEM Backup Kernel:</label>
+                                <select id="aem-kernel-backup">
+                                    <option value="none" selected>None (No backup)</option>
+                                    <option value="same">Same as above</option>
+                                    <option value="linux">linux (Standard)</option>
+                                    <option value="linux-lts">linux-lts (Long Term)</option>
+                                    <option value="linux-hardened">linux-hardened</option>
+                                    <option value="linux-zen">linux-zen (Performance)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ─── Other Security Tools (yes/no) ─── -->
+                    <!-- ─── Other Security Tools (checkboxes) ─── -->
                     <div class="form-group form-step"
                          data-title="Other Security Tools"
-                         data-desc="Additional hardening: AppArmor MAC policies, audit daemon (auditd) for syscall logging, USBGuard for USB device whitelisting, and fail2ban for SSH brute-force protection. These are independent of ARSS.">
-                        <label>Other Security Tools:</label>
-                        <select id="other_security_tools">
-                            <option value="no" selected>No</option>
-                            <option value="apparmor">AppArmor (MAC policies)</option>
-                            <option value="usbguard">USBGuard (USB whitelisting)</option>
-                            <option value="auditd">auditd (syscall logging)</option>
-                            <option value="fail2ban">fail2ban (SSH brute-force protection)</option>
-                            <option value="all">All of the above</option>
-                        </select>
+                         data-desc="Additional hardening tools independent of the ARSS. AppArmor adds mandatory access control, USBGuard whitelists USB devices, auditd logs syscalls, fail2ban protects SSH. Select any combination.">
+                        <label style="margin-bottom:0.6rem;">🔒 Other Security Tools:</label>
+                        <div class="app-grid" id="other-security-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:0.6rem;">
+                            <label class="app-card nav-tooltip" data-title="AppArmor — MAC Policies" data-desc="Mandatory Access Control. Restricts what programs can access at kernel level. Define per-application security profiles." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <input type="checkbox" name="other_sec_tools" value="apparmor" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                <span style="font-size:1.3rem;">🏰</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;">AppArmor</strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">MAC policies</div>
+                                </div>
+                            </label>
+                            <label class="app-card nav-tooltip" data-title="USBGuard — USB Whitelisting" data-desc="Only approved USB devices can connect. Generates a policy of currently connected devices, blocks everything else." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <input type="checkbox" name="other_sec_tools" value="usbguard" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                <span style="font-size:1.3rem;">🔌</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;">USBGuard</strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">USB device whitelisting</div>
+                                </div>
+                            </label>
+                            <label class="app-card nav-tooltip" data-title="auditd — Syscall Logging" data-desc="Kernel-level syscall logging. Monitors file access, privilege escalation, and suspicious operations. Essential for security auditing." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <input type="checkbox" name="other_sec_tools" value="auditd" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                <span style="font-size:1.3rem;">📝</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;">auditd</strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">Syscall logging</div>
+                                </div>
+                            </label>
+                            <label class="app-card nav-tooltip" data-title="fail2ban — SSH Protection" data-desc="Bans IP addresses after repeated failed login attempts. Protects SSH (and other services) from brute-force attacks." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <input type="checkbox" name="other_sec_tools" value="fail2ban" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                <span style="font-size:1.3rem;">🚫</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;">fail2ban</strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">SSH brute-force protection</div>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="form-group form-step" data-title="Arch ISO Setup Utilities" data-desc="Start SSH on Arch ISO so you can run this script remotely.">
@@ -425,6 +538,15 @@
                             <option value="markdown">Markdown Guide</option>
                             <option value="script">Bash Script</option>
                         </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Selection Config Preview" data-desc="Live preview of your current generator settings as a JSON object. You can download this .sc file after generation." style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--bg-lighter);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="const el=document.getElementById('sc-preview-container'); el.style.display=el.style.display==='none'?'block':'none';">
+                            <label style="margin:0; cursor:pointer; color:var(--accent-purple);">📄 Current Selection Config (.sc) Preview (Click to toggle)</label>
+                        </div>
+                        <div id="sc-preview-container" style="display:none; margin-top:0.8rem;">
+                            <pre id="sc-preview-json" style="background:var(--bg-color); padding:0.8rem; border-radius:8px; border:1px solid var(--bg-lighter); font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-cyan); overflow-x:auto; white-space:pre-wrap; max-height:200px; overflow-y:auto;"></pre>
+                        </div>
                     </div>
 
                     <div id="global-warnings" style="margin-bottom: 0.8rem;"></div>
@@ -494,29 +616,24 @@
 
     <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--bg-lighter); text-align: center;">
         <!-- Author: tilas01 | Main Developer & Maintainer -->
-        <h3 style="color: var(--accent-purple); margin-bottom: 1rem;">Credits & Acknowledgements</h3>
+        <h3 style="color: var(--accent-purple); margin-bottom: 1rem;">Credits &amp; Acknowledgements</h3>
         <div class="credits-grid">
-            <!-- tilas01: main author — spotlight card -->
+            <!-- tilas01: main author — single self-contained card -->
             <a href="https://github.com/tilas01" target="_blank" class="credit-card nav-tooltip"
                data-title="tilas01 — Main Author"
-               data-desc="Main author, developer &amp; maintainer of Arch Guides, the Arch Rusty Security Suite, and all project code. All scripts, website, and security tooling by tilas01."
+               data-desc="Main author, developer &amp; maintainer of Arch Guides, the Arch Rusty Security Suite, and all project code. All scripts, website, security tooling, and documentation by tilas01."
                style="text-decoration:none; border-color:var(--accent-purple); order:-1;">
                 <img src="https://github.com/tilas01.png?size=80" alt="tilas01" style="border-color:var(--accent-purple); width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name" style="font-size:1.05rem; color:var(--accent-purple);">tilas01</span>
-                    <span class="credit-role">Main Author, Developer &amp; Maintainer<br>
-                        <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple);font-size:0.75rem;">GitHub</a>
-                        · <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" style="color:var(--accent-purple);font-size:0.75rem;">arch-guides-dynamic</a><br>
-                        Arch Rusty Security Suite · Website · All Scripts
-                    </span>
+                    <span class="credit-role">Main Author, Developer &amp; Maintainer<br>Arch Rusty Security Suite · Website · All Scripts</span>
                 </div>
             </a>
 
-            <!-- dusklinux: Dusky OS — merged single card with GitHub + YouTube + repo -->
+            <!-- dusklinux: Dusky OS — single card with all links -->
             <div class="credit-card nav-tooltip"
                  data-title="dusklinux — Dusky OS"
-                 data-desc="Creator of Dusky OS — a minimal Arch-based distro with automated Hyprland setup, custom dotfiles and theming. Inspiration for the Dusky desktop option and cheatsheet in this project. Right-click to open the dusky GitHub repo."
-                 data-wiki=""
+                 data-desc="Creator of Dusky OS — a minimal Arch-based distro with automated Hyprland setup, custom dotfiles and theming. Inspiration for the Dusky desktop option and cheatsheet in this project."
                  style="border-color:var(--accent-blue); cursor:pointer;"
                  onclick="window.open('https://github.com/dusklinux/dusky','_blank')">
                 <img src="https://github.com/dusklinux.png?size=80" alt="dusklinux" style="border-color:var(--accent-blue); width:48px; height:48px;">
@@ -547,10 +664,10 @@
                 </div>
             </a>
 
-            <!-- vmonaco: kloak (keystroke anonymizer) -->
+            <!-- vmonaco: kloak (keystroke anonymizer) — integrated tool -->
             <a href="https://github.com/vmonaco/kloak" target="_blank" class="credit-card nav-tooltip"
                data-title="vmonaco — kloak"
-               data-desc="Creator of kloak — an open-source keystroke and mouse timing anonymizer. Obfuscates typing patterns to prevent behavioral biometric tracking. Included in the Arch Rusty Security Suite."
+               data-desc="Creator of kloak — an open-source keystroke and mouse timing anonymizer. Obfuscates typing patterns to prevent behavioral biometric tracking. Integrated into the Arch Rusty Security Suite as an optional security module."
                style="text-decoration:none;">
                 <img src="https://github.com/vmonaco.png?size=80" alt="vmonaco" style="width:48px; height:48px;">
                 <div class="credit-info">
@@ -563,18 +680,19 @@
                 </div>
             </a>
 
-            <!-- bprsk: snapper-rollback (BTRFS filesystem restore) -->
-            <a href="https://github.com/jrabinow/snapper-rollback" target="_blank" class="credit-card nav-tooltip"
-               data-title="Snapper / bprsk — BTRFS Snapshots"
-               data-desc="Reference for BTRFS snapper-rollback integration — automated filesystem restore points before and after every pacman transaction. Enables one-command system rollback."
+            <!-- Snapper: integration reference (not credit) — explains what it does -->
+            <a href="https://github.com/openSUSE/snapper" target="_blank" class="credit-card nav-tooltip"
+               data-title="Snapper — BTRFS Snapshot Integration"
+               data-desc="Snapper provides automated BTRFS filesystem snapshots before and after every pacman transaction. Enables one-command system rollback if an update breaks your system. Integrated into the generator as an optional system tool — not a credit, but an important security tool you should consider."
                style="text-decoration:none;">
-                <img src="https://github.com/jrabinow.png?size=80" alt="snapper-rollback" style="width:48px; height:48px;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1250/1250615.png'">
+                <img src="https://cdn-icons-png.flaticon.com/512/1250/1250615.png" alt="Snapper" style="width:48px; height:48px;">
                 <div class="credit-info">
-                    <span class="credit-name">Snapper / bprsk</span>
+                    <span class="credit-name">Snapper</span>
                     <span class="credit-role">
                         BTRFS snapshot &amp; rollback 📸<br>
                         <a href="https://github.com/openSUSE/snapper" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">snapper</a>
                         · <a href="https://github.com/jrabinow/snapper-rollback" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">snapper-rollback</a>
+                        — Integrated security tool
                     </span>
                 </div>
             </a>
@@ -594,3 +712,4 @@
     </footer>
 </body>
 </html>
+
