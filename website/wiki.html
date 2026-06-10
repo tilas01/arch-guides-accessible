@@ -3,334 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arch Guides Wiki</title>
-    <meta name="description" content="Full static wiki documentation for Arch Linux installation, security tools, and system configuration.">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="preload" href="img/banner.png" as="image">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <title>Arch Rusty Security Suite — Official Wiki</title>
     <style>
-        .wiki-container {
-            display: flex;
-            gap: 2rem;
-            align-items: flex-start;
-            max-width: 1800px;
-            width: 100%;
-            margin: 0 auto;
+        :root {
+            --bg-color: #0d1117;
+            --bg-lighter: #161b22;
+            --fg-color: #c9d1d9;
+            --accent-purple: #8957e5;
+            --accent-blue: #58a6ff;
+            --accent-red: #f85149;
+            --accent-cyan: #39c5bb;
+            --accent-green: #3fb950;
+            --accent-orange: #ff9e64;
+            --font-main: 'Inter', system-ui, sans-serif;
+            --border-color: #30363d;
         }
-        .wiki-nav {
-            flex: 0 0 260px;
-            background-color: var(--bg-darker);
-            padding: 1.2rem;
-            border-radius: 12px;
-            border: 1px solid var(--bg-lighter);
-            position: sticky;
-            top: 1rem;
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--fg-color);
+            line-height: 1.6;
+            padding: 2rem 10%;
         }
-        .wiki-nav ul { list-style: none; padding-left: 0; }
-        .wiki-nav li { margin-bottom: 0.6rem; }
-        .wiki-nav a { cursor: pointer; color: var(--accent-blue); font-size: 0.9rem; }
-        .wiki-nav a:hover, .wiki-nav a.active { color: var(--accent-cyan); text-decoration: underline; }
-        .wiki-content {
-            flex: 1;
-            background-color: var(--bg-darker);
+        header { text-align: center; margin-bottom: 3rem; }
+        h1 { color: var(--accent-purple); font-size: 2.5rem; margin-bottom: 0.5rem; }
+        h2 { color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem; }
+        h3 { color: var(--accent-cyan); margin-top: 2rem; }
+        .subtitle { color: #8b949e; font-size: 1.1rem; }
+        .section {
+            background: var(--bg-lighter);
             padding: 2rem;
             border-radius: 12px;
-            border: 1px solid var(--bg-lighter);
-            min-height: 500px;
-            min-width: 0;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            scroll-margin-top: 40px;
         }
-        @media (max-width: 768px) {
-            .wiki-container { flex-direction: column; }
-            .wiki-nav { flex: auto; width: 100%; margin-bottom: 1rem; position: static; }
-            .wiki-content { padding: 1rem; overflow-x: auto; width: 100%; }
+        code { background: #010409; padding: 0.2rem 0.4rem; border-radius: 6px; font-family: monospace; color: var(--accent-orange); }
+        pre code { display: block; padding: 1rem; color: #e6edf3; overflow-x: auto; }
+        a { color: var(--accent-purple); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .icon { font-size: 1.8rem; vertical-align: middle; margin-right: 0.5rem; }
+        .home-btn {
+            display: inline-block;
+            margin-bottom: 2rem;
+            background: var(--accent-purple);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .home-btn:hover { background: #764ce0; text-decoration: none; }
+        .alert {
+            padding: 1rem; border-left: 4px solid var(--accent-red); background: rgba(248, 81, 73, 0.1); margin: 1rem 0; border-radius: 4px;
         }
     </style>
-    <script src="legal.js"></script>
 </head>
 <body>
 
+    <a href="index.html" class="home-btn">← Back to Generator</a>
+
     <header>
-        <div id="header-controls" class="js-only" style="position:absolute;right:15px;top:15px;display:flex;gap:6px;z-index:1000;">
-            <button id="toggle-tooltips-btn" type="button" class="tooltip-always" data-title="Tooltips: Enabled" data-desc="Toggle tooltips on/off." style="background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--accent-blue);padding:4px;border-radius:6px;">ℹ️</button>
-        </div>
-        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository containing this website, all tilas01-authored scripts, and Arch installation guides." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
-        <h1>Arch Guides | Full Static Wiki</h1>
-        <p>Comprehensive documentation &mdash; same parity as the generator. Follow manually or use the script generator.</p>
-        <nav class="main-nav">
-            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">⚙️ Generator</a>
-            <span class="nav-sep">|</span>
-            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="You are here. Full documentation with same parity as the generator. Every option is explained so you can manually configure your system.">📖 Wiki / Documentation</a>
-            <span class="nav-sep">|</span>
-            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload" data-desc="Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.">📤 Upload</a>
-            <span class="nav-sep">|</span>
-            <a href="#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
-            <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite.">📦 Releases</a>
-            <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01.">🔗 Repository</a>
-        </nav>
+        <h1>🦀 Arch Rusty Security Suite (ARSS)</h1>
+        <p class="subtitle">The Official Documentation & Wiki</p>
+        <p style="font-size: 0.9rem; color: #8b949e;">Developed by <strong><a href="https://github.com/tilas01" target="_blank">tilas01</a></strong></p>
     </header>
 
-    <main>
-        <noscript>
-            <div class="alert warning">
-                JavaScript is disabled. Please view the raw markdown documentation directly in the <a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/docs" target="_blank">docs directory on GitHub</a>.
-            </div>
-        </noscript>
-
-        <div class="wiki-container js-only">
-            <aside class="wiki-nav">
-                <h3>Documentation</h3>
-                <ul id="wiki-menu">
-                    <li><a data-file="architecture.md" id="link-output-format">ℹ️ Generator & Architecture</a></li>
-                    <li><a data-file="01-pre-installation.md" id="link-target-installation-disk">💻 1. Pre-Installation</a></li>
-                    <li><strong>🔐 2. Partitioning</strong>
-                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
-                            <li><a data-file="02-partitioning/luks2.md" id="link-encryption-options">LUKS2 / LUKS1 / Unencrypted</a></li>
-                            <li><a data-file="02-partitioning/lvm-on-luks2.md" id="link-file-system-features">LVM on LUKS2 / BTRFS</a></li>
-                        </ul>
-                    </li>
-                    <li><a data-file="03-base-installation.md" id="link-firmware-selection">💿 3. Base Installation</a></li>
-                    <li><strong>🚀 4. Bootloaders</strong>
-                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
-                            <li><a data-file="04-bootloaders/uki-no-grub.md" id="link-bootloader-choice">UKI (No GRUB)</a></li>
-                            <li><a data-file="04-bootloaders/systemd-boot.md" id="link-init-system">systemd-boot</a></li>
-                            <li><a data-file="04-bootloaders/grub.md">GRUB</a></li>
-                        </ul>
-                    </li>
-                    <li><strong>🛡️ 5. Secure Boot</strong>
-                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
-                            <li><a data-file="05-secure-boot/custom-keys-uki.md">Custom Keys (UKI)</a></li>
-                            <li><a data-file="05-secure-boot/shim-grub.md">Shim (GRUB)</a></li>
-                        </ul>
-                    </li>
-                    <li><strong>🖥️ 6. Dual Boot & Post Install</strong>
-                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
-                            <li><a data-file="06-dual-boot/grub-os-prober.md">Dual Boot (GRUB)</a></li>
-                            <li><a data-file="06-dual-boot/systemd-boot-windows.md">Dual Boot (systemd-boot)</a></li>
-                            <li><a data-file="07-post-installation.md" id="link-post-install-apps-scripts">Post Install & Desktop</a></li>
-                        </ul>
-                    </li>
-                    <li><a data-file="maintenance.md" id="link-fake-main-kernel">🛠️ 7. Maintenance & Kernels</a></li>
-                    <li><a data-file="helpful-commands.md" id="link-advanced-security-tools">📜 8. Commands & Cheatsheets</a></li>
-                    <li><a data-file="dusky-cheatsheet.md">🎨 9. Dusky OS Cheatsheet</a></li>
-                    <li><a data-file="xorg-vs-wayland.md">🖥️ 10. Xorg vs Wayland</a></li>
-                    <li><a data-file="10-generator-selections-and-dusky.md">⚙️ 11. All Generator Selections Explained</a></li>
-                    <li style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>🦀 Arch Rusty Security Suite</strong>
-                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
-                            <li><a data-file="security-suite.md" id="link-security-suite">🦀 Suite Overview</a></li>
-                            <li><a data-file="security-suite.md" data-section="libre-otp">🔐 Libre OTP</a></li>
-                            <li><a data-file="security-suite.md" data-section="input-guard-anti-ducky">🛡️ Input Guard (Anti-Ducky)</a></li>
-                            <li><a data-file="security-suite.md" data-section="iso-verifier">🔍 ISO Verifier</a></li>
-                            <li><a data-file="security-suite.md" data-section="panic-password-emergency-wipe">☠️ Panic Password</a></li>
-                            <li><a data-file="security-suite.md" data-section="webhooks-notifications">📱 Webhooks & Notifications</a></li>
-                            <li><a data-file="security-suite.md" data-section="kloak-keystroke-anonymiser">⌨️ Kloak</a></li>
-                            <li><a data-file="security-suite.md" data-section="anti-evil-maid-decoys">🕵️ Anti-Evil Maid</a></li>
-                            <li><a data-file="security-suite.md" data-section="hardened-ssh-otp">🔒 Hardened SSH + OTP</a></li>
-                        </ul>
-                    </li>
-                    <li style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📱 Notification Setup</strong>
-                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
-                            <li><a data-file="ntfy-setup.md" id="link-notification-setup">📱 ntfy, Bark & Webhooks</a></li>
-                        </ul>
-                    </li>
-                    <li id="cheatsheets" style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📋 Cheatsheets</strong>
-                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
-                            <li><a data-file="helpful-commands.md">🐧 Arch Linux Commands</a></li>
-                            <li><a data-file="dusky-cheatsheet.md">🎨 Dusky OS Shortcuts</a></li>
-                            <li><a data-file="helpful-commands.md" data-section="dwm-shortcuts">⌨️ DWM Shortcuts</a></li>
-                            <li><a data-file="helpful-commands.md" data-section="gnome-shortcuts">🖥️ GNOME Shortcuts</a></li>
-                            <li><a data-file="helpful-commands.md" data-section="kde-shortcuts">💎 KDE Plasma Shortcuts</a></li>
-                            <li><a data-file="xorg-vs-wayland.md">🖥️ Xorg vs Wayland</a></li>
-                        </ul>
-                    </li>
-                    <li style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📦 Releases & Integrity</strong>
-                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
-                            <li><a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank">⬇️ Download Latest Release</a></li>
-                            <li><a data-file="10-generator-selections-and-dusky.md" data-section="integrity-verification">🔐 Verify Integrity (SHA256 + GPG)</a></li>
-                            <li><a data-file="10-generator-selections-and-dusky.md" data-section="build-from-source">🛠️ Build From Source</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </aside>
-            <section class="wiki-content">
-                <div class="markdown-body" id="wiki-body">
-                    <h2>Welcome to the Arch Guides Wiki</h2>
-                    <p>Select a document from the left navigation to begin reading.</p>
-                    <p>This wiki provides comprehensive, modular documentation covering every aspect of the Arch Linux installation process — from pre-installation to advanced security hardening with the <strong>Arch Rusty Security Suite by tilas01</strong>.</p>
-                    <h3>📖 Manual vs Generator</h3>
-                    <p>The <a href="index.html">auto script generator</a> is optional. This wiki has <strong>full parity</strong> with every generator selection — every dropdown option is explained in detail so you can manually configure your system using only native tools and this documentation.</p>
-                    <p>See <a href="#" onclick="loadDoc('10-generator-selections-and-dusky.md'); return false;">All Generator Selections Explained</a> for a complete reference of every option and recommended configuration.</p>
-                    <h3>📦 Releases & Integrity</h3>
-                    <p>All security tools are available as <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank">reproducible releases</a> with SHA256 hashes and GPG signatures. You can verify integrity manually or use the included verification tool. See the <a href="#" onclick="loadDoc('10-generator-selections-and-dusky.md'); return false;">wiki section on integrity verification</a> for full instructions.</p>
-                </div>
-            </section>
+    <div class="section" id="libre-otp">
+        <h2><span class="icon">🔐</span> Libre-OTP (Boot & Login 2FA)</h2>
+        <p>Libre-OTP integrates TOTP (Time-Based One-Time Passwords) directly into the Linux PAM (Pluggable Authentication Modules) stack. This enforces two-factor authentication before decryption at boot, upon logging into the TTY, or when accessing the system via SSH.</p>
+        <h3>Features</h3>
+        <ul>
+            <li>Supports SHA-1, SHA-256, and SHA-512 hashing algorithms.</li>
+            <li>Generates offline recovery codes for emergency access.</li>
+            <li>Fully compatible with Aegis, Google Authenticator, and Authy.</li>
+        </ul>
+        <div class="alert">
+            <strong>Warning:</strong> Losing your Authenticator App and Recovery Codes will result in permanent loss of access to your machine.
         </div>
-    </main>
+    </div>
 
-    <script>
-        document.querySelectorAll('#wiki-menu a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('#wiki-menu a').forEach(a => a.classList.remove('active'));
-                this.classList.add('active');
+    <div class="section" id="input-guard">
+        <h2><span class="icon">🛡️</span> Input Guard (Anti-Ducky)</h2>
+        <p>Input Guard is a robust USB HID sandbox designed to defeat malicious hardware like the USB Rubber Ducky, Bash Bunny, or compromised O.MG cables.</p>
+        <h3>How it Works</h3>
+        <p>Upon installation, Input Guard catalogs all currently connected USB devices. Any new HID (Human Interface Device) plugged into the system is automatically blocked until manually authorized via the CLI tool. It also monitors typing speed heuristics—if an "authorized" keyboard begins typing at 10,000 WPM, it is immediately severed and flagged as a spoofed malicious device.</p>
+    </div>
 
-                const file = this.getAttribute('data-file');
-                const targetSection = this.getAttribute('data-section');
-                const wikiBody = document.getElementById('wiki-body');
-                wikiBody.innerHTML = '<p>Loading...</p>';
+    <div class="section" id="iso-verifier">
+        <h2><span class="icon">🔍</span> ISO Verification & Integrity</h2>
+        <p>Before installing Arch Linux, it is critical to verify that the `.iso` image was not tampered with during download. This module automatically fetches the official SHA-256 checksums from the Arch Linux mirrors and verifies your local or USB-mounted ISO image.</p>
+    </div>
 
-                fetch(`docs/${file}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Not found');
-                        return response.text();
-                    })
-                    .then(data => {
-                        wikiBody.innerHTML = marked.parse(data);
-                        
-                        // Build TOC from headings
-                        const headings = wikiBody.querySelectorAll('h1, h2, h3, h4, h5, h6');
-                        const navUl = document.querySelector('.wiki-nav ul');
-                        let tocHTML = '';
-                        
-                        headings.forEach(heading => {
-                            const id = heading.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                            heading.id = id;
-                            if (heading.tagName === 'H2' || heading.tagName === 'H3') {
-                                const pad = heading.tagName === 'H3' ? '15px' : '0';
-                                tocHTML += `<li style="padding-left: ${pad}"><a href="#${id}">${heading.innerText}</a></li>`;
-                            }
-                        });
-                        
-                        navUl.innerHTML = '<li style="margin-bottom:0.8rem;"><a href="wiki.html" style="color:var(--accent-purple);font-weight:bold;">← Back to all docs</a></li>' + tocHTML;
+    <div class="section" id="panic-password">
+        <h2><span class="icon">☠️</span> Panic Password (Duress Wipe)</h2>
+        <p>The Panic Password module provides emergency duress protection. When you install ARSS, you can set a secondary LUKS decryption password.</p>
+        <h3>Mechanics</h3>
+        <p>If you are compelled to unlock your device under duress, entering the Panic Password (instead of your real password) twice in a row triggers an immediate, irreversible DoD 3-pass overwrite of your entire LUKS header and partition data. The system will be permanently destroyed, rendering all encrypted data mathematically unrecoverable.</p>
+    </div>
 
-                        // Highlight code blocks
-                        if (window.Prism) Prism.highlightAllUnder(wikiBody);
+    <div class="section" id="webhooks">
+        <h2><span class="icon">📱</span> Notification Webhooks</h2>
+        <p>Connects ARSS directly to your mobile device via Webhooks. The suite natively supports <a href="https://ntfy.sh" target="_blank">ntfy.sh</a> (a free, open-source, no-signup push notification service), but can be configured for Discord, Slack, Bark, or custom JSON payloads.</p>
+        <p>Whenever the Kernel Watcher detects malware, or Anti-Evil-Maid detects tampering, an instant push notification is fired to your phone.</p>
+    </div>
 
-                        // Re-attach TOC click handlers
-                        document.querySelectorAll('.wiki-nav a').forEach(tocLink => {
-                            tocLink.addEventListener('click', (ev) => {
-                                ev.preventDefault();
-                                const targetId = tocLink.getAttribute('href')?.substring(1);
-                                const targetElem = targetId ? document.getElementById(targetId) : null;
-                                if (targetElem) {
-                                    window.scrollTo({ top: targetElem.offsetTop - 20, behavior: 'smooth' });
-                                    window.history.pushState(null, null, '#' + targetId);
-                                }
-                            });
-                        });
-                        
-                        // Auto-scroll to data-section or URL hash
-                        const scrollTarget = targetSection || (window.location.hash ? window.location.hash.substring(1) : null);
-                        if (scrollTarget) {
-                            setTimeout(() => {
-                                const el = document.getElementById(scrollTarget);
-                                if (el) {
-                                    window.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' });
-                                    window.history.pushState(null, null, '#' + scrollTarget);
-                                }
-                            }, 150);
-                        }
-                    })
-                    .catch(err => {
-                        wikiBody.innerHTML = `<div class="alert warning">Failed to load ${file}. <a href="https://github.com/tilas01/arch-guides-dynamic/tree/main/docs/${file}" target="_blank">View on GitHub</a>.</div>`;
-                    });
-            });
-        });
+    <div class="section" id="hardened-ssh">
+        <h2><span class="icon">🔒</span> Hardened SSH + OTP</h2>
+        <p>This module aggressively hardens the OpenSSH daemon by enforcing the strictest cryptographic standards.</p>
+        <ul>
+            <li>Disables Root Login entirely.</li>
+            <li>Disables Password Authentication entirely.</li>
+            <li>Enforces `Ed25519` keys only.</li>
+            <li>Enforces `chacha20-poly1305` and `aes256-gcm` ciphers.</li>
+            <li>Pairs with Libre-OTP to require both a private key file AND a time-based 2FA token to authenticate.</li>
+        </ul>
+    </div>
 
-        // Auto-load from URL params
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const page = urlParams.get('page');
-            
-            if (page) {
-                const link = document.querySelector(`a[data-file="${page}"]`);
-                if (link) { link.click(); return; }
-            }
-            
-            const hash = window.location.hash.replace('#', '');
-            if (hash) {
-                const link = document.getElementById('link-' + hash);
-                if (link) { link.click(); return; }
-            }
-        });
-    </script>
-    <script src="legal.js"></script>
-    <script src="tooltip.js"></script>
+    <div class="section" id="anti-evil-maid">
+        <h2><span class="icon">🕵️</span> Anti-Evil Maid (AEM)</h2>
+        <p>The "Evil Maid" attack occurs when an attacker gains brief physical access to your unattended machine and modifies the unencrypted `/boot` partition (e.g., injecting a keylogger into the kernel or initramfs) to steal your LUKS decryption password the next time you boot.</p>
+        <p>ARSS AEM creates decoy kernel images and verifies the cryptographic checksum of the real kernel on every boot. If the checksum mismatches, it alerts you via webhook and halts the boot sequence.</p>
+    </div>
 
-    <!-- Credits footer (parity with index.html) -->
-    <footer style="margin-top:3rem; padding-top:2rem; border-top:1px solid var(--bg-lighter); text-align:center;">
-        <!-- Author: tilas01 | Main Developer & Maintainer -->
-        <h3 style="color:var(--accent-purple); margin-bottom:1rem;">Credits &amp; Acknowledgements</h3>
-        <div class="credits-grid">
-            <!-- tilas01: main author -->
-            <div class="credit-card nav-tooltip"
-                 data-title="tilas01 — Main Author"
-                 data-desc="Main author, developer & maintainer of Arch Guides, the Arch Rusty Security Suite, and all project code. All scripts, website, security tooling, and documentation by tilas01."
-                 style="border-color:var(--accent-purple); cursor:pointer; order:-1;"
-                 onclick="window.open('https://github.com/tilas01','_blank')">
-                <img src="https://github.com/tilas01.png?size=80" alt="tilas01" style="border-color:var(--accent-purple); width:48px; height:48px;">
-                <div class="credit-info">
-                    <span class="credit-name" style="font-size:1.05rem; color:var(--accent-purple);">tilas01</span>
-                    <span class="credit-role">
-                        Main Author, Developer & Maintainer<br>
-                        <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple);font-size:0.75rem;" onclick="event.stopPropagation()">GitHub</a>
-                        · Arch Rusty Security Suite
-                    </span>
-                </div>
-            </div>
+    <div class="section" id="kloak">
+        <h2><span class="icon">🥷</span> Kloak Anonymizer</h2>
+        <p><code>kloak</code> (by vmonaco) is a keystroke anonymization tool. Modern behavioral biometrics can uniquely identify you simply by analyzing the millisecond delays between your keystrokes. Kloak intercepts raw `/dev/input` events and obfuscates the timing, making your typing pattern completely unidentifiable to web trackers and malware.</p>
+    </div>
 
-            <!-- dusklinux: Dusky OS -->
-            <div class="credit-card nav-tooltip"
-                 data-title="dusklinux — Dusky OS"
-                 data-desc="Creator of Dusky OS — a minimal Arch-based distro with automated Hyprland setup, custom dotfiles and theming. Inspiration for the Dusky desktop option and cheatsheet in this project."
-                 style="border-color:var(--accent-blue); cursor:pointer;"
-                 onclick="window.open('https://github.com/dusklinux/dusky','_blank')">
-                <img src="https://github.com/dusklinux.png?size=80" alt="dusklinux" style="border-color:var(--accent-blue); width:48px; height:48px;">
-                <div class="credit-info">
-                    <span class="credit-name" style="color:var(--accent-blue);">dusklinux</span>
-                    <span class="credit-role">
-                        Creator of Dusky OS 🎨 — Arch + Hyprland<br>
-                        <a href="https://github.com/dusklinux" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">GitHub</a>
-                        · <a href="https://github.com/dusklinux/dusky" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">dusky repo</a>
-                        · <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">YouTube guide</a>
-                    </span>
-                </div>
-            </div>
+    <div class="section" id="kernel-watcher">
+        <h2><span class="icon">👁️</span> Malicious Kernel Behavior Watcher (Semi-EDR)</h2>
+        <p>The ARSS Kernel Watcher acts as an asynchronous, highly-optimized semi-EDR (Endpoint Detection and Response) daemon written in Rust.</p>
+        <h3>Detection Capabilities:</h3>
+        <ul>
+            <li><strong>Infostealers:</strong> Immediately detects unauthorized reads to `~/.config/google-chrome/Default/Login Data`, `~/.mozilla/firefox`, and `~/.ssh/`.</li>
+            <li><strong>Software Keyloggers:</strong> Monitors `/dev/input/` for unauthorized attachment of raw input grabbers.</li>
+            <li><strong>Rootkits / Exploits:</strong> Watches `/etc/ld.so.preload` and `/var/spool/cron` to detect userland library hijacking and malicious persistence.</li>
+        </ul>
+        <p>Upon detection, the watcher sends an instant push notification to your phone via the Webhooks module.</p>
+    </div>
 
-            <!-- Integrated Tools: arch-secure-boot, kloak, Snapper -->
-            <div class="credit-card nav-tooltip"
-                 data-title="Integrated Security Tools"
-                 data-desc="Core external tools integrated into the generator: arch-secure-boot (UKI/Secure Boot) by max-baz, kloak (Keystroke Anonymizer) by vmonaco, and Snapper (BTRFS Rollbacks)."
-                 style="border-color:var(--accent-green);">
-                <div style="width:48px; height:48px; border:2px solid var(--accent-green); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:rgba(156,224,118,0.1);">🛠️</div>
-                <div class="credit-info">
-                    <span class="credit-name" style="color:var(--accent-green);">Integrated Tools</span>
-                    <span class="credit-role">
-                        <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">arch-secure-boot (max-baz)</a><br>
-                        <a href="https://github.com/vmonaco/kloak" target="_blank" style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">kloak (vmonaco)</a><br>
-                        <a href="https://github.com/openSUSE/snapper" target="_blank" style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">Snapper</a>
-                    </span>
-                </div>
-            </div>
+    <div class="section" id="scarecrow">
+        <h2><span class="icon">👻</span> Libre-Cyber-ScareCrow (Sandbox Spoofing)</h2>
+        <p>Advanced malware and infostealers often possess "anti-analysis" killswitches. If they detect they are inside a Virtual Machine (VM) or a security researcher's sandbox, they immediately self-terminate to avoid detection.</p>
+        <p>Libre-Cyber-ScareCrow weaponizes this behavior. It turns your bare-metal Arch Linux installation into a "fake" analysis environment by spawning lightweight, sleeping dummy processes (`VBoxService`, `vmtoolsd`, `wireshark`, `ida64`) and creating fake sandbox artifacts (`/tmp/cuckoo`).</p>
+        <p>When malware lands on your system and scans the process tree, it will be tricked into thinking it is inside a hostile security sandbox, triggering its own killswitch and destroying itself before executing its payload.</p>
+    </div>
 
-            <!-- AI Assistance -->
-            <div class="credit-card nav-tooltip"
-                 data-title="AI Assistance — Co-development"
-                 data-desc="Multiple AI models (Gemini, Claude) used during development. ALL output has been reviewed, tested, curated and authored by tilas01. No AI output ships unreviewed."
-                 style="border-color:var(--accent-cyan);">
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI" style="border-color:var(--accent-cyan); width:48px; height:48px;">
-                <div class="credit-info">
-                    <span class="credit-name" style="color:var(--accent-cyan);">AI Assistance</span>
-                    <span class="credit-role">Co-development (Gemini · Claude)<br>All output reviewed & curated by tilas01</span>
-                </div>
-            </div>
-        </div>
-        <p style="font-size:0.8rem; color:var(--fg-color); margin-top:1rem;">All security concepts from the open-source community. GPL-3.0 License.</p>
+    <footer style="text-align: center; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color); color: #8b949e;">
+        <p>🛠️ Arch Rusty Security Suite by tilas01. Licensed under MIT / GPL-3.0.</p>
     </footer>
+
 </body>
 </html>
-
