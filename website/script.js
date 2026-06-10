@@ -5,6 +5,24 @@
 
 // ---- Form Initialization & "No Selection" Injection ----
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // Ensure 'No Selection Provided' text is greyed out
+    document.querySelectorAll('#install-form select').forEach(sel => {
+        if (sel.value === "") sel.style.color = "var(--fg-dim, #888)";
+        
+        sel.addEventListener('change', function() {
+            this.style.color = ""; // Restore normal color
+            // Remove the empty option permanently once clicked
+            if (this.options[0] && this.options[0].value === "") {
+                this.options[0].remove();
+            }
+            // Remove red border and warning if they exist
+            this.style.border = "";
+            const warningSpan = this.parentElement.querySelector('.req-warning');
+            if (warningSpan) warningSpan.remove();
+        });
+    });
+
     document.querySelectorAll('select').forEach(select => {
         const defaultOption = document.createElement('option');
         defaultOption.value = "";
@@ -789,13 +807,12 @@ window.generateOutput = function(auto = false) {
             if (window.syncTooltipBtn) syncTooltipBtn(); // Re-bind tooltips
         }
 
-        // Show output page instead of generator
-        const genForm = document.getElementById('install-form');
+        // Ensure Live Preview is visible but do NOT hide generator
         const outputSec = document.getElementById('output-section');
-        if (genForm && outputSec) {
-            genForm.style.display = 'none';
+        if (outputSec) {
             outputSec.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll smoothly to Live Preview
+            outputSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 };
@@ -884,21 +901,41 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====================================================================
 document.getElementById('generate-btn').addEventListener('click', function(e) {
     e.preventDefault();
-    let missing = false;
+    let missingFields = [];
+    
     document.querySelectorAll('#install-form select').forEach(el => {
         if (!el.disabled && el.offsetParent !== null && el.value === "") {
-            missing = true;
+            // Get the human readable label name
+            const labelEl = el.parentElement.querySelector('label');
+            const fieldName = labelEl ? labelEl.innerText.replace(':', '') : 'Unknown Field';
+            missingFields.push(fieldName);
+            
+            // Apply visual alerts
             el.style.border = "2px solid var(--accent-red)";
-        } else {
-            el.style.border = "";
+            if (!el.parentElement.querySelector('.req-warning')) {
+                const warn = document.createElement('span');
+                warn.className = 'req-warning';
+                warn.style.color = 'var(--accent-red)';
+                warn.style.marginLeft = '10px';
+                warn.style.fontSize = '0.85rem';
+                warn.style.fontWeight = 'bold';
+                warn.innerText = '⚠️ Required!';
+                if(labelEl) labelEl.appendChild(warn);
+            }
         }
     });
-    if (missing) {
-        alert("Please complete all dropdown selections before generating the guide.");
+
+    if (missingFields.length > 0) {
+        let alertMsg = "Generation Failed! You have not filled out the following fields:\n";
+        missingFields.forEach(f => alertMsg += "- " + f + "\n");
+        alert(alertMsg);
+        
         const firstMissing = document.querySelector('#install-form select[style*="border"]');
         if (firstMissing) firstMissing.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
     }
+    
+    // Clear any previous global warnings or errors
     window.generateOutput(false);
 });
 
