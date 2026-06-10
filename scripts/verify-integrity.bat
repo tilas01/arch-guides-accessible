@@ -46,13 +46,32 @@ if exist "%ASC_FILE%" (
         echo Public key not found locally. Downloading official key from GitHub...
         curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/tilas01-public-key.asc" -o "%PUB_KEY%"
     )
+    set GPG_INSTALLED_BY_SCRIPT=0
+    where gpg >nul 2>nul
+    if %ERRORLEVEL% neq 0 (
+        echo [!] GPG not found. Auto-installing GnuPG via winget...
+        winget install GnuPG.GnuPG --silent --accept-package-agreements --accept-source-agreements
+        set GPG_INSTALLED_BY_SCRIPT=1
+        :: Add standard install path to temporary PATH just in case it doesn't refresh
+        set PATH=%PATH%;C:\Program Files (x86)\GnuPG\bin
+    )
+
     gpg --import "%PUB_KEY%" 2>NUL
     gpg --verify "%ASC_FILE%" "%BINARY%"
     if %ERRORLEVEL% neq 0 (
         echo [ERROR] GPG SIGNATURE VERIFICATION FAILED! Do not run this binary.
+        if "%GPG_INSTALLED_BY_SCRIPT%"=="1" (
+            echo Cleaning up GnuPG...
+            winget uninstall GnuPG.GnuPG --silent
+        )
         exit /b 1
     )
     echo [OK] GPG Signature matches successfully.
+
+    if "%GPG_INSTALLED_BY_SCRIPT%"=="1" (
+        echo [i] Auto-deleting GnuPG tool to maintain clean system...
+        winget uninstall GnuPG.GnuPG --silent
+    )
 ) else (
     echo.
     echo [2/2] Skipping GPG check ^(missing .asc file^).
