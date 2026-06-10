@@ -1,0 +1,15 @@
+[package]
+name = "kernel-watcher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+argon2 = "0.5.3"
+notify = "8.2.0"
+rand = "0.10.1"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+rpassword = "7.5.4"
+serde = "1.0.228"
+serde_json = "1.0.150"
+tokio = "1.52.3"
+zeroize = { version = "1.8.2", features = ["zeroize_derive"] }
