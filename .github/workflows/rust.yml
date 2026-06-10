@@ -30,13 +30,9 @@ jobs:
       # Check workspace can resolve and compile
       - name: Check workspace compiles
         run: |
+          set -o pipefail
           cd security-tools
-          cargo check --workspace 2>&1 | tee /tmp/cargo-check-output.txt || true
-          echo "EXIT_CODE=${PIPESTATUS[0]}" >> $GITHUB_ENV
-          if [ "${PIPESTATUS[0]}" != "0" ]; then
-            echo "::error::cargo check failed — see output above"
-            exit 1
-          fi
+          cargo check --workspace 2>&1 | tee /tmp/cargo-check-output.txt
         env:
           RUST_BACKTRACE: 1
 
@@ -50,13 +46,21 @@ jobs:
       # Build everything from workspace root
       - name: Build all workspace members (release)
         run: |
+          set -o pipefail
           cd security-tools
-          cargo build --release 2>&1
+          cargo build --release 2>&1 | tee /tmp/cargo-build-output.txt
           echo "=== All binaries ==="
           ls -la target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/arch-rusty-security-suite || echo "Some binaries missing"
           echo ""
           echo "=== SHA256 Hashes ==="
           sha256sum target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/arch-rusty-security-suite || true
+
+      - name: Upload build output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-build-output
+          path: /tmp/cargo-build-output.txt
 
       # Verify all hashes are reproducible (build twice, compare)
       - name: Reproducibility check
