@@ -74,11 +74,27 @@ pub fn start_watcher() {
     let mut watcher = RecommendedWatcher::new(tx, Config::default())
         .expect("Failed to create file watcher");
 
-    // Add sensitive paths to monitor
+    // Add sensitive paths to monitor for Infostealers, Keyloggers, and Exploits
     let sensitive_paths = vec![
+        // System Integrity & Rootkit/Exploit drops
         "/etc/shadow",
         "/etc/passwd",
-        // Additional paths would be dynamically configured per user
+        "/etc/ld.so.preload", // Common userland rootkit injection
+        "/boot",              // Kernel image tampering (Anti-Evil-Maid)
+        "/var/spool/cron",    // Cron persistence
+        
+        // Infostealer targets (Browsers, SSH, Crypto wallets)
+        // Note: In a real deployment, ~ would expand to the user's home dir.
+        // For system-wide daemon, we watch common locations.
+        "/home/*/.ssh",
+        "/home/*/.config/google-chrome/Default/Login Data",
+        "/home/*/.mozilla/firefox",
+        "/home/*/.aws/credentials",
+        "/home/*/.gnupg",
+        "/root/.ssh",
+        
+        // Software Keyloggers & Input tampers
+        "/dev/input",         // Unauthorized raw input access
     ];
 
     for path in sensitive_paths {
@@ -103,16 +119,35 @@ pub fn start_watcher() {
 
 fn handle_event(event: Event) {
     // In a full EDR, we would analyze the PID that caused the event via auditd or eBPF.
-    // For this semi-EDR file watcher, we just log suspicious file mutations.
-    if event.kind.is_modify() || event.kind.is_remove() {
-        let mut alert_msg = String::from("Arch Rusty Security Suite [ALERT]: Suspicious activity detected on monitored paths:\n");
-        println!("[ALERT] Suspicious activity detected on monitored paths:");
+    // For this semi-EDR file watcher, we analyze the path and event type to detect
+    // Infostealers, Exploits, and Rootkits.
+    if event.kind.is_modify() || event.kind.is_remove() || event.kind.is_create() || event.kind.is_access() {
+        let mut alert_msg = String::from("Arch Rusty Security Suite [ALERT]: Malicious Behavior Detected!\n\n");
+        let mut threat_detected = false;
+
         for path in event.paths {
-            let path_str = format!("  -> {:?}\n", path);
-            println!("{}", path_str.trim());
-            alert_msg.push_str(&path_str);
+            let path_str = path.to_string_lossy().to_string();
+            
+            // Heuristic Categorization
+            if path_str.contains(".ssh") || path_str.contains("Login Data") || path_str.contains(".aws") {
+                alert_msg.push_str(&format!("[INFOSTEALER WARNING] Sensitive data accessed:\n  -> {}\n", path_str));
+                threat_detected = true;
+            } else if path_str.contains("ld.so.preload") || path_str.contains("cron") || path_str.contains("/boot") {
+                alert_msg.push_str(&format!("[EXPLOIT/ROOTKIT WARNING] System persistence/tampering detected:\n  -> {}\n", path_str));
+                threat_detected = true;
+            } else if path_str.contains("/dev/input") {
+                alert_msg.push_str(&format!("[KEYLOGGER WARNING] Unauthorized raw input device manipulation:\n  -> {}\n", path_str));
+                threat_detected = true;
+            } else {
+                alert_msg.push_str(&format!("[SUSPICIOUS] File altered:\n  -> {}\n", path_str));
+                threat_detected = true;
+            }
         }
-        send_ntfy_alert(&alert_msg);
+
+        if threat_detected {
+            println!("{}", alert_msg.trim());
+            send_ntfy_alert(&alert_msg);
+        }
     }
 }
 
