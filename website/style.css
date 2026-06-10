@@ -33,37 +33,42 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 
 .banner {
     width: 100%;
-    max-width: 550px;
-    margin: 0 auto 1rem;
+    max-width: 420px;
+    margin: 0 auto 0.6rem;
     display: block;
     transition: transform 0.2s, filter 0.2s;
     background: transparent;
 }
-.banner:hover { transform: scale(1.02); filter: brightness(1.1); }
+.banner:hover { transform: scale(1.02); filter: brightness(1.08); }
 .banner-link { display: block; text-align: center; text-decoration: none; }
 
 /* ─── Header Controls (history + tooltip toggle) ─── */
 #header-controls {
-    position: absolute;
-    right: 15px;
-    top: 15px;
     display: flex;
-    gap: 6px;
-    z-index: 1000;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 0.5rem 0;
+    flex-wrap: wrap;
 }
 #header-controls button {
-    background: none;
-    border: none;
-    font-size: 1.6rem;
+    background: var(--bg-darker);
+    border: 1px solid var(--bg-lighter);
+    font-size: 0.85rem;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
-    transition: background 0.2s, transform 0.1s;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+    color: var(--fg-color);
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
-#header-controls button:hover { background: rgba(122, 162, 247, 0.15); transform: scale(1.1); }
-#history-btn { color: var(--accent-purple); }
-#toggle-tooltips-btn { color: var(--accent-blue); }
-#toggle-tooltips-btn.disabled { color: var(--accent-red); }
+#header-controls button:hover { background: var(--bg-lighter); transform: scale(1.03); }
+#history-btn { border-color: var(--accent-purple); color: var(--accent-purple); }
+#history-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+#toggle-tooltips-btn { border-color: var(--accent-blue); color: var(--accent-blue); }
+#toggle-tooltips-btn.disabled { border-color: var(--accent-red); color: var(--accent-red); }
 
 /* ─── Nav ─── */
 .main-nav {
