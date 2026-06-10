@@ -333,7 +333,7 @@
                             <label style="margin-bottom:0.6rem;">🦀 ARSS Security Modules:</label>
                             <div class="app-grid" id="arss-tools-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:0.6rem;">
                                 <!-- Libre OTP -->
-                                <label class="app-card nav-tooltip" data-title="Libre OTP — 2FA Authentication" data-desc="TOTP-based two-factor authentication for Linux login, boot, and SSH via PAM integration. Supports SHA1/256/512 hashing. Compatible with Google Authenticator, Aegis, and other TOTP apps. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Libre OTP — 2FA Authentication" data-desc="TOTP-based two-factor authentication for Linux login, boot, and SSH via PAM integration. Supports SHA1/256/512 hashing. Compatible with Google Authenticator, Aegis, and other TOTP apps. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="libre-otp" id="arss-libre-otp" style="accent-color:var(--accent-purple); width:18px; height:18px;">
                                     <span style="font-size:1.3rem;">🔐</span>
                                     <div>
@@ -342,7 +342,7 @@
                                     </div>
                                 </label>
                                 <!-- Input Guard -->
-                                <label class="app-card nav-tooltip" data-title="Input Guard — Anti-Ducky" data-desc="USB HID sandboxing and Rubber Ducky detection. Approves current input devices at install, blocks new unknown USB HID devices, detects device ID spoofing and inhuman typing speeds. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#input-guard', '_blank'); return false;" data-title="Input Guard — Anti-Ducky" data-desc="USB HID sandboxing and Rubber Ducky detection. Approves current input devices at install, blocks new unknown USB HID devices, detects device ID spoofing and inhuman typing speeds. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="anti-ducky" id="arss-anti-ducky" style="accent-color:var(--accent-purple); width:18px; height:18px;">
                                     <span style="font-size:1.3rem;">🛡️</span>
                                     <div>
@@ -351,7 +351,7 @@
                                     </div>
                                 </label>
                                 <!-- ISO Verifier -->
-                                <label class="app-card nav-tooltip" data-title="Arch ISO Verification" data-desc="Verify Arch Linux ISO integrity via SHA-256 hash comparison against official Arch mirrors. Recommended as the first step before any install when security tools are enabled. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#iso-verifier', '_blank'); return false;" data-title="Arch ISO Verification" data-desc="Verify Arch Linux ISO integrity via SHA-256 hash comparison against official Arch mirrors. Recommended as the first step before any install when security tools are enabled. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="iso-verifier" id="arss-iso-verifier" style="accent-color:var(--accent-purple); width:18px; height:18px;">
                                     <span style="font-size:1.3rem;">🔍</span>
                                     <div>
@@ -360,7 +360,7 @@
                                     </div>
                                 </label>
                                 <!-- Panic Password -->
-                                <label class="app-card nav-tooltip" data-title="Panic Password" data-desc="Duress-activated emergency disk wipe. If compelled to decrypt under duress, entering the panic password twice triggers a DoD 3-pass overwrite of the LUKS partition. Irreversible. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#panic-password', '_blank'); return false;" data-title="Panic Password" data-desc="Duress-activated emergency disk wipe. If compelled to decrypt under duress, entering the panic password twice triggers a DoD 3-pass overwrite of the LUKS partition. Irreversible. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="panic-password" id="arss-panic-password" style="accent-color:var(--accent-red); width:18px; height:18px;">
                                     <span style="font-size:1.3rem;">☠️</span>
                                     <div>
@@ -369,7 +369,7 @@
                                     </div>
                                 </label>
                                 <!-- Notification Webhooks -->
-                                <label class="app-card nav-tooltip" data-title="Notification Webhooks" data-desc="Real-time push notifications for security events. Recommended: ntfy.sh (free, no self-hosting). Also supports Bark, Discord, Telegram, Slack, and custom webhook URLs. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#webhooks', '_blank'); return false;" data-title="Notification Webhooks" data-desc="Real-time push notifications for security events. Recommended: ntfy.sh (free, no self-hosting). Also supports Bark, Discord, Telegram, Slack, and custom webhook URLs. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="webhooks" id="arss-webhooks" style="accent-color:var(--accent-cyan); width:18px; height:18px;">
                                     <span style="font-size:1.3rem;">📱</span>
                                     <div>
@@ -378,7 +378,7 @@
                                     </div>
                                 </label>
                                 <!-- Hardened SSH -->
-                                <label class="app-card nav-tooltip" data-title="ARSS Hardened SSH + OTP" data-desc="Strict SSH: Ed25519 only, ChaCha20-Poly1305, no root login, no password auth. Combined with OTP 2FA via PAM. Requires Libre OTP for full effect. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#hardened-ssh', '_blank'); return false;" data-title="ARSS Hardened SSH + OTP" data-desc="Strict SSH: Ed25519 only, ChaCha20-Poly1305, no root login, no password auth. Combined with OTP 2FA via PAM. Requires Libre OTP for full effect. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="hardened-ssh" id="arss-hardened-ssh" style="accent-color:var(--accent-blue); width:18px; height:18px;">
                                     <span style="font-size:1.3rem;">🔒</span>
                                     <div>
@@ -387,7 +387,7 @@
                                     </div>
                                 </label>
                                 <!-- Anti-Evil Maid -->
-                                <label class="app-card nav-tooltip" data-title="Anti-Evil Maid Decoys" data-desc="Detects physical boot-level tampering. Creates decoy kernel entries and backup EFI images. Verifies checksums on each boot and alerts via webhook if tampered. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#anti-evil-maid', '_blank'); return false;" data-title="Anti-Evil Maid Decoys" data-desc="Detects physical boot-level tampering. Creates decoy kernel entries and backup EFI images. Verifies checksums on each boot and alerts via webhook if tampered. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="evil-maid" id="arss-evil-maid" style="accent-color:var(--accent-orange, #ff9e64); width:18px; height:18px;">
                                     <span style="font-size:1.3rem;">🕵️</span>
                                     <div>
@@ -396,12 +396,30 @@
                                     </div>
                                 </label>
                                 <!-- Kloak -->
-                                <label class="app-card nav-tooltip" data-title="Keystroke Anonymisation — kloak" data-desc="kloak by vmonaco randomizes keystroke timing to prevent behavioral biometric profiling. Makes your typing pattern unidentifiable. Recommended for high-privacy setups. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#kloak', '_blank'); return false;" data-title="Keystroke Anonymisation — kloak" data-desc="kloak by vmonaco randomizes keystroke timing to prevent behavioral biometric profiling. Makes your typing pattern unidentifiable. Recommended for high-privacy setups. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="kloak" id="arss-kloak" style="accent-color:var(--accent-green); width:18px; height:18px;">
-                                    <span style="font-size:1.3rem;">⌨️</span>
+                                    <span style="font-size:1.3rem;">🥷</span>
                                     <div>
-                                        <strong style="color:var(--accent-green); font-size:0.88rem;">Kloak</strong>
-                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Keystroke &amp; mouse anonymiser</div>
+                                        <strong style="color:var(--accent-green); font-size:0.88rem;">Kloak Anonymizer</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Randomizes keystroke timing</div>
+                                    </div>
+                                </label>
+                                <!-- Kernel Watcher -->
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#kernel-watcher', '_blank'); return false;" data-title="Kernel Watcher (Semi-EDR)" data-desc="Real-time async file monitoring. Detects infostealers accessing browser/SSH data, software keyloggers grabbing /dev/input, and userland rootkit/exploit persistence. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="kernel-watcher" id="arss-kernel-watcher" style="accent-color:var(--accent-red); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">👁️</span>
+                                    <div>
+                                        <strong style="color:var(--accent-red); font-size:0.88rem;">Kernel Watcher</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Real-time anti-malware EDR</div>
+                                    </div>
+                                </label>
+                                <!-- ScareCrow -->
+                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#scarecrow', '_blank'); return false;" data-title="Libre-Cyber-ScareCrow" data-desc="Spoofs a fake Virtual Machine and analysis sandbox to trick advanced malware into self-terminating. Creates dummy VM processes (VBoxService) and artifact files. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
+                                    <input type="checkbox" name="arss_tools" value="scarecrow" id="arss-scarecrow" style="accent-color:var(--accent-cyan); width:18px; height:18px;">
+                                    <span style="font-size:1.3rem;">👻</span>
+                                    <div>
+                                        <strong style="color:var(--accent-cyan); font-size:0.88rem;">Cyber-ScareCrow</strong>
+                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Fake VM Sandbox environment</div>
                                     </div>
                                 </label>
                             </div>
@@ -549,7 +567,11 @@
                         </div>
                     </div>
 
-                    <div id="global-warnings" style="margin-bottom: 0.8rem;"></div>
+                    <div id="global-warnings" style="margin-bottom: 0.8rem;">
+                        <div class="alert warning" style="border-left-color: var(--accent-purple);">
+                            <strong>📦 Security Notice:</strong> All `arch-rusty-security-suite` binaries downloaded from GitHub Releases are signed and hashed. You MUST use the provided `verify-integrity.sh` (Linux) or `verify-integrity.bat` (Windows) scripts to verify the `.sig`/`.asc` and `.sha256` files before execution.
+                        </div>
+                    </div>
                     <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="margin-top: 0.8rem;">⚙️ Generate Custom Guide</button>
                 </form>
 

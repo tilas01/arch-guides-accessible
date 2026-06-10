@@ -506,11 +506,15 @@ window.generateOutput = function(auto = false) {
             if (arss_tools.includes("kloak")) {
                 o += `\n# Installing Kloak (Keystroke Anonymisation)\npacman -S --noconfirm kloak\nsystemctl enable kloak\n`;
             }
-        }
-                o += `systemctl enable sshd.service\n`;
+            if (arss_tools.includes("kernel-watcher")) {
+                o += `\n# Configuring Kernel Watcher (Semi-EDR)\narch-rusty-security-suite kernel-watcher --setup\n`;
+                o += `cat << 'EOF' > /etc/systemd/system/arss-kernel-watcher.service\n[Unit]\nDescription=ARSS Kernel Watcher EDR Daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/arch-rusty-security-suite kernel-watcher --start\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nEOF\n`;
+                o += `systemctl enable arss-kernel-watcher.service\n`;
             }
-            if (fakeEvilMaid === "yes") {
-                o += `mkdir -p /boot/fake_efi\ncp /boot/vmlinuz-linux-lts /boot/fake_efi/vmlinuz-linux 2>/dev/null || true\n`;
+            if (arss_tools.includes("scarecrow")) {
+                o += `\n# Configuring Libre-Cyber-ScareCrow (Sandbox Spoofing)\n`;
+                o += `cat << 'EOF' > /etc/systemd/system/arss-scarecrow.service\n[Unit]\nDescription=Libre-Cyber-ScareCrow Sandbox Spoofing\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/arch-rusty-security-suite scarecrow\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nEOF\n`;
+                o += `systemctl enable arss-scarecrow.service\n`;
             }
         }
 
@@ -543,7 +547,19 @@ window.generateOutput = function(auto = false) {
         if (auto_updates === "yes") {
             if (!cmdOnly) o += `\`\`\`\n\n## 10. Auto Updates\n\`\`\`bash\n`;
             else o += `\n# 10. Auto Updates\n`;
-            o += `systemctl enable cronie\ncat << 'CRON_SCRIPT' > /usr/local/bin/auto-update.sh\n#!/bin/bash\npacman -Syu --noconfirm >> /var/log/auto-update.log 2>&1\nCRON_SCRIPT\nchmod +x /usr/local/bin/auto-update.sh\n(crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/auto-update.sh") | crontab -\n`;
+            o += `systemctl enable cronie\ncat << 'CRON_SCRIPT' > /usr/local/bin/auto-update.sh\n#!/bin/bash\n`;
+            o += `echo "[$(date)] Starting full system auto-update..." >> /var/log/auto-update.log\n`;
+            o += `pacman -Syu --noconfirm >> /var/log/auto-update.log 2>&1\n`;
+            o += `if id "builder" >/dev/null 2>&1 && command -v paru >/dev/null 2>&1; then\n`;
+            o += `  su - builder -c "paru -Sua --noconfirm" >> /var/log/auto-update.log 2>&1\n`;
+            o += `fi\n`;
+            o += `echo "[$(date)] System update complete." >> /var/log/auto-update.log\n`;
+            o += `# If system is inactive (0 users logged in), reboot to apply kernel/systemd updates\n`;
+            o += `if [ "$(who | wc -l)" -eq 0 ]; then\n`;
+            o += `  echo "[$(date)] System inactive. Rebooting to apply updates..." >> /var/log/auto-update.log\n`;
+            o += `  reboot\n`;
+            o += `fi\n`;
+            o += `CRON_SCRIPT\nchmod +x /usr/local/bin/auto-update.sh\n(crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/auto-update.sh") | crontab -\n`;
         }
 
         if (cmdOnly) {
