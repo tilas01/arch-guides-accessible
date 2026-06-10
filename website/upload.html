@@ -11,14 +11,21 @@
 <body>
 
     <header>
-        <a href="https://github.com/tilas01/arch-guides-dynamic" title="View Source on GitHub" target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
+        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub. Created and maintained by tilas01." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
         <h1>Upload & View Guide</h1>
-        <p>View your previously downloaded markdown guides and extract automated installers.</p>
-        <nav style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <a href="index.html" class="nav-link" title="Dynamic Interactive Setup Generator">Generator</a> | 
-            <a href="wiki.html" class="nav-link" title="Full Arch Linux Wiki Documentation">Wiki / Documentation</a> | 
-            <a href="upload.html" class="nav-link" title="Upload previously generated configurations">Upload Guide</a> | 
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link" title="Project Repository">Repository</a>
+        <p>Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.</p>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">⚙️ Generator</a>
+            <span class="nav-sep">|</span>
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="Full Arch Linux documentation with same parity as the generator. Every generator option is explained so you can manually configure your system.">📖 Wiki / Documentation</a>
+            <span class="nav-sep">|</span>
+            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload" data-desc="You are here. Upload previously generated .sh and/or .md configs to restore, view, and edit them.">📤 Upload</a>
+            <span class="nav-sep">|</span>
+            <a href="wiki.html#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
+            <span class="nav-sep">|</span>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes. Optional GPG verification.">📦 Releases</a>
+            <span class="nav-sep">|</span>
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01.">🔗 Repository</a>
         </nav>
     </header>
 
@@ -95,5 +102,6 @@
             }
         });
     </script>
+    <script src="tooltip.js"></script>
 </body>
 </html>

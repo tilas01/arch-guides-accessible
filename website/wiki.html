@@ -50,18 +50,25 @@
 <body>
 
     <header>
-        <a href="https://github.com/tilas01/arch-guides-dynamic" title="View Source on GitHub" target="_blank" style="text-decoration: none;">
-            <div class="banner" style="font-size: 2rem; font-weight: bold; color: var(--accent-purple); padding: 1.2rem; border: 2px dashed var(--accent-blue); display: inline-block; cursor: pointer; margin-bottom: 1rem; border-radius: 12px; background-color: var(--bg-darker); text-transform: uppercase; letter-spacing: 2px;">
+        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub. Created and maintained by tilas01." target="_blank" style="text-decoration: none;">
+            <div class="banner" style="font-size: 1.6rem; font-weight: bold; color: var(--accent-purple); padding: 0.8rem 1.5rem; border: 2px dashed var(--accent-blue); display: inline-block; cursor: pointer; margin-bottom: 0.8rem; border-radius: 12px; background-color: var(--bg-darker); text-transform: uppercase; letter-spacing: 2px; max-width: 700px; width: 100%;">
                 Arch Guides Dynamic
             </div>
         </a>
         <h1>Arch Guides | Full Static Wiki</h1>
-        <p>Comprehensive documentation, command reference, and maintenance guides.</p>
-        <nav style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <a href="index.html" class="nav-link" title="Dynamic Interactive Setup Generator">Generator</a> | 
-            <a href="wiki.html" class="nav-link" title="Full Arch Linux Wiki Documentation">Wiki / Documentation</a> | 
-            <a href="upload.html" class="nav-link" title="Upload previously generated configurations">Upload Guide</a> | 
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link" title="Project Repository">Repository</a>
+        <p>Comprehensive documentation &mdash; same parity as the generator. Follow manually or use the script generator.</p>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">&#9881;&#65039; Generator</a>
+            <span class="nav-sep">|</span>
+            <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="You are here. Full documentation with same parity as the generator. Every option is explained so you can manually configure your system.">&#128214; Wiki / Documentation</a>
+            <span class="nav-sep">|</span>
+            <a href="upload.html" class="nav-link nav-tooltip" data-title="Upload" data-desc="Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.">&#128228; Upload</a>
+            <span class="nav-sep">|</span>
+            <a href="#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">&#128203; Cheatsheets</a>
+            <span class="nav-sep">|</span>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes. Optional GPG verification. See Wiki for how to build from source.">&#128230; Releases</a>
+            <span class="nav-sep">|</span>
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01. The README contains the same information as this website.">&#128279; Repository</a>
         </nav>
     </header>
 
@@ -109,7 +116,24 @@
                     <li><a data-file="helpful-commands.md" id="link-advanced-security-tools">📜 8. Commands & Cheatsheets</a></li>
                     <li><a data-file="dusky-cheatsheet.md">🎨 9. Dusky OS Cheatsheet</a></li>
                     <li><a data-file="xorg-vs-wayland.md">🖥️ 10. Xorg vs Wayland</a></li>
-                    <li><a data-file="10-generator-selections-and-dusky.md">⚙️ 11. Generator Selections</a></li>
+                    <li><a data-file="10-generator-selections-and-dusky.md">⚙️ 11. All Generator Selections Explained</a></li>
+                    <li id="cheatsheets" style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📋 Cheatsheets</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a data-file="helpful-commands.md">🐧 Arch Linux Commands</a></li>
+                            <li><a data-file="dusky-cheatsheet.md">🎨 Dusky OS Shortcuts</a></li>
+                            <li><a data-file="helpful-commands.md" data-section="dwm-shortcuts">⌨️ DWM Shortcuts</a></li>
+                            <li><a data-file="helpful-commands.md" data-section="gnome-shortcuts">🖥️ GNOME Shortcuts</a></li>
+                            <li><a data-file="helpful-commands.md" data-section="kde-shortcuts">💎 KDE Plasma Shortcuts</a></li>
+                            <li><a data-file="xorg-vs-wayland.md">🖥️ Xorg vs Wayland</a></li>
+                        </ul>
+                    </li>
+                    <li style="margin-top: 0.8rem; border-top: 1px solid var(--bg-lighter); padding-top: 0.5rem;"><strong>📦 Releases & Integrity</strong>
+                        <ul style="padding-left: 15px; font-size: 0.9em; margin-top: 5px;">
+                            <li><a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank">⬇️ Download Latest Release</a></li>
+                            <li><a data-file="10-generator-selections-and-dusky.md" data-section="integrity-verification">🔐 Verify Integrity (SHA256 + GPG)</a></li>
+                            <li><a data-file="10-generator-selections-and-dusky.md" data-section="build-from-source">🛠️ Build From Source</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </aside>
             <section class="wiki-content">
@@ -117,7 +141,11 @@
                     <h2>Welcome to the Arch Guides Wiki</h2>
                     <p>Select a document from the left navigation to begin reading.</p>
                     <p>This wiki provides comprehensive, modular documentation covering every aspect of the Arch Linux installation process — from pre-installation to advanced security hardening with the <strong>Arch Rusty Security Suite by tilas01</strong>.</p>
-                    <p>The auto script generator is optional. Follow the manual guides if you prefer native tools and want to minimize external downloads.</p>
+                    <h3>📖 Manual vs Generator</h3>
+                    <p>The <a href="index.html">auto script generator</a> is optional. This wiki has <strong>full parity</strong> with every generator selection — every dropdown option is explained in detail so you can manually configure your system using only native tools and this documentation.</p>
+                    <p>See <a href="#" onclick="loadDoc('10-generator-selections-and-dusky.md'); return false;">All Generator Selections Explained</a> for a complete reference of every option and recommended configuration.</p>
+                    <h3>📦 Releases & Integrity</h3>
+                    <p>All security tools are available as <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank">reproducible releases</a> with SHA256 hashes and GPG signatures. You can verify integrity manually or use the included verification tool. See the <a href="#" onclick="loadDoc('10-generator-selections-and-dusky.md'); return false;">wiki section on integrity verification</a> for full instructions.</p>
                 </div>
             </section>
         </div>
@@ -202,5 +230,6 @@
             }
         });
     </script>
+    <script src="tooltip.js"></script>
 </body>
 </html>

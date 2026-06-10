@@ -2,57 +2,102 @@ name: Security Tools CI & Release
 
 on:
   push:
-    branches: ["main"]
+    branches: ["dev", "main"]
   pull_request:
     branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
-  BINARY_NAME: arch-rusty-security-suite
-  RELEASE_BINARY: arch-rusty-security-suite-linux-x86_64
 
 jobs:
-  # ── Job 1: Build, Lint & Test the unified security suite ─────────────────────
+  # ── Job 1: Build ALL tools individually + unified suite ─────────────────────
   build:
     name: Build & Lint
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust (Stable, pinned)
+      - name: Install Rust (Stable)
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           components: rustfmt, clippy
 
-      - name: Install Linux evdev headers
-        run: sudo apt-get install -y libevdev-dev
+      - name: Install evdev headers
+        run: sudo apt-get update && sudo apt-get install -y libevdev-dev
 
-      - name: Build unified binary (release)
+      # Check workspace can resolve and compile
+      - name: Check workspace compiles
+        run: |
+          set -o pipefail
+          cd security-tools
+          cargo check --workspace 2>&1 | tee /tmp/cargo-check-output.txt
+        env:
+          RUST_BACKTRACE: 1
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-check-output
+          path: /tmp/cargo-check-output.txt
+
+      # Build everything from workspace root
+      - name: Build all workspace members (release)
+        run: |
+          set -o pipefail
+          cd security-tools
+          cargo build --release 2>&1 | tee /tmp/cargo-build-output.txt
+          echo "=== All binaries ==="
+          ls -la target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/arch-rusty-security-suite || echo "Some binaries missing"
+          echo ""
+          echo "=== SHA256 Hashes ==="
+          sha256sum target/release/anti-ducky target/release/libre-otp target/release/arch-iso-verifier target/release/arch-rusty-security-suite || true
+
+      - name: Upload build output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-build-output
+          path: /tmp/cargo-build-output.txt
+
+      # Verify all hashes are reproducible (build twice, compare)
+      - name: Reproducibility check
         run: |
           cd security-tools
-          cargo build --release --locked
-          sha256sum target/release/${{ env.BINARY_NAME }} > target/release/${{ env.BINARY_NAME }}.sha256
-          echo "SHA256:"
-          cat target/release/${{ env.BINARY_NAME }}.sha256
+          # Save first build hashes
+          sha256sum target/release/arch-rusty-security-suite > /tmp/hash1_suite.txt
+          
+          # Clean and rebuild
+          cargo clean
+          cargo build --release
+          
+          # Compare suite hash
+          sha256sum target/release/arch-rusty-security-suite > /tmp/hash2_suite.txt
+          
+          echo "=== Reproducibility Results ==="
+          echo "arch-rusty-security-suite:"
+          diff <(cut -d' ' -f1 /tmp/hash1_suite.txt) <(cut -d' ' -f1 /tmp/hash2_suite.txt) && echo "  ✓ REPRODUCIBLE" || echo "  ✗ NOT REPRODUCIBLE"
 
-      - name: Clippy
+      - name: Clippy (workspace)
         run: cd security-tools && cargo clippy --workspace -- -D warnings
 
       - name: Format check
         run: cd security-tools && cargo fmt --all -- --check
 
-      - name: Upload binary artifact
+      # Upload all artifacts
+      - name: Upload individual + suite artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RELEASE_BINARY }}
+          name: security-tools-all
           path: |
-            security-tools/target/release/${{ env.BINARY_NAME }}
-            security-tools/target/release/${{ env.BINARY_NAME }}.sha256
+            security-tools/target/release/anti-ducky
+            security-tools/target/release/libre-otp
+            security-tools/target/release/arch-iso-verifier
+            security-tools/target/release/arch-rusty-security-suite
 
-  # ── Job 2: Release to GitHub Releases (only on push to main) ────────────────
+  # ── Job 2: Release (only on push to main, after CI passes) ──────────────────
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
@@ -69,33 +114,49 @@ jobs:
       - name: Install Rust (Stable)
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install Linux evdev headers
-        run: sudo apt-get install -y libevdev-dev
+      - name: Install evdev headers
+        run: sudo apt-get update && sudo apt-get install -y libevdev-dev
 
-      - name: Build release binary
+      - name: Build all release binaries
         run: |
           cd security-tools
-          cargo build --release --locked
-          cp target/release/${{ env.BINARY_NAME }} ../${{ env.RELEASE_BINARY }}
-          cd ..
-          sha256sum ${{ env.RELEASE_BINARY }} > ${{ env.RELEASE_BINARY }}.sha256
+          cargo build --release
+          
+          # Copy all binaries to release staging
+          mkdir -p ../release-staging
+          cp target/release/anti-ducky ../release-staging/anti-ducky-linux-x86_64
+          cp target/release/libre-otp ../release-staging/libre-otp-linux-x86_64
+          cp target/release/arch-iso-verifier ../release-staging/arch-iso-verifier-linux-x86_64
+          cp target/release/arch-rusty-security-suite ../release-staging/arch-rusty-security-suite-linux-x86_64
+          
+          # Generate SHA256 for each
+          cd ../release-staging
+          for f in *-linux-x86_64; do
+            sha256sum "$f" > "${f}.sha256"
+          done
+          
+          echo "=== Release Artifacts ==="
+          ls -la
+          echo ""
+          echo "=== Hashes ==="
+          cat *.sha256
 
-      - name: GPG Sign Binary
+      - name: GPG Sign All Binaries
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
+          cd release-staging
           if [ -n "$GPG_PRIVATE_KEY" ]; then
             echo "$GPG_PRIVATE_KEY" | gpg --batch --import
-            gpg --batch --pinentry-mode loopback \
-                --passphrase "$GPG_PASSPHRASE" \
-                --detach-sign --armor "${{ env.RELEASE_BINARY }}"
-            gpg --batch --pinentry-mode loopback \
-                --passphrase "$GPG_PASSPHRASE" \
-                --detach-sign --armor "${{ env.RELEASE_BINARY }}.sha256"
+            for f in *-linux-x86_64 *.sha256; do
+              gpg --batch --pinentry-mode loopback \
+                  --passphrase "$GPG_PASSPHRASE" \
+                  --detach-sign --armor "$f"
+            done
             echo "GPG_SIGNED=true" >> $GITHUB_ENV
           else
-            echo "GPG_PRIVATE_KEY secret not set — skipping GPG signing"
+            echo "No GPG key — skipping signing"
             echo "GPG_SIGNED=false" >> $GITHUB_ENV
           fi
 
@@ -114,75 +175,70 @@ jobs:
           body: |
             ## Arch Rusty Security Suite by tilas01
 
-            A single unified binary containing all security tools for Arch Linux.
+            ### Downloads
+            You can download the **full unified suite** (recommended) or **individual tools**:
 
-            ### Subcommands
-            | Command | Description |
-            |---------|-------------|
-            | `arch-rusty-security-suite otp` | Native Rust TOTP/OTP 2FA for PAM (Boot/Login/SSH) |
-            | `arch-rusty-security-suite input-guard` | USB HID Input Guard — RubberDucky/BadUSB detector & sandbox |
-            | `arch-rusty-security-suite verify-iso` | Verify Arch Linux ISO integrity against SHA-256 checksums |
-            | `arch-rusty-security-suite verify-release` | Verify a downloaded release binary against its SHA-256 hash |
+            | Binary | Description | Use |
+            |--------|-------------|-----|
+            | `arch-rusty-security-suite-linux-x86_64` | **Full Suite (Recommended)** — all tools in one binary | `./arch-rusty-security-suite otp`, `input-guard`, `verify-iso`, `verify-release` |
+            | `anti-ducky-linux-x86_64` | Input Guard standalone | USB HID sandbox & RubberDucky detector |
+            | `libre-otp-linux-x86_64` | Libre OTP standalone | TOTP/OTP 2FA for PAM |
+            | `arch-iso-verifier-linux-x86_64` | ISO Verifier standalone | Verify Arch ISO integrity |
 
-            ### Quick Start
+            Each binary has a `.sha256` file and (if GPG key configured) an `.asc` GPG signature.
+
+            ### Quick Setup (Full Suite — Recommended)
             ```bash
+            # Download
+            curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/${{ steps.version.outputs.version }}/arch-rusty-security-suite-linux-x86_64"
+            curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/${{ steps.version.outputs.version }}/arch-rusty-security-suite-linux-x86_64.sha256"
+
+            # Verify integrity
+            sha256sum -c arch-rusty-security-suite-linux-x86_64.sha256
+
+            # Install
             chmod +x arch-rusty-security-suite-linux-x86_64
-            ./arch-rusty-security-suite-linux-x86_64 --help
+            sudo cp arch-rusty-security-suite-linux-x86_64 /usr/local/bin/arch-rusty-security-suite
+
+            # Setup all services
+            arch-rusty-security-suite otp --setup
+            arch-rusty-security-suite input-guard --init
             ```
 
-            ---
+            ### Individual Tool Download
+            ```bash
+            # Example: just anti-ducky
+            curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/${{ steps.version.outputs.version }}/anti-ducky-linux-x86_64"
+            curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/${{ steps.version.outputs.version }}/anti-ducky-linux-x86_64.sha256"
+            sha256sum -c anti-ducky-linux-x86_64.sha256
+            chmod +x anti-ducky-linux-x86_64
+            sudo cp anti-ducky-linux-x86_64 /usr/local/bin/anti-ducky
+            ```
+
+            ### Auto Deploy (Recommended)
+            Download and review, then run:
+            ```bash
+            curl -LO https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/deploy-security-suite.sh
+            less deploy-security-suite.sh  # review first!
+            sudo bash deploy-security-suite.sh
+            ```
 
             ### Integrity Verification
-
-            **1. SHA-256 Checksum (quick):**
-            ```bash
-            sha256sum -c arch-rusty-security-suite-linux-x86_64.sha256
-            ```
-
-            **2. Manual SHA-256 check:**
-            ```bash
-            sha256sum arch-rusty-security-suite-linux-x86_64
-            # Compare output to contents of arch-rusty-security-suite-linux-x86_64.sha256
-            ```
-
-            **3. Self-verify using the suite itself:**
-            ```bash
-            ./arch-rusty-security-suite-linux-x86_64 verify-release \
-                arch-rusty-security-suite-linux-x86_64 \
-                arch-rusty-security-suite-linux-x86_64.sha256
-            ```
-
-            **4. GPG Signature Verification (if signed):**
-            ```bash
-            # Import the public key (get fingerprint from README)
-            gpg --recv-keys <KEY_ID>
-            # Verify binary signature
-            gpg --verify arch-rusty-security-suite-linux-x86_64.asc \
-                         arch-rusty-security-suite-linux-x86_64
-            # Verify checksum file signature
-            gpg --verify arch-rusty-security-suite-linux-x86_64.sha256.asc \
-                         arch-rusty-security-suite-linux-x86_64.sha256
-            ```
-
-            ### Reproducible Build
-            Clone the repo and build yourself to verify the binary matches:
+            **SHA-256:** `sha256sum -c <binary>.sha256`
+            **GPG:** `gpg --verify <binary>.asc <binary>`
+            **Reproducible Build:**
             ```bash
             git clone https://github.com/tilas01/arch-guides-dynamic.git
             cd arch-guides-dynamic/security-tools
             cargo build --release --locked
             sha256sum target/release/arch-rusty-security-suite
-            # Must match the hash in arch-rusty-security-suite-linux-x86_64.sha256
+            # Must match arch-rusty-security-suite-linux-x86_64.sha256
             ```
-
-            Built with Rust `stable` toolchain. Use `cargo build --release --locked`
-            with the pinned `Cargo.lock` to get the exact same binary hash.
 
             *Commit: ${{ github.sha }}*
           files: |
-            ${{ env.RELEASE_BINARY }}
-            ${{ env.RELEASE_BINARY }}.sha256
-            ${{ env.GPG_SIGNED == 'true' && format('{0}.asc', env.RELEASE_BINARY) || '' }}
-            ${{ env.GPG_SIGNED == 'true' && format('{0}.sha256.asc', env.RELEASE_BINARY) || '' }}
+            release-staging/*
+            scripts/deploy-security-suite.sh
           draft: false
           prerelease: false
         env:
