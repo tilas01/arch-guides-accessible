@@ -192,6 +192,7 @@ window.generateOutput = function(auto = false) {
     const anon_webhook = useCustomScripts ? gv('anon_webhook','no') : 'no';
     const anon_ssh = useCustomScripts ? gv('anon_ssh','no') : 'no';
     const fakeEvilMaid = useCustomScripts ? gv('fake-evil-maid','no') : 'no';
+    const otherSecTools = gv('other_security_tools','no');
 
     // Post-install apps (checkboxes)
     const post_apps = [];
@@ -219,7 +220,7 @@ window.generateOutput = function(auto = false) {
     function buildOutput(cmdOnly) {
         let o = "";
         // Hidden config (only in raw source, stripped from preview)
-        const configObj = { fw,fs,disk,part,initSys,boot,kernelMain,kernelBackup,software_type,cpu_brand,gpu_brand,desktop,displayServer,swap_size,post_apps,auto_updates,cleanup,browser,dns,secTools,libreOtpMode,anon_kloak,anon_webhook,anon_ssh,fakeEvilMaid,format,user_count,root_ssh,otp_sha,iso_setup };
+        const configObj = { fw,fs,disk,part,initSys,boot,kernelMain,kernelBackup,software_type,cpu_brand,gpu_brand,desktop,displayServer,swap_size,post_apps,auto_updates,cleanup,browser,dns,secTools,libreOtpMode,anon_kloak,anon_webhook,anon_ssh,fakeEvilMaid,otherSecTools,format,user_count,root_ssh,otp_sha,iso_setup };
         o += '<!-- CONFIG_START\n' + JSON.stringify(configObj) + '\nCONFIG_END -->\n\n';
 
         if (!cmdOnly) {
@@ -347,13 +348,16 @@ window.generateOutput = function(auto = false) {
             nautilus:'nautilus', vlc:'vlc', gimp:'gimp', libreoffice:'libreoffice-fresh',
             networkmanager:'networkmanager', bluetooth:'bluez bluez-utils',
             pipewire:'pipewire pipewire-pulse pipewire-alsa wireplumber',
-            clamav:'clamav', firejail:'firejail'
+            clamav:'clamav', firejail:'firejail',
+            openssh:'openssh', snapper:'snapper snap-pac grub-btrfs',
+            pfetch:'pfetch', fastfetch:'fastfetch',
         };
         post_apps.forEach(app => {
             if (app === 'paru') return; // already installed
             if (aurApps.includes(app)) o += `su - builder -c "paru -S --noconfirm ${app === 'signal' ? 'signal-desktop' : app}"\n`;
             else if (pacApps[app]) o += `pacman -S --noconfirm ${pacApps[app]}\n`;
         });
+        // Post-install service enables & extra setup
         if (post_apps.includes('flatpak')) o += `flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo\n`;
         if (post_apps.includes('zsh')) o += `chsh -s /bin/zsh\n`;
         if (post_apps.includes('networkmanager')) o += `systemctl enable --now NetworkManager\n`;
@@ -361,7 +365,7 @@ window.generateOutput = function(auto = false) {
         if (post_apps.includes('pipewire')) o += `systemctl --user enable --now pipewire pipewire-pulse wireplumber\n`;
         if (post_apps.includes('clamav')) o += `freshclam\nsystemctl enable --now clamav-freshclam\n`;
 
-        // Desktop
+        // Desktop environments
         const dsXorg = (displayServer === "auto" && (desktop === "dusky" || desktop === "dwm")) || displayServer === "xorg";
         if (desktop === "gnome") { o += `pacman -S --noconfirm gnome gnome-tweaks ${dsXorg ? 'xorg-server' : 'wayland'}\nsystemctl enable gdm\n`; }
         else if (desktop === "kde") { o += `pacman -S --noconfirm plasma-desktop sddm ${dsXorg ? 'xorg-server' : 'wayland'}\nsystemctl enable sddm\n`; }
@@ -373,10 +377,67 @@ window.generateOutput = function(auto = false) {
                 : `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && ./install.sh"\n`;
         }
 
+        // Browser (from browser dropdown, separate from post_apps)
         if (browser === "librewolf") o += `su - builder -c "paru -S --noconfirm librewolf"\n`;
         else if (browser === "firefox") o += `pacman -S --noconfirm firefox\n`;
 
-        if (fs === "btrfs") o += `snapper -c root create-config /\nsystemctl enable snapper-timeline.timer snapper-cleanup.timer\n`;
+
+
+        // Hardened OpenSSH setup
+        if (post_apps.includes('openssh')) {
+            if (!cmdOnly) o += `\`\`\`\n\n### OpenSSH Server Setup (Hardened)\n\`\`\`bash\n`;
+            else o += `\n# OpenSSH — Hardened Setup\n`;
+            o += `# Generate Ed25519 host keys\n`;
+            o += `ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ""\n`;
+            o += `rm -f /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key /etc/ssh/ssh_host_ecdsa_key\n`;
+            o += `# Harden sshd_config\n`;
+            o += `cat > /etc/ssh/sshd_config << 'SSHD'\n`;
+            o += `Port 22\nAddressFamily inet\nListenAddress 0.0.0.0\n`;
+            o += `HostKey /etc/ssh/ssh_host_ed25519_key\nKexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org\n`;
+            o += `Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com\nMACs hmac-sha2-512-etm@openssh.com\n`;
+            o += `PermitRootLogin no\nPasswordAuthentication no\nKbdInteractiveAuthentication no\n`;
+            o += `AuthenticationMethods publickey\nPubkeyAuthentication yes\n`;
+            o += `X11Forwarding no\nAllowTcpForwarding no\nPermitTunnel no\nGatewayPorts no\n`;
+            o += `MaxAuthTries 3\nLoginGraceTime 30\nClientAliveInterval 300\nClientAliveCountMax 2\n`;
+            o += `AllowAgentForwarding no\nUsePAM yes\nPrintMotd no\n`;
+            o += `SSHD\n`;
+            o += `# Generate user SSH key pair (Ed25519)\n`;
+            o += `USER_SSH_DIR="/home/$NEWUSER/.ssh"\n`;
+            o += `mkdir -p "$USER_SSH_DIR" && chmod 700 "$USER_SSH_DIR"\n`;
+            o += `ssh-keygen -t ed25519 -f "$USER_SSH_DIR/id_ed25519" -C "$NEWUSER@arch" -N ""\n`;
+            o += `cat "$USER_SSH_DIR/id_ed25519.pub" >> "$USER_SSH_DIR/authorized_keys"\n`;
+            o += `chmod 600 "$USER_SSH_DIR/authorized_keys"\nchown -R "$NEWUSER:$NEWUSER" "$USER_SSH_DIR"\n`;
+            o += `systemctl enable sshd.service\n`;
+            o += `echo "# SSH private key saved: $USER_SSH_DIR/id_ed25519"\n`;
+            o += `echo "# Copy id_ed25519 to your client machine before rebooting!"\n`;
+            if (!cmdOnly) o += `\`\`\`\n\n> ⚠️ **Save your SSH private key** (\`~/.ssh/id_ed25519\`) to your client machine before rebooting. Password auth is disabled.\n\n`;
+        }
+
+        // Snapper hooks
+        if (post_apps.includes('snapper')) {
+            o += `# Snapper — BTRFS snapshot config\n`;
+            o += `snapper -c root create-config /\n`;
+            o += `systemctl enable --now snapper-timeline.timer snapper-cleanup.timer\n`;
+            o += `# Install grub-btrfs for rollback menu\n`;
+            o += `systemctl enable --now grub-btrfsd.service\n`;
+        } else if (fs === "btrfs") {
+            o += `snapper -c root create-config /\nsystemctl enable snapper-timeline.timer snapper-cleanup.timer\n`;
+        }
+
+        // pfetch / fastfetch shell greeting
+        if (post_apps.includes('fastfetch') || post_apps.includes('pfetch')) {
+            const fetchCmd = post_apps.includes('fastfetch') ? 'fastfetch' : 'pfetch';
+            o += `# Add system info greeting to shell\necho '${fetchCmd}' >> /etc/profile.d/greeting.sh\n`;
+        }
+
+        // Dusky OS auto-setup
+        if (post_apps.includes('dusky-setup')) {
+            if (!cmdOnly) o += `\n### Dusky OS Auto-Setup\n> Watch the [YouTube guide](https://www.youtube.com/watch?v=JmgvSdEIK8c) and read the [dusky repo](https://github.com/dusklinux/dusky) cheatsheet before running.\n\n\`\`\`bash\n`;
+            else o += `\n# Dusky OS Auto-Setup (by dusklinux)\n# Watch: https://www.youtube.com/watch?v=JmgvSdEIK8c\n# Repo:  https://github.com/dusklinux/dusky\n`;
+            o += `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && ./install.sh"\n`;
+            if (!cmdOnly) o += `\`\`\`\n\n> 📋 **Cheatsheet**: \`/tmp/dusky/cheatsheet.md\` — Hyprland keybinds and workflow\n`;
+        }
+
         if (vm_guest === "vbox") o += `systemctl enable vboxservice.service\n`;
         else if (vm_guest === "vmware") o += `systemctl enable vmtoolsd.service\n`;
         else if (vm_guest === "qemu") o += `systemctl enable qemu-guest-agent.service\n`;
@@ -428,7 +489,25 @@ window.generateOutput = function(auto = false) {
             }
         }
 
-        // Verify USB ISO integrity using the suite
+        // Other Security Tools (independent of ARSS)
+        if (otherSecTools !== 'no') {
+            if (!cmdOnly) o += `\`\`\`\n\n## 9. Other Security Hardening\n\`\`\`bash\n`;
+            else o += `\n# 9. Other Security Tools\n`;
+            const installAll = otherSecTools === 'all';
+            if (installAll || otherSecTools === 'apparmor') {
+                o += `pacman -S --noconfirm apparmor\nsed -i 's/^GRUB_CMDLINE_LINUX="/GRUB_CMDLINE_LINUX="apparmor=1 lsm=landlock,lockdown,yama,apparmor,bpf /' /etc/default/grub\nsystemctl enable apparmor\n`;
+            }
+            if (installAll || otherSecTools === 'usbguard') {
+                o += `pacman -S --noconfirm usbguard\nusbguard generate-policy > /etc/usbguard/rules.conf\nsystemctl enable --now usbguard\n`;
+            }
+            if (installAll || otherSecTools === 'auditd') {
+                o += `pacman -S --noconfirm audit\nsystemctl enable --now auditd\necho '-w /etc/passwd -p wa -k passwd_changes' >> /etc/audit/rules.d/audit.rules\necho '-w /etc/sudoers -p wa -k sudoers_changes' >> /etc/audit/rules.d/audit.rules\n`;
+            }
+            if (installAll || otherSecTools === 'fail2ban') {
+                o += `pacman -S --noconfirm fail2ban\ncat > /etc/fail2ban/jail.local << 'F2B'\n[DEFAULT]\nbantime = 3600\nfindtime = 600\nmaxretry = 3\n[sshd]\nenabled = true\nF2B\nsystemctl enable --now fail2ban\n`;
+            }
+        }
+
         if (secTools !== "none") {
             if (!cmdOnly) o += `\`\`\`\n\n## 9. Verify Arch ISO USB Integrity\n\`\`\`bash\n`;
             else o += `\n# 9. ISO Verification\n`;

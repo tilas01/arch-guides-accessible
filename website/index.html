@@ -209,7 +209,9 @@
                             <label class="app-item" title="VSCodium: Telemetry-free VS Code"><input type="checkbox" name="post_apps" value="vscodium"> <span class="app-icon">📘</span> <a href="https://vscodium.com/" target="_blank">VSCodium</a> <span class="app-desc">IDE</span></label>
                             <label class="app-item" title="Git: Version control system"><input type="checkbox" name="post_apps" value="git" checked> <span class="app-icon">🔀</span> <a href="https://git-scm.com/" target="_blank">Git</a> <span class="app-desc">VCS</span></label>
                             <label class="app-item" title="tmux: Terminal multiplexer — split panes and sessions"><input type="checkbox" name="post_apps" value="tmux"> <span class="app-icon">🪟</span> tmux <span class="app-desc">Multiplex</span></label>
-                            <label class="app-item" title="htop: Interactive process viewer"><input type="checkbox" name="post_apps" value="htop" checked> <span class="app-icon">📊</span> htop <span class="app-desc">Monitor</span></label>
+                            <label class="app-item" title="htop: Interactive process viewer — shows CPU, RAM, processes in real-time"><input type="checkbox" name="post_apps" value="htop" checked> <span class="app-icon">📊</span> <a href="https://github.com/htop-dev/htop" target="_blank">htop</a> <span class="app-desc">Monitor</span></label>
+                            <label class="app-item" title="pfetch: Minimal system information display tool written in POSIX shell"><input type="checkbox" name="post_apps" value="pfetch"> <span class="app-icon">🖥️</span> <a href="https://github.com/dylanaraps/pfetch" target="_blank">pfetch</a> <span class="app-desc">Sysinfo</span></label>
+                            <label class="app-item" title="fastfetch: Fast system info tool written in C — like neofetch but actively maintained"><input type="checkbox" name="post_apps" value="fastfetch" checked> <span class="app-icon">⚡</span> <a href="https://github.com/fastfetch-cli/fastfetch" target="_blank">fastfetch</a> <span class="app-desc">Sysinfo</span></label>
                             <div class="app-category-header">🎬 Media / Files</div>
                             <label class="app-item" title="Thunar: Lightweight GTK file manager (Xfce)"><input type="checkbox" name="post_apps" value="thunar"> <span class="app-icon">📁</span> Thunar <span class="app-desc">Files</span></label>
                             <label class="app-item" title="Nautilus: GNOME's default file manager"><input type="checkbox" name="post_apps" value="nautilus"> <span class="app-icon">📂</span> Nautilus <span class="app-desc">Files</span></label>
@@ -223,7 +225,11 @@
                             <label class="app-item" title="Timeshift: System snapshot and restore (works with BTRFS)"><input type="checkbox" name="post_apps" value="timeshift"> <span class="app-icon">⏪</span> Timeshift <span class="app-desc">Backup</span></label>
                             <label class="app-item" title="NetworkManager: Network connection manager with GUI support"><input type="checkbox" name="post_apps" value="networkmanager" checked> <span class="app-icon">📡</span> NetworkManager <span class="app-desc">Network</span></label>
                             <label class="app-item" title="Bluetooth (bluez + bluez-utils): Bluetooth stack"><input type="checkbox" name="post_apps" value="bluetooth"> <span class="app-icon">🔵</span> Bluetooth <span class="app-desc">bluez</span></label>
-                            <label class="app-item" title="PipeWire: Modern audio/video server replacing PulseAudio"><input type="checkbox" name="post_apps" value="pipewire" checked> <span class="app-icon">🔊</span> PipeWire <span class="app-desc">Audio</span></label>
+                            <label class="app-item" title="PipeWire: Modern audio/video server replacing PulseAudio and JACK — zero-latency audio graph"><input type="checkbox" name="post_apps" value="pipewire" checked> <span class="app-icon">🔊</span> <a href="https://gitlab.freedesktop.org/pipewire/pipewire" target="_blank">PipeWire</a> <span class="app-desc">Audio</span></label>
+                            <label class="app-item" title="OpenSSH Server: Hardened SSH daemon — auto-generates Ed25519 keys, disables root login, password auth disabled, key-auth only with strict sshd_config"><input type="checkbox" name="post_apps" value="openssh" checked> <span class="app-icon">🔐</span> <a href="https://github.com/openssh/openssh-portable" target="_blank">OpenSSH</a> <span class="app-desc">SSH Server</span></label>
+                            <label class="app-item" title="Snapper: BTRFS/LVM snapshot manager — automated filesystem restore points before and after every pacman transaction"><input type="checkbox" name="post_apps" value="snapper"> <span class="app-icon">📸</span> <a href="https://github.com/openSUSE/snapper" target="_blank">Snapper</a> <span class="app-desc">Snapshots</span></label>
+                            <div class="app-category-header">🎨 Dusky OS</div>
+                            <label class="app-item" title="Dusky OS auto-setup: Automated Hyprland desktop setup by dusklinux — installs dotfiles, themes, and full Wayland environment. Includes cheatsheet. Watch YouTube guide before running."><input type="checkbox" name="post_apps" value="dusky-setup"> <span class="app-icon">🌙</span> <a href="https://github.com/dusklinux/dusky" target="_blank">Dusky Setup</a> <span class="app-desc">Auto-desktop</span></label>
                         </div>
                         <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre users: Firefox firmware blobs, Flatpak proprietary apps, Signal Electron build, and Chromium may conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                     </div>
@@ -296,74 +302,111 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Tilas01 Custom Scripts" data-desc="Enable advanced security tooling from the Arch Rusty Security Suite by tilas01.">
-                        <label>Use Arch Rusty Security Suite?</label>
+                    <!-- ─── Arch Rusty Security Suite ─── -->
+                    <div class="form-group form-step"
+                         data-title="🦀 Arch Rusty Security Suite"
+                         data-desc="The Arch Rusty Security Suite is a Rust-based security toolkit authored by tilas01 (github.com/tilas01). It includes: Libre OTP 2FA for boot/login/SSH, Input Guard (Anti-RubberDucky USB HID sandboxing), Kloak keystroke anonymiser, and malware detection webhooks. MIT/GPL-3.0.">
+                        <label>
+                            Use Arch Rusty Security Suite?
+                            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank"
+                               style="color:var(--accent-purple);font-size:0.75rem;margin-left:6px;"
+                               title="View Arch Rusty Security Suite on GitHub by tilas01">by tilas01 ↗</a>
+                        </label>
                         <select id="use-custom-scripts">
-                            <option value="no">No (Standard)</option>
-                            <option value="yes" selected>Yes (Recommended)</option>
+                            <option value="no">No (Standard install)</option>
+                            <option value="yes" selected>Yes — Include ARSS (Recommended)</option>
                         </select>
                     </div>
 
                     <div id="custom-scripts-container" style="display: block;">
-                        <div class="form-group form-step" data-title="Advanced Security Tools" data-desc="Libre OTP for 2FA on login/boot/SSH. Input Guard (anti-ducky) for USB HID sandboxing.">
-                            <label>Security Tools:</label>
+                        <div class="form-group form-step"
+                             data-title="ARSS — Security Tools"
+                             data-desc="Libre OTP: TOTP 2FA for login, boot, or SSH using PAM. SHA1/256/512 hash support. Input Guard: USB HID sandboxing — blocks rubber ducky / bad USB attacks. Right-click to open the Arch Rusty Security Suite wiki.">
+                            <label>ARSS Security Module:</label>
                             <select id="securitytools">
                                 <option value="none" selected>None</option>
-                                <option value="libre-otp">Libre OTP (2FA Boot/Login/SSH)</option>
-                                <option value="anti-ducky">Input Guard (Anti-RubberDucky)</option>
-                                <option value="both">Both OTP & Input Guard</option>
+                                <option value="libre-otp">Libre OTP (2FA — Boot/Login/SSH)</option>
+                                <option value="anti-ducky">Input Guard (Anti-RubberDucky USB)</option>
+                                <option value="both">Both OTP &amp; Input Guard</option>
                             </select>
                         </div>
 
-                        <div class="form-group form-step" id="libre-otp-mode-container" style="display: none;" data-title="Libre OTP Mode" data-desc="Where to require OTP two-factor authentication.">
+                        <div class="form-group form-step" id="libre-otp-mode-container" style="display: none;"
+                             data-title="OTP Enforcement Mode"
+                             data-desc="Login Only: OTP required on TTY/display manager login. Boot: OTP checked in initramfs before kernel continues. Both: maximum 2FA coverage.">
                             <label>OTP Mode:</label>
                             <select id="libre_otp_mode">
                                 <option value="login" selected>Login Only</option>
                                 <option value="boot">Boot Only</option>
-                                <option value="both">Both Boot & Login</option>
+                                <option value="both">Both Boot &amp; Login</option>
                             </select>
                         </div>
 
-                        <div class="form-group form-step" data-title="OTP Hash Algorithm" data-desc="SHA1 is standard. SHA256/512 are more secure but less compatible with authenticator apps.">
+                        <div class="form-group form-step"
+                             data-title="OTP Hash Algorithm"
+                             data-desc="SHA1 is universally compatible with authenticator apps (Google Auth, Aegis). SHA256/SHA512 offer stronger hashing but fewer apps support them. Recommended: SHA1 for compatibility.">
                             <label>OTP Algorithm:</label>
                             <select id="otp_sha">
-                                <option value="sha1" selected>SHA1 (Compatible)</option>
-                                <option value="sha256">SHA256</option>
-                                <option value="sha512">SHA512</option>
-                            </select>
-                        </div>
-    
-                        <div class="form-group form-step" data-title="Keystroke Anonymisation" data-desc="Kloak randomizes typing patterns to prevent biometric keystroke profiling.">
-                            <label>Kloak:</label>
-                            <select id="anon_kloak">
-                                <option value="no" selected>No</option>
-                                <option value="yes">Yes</option>
+                                <option value="sha1" selected>SHA1 (Max compatibility)</option>
+                                <option value="sha256">SHA256 (More secure)</option>
+                                <option value="sha512">SHA512 (Maximum)</option>
                             </select>
                         </div>
 
-                        <div class="form-group form-step" data-title="Malware Detection Webhooks" data-desc="Systemd service to alert via webhook if malicious binaries detected.">
+                        <div class="form-group form-step"
+                             data-title="Keystroke Anonymisation — kloak"
+                             data-desc="kloak by vmonaco randomizes keystroke timing to prevent behavioral biometric profiling. Makes your typing pattern unidentifiable. Recommended for high-privacy setups.">
+                            <label>Kloak Keystroke Anonymiser:</label>
+                            <select id="anon_kloak">
+                                <option value="no" selected>No</option>
+                                <option value="yes">Yes — Enable kloak</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-step"
+                             data-title="Malware Detection Webhooks"
+                             data-desc="Systemd service that monitors for malicious binaries and sends alerts via webhook (Discord/Slack/custom). Useful for headless servers and high-security setups.">
                             <label>Webhook Alerts:</label>
                             <select id="anon_webhook">
                                 <option value="no" selected>No</option>
-                                <option value="yes">Yes</option>
+                                <option value="yes">Yes — Enable webhook alerts</option>
                             </select>
                         </div>
 
-                        <div class="form-group form-step" data-title="Hardened SSH & OTP" data-desc="Configure OpenSSH with strict crypto and Libre OTP 2FA.">
-                            <label>Hardened SSH + OTP:</label>
+                        <div class="form-group form-step"
+                             data-title="Hardened SSH via ARSS + OTP"
+                             data-desc="Configures OpenSSH with strict crypto (Ed25519 only, ChaCha20, no root login) AND adds ARSS OTP 2FA to the sshd PAM stack. Requires Libre OTP to be enabled above.">
+                            <label>ARSS Hardened SSH + OTP:</label>
                             <select id="anon_ssh">
                                 <option value="no" selected>No</option>
-                                <option value="yes">Yes</option>
+                                <option value="yes">Yes — SSH with OTP 2FA</option>
                             </select>
                         </div>
 
-                        <div class="form-group form-step" data-title="Anti-Evil Maid" data-desc="Generate decoy kernel entries and backup kernels to detect physical tampering.">
-                            <label>Anti-Evil Maid:</label>
+                        <div class="form-group form-step"
+                             data-title="Anti-Evil Maid Decoys"
+                             data-desc="Creates decoy kernel entries and backup EFI images to detect physical boot-level tampering (evil maid attacks). Recommended for high-threat environments.">
+                            <label>Anti-Evil Maid Decoys:</label>
                             <select id="fake-evil-maid">
                                 <option value="no" selected>No</option>
-                                <option value="yes">Yes (Decoy environment)</option>
+                                <option value="yes">Yes — Decoy environment</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- ─── Other Security Tools (yes/no) ─── -->
+                    <div class="form-group form-step"
+                         data-title="Other Security Tools"
+                         data-desc="Additional hardening: AppArmor MAC policies, audit daemon (auditd) for syscall logging, USBGuard for USB device whitelisting, and fail2ban for SSH brute-force protection. These are independent of ARSS.">
+                        <label>Other Security Tools:</label>
+                        <select id="other_security_tools">
+                            <option value="no" selected>No</option>
+                            <option value="apparmor">AppArmor (MAC policies)</option>
+                            <option value="usbguard">USBGuard (USB whitelisting)</option>
+                            <option value="auditd">auditd (syscall logging)</option>
+                            <option value="fail2ban">fail2ban (SSH brute-force protection)</option>
+                            <option value="all">All of the above</option>
+                        </select>
                     </div>
 
                     <div class="form-group form-step" data-title="Arch ISO Setup Utilities" data-desc="Start SSH on Arch ISO so you can run this script remotely.">
@@ -453,56 +496,97 @@
         <!-- Author: tilas01 | Main Developer & Maintainer -->
         <h3 style="color: var(--accent-purple); margin-bottom: 1rem;">Credits & Acknowledgements</h3>
         <div class="credits-grid">
-            <!-- tilas01: main author, center spotlight -->
-            <a href="https://github.com/tilas01" target="_blank" class="credit-card nav-tooltip" data-title="tilas01 — Main Author" data-desc="Main author, developer &amp; maintainer of Arch Guides, the Arch Rusty Security Suite, and all project code. All scripts, the website, and security tooling authored by tilas01." style="text-decoration:none; border-color:var(--accent-purple); order:-1;">
+            <!-- tilas01: main author — spotlight card -->
+            <a href="https://github.com/tilas01" target="_blank" class="credit-card nav-tooltip"
+               data-title="tilas01 — Main Author"
+               data-desc="Main author, developer &amp; maintainer of Arch Guides, the Arch Rusty Security Suite, and all project code. All scripts, website, and security tooling by tilas01."
+               style="text-decoration:none; border-color:var(--accent-purple); order:-1;">
                 <img src="https://github.com/tilas01.png?size=80" alt="tilas01" style="border-color:var(--accent-purple); width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name" style="font-size:1.05rem; color:var(--accent-purple);">tilas01</span>
-                    <span class="credit-role">Main Author, Developer &amp; Maintainer<br>Arch Rusty Security Suite · Website · All Scripts</span>
+                    <span class="credit-role">Main Author, Developer &amp; Maintainer<br>
+                        <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple);font-size:0.75rem;">GitHub</a>
+                        · <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" style="color:var(--accent-purple);font-size:0.75rem;">arch-guides-dynamic</a><br>
+                        Arch Rusty Security Suite · Website · All Scripts
+                    </span>
                 </div>
             </a>
 
-            <!-- dusklinux: Dusky OS creator -->
-            <div class="credit-card nav-tooltip" data-title="dusklinux — Dusky OS" data-desc="Creator of Dusky OS — a minimal Arch-based distribution with automated Hyprland setup. Inspiration for the Dusky desktop option in this generator." style="border-color:var(--accent-blue);">
+            <!-- dusklinux: Dusky OS — merged single card with GitHub + YouTube + repo -->
+            <div class="credit-card nav-tooltip"
+                 data-title="dusklinux — Dusky OS"
+                 data-desc="Creator of Dusky OS — a minimal Arch-based distro with automated Hyprland setup, custom dotfiles and theming. Inspiration for the Dusky desktop option and cheatsheet in this project. Right-click to open the dusky GitHub repo."
+                 data-wiki=""
+                 style="border-color:var(--accent-blue); cursor:pointer;"
+                 onclick="window.open('https://github.com/dusklinux/dusky','_blank')">
                 <img src="https://github.com/dusklinux.png?size=80" alt="dusklinux" style="border-color:var(--accent-blue); width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name" style="color:var(--accent-blue);">dusklinux</span>
                     <span class="credit-role">
-                        Creator of Dusky OS 🎨<br>
-                        <a href="https://github.com/dusklinux" target="_blank" style="color:var(--accent-blue); font-size:0.75rem;">GitHub</a>
-                        · <a href="https://github.com/dusklinux/dusky" target="_blank" style="color:var(--accent-blue); font-size:0.75rem;">dusky repo</a>
-                        · <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" style="color:var(--accent-blue); font-size:0.75rem;">YouTube</a>
+                        Creator of Dusky OS 🎨 — Arch + Hyprland<br>
+                        <a href="https://github.com/dusklinux" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">GitHub</a>
+                        · <a href="https://github.com/dusklinux/dusky" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">dusky repo</a>
+                        · <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">YouTube guide</a>
                     </span>
                 </div>
             </div>
 
-            <!-- max-baz: arch-secure-boot -->
+            <!-- max-baz: arch-secure-boot (Secure Boot + UKI) -->
             <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" class="credit-card nav-tooltip"
                data-title="max-baz — arch-secure-boot"
-               data-desc="Creator of arch-secure-boot — an automated Unified Kernel Image (UKI) and Secure Boot signing solution for Arch Linux. Directly used as reference for the Secure Boot section of this project."
+               data-desc="Creator of arch-secure-boot — automated Unified Kernel Image (UKI) signing and Secure Boot key management for Arch Linux. Referenced directly for the Secure Boot section of this project."
                style="text-decoration:none;">
                 <img src="https://github.com/max-baz.png?size=80" alt="max-baz" style="width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name">max-baz</span>
-                    <span class="credit-role">Author of <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">arch-secure-boot</a><br>Secure Boot &amp; UKI automation for Arch</span>
+                    <span class="credit-role">
+                        Secure Boot &amp; UKI automation 🔒<br>
+                        <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">arch-secure-boot</a>
+                        — UKI signing, sbctl, Secure Boot keys
+                    </span>
                 </div>
             </a>
 
-            <!-- vmonaco: kloak -->
-            <a href="https://github.com/vmonaco/kloak" target="_blank" class="credit-card nav-tooltip" data-title="vmonaco — kloak" data-desc="Creator of kloak — an open-source keystroke and mouse anonymizer that obfuscates typing patterns to protect against tracking. Used in the Arch Rusty Security Suite." style="text-decoration:none;">
+            <!-- vmonaco: kloak (keystroke anonymizer) -->
+            <a href="https://github.com/vmonaco/kloak" target="_blank" class="credit-card nav-tooltip"
+               data-title="vmonaco — kloak"
+               data-desc="Creator of kloak — an open-source keystroke and mouse timing anonymizer. Obfuscates typing patterns to prevent behavioral biometric tracking. Included in the Arch Rusty Security Suite."
+               style="text-decoration:none;">
                 <img src="https://github.com/vmonaco.png?size=80" alt="vmonaco" style="width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name">vmonaco</span>
-                    <span class="credit-role">Creator of <a href="https://github.com/vmonaco/kloak" target="_blank" style="color:var(--accent-blue); font-size:0.75rem;">kloak</a><br>Keystroke &amp; mouse anonymizer</span>
+                    <span class="credit-role">
+                        Keystroke &amp; mouse anonymizer 🛡️<br>
+                        <a href="https://github.com/vmonaco/kloak" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">kloak repo</a>
+                        — Timing obfuscation, anti-tracking
+                    </span>
+                </div>
+            </a>
+
+            <!-- bprsk: snapper-rollback (BTRFS filesystem restore) -->
+            <a href="https://github.com/jrabinow/snapper-rollback" target="_blank" class="credit-card nav-tooltip"
+               data-title="Snapper / bprsk — BTRFS Snapshots"
+               data-desc="Reference for BTRFS snapper-rollback integration — automated filesystem restore points before and after every pacman transaction. Enables one-command system rollback."
+               style="text-decoration:none;">
+                <img src="https://github.com/jrabinow.png?size=80" alt="snapper-rollback" style="width:48px; height:48px;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1250/1250615.png'">
+                <div class="credit-info">
+                    <span class="credit-name">Snapper / bprsk</span>
+                    <span class="credit-role">
+                        BTRFS snapshot &amp; rollback 📸<br>
+                        <a href="https://github.com/openSUSE/snapper" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">snapper</a>
+                        · <a href="https://github.com/jrabinow/snapper-rollback" target="_blank" style="color:var(--accent-blue);font-size:0.75rem;">snapper-rollback</a>
+                    </span>
                 </div>
             </a>
 
             <!-- AI Assistance -->
-            <div class="credit-card nav-tooltip" data-title="AI Assistance" data-desc="Multiple AI models were used during development. All output has been reviewed, curated, tested, and authored by tilas01. No AI output is used unreviewed.">
+            <div class="credit-card nav-tooltip"
+                 data-title="AI Assistance — Co-development"
+                 data-desc="Multiple AI models (Gemini, Claude) used during development. ALL output has been reviewed, tested, curated and authored by tilas01. No AI output ships unreviewed.">
                 <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI" style="border-color:var(--accent-cyan); width:48px; height:48px;">
                 <div class="credit-info">
                     <span class="credit-name" style="color:var(--accent-cyan);">AI Assistance</span>
-                    <span class="credit-role">Co-development — all reviewed &amp; curated by tilas01</span>
+                    <span class="credit-role">Co-development (Gemini · Claude)<br>All output reviewed &amp; curated by tilas01</span>
                 </div>
             </div>
         </div>
