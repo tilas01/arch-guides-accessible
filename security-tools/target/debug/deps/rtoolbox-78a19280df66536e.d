@@ -1,0 +1,10 @@
+C:\Users\ryder\OneDrive\Documents\git\arch_guides_all_versions\arch-guides-dynamic\security-tools\target\debug\deps\rtoolbox-78a19280df66536e.d: C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\lib.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\atty.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\fix_line_issues.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\print_tty.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\safe_string.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\safe_vec.rs
+
+C:\Users\ryder\OneDrive\Documents\git\arch_guides_all_versions\arch-guides-dynamic\security-tools\target\debug\deps\librtoolbox-78a19280df66536e.rmeta: C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\lib.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\atty.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\fix_line_issues.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\print_tty.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\safe_string.rs C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\safe_vec.rs
+
+C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\lib.rs:
+C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\atty.rs:
+C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\fix_line_issues.rs:
+C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\print_tty.rs:
+C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\safe_string.rs:
+C:\Users\ryder\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\rtoolbox-0.0.5\src\safe_vec.rs:
