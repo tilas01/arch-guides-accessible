@@ -16,4 +16,3 @@ path = "src/main.rs"
 totp-rs = { version = "5.5.1", features = ["gen_secret"] }
 rpassword = "7.3"
 zeroize = { version = "1.8", features = ["zeroize_derive"] }
-data-encoding = "2.6"

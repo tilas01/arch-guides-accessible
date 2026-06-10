@@ -4,11 +4,39 @@ use std::fs;
 use rpassword::read_password;
 use zeroize::Zeroize;
 
+/// Simple base32 encoder (RFC 4648) — no external dependency needed
+fn base32_encode(data: &[u8]) -> String {
+    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let mut result = String::new();
+    let mut bits: u64 = 0;
+    let mut num_bits: u32 = 0;
+
+    for &byte in data {
+        bits = (bits << 8) | byte as u64;
+        num_bits += 8;
+        while num_bits >= 5 {
+            num_bits -= 5;
+            let idx = ((bits >> num_bits) & 0x1F) as usize;
+            result.push(ALPHABET[idx] as char);
+        }
+    }
+    if num_bits > 0 {
+        let idx = ((bits << (5 - num_bits)) & 0x1F) as usize;
+        result.push(ALPHABET[idx] as char);
+    }
+    // Pad to multiple of 8
+    while result.len() % 8 != 0 {
+        result.push('=');
+    }
+    result
+}
+
 /// Libre-OTP — Native Rust OTP authenticator for PAM integration.
 ///
 /// Runs the OTP tool as a subcommand. Accepts optional args:
-///   --setup    Generate and save a new TOTP secret
-///   (default)  Prompt for an OTP code and verify it
+///   --setup           Generate and save a new TOTP secret
+///   --algo=SHA256     Choose algorithm (SHA1, SHA256, SHA512)
+///   (default)         Prompt for an OTP code and verify it
 pub fn run() {
     let args: Vec<String> = env::args().collect();
     let config_path = "/etc/libre-otp/secret.txt";
@@ -33,10 +61,7 @@ pub fn run() {
         let mut secret_bytes = secret.to_bytes().unwrap();
         fs::write(config_path, &secret_bytes).expect("Failed to save secret");
         println!("Secret generated and saved securely.");
-
-        // Display base32 for user to add to authenticator app
-        let encoded = data_encoding::BASE32.encode(&secret_bytes);
-        println!("Your OTP Secret (Base32): {}", encoded);
+        println!("Your OTP Secret (Base32): {}", base32_encode(&secret_bytes));
         println!("Algorithm: {}", algo_str);
         println!("Add this to your TOTP authenticator app.");
 
