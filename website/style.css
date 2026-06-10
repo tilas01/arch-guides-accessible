@@ -33,14 +33,37 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 
 .banner {
     width: 100%;
-    max-width: 700px;
-    border-radius: 12px;
+    max-width: 550px;
     margin: 0 auto 1rem;
     display: block;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    transition: transform 0.2s;
+    transition: transform 0.2s, filter 0.2s;
+    background: transparent;
 }
-.banner:hover { transform: scale(1.01); }
+.banner:hover { transform: scale(1.02); filter: brightness(1.1); }
+.banner-link { display: block; text-align: center; text-decoration: none; }
+
+/* ─── Header Controls (history + tooltip toggle) ─── */
+#header-controls {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    display: flex;
+    gap: 6px;
+    z-index: 1000;
+}
+#header-controls button {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s, transform 0.1s;
+}
+#header-controls button:hover { background: rgba(122, 162, 247, 0.15); transform: scale(1.1); }
+#history-btn { color: var(--accent-purple); }
+#toggle-tooltips-btn { color: var(--accent-blue); }
+#toggle-tooltips-btn.disabled { color: var(--accent-red); }
 
 /* ─── Nav ─── */
 .main-nav {
@@ -331,6 +354,7 @@ noscript .js-only { display: none !important; }
     .btn { padding: 0.7rem 1rem; font-size: 0.95rem; }
     .markdown-body { padding: 0.8rem; font-size: 0.82rem; overflow-x: auto; }
     .nav-link { display: block; margin: 0.4rem 0; }
+    .nav-sep { display: none; }
     .layout-container { flex-direction: column; }
     .info-panel.active {
         display: block !important;
@@ -406,20 +430,7 @@ noscript .js-only { display: none !important; }
 .credit-card .credit-name { color: var(--heading-color); font-weight: bold; font-size: 0.95rem; }
 .credit-card .credit-role { color: var(--fg-color); font-size: 0.8rem; }
 
-/* ─── History button ─── */
-#history-btn {
-    position: absolute;
-    left: 15px;
-    top: 15px;
-    background: none;
-    border: none;
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: var(--accent-purple);
-    z-index: 1000;
-    padding: 5px;
-}
-#history-btn:hover { color: var(--accent-cyan); }
+/* History button styling moved to #header-controls */
 
 /* ─── Dropdown (cheatsheets) ─── */
 .dropdown { position: relative; display: inline-block; }
