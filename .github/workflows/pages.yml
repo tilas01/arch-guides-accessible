@@ -29,8 +29,9 @@ jobs:
         
       - name: Prepare Website Assets
         run: |
-          cp -r docs website/
-          cp -r img website/ 2>/dev/null || true
+          # Copy root docs to website/docs/ without overwriting (website/docs has comprehensive versions)
+          cp -rn docs/* website/docs/ 2>/dev/null || true
+          cp -rn img website/ 2>/dev/null || true
           
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
