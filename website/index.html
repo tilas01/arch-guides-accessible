@@ -558,9 +558,9 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Selection Config Preview" data-desc="Live preview of your current generator settings as a JSON object. You can download this .sc file after generation." style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--bg-lighter);">
+                    <div id="sc-preview-section" class="form-group form-step" data-title="Selection Config Preview" data-desc="Live preview of your uploaded generator settings as a JSON object." style="display:none; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--bg-lighter);">
                         <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="const el=document.getElementById('sc-preview-container'); el.style.display=el.style.display==='none'?'block':'none';">
-                            <label style="margin:0; cursor:pointer; color:var(--accent-purple);">📄 Current Selection Config (.sc) Preview (Click to toggle)</label>
+                            <label style="margin:0; cursor:pointer; color:var(--accent-purple);">📄 Uploaded Selection Config (.sc) Preview (Click to toggle)</label>
                         </div>
                         <div id="sc-preview-container" style="display:none; margin-top:0.8rem;">
                             <pre id="sc-preview-json" style="background:var(--bg-color); padding:0.8rem; border-radius:8px; border:1px solid var(--bg-lighter); font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-cyan); overflow-x:auto; white-space:pre-wrap; max-height:200px; overflow-y:auto;"></pre>
