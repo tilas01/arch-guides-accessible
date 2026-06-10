@@ -2,9 +2,9 @@ use totp_rs::{Algorithm, TOTP, Secret};
 use std::env;
 use std::fs;
 use rpassword::read_password;
+use zeroize::Zeroize;
 
 // Minimal PAM compatible OTP verifier
-// Usually the secret would be stored securely in /etc/libre-otp/ or ~/.config/
 fn main() {
     let args: Vec<String> = env::args().collect();
     let config_path = "/etc/libre-otp/secret.txt";
@@ -14,7 +14,8 @@ fn main() {
         println!("Setting up new Libre-OTP secret...");
         let secret = Secret::generate_secret();
         let _ = fs::create_dir_all("/etc/libre-otp");
-        fs::write(config_path, secret.to_bytes().unwrap()).expect("Failed to save secret");
+        let mut secret_bytes = secret.to_bytes().unwrap();
+        fs::write(config_path, &secret_bytes).expect("Failed to save secret");
         println!("Secret generated and saved securely.");
         
         let totp = TOTP::new(
@@ -22,15 +23,16 @@ fn main() {
             6,
             1,
             30,
-            secret.to_bytes().unwrap(),
+            secret_bytes.clone(),
         ).unwrap();
         
         println!("Your OTP Secret (Base32): {}", secret.to_base32());
+        secret_bytes.zeroize();
         return;
     }
 
     // Verify OTP
-    let secret_bytes = match fs::read(config_path) {
+    let mut secret_bytes = match fs::read(config_path) {
         Ok(s) => s,
         Err(_) => {
             println!("No secret found. Run with --setup as root first.");
@@ -38,22 +40,33 @@ fn main() {
         }
     };
 
+    let algo = match env::var("OTP_ALGO").unwrap_or_else(|_| "SHA1".to_string()).as_str() {
+        "SHA256" => Algorithm::SHA256,
+        "SHA512" => Algorithm::SHA512,
+        _ => Algorithm::SHA1,
+    };
+
     let totp = TOTP::new(
-        Algorithm::SHA1,
+        algo,
         6,
         1,
         30,
-        secret_bytes,
+        secret_bytes.clone(),
     ).unwrap();
 
     print!("Enter OTP Code: ");
     std::io::Write::flush(&mut std::io::stdout()).unwrap();
     
-    let user_input = read_password().unwrap();
+    let mut user_input = read_password().unwrap();
     let current_time = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
 
-    if totp.check(&user_input, current_time) {
-        // Success
+    let success = totp.check(&user_input, current_time);
+    
+    // ZEROIZE SENSITIVE MEMORY!
+    user_input.zeroize();
+    secret_bytes.zeroize();
+
+    if success {
         std::process::exit(0);
     } else {
         println!("Invalid OTP code.");

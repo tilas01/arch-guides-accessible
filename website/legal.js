@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('legal_accepted') === 'true') {
+    if (sessionStorage.getItem('legal_accepted') === 'true') {
         return;
     }
 
@@ -8,26 +8,27 @@ document.addEventListener('DOMContentLoaded', () => {
     overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(26,27,38,0.95); z-index:9999; display:flex; justify-content:center; align-items:center; padding:1rem; overflow-y:auto;';
 
     const modal = document.createElement('div');
-    modal.style.cssText = 'background:var(--bg-color); border:2px solid var(--accent-red); padding:2rem; max-width:600px; border-radius:10px; text-align:center; box-shadow: 0 0 20px rgba(255,85,85,0.2);';
+    // Mobile responsive modal width
+    modal.style.cssText = 'background:var(--bg-color); border:2px solid var(--accent-red); padding:1.5rem; max-width:600px; width:100%; border-radius:10px; text-align:center; box-shadow: 0 0 20px rgba(255,85,85,0.2); max-height:90vh; overflow-y:auto;';
 
     modal.innerHTML = `
-        <h2 style="color:var(--accent-red); margin-top:0;">⚠️ Legal Disclaimer & Warning</h2>
-        <p style="color:var(--fg-color); text-align:left; font-size:0.95rem; line-height:1.5;">
-            By using this website, its documentation, or any generated scripts, you explicitly agree to the following terms:<br><br>
-            <strong>1. No Warranty or Liability:</strong> All content, scripts, and software are provided "AS IS", without warranty of any kind. Inside the <strong>tilas01/arch-guides-dynamic github repository</strong> and on this website, there is absolutely <strong>NO accountability</strong> and <strong>NO liability</strong> for any data loss, system damage, or security breaches.<br><br>
-            <strong>2. AI-Assisted Content:</strong> This website, its repositories, and its generated configurations were built with the assistance of AI. You must <strong>ALWAYS review code and commands</strong> before executing them on your machine.<br><br>
-            <strong>Features & Mobile Support:</strong><br>
-            • <strong>Interactive Generator:</strong> Customize and download your Arch Linux install script and markdown guide.<br>
-            • <strong>Dynamic Wiki & Uploads:</strong> View full documentation and restore previous sessions.<br>
-            • <strong>Device Support:</strong> Fully supported on Desktop (right-click tooltips) and Mobile (tap-to-open tooltips). Mobile users have access to all features except precise mouse-tracking.
+        <h2 style="color:var(--accent-red); margin-top:0; font-size:1.4rem;">⚠️ Legal & Risk Notice</h2>
+        <p style="color:var(--fg-color); text-align:left; font-size:0.9rem; line-height:1.4; margin-bottom:1rem;">
+            <strong>1. No Warranty:</strong> Provided "AS IS", without warranty. The authors hold <strong>NO liability</strong> for data loss or damage.<br><br>
+            <strong>2. AI-Assisted:</strong> You must <strong>ALWAYS review code</strong> before executing.<br><br>
+            <strong>3. Device Support:</strong> Desktop (right-click tooltips), Mobile (tap-to-open tooltips).
         </p>
-        <div style="margin-top:1.5rem; text-align:left;">
-            <label style="cursor:pointer; color:var(--fg-color); display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="legal-checkbox" style="width:20px; height:20px;">
-                I have read and agree to these terms, and I understand the risks.
+        <div style="text-align:left; font-size:0.9rem;">
+            <label style="cursor:pointer; color:var(--fg-color); display:flex; align-items:flex-start; gap:8px; margin-bottom:0.8rem;">
+                <input type="checkbox" id="legal-checkbox" style="width:18px; height:18px; flex-shrink:0; margin-top:2px;">
+                I have read and agree to these terms, and understand the risks.
+            </label>
+            <label style="cursor:pointer; color:var(--accent-cyan); display:flex; align-items:flex-start; gap:8px;" title="Cannot save persistent cookies. This setting only applies to your current browser session.">
+                <input type="checkbox" id="legal-dont-prompt" style="width:18px; height:18px; flex-shrink:0; margin-top:2px;">
+                Do not prompt me again for this session (No cookies used)
             </label>
         </div>
-        <button id="legal-accept-btn" class="btn" style="margin-top:1.5rem; width:100%; background:var(--bg-lighter); color:gray; cursor:not-allowed;" disabled>Accept & Continue</button>
+        <button id="legal-accept-btn" class="btn" style="margin-top:1.2rem; width:100%; background:var(--bg-lighter); color:gray; cursor:not-allowed;" disabled>Accept & Continue</button>
     `;
 
     overlay.appendChild(modal);
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.overflow = 'hidden';
 
     const checkbox = document.getElementById('legal-checkbox');
+    const dontPrompt = document.getElementById('legal-dont-prompt');
     const acceptBtn = document.getElementById('legal-accept-btn');
 
     checkbox.addEventListener('change', () => {
@@ -52,7 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     acceptBtn.addEventListener('click', () => {
-        localStorage.setItem('legal_accepted', 'true');
+        if (dontPrompt.checked) {
+            sessionStorage.setItem('legal_accepted', 'true');
+        }
         document.body.removeChild(overlay);
         document.body.style.overflow = 'auto';
     });

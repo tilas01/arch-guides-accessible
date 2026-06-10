@@ -27,6 +27,12 @@ jobs:
           cd ..
           sha256sum arch-installer-linux-x86_64 > arch-installer-linux-x86_64.sha256
 
+      - name: GPG Sign Release
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import
+          gpg --batch --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --detach-sign --armor arch-installer-linux-x86_64
+          gpg --batch --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --detach-sign --armor arch-installer-linux-x86_64.sha256
+
       - name: Publish Latest Release
         uses: softprops/action-gh-release@v1
         with:
@@ -35,5 +41,7 @@ jobs:
           files: |
             arch-installer-linux-x86_64
             arch-installer-linux-x86_64.sha256
+            arch-installer-linux-x86_64.asc
+            arch-installer-linux-x86_64.sha256.asc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
