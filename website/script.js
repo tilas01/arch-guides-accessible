@@ -884,6 +884,21 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====================================================================
 document.getElementById('generate-btn').addEventListener('click', function(e) {
     e.preventDefault();
+    let missing = false;
+    document.querySelectorAll('#install-form select').forEach(el => {
+        if (!el.disabled && el.offsetParent !== null && el.value === "") {
+            missing = true;
+            el.style.border = "2px solid var(--accent-red)";
+        } else {
+            el.style.border = "";
+        }
+    });
+    if (missing) {
+        alert("Please complete all dropdown selections before generating the guide.");
+        const firstMissing = document.querySelector('#install-form select[style*="border"]');
+        if (firstMissing) firstMissing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
     window.generateOutput(false);
 });
 
@@ -1010,6 +1025,25 @@ function validateConfigurations() {
     const softwareType = document.getElementById('software_type')?.value || 'libre';
     const desktop = document.getElementById('desktop')?.value || 'none';
     const displayServer = document.getElementById('display_server')?.value || 'auto';
+
+    // ARSS Full Suite Automation Lock
+    const suiteToggle = document.getElementById('arss-full-suite-toggle');
+    if (suiteToggle) {
+        const securityCbs = document.querySelectorAll('input[name="securitytools"]');
+        securityCbs.forEach(cb => {
+            if (suiteToggle.checked) {
+                cb.checked = true;
+                cb.disabled = true;
+                cb.parentElement.style.opacity = '0.6';
+                cb.parentElement.setAttribute('data-desc', 'Locked: Full Suite Binary enabled.');
+                cb.parentElement.classList.add('tooltip-always');
+            } else {
+                cb.disabled = false;
+                cb.parentElement.style.opacity = '1';
+                cb.parentElement.removeAttribute('data-desc');
+            }
+        });
+    }
 
     // DuskyOS Automation Lock
     const duskyAppCb = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
@@ -1218,5 +1252,13 @@ if (generateBtn) {
         if (typeof window.generateOutput === 'function') {
             window.generateOutput(false);
         }
+    });
+}
+
+const historyBtn = document.getElementById('history-btn');
+if (historyBtn) {
+    historyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.toggleHistoryModal();
     });
 }

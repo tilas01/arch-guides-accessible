@@ -76,7 +76,8 @@
                     <div class="form-group form-step" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                         <label>Firmware Interface:</label>
                         <select id="firmware">
-                            <option value="uefi" selected>UEFI (Modern, Recommended)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="uefi" >UEFI (Modern, Recommended)</option>
                             <option value="bios">Legacy BIOS</option>
                         </select>
                     </div>
@@ -84,7 +85,8 @@
                     <div class="form-group form-step" data-title="File System Features" data-desc="BTRFS supports instant snapshots and compression. Ext4 is traditional and stable.">
                         <label>File System:</label>
                         <select id="filesystem">
-                            <option value="btrfs" selected>BTRFS (Snapshots & Snapper)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="btrfs" >BTRFS (Snapshots & Snapper)</option>
                             <option value="ext4">Ext4 (Standard/Stable)</option>
                             <option value="xfs">XFS (High Performance)</option>
                         </select>
@@ -98,9 +100,10 @@
                     <div class="form-group form-step" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure. LUKS1 works with legacy GRUB. LVM adds flexible volumes.">
                         <label>Encryption:</label>
                         <select id="partitioning">
-                            <option value="unencrypted">Unencrypted (No Security)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="unencrypted">Unencrypted (No Security)</option>
                             <option value="luks1">LUKS1 (GRUB Compatible)</option>
-                            <option value="luks2" selected>LUKS2 (Post-Quantum Argon2id)</option>
+                            <option value="luks2" >LUKS2 (Post-Quantum Argon2id)</option>
                             <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes)</option>
                         </select>
                     </div>
@@ -108,7 +111,8 @@
                     <div class="form-group form-step" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
                         <label>Init System:</label>
                         <select id="init_system">
-                            <option value="systemd" selected>systemd (Modern, sd-encrypt)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="systemd" >systemd (Modern, sd-encrypt)</option>
                             <option value="busybox">busybox/udev (Traditional)</option>
                         </select>
                     </div>
@@ -116,7 +120,8 @@
                     <div class="form-group form-step" data-title="Bootloader Choice" data-desc="UKI Custom uses your own keys in UEFI. UKI Shim uses Microsoft trust chain. systemd-boot is minimal. GRUB is legacy.">
                         <label>Bootloader & Secure Boot:</label>
                         <select id="bootloader">
-                            <option value="uki-custom" selected>UKI + Custom Keys (Fortress)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="uki-custom" >UKI + Custom Keys (Fortress)</option>
                             <option value="uki-shim">UKI + Shim (Microsoft Trust)</option>
                             <option value="systemd-boot">systemd-boot (Minimal)</option>
                             <option value="grub">GRUB (Legacy)</option>
@@ -126,7 +131,8 @@
                     <div class="form-group form-step" data-title="Main Kernel" data-desc="Hardened has security patches. Zen is for gaming. Standard is balanced. LTS is stable.">
                         <label>Main Kernel:</label>
                         <select id="kernel-main">
-                            <option value="linux-hardened" selected>linux-hardened (Max Security)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="linux-hardened" >linux-hardened (Max Security)</option>
                             <option value="linux">linux (Standard)</option>
                             <option value="linux-zen">linux-zen (Performance)</option>
                             <option value="linux-lts">linux-lts (Stability)</option>
@@ -136,7 +142,8 @@
                     <div class="form-group form-step" data-title="Backup Kernel" data-desc="Fallback kernel in case your main kernel fails to boot after an update.">
                         <label>Backup Kernel:</label>
                         <select id="kernel-backup">
-                            <option value="linux-zen" selected>linux-zen (Fallback)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="linux-zen" >linux-zen (Fallback)</option>
                             <option value="linux-lts">linux-lts (Stable Fallback)</option>
                             <option value="linux">linux (Standard)</option>
                             <option value="none">None</option>
@@ -146,7 +153,8 @@
                     <div class="form-group form-step" data-title="CPU Architecture" data-desc="Select your CPU brand for correct microcode.">
                         <label>CPU Brand:</label>
                         <select id="cpu_brand">
-                            <option value="amd" selected>AMD</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="amd" >AMD</option>
                             <option value="intel">Intel</option>
                             <option value="vm">VM / Other</option>
                         </select>
@@ -155,7 +163,8 @@
                     <div class="form-group form-step" data-title="GPU Hardware" data-desc="Select your GPU. Nvidia requires proprietary or nouveau drivers.">
                         <label>GPU Brand:</label>
                         <select id="gpu_brand">
-                            <option value="amd" selected>AMD Radeon</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="amd" >AMD Radeon</option>
                             <option value="intel">Intel Graphics</option>
                             <option value="nvidia">Nvidia GeForce</option>
                             <option value="vm">Virtual Machine</option>
@@ -165,7 +174,8 @@
                     <div class="form-group form-step" data-title="Virtual Machine Guest Setup" data-desc="If in a VM, select hypervisor for Guest Additions.">
                         <label>VM Guest Setup:</label>
                         <select id="vm_guest">
-                            <option value="none" selected>None (Bare Metal)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="none" >None (Bare Metal)</option>
                             <option value="vbox">VirtualBox</option>
                             <option value="vmware">VMware</option>
                             <option value="qemu">QEMU/KVM</option>
@@ -175,7 +185,8 @@
                     <div class="form-group form-step" data-title="Software Type & Graphics Drivers" data-desc="Libre is purely open source (doas, pfetch). Proprietary includes closed source drivers (nvidia, sudo).">
                         <label>Software Type:</label>
                         <select id="software_type">
-                            <option value="libre" selected>Fully Libre (100% Open Source)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="libre" >Fully Libre (100% Open Source)</option>
                             <option value="opensource">Open Source + Firmware</option>
                             <option value="proprietary">Open Source + Proprietary</option>
                             <option value="vm">Virtual Machine</option>
@@ -185,9 +196,10 @@
                     <div class="form-group form-step" data-title="Swap File Size" data-desc="Swap acts as overflow RAM. Needed for hibernation.">
                         <label>Swap Size:</label>
                         <select id="swap_size">
-                            <option value="0">0GB (No Swap)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="0">0GB (No Swap)</option>
                             <option value="4G">4GB</option>
-                            <option value="8G" selected>8GB</option>
+                            <option value="8G" >8GB</option>
                             <option value="16G">16GB</option>
                             <option value="32G">32GB</option>
                         </select>
@@ -244,7 +256,8 @@
                     <div class="form-group form-step" data-title="Automatic System Updates" data-desc="Daily cron job to auto-update pacman packages with logging.">
                         <label>Auto Updates:</label>
                         <select id="auto_updates">
-                            <option value="no" selected>No (Manual)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="no" >No (Manual)</option>
                             <option value="yes">Yes (Daily Cron)</option>
                         </select>
                     </div>
@@ -254,7 +267,8 @@
                         <input type="number" id="user_count" min="1" max="5" value="1" style="margin-bottom:0.5rem;">
                         <label>Root SSH Access:</label>
                         <select id="root_ssh">
-                            <option value="no" selected>No (sudo/doas only)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="no" >No (sudo/doas only)</option>
                             <option value="yes">Yes (Allow root SSH)</option>
                         </select>
                     </div>
@@ -262,7 +276,8 @@
                     <div class="form-group form-step" data-title="System Cleanup" data-desc="Auto-clean build deps, cache, and temp files after install.">
                         <label>Post-Install Cleanup:</label>
                         <select id="cleanup">
-                            <option value="yes" selected>Yes</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="yes" >Yes</option>
                             <option value="no">No</option>
                         </select>
                     </div>
@@ -270,7 +285,8 @@
                     <div class="form-group form-step" data-title="Desktop Environment" data-desc="GNOME is full-featured. KDE is customizable. DWM is minimal and keyboard-driven. Dusky OS is a pre-configured Hyprland setup by dusklinux. TTY Only means no GUI.">
                         <label>Desktop Environment:</label>
                         <select id="desktop">
-                            <option value="none" selected>None (TTY Only)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="none" >None (TTY Only)</option>
                             <option value="gnome">GNOME</option>
                             <option value="kde">KDE Plasma</option>
                             <option value="dwm">DWM (Minimal WM)</option>
@@ -282,7 +298,8 @@
                         <div class="form-group">
                             <label>Display Server:</label>
                             <select id="display_server">
-                                <option value="auto">Auto (Depends on DE)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="auto">Auto (Depends on DE)</option>
                                 <option value="wayland">Wayland (Modern)</option>
                                 <option value="xorg">Xorg (Legacy)</option>
                             </select>
@@ -292,7 +309,8 @@
                     <div class="form-group form-step" data-title="Web Browser" data-desc="Select a browser to install. LibreWolf is privacy-hardened Firefox with no telemetry. Firefox is the standard Mozilla browser.">
                         <label>Web Browser:</label>
                         <select id="browser">
-                            <option value="none" selected>None</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="none" >None</option>
                             <option value="librewolf">LibreWolf</option>
                             <option value="firefox">Firefox</option>
                         </select>
@@ -301,7 +319,8 @@
                     <div class="form-group form-step" data-title="DNS Caching" data-desc="Local DNS resolver for faster lookups. systemd-resolved is built-in. unbound is secure and recursive. dnscrypt-proxy encrypts DNS queries.">
                         <label>DNS Caching:</label>
                         <select id="dns">
-                            <option value="systemd-resolved" selected>systemd-resolved</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="systemd-resolved" >systemd-resolved</option>
                             <option value="unbound">unbound</option>
                             <option value="dnscrypt-proxy">dnscrypt-proxy</option>
                             <option value="bind">BIND</option>
@@ -320,8 +339,9 @@
                                title="View Arch Rusty Security Suite on GitHub by tilas01">by tilas01 ↗</a>
                         </label>
                         <select id="use-custom-scripts">
-                            <option value="no">No (Standard install)</option>
-                            <option value="yes" selected>Yes — Include ARSS (Recommended)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="no">No (Standard install)</option>
+                            <option value="yes" >Yes — Include ARSS (Recommended)</option>
                         </select>
                     </div>
 
@@ -438,7 +458,8 @@
                             <div class="form-group form-step" data-title="OTP Enforcement Mode" data-desc="Login Only: OTP at TTY/display manager. Boot: OTP in initramfs before kernel. Both: maximum coverage. SSH: if Hardened SSH also enabled.">
                                 <label>OTP Mode:</label>
                                 <select id="libre_otp_mode">
-                                    <option value="login" selected>Login Only</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="login" >Login Only</option>
                                     <option value="boot">Boot Only</option>
                                     <option value="both">Both Boot &amp; Login</option>
                                 </select>
@@ -446,7 +467,8 @@
                             <div class="form-group form-step" data-title="OTP Hash Algorithm" data-desc="SHA1 is universally compatible (Google Auth, Aegis). SHA256/SHA512 offer stronger hashing but fewer apps support them. Recommended: SHA1.">
                                 <label>OTP Algorithm:</label>
                                 <select id="otp_sha">
-                                    <option value="sha1" selected>SHA1 (Max compatibility)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="sha1" >SHA1 (Max compatibility)</option>
                                     <option value="sha256">SHA256 (More secure)</option>
                                     <option value="sha512">SHA512 (Maximum)</option>
                                 </select>
@@ -454,7 +476,8 @@
                             <div class="form-group form-step" data-title="OTP Recovery Codes" data-desc="Generate 5 backup recovery codes during setup. Each code is single-use. If a recovery code is used, an alert is sent via webhook.">
                                 <label>Recovery Codes:</label>
                                 <select id="otp_recovery">
-                                    <option value="5" selected>5 codes (Recommended)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="5" >5 codes (Recommended)</option>
                                     <option value="10">10 codes</option>
                                     <option value="0">None (not recommended)</option>
                                 </select>
@@ -466,7 +489,8 @@
                             <div class="form-group form-step" data-title="Webhook Provider" data-desc="ntfy.sh is recommended — free, no self-hosting, iOS + Android apps. Bark needs a server. Discord/Telegram/Slack use their webhook APIs. Custom sends POST to any URL.">
                                 <label>Provider:</label>
                                 <select id="webhook_provider">
-                                    <option value="ntfy" selected>ntfy.sh (Recommended — Free)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="ntfy" >ntfy.sh (Recommended — Free)</option>
                                     <option value="bark">Bark (Needs server)</option>
                                     <option value="discord">Discord Webhook</option>
                                     <option value="telegram">Telegram Bot</option>
@@ -485,7 +509,8 @@
                             <div class="form-group form-step" data-title="Anti-Evil Maid — Main Kernel" data-desc="Select the primary kernel for the Anti-Evil Maid decoy environment. This kernel is monitored for tampering.">
                                 <label>AEM Main Kernel:</label>
                                 <select id="aem-kernel-main">
-                                    <option value="linux" selected>linux (Standard)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="linux" >linux (Standard)</option>
                                     <option value="linux-lts">linux-lts (Long Term)</option>
                                     <option value="linux-hardened">linux-hardened</option>
                                     <option value="linux-zen">linux-zen (Performance)</option>
@@ -494,7 +519,8 @@
                             <div class="form-group form-step" data-title="Anti-Evil Maid — Backup Kernel" data-desc="Optional backup kernel for AEM. If the main kernel is tampered with, the backup kernel is used. Select 'None' to skip.">
                                 <label>AEM Backup Kernel:</label>
                                 <select id="aem-kernel-backup">
-                                    <option value="none" selected>None (No backup)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="none" >None (No backup)</option>
                                     <option value="same">Same as above</option>
                                     <option value="linux">linux (Standard)</option>
                                     <option value="linux-lts">linux-lts (Long Term)</option>
@@ -549,7 +575,8 @@
                     <div class="form-group form-step" data-title="Arch ISO Setup Utilities" data-desc="Start SSH on Arch ISO so you can run this script remotely.">
                         <label>Arch ISO Pre-Install:</label>
                         <select id="iso_setup">
-                            <option value="none" selected>None (Local)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="none" >None (Local)</option>
                             <option value="ssh">Start SSHd</option>
                             <option value="ssh_curl">SSHd + curl</option>
                         </select>
@@ -558,7 +585,8 @@
                     <div class="form-group form-step" data-title="Output Format" data-desc="Markdown tutorial, executable Bash script, or both.">
                         <label>Output Format:</label>
                         <select id="outputformat">
-                            <option value="both" selected>Both (Guide + Script)</option>
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="both" >Both (Guide + Script)</option>
                             <option value="markdown">Markdown Guide</option>
                             <option value="script">Bash Script</option>
                         </select>
