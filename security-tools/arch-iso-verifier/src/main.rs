@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, world!");
+    arch_iso_verifier::run();
 }
