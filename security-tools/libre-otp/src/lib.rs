@@ -21,15 +21,6 @@ pub fn run() {
         let mut secret_bytes = secret.to_bytes().unwrap();
         fs::write(config_path, &secret_bytes).expect("Failed to save secret");
         println!("Secret generated and saved securely.");
-
-        let _totp = TOTP::new(
-            Algorithm::SHA1,
-            6,
-            1,
-            30,
-            secret_bytes.clone(),
-        ).unwrap();
-
         println!("Your OTP Secret (Base32): {}", secret.to_base32());
         secret_bytes.zeroize();
         return;
