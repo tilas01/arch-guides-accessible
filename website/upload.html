@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arch Guides | Upload & View Guide</title>
+    <link rel="preload" href="img/banner.png" as="image">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="legal.js"></script>
@@ -11,7 +12,10 @@
 <body>
 
     <header>
-        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip" data-title="GitHub Repository" data-desc="View the full source code, submit issues, and download releases on GitHub. Created and maintained by tilas01." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
+        <div id="header-controls" class="js-only" style="position:absolute;right:15px;top:15px;display:flex;gap:6px;z-index:1000;">
+            <button id="toggle-tooltips-btn" type="button" class="tooltip-always" data-title="Tooltips: Enabled" data-desc="Toggle tooltips on/off." style="background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--accent-blue);padding:4px;border-radius:6px;">ℹ️</button>
+        </div>
+        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
         <h1>Upload & View Guide</h1>
         <p>Upload previously generated .sh and/or .md configs to restore, view, and edit them in the live editor.</p>
         <nav class="main-nav">
@@ -23,7 +27,7 @@
             <span class="nav-sep">|</span>
             <a href="wiki.html#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Every release includes SHA256 hashes. Optional GPG verification.">📦 Releases</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite.">📦 Releases</a>
             <span class="nav-sep">|</span>
             <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01.">🔗 Repository</a>
         </nav>

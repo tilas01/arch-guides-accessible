@@ -12,6 +12,7 @@ function saveToHistory(mdContent, shContent, format) {
     history.unshift({ timestamp: new Date().toLocaleString(), format, md: mdContent || '', sh: shContent || '' });
     if (history.length > 10) history = history.slice(0, 10);
     sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    updateHistoryTooltip();
 }
 
 function renderHistoryPanel() {
@@ -51,6 +52,26 @@ window.toggleHistoryModal = function() {
     modal.style.display = vis ? 'none' : 'block';
     if (!vis) renderHistoryPanel();
 };
+
+// ---- Clear Generated Output ----
+window.clearGeneratedOutput = function() {
+    const section = document.getElementById('output-section');
+    const guide = document.getElementById('generated-guide');
+    if (guide) guide.innerHTML = '';
+    if (section) section.style.display = 'none';
+};
+
+// ---- Update History Button Tooltip Count ----
+function updateHistoryTooltip() {
+    const btn = document.getElementById('history-btn');
+    if (!btn) return;
+    let count = 0;
+    try { count = (JSON.parse(sessionStorage.getItem(HISTORY_KEY)) || []).length; } catch(e) {}
+    btn.setAttribute('data-desc', count > 0
+        ? `View and restore previous generation configs. ${count} previous generation${count !== 1 ? 's' : ''} saved this session.`
+        : 'No previous generations this session. Generate a guide to start saving history.'
+    );
+}
 
 // ---- Utility: Escape HTML ----
 const escapeHTML = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -461,16 +482,25 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
 });
 
 // ── Tooltips ──
-let tooltipsEnabled = true;
+let tooltipsEnabled = sessionStorage.getItem('tooltips_enabled') !== 'false';
 const infoPanel = document.getElementById('info-panel');
 const infoContent = document.getElementById('info-panel-content');
 const defaultPanelHTML = infoContent ? infoContent.innerHTML : '';
 const tooltipToggleBtn = document.getElementById('toggle-tooltips-btn');
 
+// Sync initial state
 if (tooltipToggleBtn) {
+    if (!tooltipsEnabled) tooltipToggleBtn.classList.add('disabled');
+    tooltipToggleBtn.setAttribute('data-title', tooltipsEnabled ? 'Tooltips: Enabled' : 'Tooltips: Disabled');
     tooltipToggleBtn.addEventListener('click', () => {
         tooltipsEnabled = !tooltipsEnabled;
-        tooltipToggleBtn.style.color = tooltipsEnabled ? 'var(--accent-blue)' : '#555';
+        sessionStorage.setItem('tooltips_enabled', tooltipsEnabled);
+        window.tooltipsEnabled = tooltipsEnabled;
+        tooltipToggleBtn.classList.toggle('disabled', !tooltipsEnabled);
+        tooltipToggleBtn.setAttribute('data-title', tooltipsEnabled ? 'Tooltips: Enabled' : 'Tooltips: Disabled');
+        tooltipToggleBtn.setAttribute('data-desc', tooltipsEnabled
+            ? 'Tooltips are ON. Hover (desktop) or tap (mobile) elements for info.'
+            : 'Tooltips are OFF. Only this button and the history button still show tooltips. Tap to re-enable.');
         if (!tooltipsEnabled && infoPanel) infoPanel.classList.remove('active');
     });
 }
@@ -635,6 +665,9 @@ if (restoreConfig) {
     } catch(e) { console.error(e); }
 }
 
-// Banner click
+// Banner cursor (link already in HTML <a> tag)
 const banner = document.querySelector('.banner');
-if (banner) { banner.style.cursor = 'pointer'; banner.addEventListener('click', () => window.open('https://github.com/tilas01/arch-guides-dynamic', '_blank')); }
+if (banner) banner.style.cursor = 'pointer';
+
+// Update history tooltip on load
+updateHistoryTooltip();
