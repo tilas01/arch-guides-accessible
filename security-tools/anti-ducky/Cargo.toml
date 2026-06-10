@@ -1,9 +1,19 @@
 [package]
 name = "anti-ducky"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "A Rust daemon that mitigates RubberDucky injection attacks by monitoring keystroke intervals."
+description = "Intelligent USB HID Input Manager - detects, sandboxes, and alerts on RubberDucky/BadUSB payloads. Requires 2-of-N approved inputs to authorize a new device."
+
+[[bin]]
+name = "anti-ducky"
+path = "src/main.rs"
 
 [dependencies]
 evdev = "0.12.0"
-nix = "0.27.1"
+nix = { version = "0.27.1", features = ["signal", "user"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+sha2 = "0.10"
+hex = "0.4"
+zeroize = "1.8"
