@@ -266,8 +266,17 @@ window.generateOutput = function(auto = false) {
         }
 
         // Apps
-        const aurApps = ['librewolf','signal','tor-browser','vscodium'];
-        const pacApps = { firefox:'firefox', neovim:'neovim git ripgrep fd', alacritty:'alacritty', zsh:'zsh zsh-completions', thunar:'thunar gvfs thunar-volman', mpv:'mpv', obs:'obs-studio', keepassxc:'keepassxc', flatpak:'flatpak' };
+        const aurApps = ['librewolf','signal','tor-browser','vscodium','timeshift'];
+        const pacApps = {
+            firefox:'firefox', neovim:'neovim git ripgrep fd', alacritty:'alacritty',
+            zsh:'zsh zsh-completions', thunar:'thunar gvfs thunar-volman', mpv:'mpv',
+            obs:'obs-studio', keepassxc:'keepassxc', flatpak:'flatpak',
+            chromium:'chromium', kitty:'kitty', git:'git', tmux:'tmux', htop:'htop',
+            nautilus:'nautilus', vlc:'vlc', gimp:'gimp', libreoffice:'libreoffice-fresh',
+            networkmanager:'networkmanager', bluetooth:'bluez bluez-utils',
+            pipewire:'pipewire pipewire-pulse pipewire-alsa wireplumber',
+            clamav:'clamav', firejail:'firejail'
+        };
         post_apps.forEach(app => {
             if (app === 'paru') return; // already installed
             if (aurApps.includes(app)) o += `su - builder -c "paru -S --noconfirm ${app === 'signal' ? 'signal-desktop' : app}"\n`;
@@ -275,6 +284,10 @@ window.generateOutput = function(auto = false) {
         });
         if (post_apps.includes('flatpak')) o += `flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo\n`;
         if (post_apps.includes('zsh')) o += `chsh -s /bin/zsh\n`;
+        if (post_apps.includes('networkmanager')) o += `systemctl enable --now NetworkManager\n`;
+        if (post_apps.includes('bluetooth')) o += `systemctl enable --now bluetooth\n`;
+        if (post_apps.includes('pipewire')) o += `systemctl --user enable --now pipewire pipewire-pulse wireplumber\n`;
+        if (post_apps.includes('clamav')) o += `freshclam\nsystemctl enable --now clamav-freshclam\n`;
 
         // Desktop
         const dsXorg = (displayServer === "auto" && (desktop === "dusky" || desktop === "dwm")) || displayServer === "xorg";
