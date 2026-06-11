@@ -131,9 +131,13 @@ pub fn run() {
         let rec_len: usize = args
             .iter()
             .find(|a| a.starts_with("--recovery-len="))
-            .map(|a| a.trim_start_matches("--recovery-len=").parse().unwrap_or(10))
+            .map(|a| {
+                a.trim_start_matches("--recovery-len=")
+                    .parse()
+                    .unwrap_or(10)
+            })
             .unwrap_or(10)
-            .max(8).min(64);
+            .clamp(8, 64);
 
         let enforcement_mode = args
             .iter()
@@ -162,12 +166,19 @@ pub fn run() {
             }
             let salt = SaltString::generate(&mut OsRng);
             let argon2 = Argon2::default();
-            
+
             // Uniqueness check against Tamper Hash if exists
-            if let Ok(tamper_hash_str) = fs::read_to_string("/etc/arch-rusty-security-suite/tamper.hash") {
+            if let Ok(tamper_hash_str) =
+                fs::read_to_string("/etc/arch-rusty-security-suite/tamper.hash")
+            {
                 if let Ok(parsed_tamper) = PasswordHash::new(tamper_hash_str.trim()) {
-                    if argon2.verify_password(pw.as_bytes(), &parsed_tamper).is_ok() {
-                        println!("ERROR: Bypass password MUST NOT be the same as the Tamper password!");
+                    if argon2
+                        .verify_password(pw.as_bytes(), &parsed_tamper)
+                        .is_ok()
+                    {
+                        println!(
+                            "ERROR: Bypass password MUST NOT be the same as the Tamper password!"
+                        );
                         std::process::exit(1);
                     }
                 }
@@ -222,15 +233,22 @@ pub fn run() {
         // KeePassXC Integration CSV
         let csv_path = "/etc/libre-otp/keepass_import.csv";
         let mut csv_content = String::from("Group,Title,Username,Password,URL,Notes,TOTP,Icon\n");
-        csv_content.push_str(&format!("ARSS,Libre-OTP Root,,{},,,{},0\n", recovery_codes.join(" "), base32_sec));
+        csv_content.push_str(&format!(
+            "ARSS,Libre-OTP Root,,{},,,{},0\n",
+            recovery_codes.join(" "),
+            base32_sec
+        ));
         fs::write(csv_path, csv_content).unwrap();
-        
+
         let mut perms = fs::metadata(csv_path).unwrap().permissions();
         perms.set_mode(0o600);
         fs::set_permissions(csv_path, perms).unwrap();
 
         println!("\n[KeePassXC Integration]");
-        println!("An importable CSV has been securely generated at: {}", csv_path);
+        println!(
+            "An importable CSV has been securely generated at: {}",
+            csv_path
+        );
         println!("It contains your TOTP seed and all recovery codes.");
         println!("Import it using KeepassXC GUI or via CLI:");
         println!("  keepassxc-cli import {} ~/.keepassxc/arss.kdbx", csv_path);
@@ -266,10 +284,16 @@ pub fn run() {
             if state.bypass_uses_left > 0 {
                 if let Ok(parsed_hash) = PasswordHash::new(bh.trim()) {
                     let argon2 = Argon2::default();
-                    if argon2.verify_password(user_input.as_bytes(), &parsed_hash).is_ok() {
+                    if argon2
+                        .verify_password(user_input.as_bytes(), &parsed_hash)
+                        .is_ok()
+                    {
                         bypassed = true;
                         state.bypass_uses_left -= 1;
-                        println!("Bypass accepted. {} uses remaining.", state.bypass_uses_left);
+                        println!(
+                            "Bypass accepted. {} uses remaining.",
+                            state.bypass_uses_left
+                        );
                     }
                 }
             }
@@ -322,31 +346,34 @@ pub fn run() {
         } else if let Some(ref bh) = state.bypass_hash {
             if state.bypass_uses_left > 0 {
                 if let Ok(parsed_hash) = PasswordHash::new(bh.trim()) {
-                let argon2 = Argon2::default();
-                if argon2
-                    .verify_password(user_input.as_bytes(), &parsed_hash)
-                    .is_ok()
-                {
-                    success = true;
-                    is_bypass = true;
-                    state.bypass_uses_left -= 1;
-                    println!(
-                        "Bypass password accepted. {} uses remaining.",
-                        state.bypass_uses_left
-                    );
+                    let argon2 = Argon2::default();
+                    if argon2
+                        .verify_password(user_input.as_bytes(), &parsed_hash)
+                        .is_ok()
+                    {
+                        success = true;
+                        is_bypass = true;
+                        state.bypass_uses_left -= 1;
+                        println!(
+                            "Bypass password accepted. {} uses remaining.",
+                            state.bypass_uses_left
+                        );
+                    }
                 }
             }
         }
     }
-}
 
     if success && double_check && !is_bypass {
         println!("Double-check mode enabled. Please wait for the NEXT code window and enter the NEW code:");
         print!("Enter 2nd OTP Code: ");
         std::io::Write::flush(&mut std::io::stdout()).unwrap();
         let mut user_input2 = read_password().unwrap();
-        let current_time2 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
-        
+        let current_time2 = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
         if user_input == user_input2 {
             println!("Error: Must provide a DIFFERENT code from the next time window.");
             success = false;

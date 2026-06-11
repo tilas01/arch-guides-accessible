@@ -145,8 +145,22 @@ fn main() {
         Commands::ScareCrow => {
             scarecrow::start_scarecrow();
         }
-        Commands::Aem { setup, main_kernel, backup_kernel, daemon, decoy_count, fs_hash_check } => {
-            anti_evil_maid::run(setup, main_kernel.clone(), backup_kernel.clone(), daemon, decoy_count.clone(), fs_hash_check);
+        Commands::Aem {
+            setup,
+            main_kernel,
+            backup_kernel,
+            daemon,
+            decoy_count,
+            fs_hash_check,
+        } => {
+            anti_evil_maid::run(
+                setup,
+                main_kernel.clone(),
+                backup_kernel.clone(),
+                daemon,
+                decoy_count.clone(),
+                fs_hash_check,
+            );
         }
     }
 }
