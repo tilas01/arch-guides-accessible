@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // Arch Guides Dynamic - Main Script
 // Arch Rusty Security Suite by tilas01
 // =============================================
@@ -269,7 +269,9 @@ window.generateOutput = function(auto = false) {
         if (!sel.value) {
             const stepName = sel.closest('.form-step')?.getAttribute('data-title') || sel.id;
             errors.push(`<li style="margin-bottom:0.3rem;"><a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;">${stepName}</a></li>`);
-            sel.style.border = '2px solid var(--accent-red)';
+            if (!auto) {
+                sel.style.border = '2px solid var(--accent-red)';
+            }
             if (!firstErrorEl) firstErrorEl = sel;
         }
     });
@@ -286,6 +288,8 @@ window.generateOutput = function(auto = false) {
     if (legacyErrorDiv) legacyErrorDiv.remove();
 
     if (errors.length > 0) {
+        if (auto) return;
+        
         if (errorBox && errorList && errorCount) {
             errorCount.textContent = errors.length;
             errorList.innerHTML = errors.join("");
@@ -305,7 +309,7 @@ window.generateOutput = function(auto = false) {
             let errorDiv = document.createElement("div"); 
             errorDiv.id = "config-errors"; 
             document.getElementById("install-form").prepend(errorDiv);
-            errorDiv.innerHTML = `<div class="alert warning" style="border-left-color:var(--accent-red); padding: 0.8rem;"><strong>Ã¢Å¡Â Ã¯Â¸Â Missing Selections:</strong> <ul>${errors.join("")}</ul></div>`;
+            errorDiv.innerHTML = `<div class="alert warning" style="border-left-color:var(--accent-red); padding: 0.8rem;"><strong>Ã¢Å¡Â Ã¯Â¸Â  Missing Selections:</strong> <ul>${errors.join("")}</ul></div>`;
             window.scrollTo(0, 0);
         }
         return;
