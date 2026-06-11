@@ -228,6 +228,18 @@
         <p>If an advanced rootkit attempts to patch syscall tables in live memory or hide malicious kernel modules (Direct Kernel Object Manipulation - DKOM), the integrity checker will detect the checksum mismatch and alert you instantly.</p>
     </div>
 
+    <div class="section" id="reproducible-builds">
+        <h2><span class="icon">🔍</span> Build Integrity & Reproducible Builds</h2>
+        <p>In the ARSS Generator, every post-install application displays an <span style="cursor:help;">ℹ️</span> information tooltip with its <strong>Build Integrity</strong>. Here is what those terms mean for your security and trust model:</p>
+        
+        <ul>
+            <li><strong>100% Reproducible:</strong> The application's build process is perfectly deterministic. If you compile the exact same source code twice, the resulting binary will be bit-for-bit identical. This guarantees that the binary distributed in the repositories has not been tampered with or injected with a backdoor by the build server. You do not have to blindly trust the distributor; you can mathematically verify it.</li>
+            <li><strong>Mostly Reproducible:</strong> <em>(Still highly verified and safe)</em> The application is fully open-source and the code can be audited. However, the build system (like GitHub Actions or the Arch Build System) embeds non-deterministic metadata during compilation, such as build timestamps, randomized IDs, or system file paths. This means the binaries won't be perfectly identical bit-for-bit, but the actual compiled code logic is safe and verifiable.</li>
+            <li><strong>Non-Reproducible:</strong> <em>(Requires trusting the developer)</em> The application uses an opaque build process or relies on precompiled blobs (common with Electron apps like Signal). This does not mean the software is malicious, but it means you cannot independently verify that the resulting binary exactly matches the public source code. You must trust that the developer, or the automated CI system they authorized, compiled it safely without modifications.</li>
+            <li><strong>Proprietary / Closed Source:</strong> The application contains closed-source, proprietary code (such as Firefox's DRM firmware blobs, Chromium's Google integration, or Flatpak's proprietary catalog). The source code is not fully available for public auditing, so you are entirely reliant on trusting the corporate entity or developer behind it.</li>
+        </ul>
+    </div>
+
     <div class="section" id="downloads">
         <h2><span class="icon">📦</span> Downloads & Live Releases</h2>
         <p>All tools can be compiled directly via Cargo. Ensure you have the Rust toolchain installed (<code>pacman -S rust</code>).</p>
