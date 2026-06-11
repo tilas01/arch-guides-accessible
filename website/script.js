@@ -1801,3 +1801,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.5 });
     steps.forEach(step => observer.observe(step));
 });
+
+
+// Libre Policy Logic
+const libreToggle = document.getElementById('libre_policy_toggle');
+if (libreToggle) {
+    libreToggle.addEventListener('change', () => {
+        document.querySelectorAll('input[name="post_apps"]').forEach(checkbox => {
+            const label = checkbox.closest('label');
+            if (!label) return;
+            const isProprietary = label.innerHTML.includes('[PROPRIETARY]') || label.innerHTML.includes('Proprietary / Non-Libre software');
+            
+            if (libreToggle.checked && isProprietary) {
+                // If policy is ON, and it's proprietary, highlight it red if it's checked
+                if (checkbox.checked) {
+                    label.style.border = '2px solid var(--accent-red)';
+                    label.style.boxShadow = '0 0 10px rgba(255, 0, 0, 0.5)';
+                    label.style.padding = '0.4rem';
+                    label.style.borderRadius = '6px';
+                } else {
+                    label.style.border = '1px solid transparent';
+                    label.style.boxShadow = 'none';
+                }
+            } else {
+                // Reset styles
+                if (isProprietary) {
+                    label.style.border = '1px solid transparent';
+                    label.style.boxShadow = 'none';
+                }
+            }
+        });
+    });
+}
+
+// Add event listener to post_apps to trigger libre logic on click
+document.querySelectorAll('input[name="post_apps"]').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        if (libreToggle && libreToggle.checked) {
+            libreToggle.dispatchEvent(new Event('change'));
+        }
+    });
+});

@@ -96,6 +96,12 @@
                       
                 </div>
                 <form id="install-form">
+                      <div class="form-group form-step" style="border-left:3px solid var(--accent-green); padding-left:1rem; margin-bottom:1.5rem;" data-title="100% Libre Software Policy" data-desc="If enabled, proprietary software selections will be heavily highlighted in RED to warn you of a policy violation.">
+                          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--accent-green); font-weight:bold;">
+                              <input type="checkbox" id="libre_policy_toggle" style="margin:0; width:18px; height:18px; accent-color:var(--accent-green);">
+                              Enforce 100% Libre Software Policy
+                          </label>
+                      </div>
                     <div class="form-group form-step" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                         <label>Firmware Interface:</label>
                         <select id="firmware">
@@ -1251,9 +1257,17 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                     <div id="generate-error-box" class="alert error" style="display:none; margin-bottom: 1rem; border: 1px solid var(--accent-red); padding: 1rem; cursor: pointer;">
                         <strong>⚠️ <span id="error-count">0</span> Missing/Invalid Fields:</strong>
                         <ul id="error-list" style="margin-top: 0.5rem; margin-bottom: 0;"></ul>
-                        <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
-                    </div>
-                    <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="margin-top: 0.8rem;">⚙️ Generate Custom Guide</button>
+                        <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Quiet: hides non-critical output. Normal: standard output. Debug/Verbose: prints every executed command (set -x).">
+                          <label>Script Verbosity Level (Advanced):</label>
+                          <select id="verbosity_level">
+                              <option value="normal" selected>Normal</option>
+                              <option value="quiet">Quiet</option>
+                              <option value="debug">Debug / Verbose</option>
+                          </select>
+                      </div>
+                      <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
+                      </div>
+                      <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="margin-top: 0.8rem;">⚙️ Generate Custom Guide</button>
                 </form>
 
                 <!-- ── Upload / Live Editor Section ── -->

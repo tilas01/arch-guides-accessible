@@ -14,7 +14,7 @@ description = "Arch Rusty Security Suite by tilas01 — a unified security toolk
 license = "GPL-3.0-or-later"
 
 [profile.release]
-opt-level = "z"       # Optimize for size
+opt-level = 3       # Optimize for size
 lto = true            # Enable Link-Time Optimization
 codegen-units = 1     # Maximize size reduction optimizations
 panic = "abort"       # Abort on panic (removes panic unwinding code)
