@@ -1,9 +1,9 @@
+use chrono::Local;
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::Path;
 use std::process::Command;
 use walkdir::WalkDir;
-use chrono::Local;
 
 const AEM_STATE_DIR: &str = "/etc/arch-rusty-security-suite/aem";
 
@@ -82,19 +82,25 @@ fn get_tpm_pcr() -> String {
     hex::encode(hasher.finalize())
 }
 
-fn setup_aem(main_kernel: Option<String>, _backup_kernel: Option<String>, decoy_count: Option<String>) {
+fn setup_aem(
+    main_kernel: Option<String>,
+    _backup_kernel: Option<String>,
+    decoy_count: Option<String>,
+) {
     println!("Generating EFI Variables hash...");
     let efi_hash = hash_directory("/sys/firmware/efi/efivars");
-    fs::write(format!("{}/efivars.hash", AEM_STATE_DIR), &efi_hash).expect("Failed to write EFI hash");
+    fs::write(format!("{}/efivars.hash", AEM_STATE_DIR), &efi_hash)
+        .expect("Failed to write EFI hash");
 
     println!("Generating /boot filesystem hash...");
     let boot_hash = hash_directory("/boot");
-    fs::write(format!("{}/boot.hash", AEM_STATE_DIR), &boot_hash).expect("Failed to write /boot hash");
+    fs::write(format!("{}/boot.hash", AEM_STATE_DIR), &boot_hash)
+        .expect("Failed to write /boot hash");
 
     println!("Generating HWID and TPM PCR profiles...");
     let hwid = get_hwid();
     fs::write(format!("{}/hwid.hash", AEM_STATE_DIR), &hwid).unwrap_or_default();
-    
+
     let tpm_pcr = get_tpm_pcr();
     fs::write(format!("{}/tpm.hash", AEM_STATE_DIR), &tpm_pcr).unwrap_or_default();
 
@@ -122,7 +128,8 @@ fn setup_aem(main_kernel: Option<String>, _backup_kernel: Option<String>, decoy_
 fn run_boot_check() {
     println!(">> AEM Boot Check Initiated");
 
-    let saved_efi = fs::read_to_string(format!("{}/efivars.hash", AEM_STATE_DIR)).unwrap_or_default();
+    let saved_efi =
+        fs::read_to_string(format!("{}/efivars.hash", AEM_STATE_DIR)).unwrap_or_default();
     let saved_boot = fs::read_to_string(format!("{}/boot.hash", AEM_STATE_DIR)).unwrap_or_default();
     let saved_hwid = fs::read_to_string(format!("{}/hwid.hash", AEM_STATE_DIR)).unwrap_or_default();
     let saved_tpm = fs::read_to_string(format!("{}/tpm.hash", AEM_STATE_DIR)).unwrap_or_default();
@@ -164,7 +171,7 @@ fn run_boot_check() {
 fn handle_tamper() {
     println!(">> SECURITY ALERT <<");
     println!("Tampering detected in bootloader, EFI firmware, or hardware.");
-    
+
     // Check password first before prompting "Was it you?" to avoid leaking to an Evil Maid
     if kernel_watcher::verify_tamper_password() {
         println!("Did you authorize these changes? (y/N): ");
@@ -176,7 +183,9 @@ fn handle_tamper() {
             setup_aem(None, None, None);
         } else {
             println!("UNAUTHORIZED TAMPERING DETECTED.");
-            println!("RECOMMENDATION: Do not continue using this device. File system integrity may be compromised.");
+            println!(
+                "RECOMMENDATION: Do not continue using this device. File system integrity may be compromised."
+            );
             println!("Running file system hash check...");
             run_fs_hash_check();
             enforce_lockout();
@@ -199,7 +208,10 @@ fn enforce_lockout() {
 fn run_fs_hash_check() {
     let log_file = "/var/log/arss-fs-hash.log";
     let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S");
-    let msg = format!("[{}] Running deep file system hash verification...\n", timestamp);
+    let msg = format!(
+        "[{}] Running deep file system hash verification...\n",
+        timestamp
+    );
     fs::write(log_file, msg).ok();
 
     // A real implementation would check against a manifest.
