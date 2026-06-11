@@ -277,7 +277,7 @@ pub fn run() {
         print!("Enter Bypass Code: ");
         std::io::Write::flush(&mut std::io::stdout()).unwrap();
 
-        let mut user_input = read_password().unwrap();
+        let user_input = read_password().unwrap();
         let mut bypassed = false;
 
         if let Some(ref bh) = state.bypass_hash {
