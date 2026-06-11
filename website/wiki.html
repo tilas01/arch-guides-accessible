@@ -341,11 +341,10 @@
         </ul>
 
         <h3 id="advanced-config-passwords">Secure Password Handling</h3>
-        <p>If you enable the global <strong>Ask all questions in generator now</strong> toggle, you can enter your root and user passwords directly into the UI. The generator handles this securely based on your output format:</p>
+        <p>Passwords are <strong>never</strong> stored in the UI or inside the generated scripts for your security. Regardless of the Configuration Mode you choose:</p>
         <ul>
             <li><strong>Markdown Guide:</strong> Passwords are ALWAYS censored (displayed as <code>*******</code>) because Markdown files are static text and should never contain plaintext secrets.</li>
-            <li><strong>Bash Script (Censor ON):</strong> The script will use secure, echoing-disabled <code>read -s -p</code> prompts to ask you for passwords live in the terminal during execution.</li>
-            <li><strong>Bash Script (Censor OFF):</strong> The script will store your passwords in plaintext as a fully automated one-liner (<code>echo "user:pass" | chpasswd</code>). You must explicitly acknowledge the security risk of storing plaintext secrets in a file before generating.</li>
+            <li><strong>Bash Script:</strong> The script will always use secure, echoing-disabled <code>read -s -p</code> prompts to ask you for passwords live in the terminal during execution.</li>
         </ul>
     </section>
 
