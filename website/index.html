@@ -47,7 +47,7 @@
             <span class="nav-sep">|</span>
             <a href="wiki.html#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Includes SHA256 hashes and optional GPG verification.">📦 Releases</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Includes SHA256 hashes and optional GPG verification.">📦 Security Tools Releases</a>
             <span class="nav-sep">|</span>
             <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01.">🔗 Repository</a>
         </nav>
@@ -364,6 +364,9 @@
                             </label>
 
                             <label style="margin-bottom:0.6rem;">🦀 ARSS Security Modules:</label>
+                            <div class="alert info" style="background-color: rgba(33, 150, 243, 0.1); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
+                                <strong>ℹ️ Integrity Verification:</strong> The Arch Rusty Security Suite is fully reproducible. It is highly recommended to verify the binary signature using GPG and SHA256 checksums from the Releases page.
+                            </div>
                             <div class="app-grid" id="arss-tools-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:0.6rem;">
                                 <!-- Libre OTP -->
                                 <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Libre OTP — 2FA Authentication" data-desc="TOTP-based two-factor authentication for Linux login, boot, and SSH via PAM integration. Supports SHA1/256/512 hashing. Compatible with Google Authenticator, Aegis, and other TOTP apps. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
@@ -628,10 +631,10 @@
                         </div>
                     </div>
 
-                    <div id="global-warnings" style="margin-bottom: 0.8rem;">
-                        <div class="alert warning" style="border-left-color: var(--accent-purple);">
-                            <strong>📦 Security Notice:</strong> All `arch-rusty-security-suite` binaries downloaded from GitHub Releases are signed and hashed. You MUST use the provided `verify-integrity.sh` (Linux) or `verify-integrity.bat` (Windows) scripts to verify the `.sig`/`.asc` and `.sha256` files before execution.
-                        </div>
+                    <div id="generate-error-box" class="alert error" style="display:none; margin-bottom: 1rem; border: 1px solid var(--accent-red); padding: 1rem; cursor: pointer;">
+                        <strong>⚠️ <span id="error-count">0</span> Missing/Invalid Fields:</strong>
+                        <ul id="error-list" style="margin-top: 0.5rem; margin-bottom: 0;"></ul>
+                        <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
                     </div>
                     <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="margin-top: 0.8rem;">⚙️ Generate Custom Guide</button>
                 </form>

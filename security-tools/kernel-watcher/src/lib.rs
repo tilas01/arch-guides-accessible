@@ -216,7 +216,13 @@ fn handle_event(event: Event) {
             let path_str = path.to_string_lossy().to_string();
 
             // Heuristic Categorization
-            if path_str.contains(".ssh")
+            if path_str.contains("arss.kdbx") || path_str.contains("keepass_import.csv") {
+                alert_msg.push_str(&format!(
+                    "[KEEPASSXC INFOSTEALER ALERT] Unauthorized access to ARSS Database!\n  -> {}\n",
+                    path_str
+                ));
+                threat_detected = true;
+            } else if path_str.contains(".ssh")
                 || path_str.contains("Login Data")
                 || path_str.contains(".aws")
             {

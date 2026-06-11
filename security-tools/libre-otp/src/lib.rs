@@ -28,7 +28,6 @@ struct OtpState {
     bypass_hash: Option<String>,
     bypass_uses_left: u32,
     enforcement_mode: String,
-    double_otp: bool,
 }
 
 /// Simple base32 encoder (RFC 4648)
@@ -57,11 +56,11 @@ fn base32_encode(data: &[u8]) -> String {
     result
 }
 
-fn generate_recovery_codes(count: usize) -> Vec<String> {
+fn generate_recovery_codes(count: usize, length: usize) -> Vec<String> {
     let mut rng = rand::thread_rng();
     let mut codes = Vec::with_capacity(count);
     for _ in 0..count {
-        let code: String = (0..10)
+        let code: String = (0..length)
             .map(|_| {
                 let idx = rng.gen_range(0..36);
                 if idx < 10 {
@@ -129,7 +128,13 @@ pub fn run() {
             .unwrap_or(5)
             .min(20);
 
-        let double_otp = args.iter().any(|a| a == "--double-otp");
+        let rec_len: usize = args
+            .iter()
+            .find(|a| a.starts_with("--recovery-len="))
+            .map(|a| a.trim_start_matches("--recovery-len=").parse().unwrap_or(10))
+            .unwrap_or(10)
+            .max(8).min(64);
+
         let enforcement_mode = args
             .iter()
             .find(|a| a.starts_with("--mode="))
@@ -157,6 +162,17 @@ pub fn run() {
             }
             let salt = SaltString::generate(&mut OsRng);
             let argon2 = Argon2::default();
+            
+            // Uniqueness check against Tamper Hash if exists
+            if let Ok(tamper_hash_str) = fs::read_to_string("/etc/arch-rusty-security-suite/tamper.hash") {
+                if let Ok(parsed_tamper) = PasswordHash::new(tamper_hash_str.trim()) {
+                    if argon2.verify_password(pw.as_bytes(), &parsed_tamper).is_ok() {
+                        println!("ERROR: Bypass password MUST NOT be the same as the Tamper password!");
+                        std::process::exit(1);
+                    }
+                }
+            }
+
             bypass_hash = Some(
                 argon2
                     .hash_password(pw.as_bytes(), &salt)
@@ -169,7 +185,7 @@ pub fn run() {
 
         let secret = Secret::generate_secret();
         let mut secret_bytes = secret.to_bytes().unwrap();
-        let recovery_codes = generate_recovery_codes(num_recovery);
+        let recovery_codes = generate_recovery_codes(num_recovery, rec_len);
 
         let state = OtpState {
             secret_bytes: secret_bytes.clone(),
@@ -181,13 +197,13 @@ pub fn run() {
             bypass_hash,
             bypass_uses_left: bypass_uses,
             enforcement_mode,
-            double_otp,
         };
 
         save_state(&state);
 
         println!("Secret generated and saved securely.");
-        println!("Your OTP Secret (Base32): {}", base32_encode(&secret_bytes));
+        let base32_sec = base32_encode(&secret_bytes);
+        println!("Your OTP Secret (Base32): {}", base32_sec);
         println!("Algorithm: {}", algo_str);
         if algo_str == "SHA512" {
             println!("  -> Note: Apps like 2FAS support SHA512. Google Authenticator may only support SHA1.");
@@ -196,9 +212,26 @@ pub fn run() {
         }
         println!("Add this to your TOTP authenticator app.\n");
         println!("WARNING: Save these recovery codes offline! They are your only fallback.");
-        for code in recovery_codes {
+        for code in &recovery_codes {
             println!("  - {}", code);
         }
+
+        // KeePassXC Integration CSV
+        let csv_path = "/etc/libre-otp/keepass_import.csv";
+        let mut csv_content = String::from("Group,Title,Username,Password,URL,Notes,TOTP,Icon\n");
+        csv_content.push_str(&format!("ARSS,Libre-OTP Root,,{},,,{},0\n", recovery_codes.join(" "), base32_sec));
+        fs::write(csv_path, csv_content).unwrap();
+        
+        let mut perms = fs::metadata(csv_path).unwrap().permissions();
+        perms.set_mode(0o600);
+        fs::set_permissions(csv_path, perms).unwrap();
+
+        println!("\n[KeePassXC Integration]");
+        println!("An importable CSV has been securely generated at: {}", csv_path);
+        println!("It contains your TOTP seed and all recovery codes.");
+        println!("Import it using KeepassXC GUI or via CLI:");
+        println!("  keepassxc-cli import {} ~/.keepassxc/arss.kdbx", csv_path);
+        println!("NOTE: The kernel-watcher module will monitor ~/.keepassxc/arss.kdbx to protect it from infostealers once imported.");
 
         secret_bytes.zeroize();
         return;
@@ -217,7 +250,37 @@ pub fn run() {
             "System locked due to too many failed attempts. Try again in {} minutes.",
             mins_left
         );
-        std::process::exit(1);
+        println!("Only a valid lockout recovery bypass code can override this.");
+        print!("Enter Bypass Code: ");
+        std::io::Write::flush(&mut std::io::stdout()).unwrap();
+
+        let mut user_input = read_password().unwrap();
+        let mut bypassed = false;
+
+        if let Some(ref bh) = state.bypass_hash {
+            if state.bypass_uses_left > 0 {
+                if let Ok(parsed_hash) = PasswordHash::new(bh.trim()) {
+                    let argon2 = Argon2::default();
+                    if argon2.verify_password(user_input.as_bytes(), &parsed_hash).is_ok() {
+                        bypassed = true;
+                        state.bypass_uses_left -= 1;
+                        println!("Bypass accepted. {} uses remaining.", state.bypass_uses_left);
+                    }
+                }
+            }
+        }
+
+        if !bypassed {
+            println!("Invalid bypass code. System remains locked.");
+            std::process::exit(1);
+        } else {
+            state.lockout_until = 0;
+            state.failed_attempts = 0;
+            state.lockout_duration_mins = 30;
+            save_state(&state);
+            state.secret_bytes.zeroize();
+            std::process::exit(0);
+        }
     }
 
     let algo = match state.algorithm.as_str() {
@@ -272,18 +335,7 @@ pub fn run() {
     }
 }
 
-    if success && state.double_otp && !is_bypass {
-        print!("Double OTP required. Enter next OTP code: ");
-        std::io::Write::flush(&mut std::io::stdout()).unwrap();
-        let user_input_2 = read_password().unwrap();
-        // Check next code
-        let success_2 = totp.check(&user_input_2, current_time + 30)
-            || totp.check(&user_input_2, current_time + 60);
-        if !success_2 {
-            println!("Second OTP code invalid.");
-            success = false;
-        }
-    }
+
 
     user_input.zeroize();
 
@@ -302,8 +354,8 @@ pub fn run() {
                 state.lockout_duration_mins
             );
 
-            // Double the penalty up to 24 hours (1440 mins)
-            state.lockout_duration_mins = (state.lockout_duration_mins * 2).min(1440);
+            // Add 30 mins to penalty up to 24 hours (1440 mins)
+            state.lockout_duration_mins = (state.lockout_duration_mins + 30).min(1440);
             state.failed_attempts = 0; // Reset attempt counter to wait for lockout
         } else {
             println!(
