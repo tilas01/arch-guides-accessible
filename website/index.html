@@ -1197,6 +1197,36 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         </select>
                     </div>
 
+                    <div class="form-group form-step" data-title="Configuration Mode" data-desc="Interactive prompts you in the terminal. Pre-configured lets you configure all app sub-options here (required for Markdown guides).">
+                        <label>Configuration Mode:</label>
+                        <select id="config_mode">
+                            <option value="interactive">Interactive Shell (Prompt me later)</option>
+                            <option value="preconfigured">Pre-configured (Configure in UI)</option>
+                        </select>
+                    </div>
+
+                    <div id="advanced_config_container" style="display:none; padding:15px; border-left:4px solid var(--accent-blue); background:rgba(122,162,247,0.05); margin-bottom:1.5rem;">
+                        <h4 style="margin-top:0; margin-bottom:10px;"><span class="icon">⚙️</span> Advanced App Configuration</h4>
+                        <p style="font-size:0.8rem; color:var(--text-color); opacity:0.8; margin-bottom:15px;">Fine-tune sub-options for the apps you've selected.</p>
+                        
+                        <div class="form-group" id="adv-doas" style="display:none;">
+                            <label>Doas Integration Mode: <a href="wiki.html#advanced-config-doas" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
+                            <select id="adv_doas_mode">
+                                <option value="both">Keep Sudo intact alongside Doas</option>
+                                <option value="replace">Fully replace Sudo with Doas wrapper</option>
+                                <option value="remove">Remove Sudo entirely (no wrapper)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="adv-snapper" style="display:none;">
+                            <label>Snapper Timeline Mode: <a href="wiki.html#advanced-config-snapper" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
+                            <select id="adv_snapper_mode">
+                                <option value="default">Pre/Post Transaction Snapshots Only</option>
+                                <option value="timeline">Enable Hourly/Daily Timeline</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-group form-step" data-title="Script Generation Style" data-desc="Choose how the generated bash script functions. Unified creates a single self-persisting script that auto-rolls over across the first reboot. Split creates two manual files.">
                         <label>Script Generation Style:</label>
                         <select id="script-style">

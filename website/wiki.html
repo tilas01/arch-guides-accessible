@@ -323,6 +323,24 @@
     </script>
 
 
+    <section id="advanced-config" class="wiki-card">
+        <h2><span class="icon">⚙️</span> Advanced App Configuration</h2>
+        <p>This section details the advanced configuration choices available in the generator when selecting <strong>Pre-configured (Configure in UI)</strong> Mode or when prompted via the interactive bash script.</p>
+
+        <h3 id="advanced-config-doas">Doas Integration Mode</h3>
+        <ul>
+            <li><strong>Keep Sudo intact alongside Doas:</strong> Installs Doas but leaves <code>sudo</code> functioning normally. Applications that hardcode sudo will continue to use the standard sudo binary.</li>
+            <li><strong>Fully replace Sudo with Doas wrapper:</strong> Removes sudo entirely and installs a custom Bash wrapper script at <code>/usr/local/bin/sudo</code>. This wrapper intercepts standard sudo calls (like <code>sudo -e</code>, <code>sudo -i</code>) and translates them into Doas commands, ensuring seamless compatibility with legacy apps while maintaining the security benefits of Doas.</li>
+            <li><strong>Remove Sudo entirely (no wrapper):</strong> The strictest option. Completely purges sudo from the system. Note that many standard Linux scripts or AUR helpers (like paru/yay) expect sudo by default and may need manual configuration to use doas.</li>
+        </ul>
+
+        <h3 id="advanced-config-snapper">Snapper Timeline Mode</h3>
+        <ul>
+            <li><strong>Pre/Post Transaction Snapshots Only:</strong> (Default) Only takes snapshots when using pacman to install/update/remove packages. Uses minimal disk space while keeping your system safe from bad updates.</li>
+            <li><strong>Enable Hourly/Daily Timeline:</strong> Enables <code>snapper-timeline.timer</code> which takes automated hourly snapshots and cleans them up based on standard retention policies. Useful if you frequently modify system files manually and want point-in-time recovery outside of pacman transactions.</li>
+        </ul>
+    </section>
+
 <footer style="text-align: center; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color); color: #8b949e;">
         <p>🛠️ Arch Rusty Security Suite by tilas01. Licensed under GNU AGPLv3.</p>
     </footer>
