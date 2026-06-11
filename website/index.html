@@ -88,8 +88,13 @@
         <div class="layout-container js-only">
             <section class="generator-form">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--bg-lighter);">
-                    <h3 style="margin:0; color:var(--accent-cyan); font-size:1.1rem;">Generator Settings</h3>
-                    <label class="btn nav-tooltip" data-title="Upload Selection Config (.sc)" data-desc="Restore all generator form settings from a previously downloaded .sc JSON config file. This is distinct from the Live Editor which handles .sh/.md files." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                          <h3 style="margin:0; color:var(--accent-cyan); font-size:1.1rem;">Generator Settings</h3>
+                          <label class="nav-tooltip" data-title="Global Ask Mode" data-desc="If enabled, all configuration and password prompts are asked here in the UI. If disabled, the generated script will prompt you live." style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.9rem; background:var(--bg-darker); padding:0.3rem 0.6rem; border-radius:6px; border:1px solid var(--accent-blue);">
+                              <input type="checkbox" id="global_ask_toggle" checked style="margin:0;"> Ask all questions in generator now
+                          </label>
+                      </div>
+                      <label class="btn nav-tooltip" data-title="Upload Selection Config (.sc)" data-desc="Restore all generator form settings from a previously downloaded .sc JSON config file. This is distinct from the Live Editor which handles .sh/.md files." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem;">
                         📤 Upload .sc Config
                         <input type="file" id="upload-sc-input" accept=".sc" style="display:none">
                     </label>
@@ -1186,6 +1191,14 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                             <option value="ssh_curl">SSHd + curl</option>
                         </select>
                     </div>
+
+                    <div class="form-group form-step" data-title="Live ISO Verifier" data-desc="Automatically checks the integrity of your booted Arch ISO (supports Ventoy/Rufus) using official GPG signatures before pacstrap begins.">
+                        <label>Verify Live ISO Integrity:</label>
+                        <select id="iso_verify">
+                            <option value="yes" selected>Yes, automatically verify my boot media</option>
+                            <option value="no">No, skip verification</option>
+                        </select>
+                    </div>
     
                     <div class="form-group form-step" data-title="Output Format" data-desc="Markdown tutorial, executable Bash script, or both.">
                         <label>Output Format:</label>
@@ -1197,18 +1210,30 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Configuration Mode" data-desc="Interactive prompts you in the terminal. Pre-configured lets you configure all app sub-options here (required for Markdown guides).">
-                        <label>Configuration Mode:</label>
-                        <select id="config_mode">
-                            <option value="interactive">Interactive Shell (Prompt me later)</option>
-                            <option value="preconfigured">Pre-configured (Configure in UI)</option>
-                        </select>
-                    </div>
+                    
 
                     <div id="advanced_config_container" style="display:none; padding:15px; border-left:4px solid var(--accent-blue); background:rgba(122,162,247,0.05); margin-bottom:1.5rem;">
-                        <h4 style="margin-top:0; margin-bottom:10px;"><span class="icon">⚙️</span> Advanced App Configuration</h4>
-                        <p style="font-size:0.8rem; color:var(--text-color); opacity:0.8; margin-bottom:15px;">Fine-tune sub-options for the apps you've selected.</p>
+                        <h4 style="margin-top:0; margin-bottom:10px;"><span class="icon">⚙️</span> Advanced App Configuration & Security</h4>
+                        <p style="font-size:0.8rem; color:var(--text-color); opacity:0.8; margin-bottom:15px;">Configure app sub-options and set system passwords securely.</p>
                         
+                        <div class="form-group" style="margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid var(--bg-lighter);">
+                            <label style="display:flex; align-items:center; gap:5px;">
+                                <input type="checkbox" id="censor_passwords" style="margin:0;" onchange="document.getElementById('plaintext_ack_container').style.display = this.checked ? 'none' : 'block';">
+                                Censor passwords in Bash script / Markdown (Requires manual typing live)
+                            </label>
+                            
+                            <div id="plaintext_ack_container" style="display:block; margin-top:10px; padding:10px; background:rgba(255,100,100,0.1); border-left:4px solid var(--accent-red);">
+                                <label style="display:flex; align-items:center; gap:5px; color:var(--accent-red); font-size:0.85rem; font-weight:bold;">
+                                    <input type="checkbox" id="plaintext_ack" style="margin:0;">
+                                    ⚠️ I acknowledge my passwords will be stored in plaintext inside the downloaded .sh / .md files.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="password-fields-container" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid var(--bg-lighter);">
+                            <!-- Passwords will be injected here by JS -->
+                        </div>
+
                         <div class="form-group" id="adv-doas" style="display:none;">
                             <label>Doas Integration Mode: <a href="wiki.html#advanced-config-doas" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
                             <select id="adv_doas_mode">
@@ -1226,7 +1251,6 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                             </select>
                         </div>
                     </div>
-
                     <div class="form-group form-step" data-title="Script Generation Style" data-desc="Choose how the generated bash script functions. Unified creates a single self-persisting script that auto-rolls over across the first reboot. Split creates two manual files.">
                         <label>Script Generation Style:</label>
                         <select id="script-style">
