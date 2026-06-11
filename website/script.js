@@ -552,7 +552,7 @@ window.generateOutput = function(auto = false) {
         }
 
         // Apps
-        const aurApps = ['librewolf','signal','tor-browser','vscodium','timeshift'];
+        const aurApps = ['librewolf','signal','tor-browser','vscodium','timeshift','ungoogled-chromium'];
         const pacApps = {
             firefox:'firefox', neovim:'neovim git ripgrep fd', alacritty:'alacritty',
             zsh:'zsh zsh-completions', thunar:'thunar gvfs thunar-volman', mpv:'mpv',
@@ -561,13 +561,18 @@ window.generateOutput = function(auto = false) {
             nautilus:'nautilus', vlc:'vlc', gimp:'gimp', libreoffice:'libreoffice-fresh',
             networkmanager:'networkmanager', bluetooth:'bluez bluez-utils',
             pipewire:'pipewire pipewire-pulse pipewire-alsa wireplumber',
-            clamav:'clamav', firejail:'firejail',
+            clamav:'clamav', firejail:'firejail', doas:'opendoas',
             openssh:'openssh', snapper:'snapper snap-pac grub-btrfs',
             pfetch:'pfetch', fastfetch:'fastfetch',
         };
         post_apps.forEach(app => {
             if (app === 'paru') return; // already installed
-            if (aurApps.includes(app)) o += `su - builder -c "paru -S --noconfirm ${app === 'signal' ? 'signal-desktop' : app}"\n`;
+            if (aurApps.includes(app)) {
+                let pkg = app;
+                if (app === 'signal') pkg = 'signal-desktop';
+                if (app === 'ungoogled-chromium') pkg = 'ungoogled-chromium-bin';
+                o += `su - builder -c "paru -S --noconfirm ${pkg}"\n`;
+            }
             else if (pacApps[app]) o += `pacman -S --noconfirm ${pacApps[app]}\n`;
         });
         // Post-install service enables & extra setup
@@ -577,6 +582,33 @@ window.generateOutput = function(auto = false) {
         if (post_apps.includes('bluetooth')) o += `systemctl enable --now bluetooth\n`;
         if (post_apps.includes('pipewire')) o += `systemctl --user enable --now pipewire pipewire-pulse wireplumber\n`;
         if (post_apps.includes('clamav')) o += `freshclam\nsystemctl enable --now clamav-freshclam\n`;
+        
+        if (post_apps.includes('doas')) {
+            const doasMode = document.getElementById('doas_mode')?.value || 'both';
+            o += `\n# Configure Doas\n`;
+            o += `echo "permit persist :wheel" > /etc/doas.conf\n`;
+            o += `chown -c root:root /etc/doas.conf\n`;
+            o += `chmod -c 0400 /etc/doas.conf\n`;
+            
+            if (doasMode === 'replace') {
+                o += `\n# Fully Replace Sudo with Doas Wrapper\n`;
+                o += `pacman -Rdd --noconfirm sudo || true\n`; // Force remove sudo without breaking dependencies
+                o += `cat << 'EOF' > /usr/local/bin/sudo\n`;
+                o += `#!/bin/bash\n`;
+                o += `# Doas Wrapper script for applications hardcoding sudo\n`;
+                o += `args=()\n`;
+                o += `for arg in "$@"; do\n`;
+                o += `  if [[ "$arg" == "-E" ]]; then continue; fi # Doas drops env by default, ignore -E\n`;
+                o += `  if [[ "$arg" == "-i" ]]; then args+=("-s"); continue; fi # Translate -i to -s\n`;
+                o += `  if [[ "$arg" == "-v" ]]; then doas -C /etc/doas.conf; exit $?; fi\n`;
+                o += `  args+=("$arg")\n`;
+                o += `done\n`;
+                o += `exec /usr/bin/doas "\${args[@]}"\n`;
+                o += `EOF\n`;
+                o += `chmod +x /usr/local/bin/sudo\n`;
+                o += `ln -sf /usr/local/bin/sudo /usr/bin/sudo\n`;
+            }
+        }
 
         // Desktop environments
         const dsXorg = (displayServer === "auto" && (desktop === "dusky" || desktop === "dwm")) || displayServer === "xorg";
@@ -1004,6 +1036,56 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initial populate
         const pre = document.getElementById('sc-preview-json');
         if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
+    }
+
+    // Toggle sub-options for Libre-OTP and Doas
+    const libreOtpCb = document.getElementById('arss-libre-otp');
+    const libreOtpContainer = document.getElementById('arss-otp-options');
+    if (libreOtpCb && libreOtpContainer) {
+        libreOtpCb.addEventListener('change', () => {
+            libreOtpContainer.style.display = libreOtpCb.checked ? 'block' : 'none';
+        });
+        // Init
+        libreOtpContainer.style.display = libreOtpCb.checked ? 'block' : 'none';
+    }
+
+    const doasCb = document.getElementById('doas-checkbox');
+    const doasContainer = document.getElementById('doas-mode-container');
+    if (doasCb && doasContainer) {
+        doasCb.addEventListener('change', () => {
+            doasContainer.style.display = doasCb.checked ? 'block' : 'none';
+        });
+        // Init
+        doasContainer.style.display = doasCb.checked ? 'block' : 'none';
+    }
+
+    // Dynamic Proprietary Highlighting Logic
+    const softwareTypeSelect = document.getElementById('software_type');
+    const propAppValues = ['firefox', 'chromium', 'signal', 'flatpak'];
+    
+    function updateProprietaryHighlighting() {
+        if (!softwareTypeSelect) return;
+        const isLibre = softwareTypeSelect.value === 'libre';
+        
+        propAppValues.forEach(val => {
+            const cb = document.querySelector(`input[name="post_apps"][value="${val}"]`);
+            if (cb) {
+                const label = cb.closest('label');
+                const link = label ? label.querySelector('a') : null;
+                if (link) {
+                    if (isLibre) {
+                        link.style.color = 'var(--accent-red)';
+                    } else {
+                        link.style.color = 'inherit'; // Reset to standard link color
+                    }
+                }
+            }
+        });
+    }
+
+    if (softwareTypeSelect) {
+        softwareTypeSelect.addEventListener('change', updateProprietaryHighlighting);
+        updateProprietaryHighlighting(); // Run on init
     }
 
     // Full Suite Toggle Logic
