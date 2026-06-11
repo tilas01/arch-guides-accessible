@@ -226,7 +226,9 @@ window.generateOutput = function(auto = false) {
     const vm_guest = gv('vm_guest','none');
     const auto_updates = gv('auto_updates','no');
 
-    const configMode = gv('config_mode', 'interactive');
+    const configMode = document.getElementById('global_ask_toggle')?.checked ? 'preconfigured' : 'interactive';
+    const censorPasswords = document.getElementById('censor_passwords')?.checked !== false;
+    const isoVerify = gv('iso_verify', 'yes');
     const advDoasMode = gv('adv_doas_mode', 'both');
     const advSnapperMode = gv('adv_snapper_mode', 'default');
 
@@ -476,13 +478,82 @@ window.generateOutput = function(auto = false) {
 
         o += `pacstrap -K /mnt base ${allKernels} ${cpuPkg} ${gpuPkg} ${vmPkg} linux-firmware neovim ${adminTools} git ${fsPkg}\n`;
         o += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
+          
+          if (isoVerify === 'yes') {
+              o += `\n# ==========================================\n`;
+              o += `# Live ISO Integrity Verifier (Ventoy/Rufus)\n`;
+              o += `# ==========================================\n`;
+              o += `echo -e "\\e[38;2;122;162;247m>> Verifying booted Arch Linux medium integrity...\\e[0m"\n`;
+              o += `pacman-key --init >/dev/null 2>&1 && pacman-key --populate archlinux >/dev/null 2>&1\n`;
+              o += `\n# Download latest Arch Linux release signatures\n`;
+              o += `curl -sLO https://archlinux.org/iso/latest/archlinux-x86_64.iso.sig\n`;
+              o += `\n# Detect boot medium (Ventoy partition vs Rufus/dd block device)\n`;
+              o += `BOOT_DEV=$(findmnt -n -o SOURCE /run/archiso/bootmnt || echo "")\n`;
+              o += `if [[ -n "$BOOT_DEV" ]]; then\n`;
+              o += `  echo "Detected boot device: $BOOT_DEV"\n`;
+              o += `  # Attempt to verify the raw block device (Rufus/Balena dd mode)\n`;
+              o += `  if gpg --verify archlinux-x86_64.iso.sig "$BOOT_DEV" 2>/dev/null; then\n`;
+              o += `    echo -e "\\e[32m[PASS] Integrity Verified! Your booted medium is officially signed by Arch Linux.\\e[0m"\n`;
+              o += `  else\n`;
+              o += `    echo -e "\\e[33m[WARN] Raw block device verification failed. Checking for Ventoy/ISO files...\\e[0m"\n`;
+              o += `    ISO_FILE=$(find /run/archiso/bootmnt -maxdepth 3 -name "archlinux*.iso" 2>/dev/null | head -n 1)\n`;
+              o += `    if [[ -n "$ISO_FILE" ]]; then\n`;
+              o += `      if gpg --verify archlinux-x86_64.iso.sig "$ISO_FILE"; then\n`;
+              o += `        echo -e "\\e[32m[PASS] ISO Integrity Verified! Your booted medium is secure.\\e[0m"\n`;
+              o += `      else\n`;
+              o += `        echo -e "\\e[31m[ERROR] ISO Signature verification failed! Your boot medium may be compromised.\\e[0m"\n`;
+              o += `        read -p "Press Enter to acknowledge and continue at your own risk, or Ctrl+C to abort..." ack\n`;
+              o += `      fi\n`;
+              o += `    else\n`;
+              o += `      echo -e "\\e[33m[WARN] Could not locate base ISO file to verify.\\e[0m"\n`;
+              o += `    fi\n`;
+              o += `  fi\n`;
+              o += `else\n`;
+              o += `  echo -e "\\e[33m[WARN] Could not detect archiso bootmnt. Skipping verification.\\e[0m"\n`;
+              o += `fi\n`;
+          }
 
         if (cmdOnly) {
             o += `\ncat << 'EOF' > /mnt/chroot_script.sh\n#!/bin/bash\nexport COLOR_BLUE="\\e[38;2;122;162;247m"\nexport COLOR_RESET="\\e[0m"\n`;
             o += `echo -e "\${COLOR_BLUE}>> ENTERING CHROOT: Post-Install Configuration...\${COLOR_RESET}"\n`;
-            o += `passwd root\n`;
-            for (let u = 1; u <= user_count; u++) {
-                o += `read -p "Username ${u}: " u${u}\nuseradd -m -G wheel -s /bin/bash "$u${u}"\npasswd "$u${u}"\n`;
+            if (configMode === 'interactive' || censorPasswords) {
+                // Interactive prompts for root and user
+                o += `\n# Set Root Password\n`;
+                if (!cmdOnly) {
+                    o += `> **Note:** The passwords below are censored in this guide for your security.\n\n`
+                    o += `passwd root\n`;
+                } else {
+                    o += `read -s -p "Enter root password: " rootpass\necho\n`;
+                    o += `read -s -p "Confirm root password: " rootpass2\necho\n`;
+                    o += `if [ "$rootpass" = "$rootpass2" ]; then echo "root:$rootpass" | chpasswd; else echo "Passwords do not match!"; exit 1; fi\n`;
+                }
+
+                for (let u = 1; u <= user_count; u++) {
+                    o += `\n# Set User ${u} Account\n`;
+                    if (!cmdOnly) {
+                        o += `useradd -m -G wheel -s /bin/bash "${gv('user_name_'+u, 'user'+u)}"\n`;
+                        o += `passwd "${gv('user_name_'+u, 'user'+u)}"\n`;
+                    } else {
+                        o += `read -p "Enter Username ${u}: " u${u}\n`;
+                        o += `useradd -m -G wheel -s /bin/bash "$u${u}"\n`;
+                        o += `read -s -p "Enter password for $u${u}: " upass\necho\n`;
+                        o += `read -s -p "Confirm password for $u${u}: " upass2\necho\n`;
+                        o += `if [ "$upass" = "$upass2" ]; then echo "$u${u}:$upass" | chpasswd; else echo "Passwords do not match!"; exit 1; fi\n`;
+                    }
+                }
+            } else {
+                // Pre-configured passwords
+                const rootPass = gv('root_pass', 'root');
+                o += `\n# Set Root Password (Unattended)\n`;
+                o += `echo "root:${rootPass}" | chpasswd\n`;
+                
+                for (let u = 1; u <= user_count; u++) {
+                    const uname = gv('user_name_' + u, 'user' + u);
+                    const upass = gv('user_pass_' + u, 'password');
+                    o += `\n# Set User ${u} Account (Unattended)\n`;
+                    o += `useradd -m -G wheel -s /bin/bash "${uname}"\n`;
+                    o += `echo "${uname}:${upass}" | chpasswd\n`;
+                }
             }
             
             o += `echo -e "\\n\\e[38;2;247;118;142m>> Interactive Configuration\\e[0m"\n`;
@@ -1096,33 +1167,94 @@ document.addEventListener('DOMContentLoaded', () => {
     const advSnapper = document.getElementById('adv-snapper');
     const outputFormatSel = document.getElementById('outputformat');
 
+    const globalAskToggle = document.getElementById('global_ask_toggle');
+    const advContainer = document.getElementById('advanced_config_container');
+    const advDoas = document.getElementById('adv-doas');
+    const advSnapper = document.getElementById('adv-snapper');
+    const outputFormatSel = document.getElementById('outputformat');
+    const userCountInput = document.getElementById('user_count');
+    const passwordFieldsContainer = document.getElementById('password-fields-container');
+
+    function renderPasswordFields() {
+        if (!passwordFieldsContainer) return;
+        const users = parseInt(userCountInput ? userCountInput.value : 1) || 1;
+        let html = `
+            <div style="display:flex; gap:10px; align-items:flex-end;">
+                <div style="flex:1;">
+                    <label>Root Password:</label>
+                    <input type="password" id="root_pass" placeholder="Enter root password">
+                </div>
+                <div style="flex:1;">
+                    <label>Confirm Root Password:</label>
+                    <input type="password" id="root_pass_confirm" placeholder="Confirm root password">
+                </div>
+                <button type="button" class="btn" style="width:auto; padding:0.4rem 0.8rem;" onclick="togglePasswordVisibility(['root_pass', 'root_pass_confirm'])">👁️</button>
+            </div>
+        `;
+        
+        for (let i = 1; i <= users; i++) {
+            html += `
+                <div style="display:flex; gap:10px; align-items:flex-end; margin-top:10px;">
+                    <div style="flex:1;">
+                        <label>Username ${i}:</label>
+                        <input type="text" id="user_name_${i}" placeholder="Enter username ${i}" value="user${i}">
+                    </div>
+                    <div style="flex:1;">
+                        <label>User ${i} Password:</label>
+                        <input type="password" id="user_pass_${i}" placeholder="Enter password">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Confirm Password ${i}:</label>
+                        <input type="password" id="user_pass_confirm_${i}" placeholder="Confirm password">
+                    </div>
+                    <button type="button" class="btn" style="width:auto; padding:0.4rem 0.8rem;" onclick="togglePasswordVisibility(['user_pass_${i}', 'user_pass_confirm_${i}'])">👁️</button>
+                </div>
+            `;
+        }
+        
+        // Only update if changed to preserve typed passwords if possible, or just overwrite on user_count change.
+        // For simplicity, we just overwrite when user_count changes.
+        passwordFieldsContainer.innerHTML = html;
+    }
+    
+    window.togglePasswordVisibility = function(ids) {
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.type = el.type === 'password' ? 'text' : 'password';
+        });
+    };
+
+    let lastUserCount = -1;
+
     function updateAdvancedConfigUI() {
-        if (!configModeSel || !advContainer) return;
+        if (!globalAskToggle || !advContainer) return;
         
         // Force preconfigured if output is markdown
         if (outputFormatSel && outputFormatSel.value === 'markdown') {
-            configModeSel.value = 'preconfigured';
+            globalAskToggle.checked = true;
         }
 
-        if (configModeSel.value === 'preconfigured') {
+        if (globalAskToggle.checked) {
             advContainer.style.display = 'block';
+            
+            const currentUserCount = parseInt(userCountInput ? userCountInput.value : 1) || 1;
+            if (currentUserCount !== lastUserCount) {
+                renderPasswordFields();
+                lastUserCount = currentUserCount;
+            }
             
             // Show sub-options based on selected apps
             const postApps = Array.from(document.querySelectorAll('input[name="post_apps"]:checked')).map(el => el.value);
             if (advDoas) advDoas.style.display = postApps.includes('doas') ? 'block' : 'none';
             if (advSnapper) advSnapper.style.display = postApps.includes('snapper') ? 'block' : 'none';
-            
-            // Hide container if no apps with advanced config are selected
-            if (!postApps.includes('doas') && !postApps.includes('snapper')) {
-                advContainer.style.display = 'none';
-            }
         } else {
             advContainer.style.display = 'none';
         }
     }
 
-    if (configModeSel) configModeSel.addEventListener('change', updateAdvancedConfigUI);
+    if (globalAskToggle) globalAskToggle.addEventListener('change', updateAdvancedConfigUI);
     if (outputFormatSel) outputFormatSel.addEventListener('change', updateAdvancedConfigUI);
+    if (userCountInput) userCountInput.addEventListener('change', updateAdvancedConfigUI);
     
     // Listen to changes on post_apps checkboxes to show/hide sub-options dynamically
     document.querySelectorAll('input[name="post_apps"]').forEach(cb => {
@@ -1316,6 +1448,19 @@ function injectNoSelectionProvided() {
 document.addEventListener('DOMContentLoaded', injectNoSelectionProvided);
 document.getElementById('generate-btn').addEventListener('click', function(e) {
     e.preventDefault();
+    
+    // Check plaintext password acknowledgement
+    const globalAsk = document.getElementById('global_ask_toggle');
+    const censorPass = document.getElementById('censor_passwords');
+    const plainAck = document.getElementById('plaintext_ack');
+    if (globalAsk && globalAsk.checked && censorPass && !censorPass.checked) {
+        if (plainAck && !plainAck.checked) {
+            alert("⚠️ Security Warning: You have chosen to store passwords in plaintext. You must check the acknowledgement box before generating.");
+            plainAck.parentElement.style.color = "red";
+            return;
+        }
+    }
+
     let missingFields = [];
     
     document.querySelectorAll('#install-form select').forEach(el => {
