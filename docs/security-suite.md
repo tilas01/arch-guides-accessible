@@ -55,3 +55,11 @@ sha256sum target/release/arch-rusty-security-suite
 Verify downloaded releases via the official verification scripts:
 - **Linux:** `scripts/run-rust-installer.sh`
 - **Windows:** `scripts/verify-integrity.bat`
+
+### 11. ?? Doas / OpenDoas Integration
+The suite supports replacing Sudo with Doas (OpenDoas) for enhanced privilege escalation security. Doas has a significantly smaller codebase than Sudo, making it easier to audit and reducing the attack surface.
+
+**Advanced Wrapper Mechanism:**
+When the "Fully Replace Sudo" option is selected in the generator, the system removes the sudo package entirely. To prevent breaking external scripts or applications that hardcode the sudo command, a custom Bash Wrapper is created at /usr/local/bin/sudo (symlinked to /usr/bin/sudo).
+
+This wrapper transparently catches common sudo arguments (like -i for interactive shells, or -E for preserving environment variables) and translates them into compatible doas syntax (like -s) on the fly, before passing execution to the actual /usr/bin/doas binary. This ensures maximum security with zero application breakage.
