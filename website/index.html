@@ -94,10 +94,7 @@
                               <input type="checkbox" id="global_ask_toggle" checked style="margin:0;"> Ask all questions in generator now
                           </label>
                       </div>
-                      <label class="btn nav-tooltip" data-title="Upload Selection Config (.sc)" data-desc="Restore all generator form settings from a previously downloaded .sc JSON config file. This is distinct from the Live Editor which handles .sh/.md files." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem;">
-                        📤 Upload .sc Config
-                        <input type="file" id="upload-sc-input" accept=".sc" style="display:none">
-                    </label>
+                      
                 </div>
                 <form id="install-form">
                     <div class="form-group form-step" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
@@ -1274,6 +1271,10 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                             📤 Upload
                             <input type="file" id="upload-file-input" accept=".sh,.md,.bash,.txt" style="display:none">
                         </label>
+                          <label class="btn nav-tooltip" data-title="Upload Selection Config (.sc)" data-desc="Restore all generator form settings from a previously downloaded .sc JSON config file. This is distinct from the Live Editor which handles .sh/.md files." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem;">
+                        📤 Upload .sc Config
+                        <input type="file" id="upload-sc-input" accept=".sc" style="display:none">
+                    </label>
                         <button type="button" id="upload-clear-btn" class="btn nav-tooltip" data-title="Clear Upload" data-desc="Clear the currently uploaded file and reset the editor." style="width:auto; padding:0.5rem 1rem; background:var(--accent-red); font-size:0.88rem; display:none;">✕ Clear</button>
                     </div>
                     <div id="upload-status" style="font-size:0.82rem; color:var(--accent-cyan); min-height:1.2rem; margin-bottom:0.4rem;"></div>
