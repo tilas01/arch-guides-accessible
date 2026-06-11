@@ -210,6 +210,9 @@ pub fn run() {
         } else if algo_str == "SHA256" {
             println!("  -> Note: Many modern apps support SHA256, Google Authenticator may only support SHA1.");
         }
+        println!("  -> Note: BIOS/UEFI Security Integration:");
+        println!("     To maximize security, set a BIOS/UEFI Supervisor Password, configure Secure Boot via `mokutil`,");
+        println!("     and lock boot entries using `efibootmgr`. This prevents bypassing the Libre-OTP prompt.");
         println!("Add this to your TOTP authenticator app.\n");
         println!("WARNING: Save these recovery codes offline! They are your only fallback.");
         for code in &recovery_codes {
@@ -236,6 +239,8 @@ pub fn run() {
         secret_bytes.zeroize();
         return;
     }
+
+    let double_check = args.iter().any(|a| a == "--double-check");
 
     // Verify OTP
     let mut state = load_state();
@@ -335,7 +340,22 @@ pub fn run() {
     }
 }
 
-
+    if success && double_check && !is_bypass {
+        println!("Double-check mode enabled. Please wait for the NEXT code window and enter the NEW code:");
+        print!("Enter 2nd OTP Code: ");
+        std::io::Write::flush(&mut std::io::stdout()).unwrap();
+        let mut user_input2 = read_password().unwrap();
+        let current_time2 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+        
+        if user_input == user_input2 {
+            println!("Error: Must provide a DIFFERENT code from the next time window.");
+            success = false;
+        } else if !totp.check(&user_input2, current_time2) {
+            println!("Error: Second OTP code invalid.");
+            success = false;
+        }
+        user_input2.zeroize();
+    }
 
     user_input.zeroize();
 

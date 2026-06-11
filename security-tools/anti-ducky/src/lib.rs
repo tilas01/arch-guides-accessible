@@ -21,7 +21,7 @@
 //! IMPORTANT: This daemon must run as root (or with CAP_INPUT_RAW).
 //! Install as systemd service: see /etc/systemd/system/anti-ducky.service
 
-use evdev::{Device, EventType, InputEvent, Key};
+use evdev::{Device, InputEvent, InputEventKind, Key};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::{HashMap, VecDeque};
@@ -282,45 +282,41 @@ fn process_events(
     approved_registry: &mut HashMap<String, DeviceRecord>,
 ) {
     for ev in events {
-        if ev.event_type() == EventType::KEY && ev.value() == 1 {
-            // Key down
-            let now = Instant::now();
+        if let InputEventKind::Key(k) = ev.kind() {
+            if ev.value() == 1 {
+                // Key down
+                let now = Instant::now();
 
-            // Sliding window of last 20 keystroke timestamps
-            device.timing_window.push_back(now);
-            if device.timing_window.len() > 20 {
-                device.timing_window.pop_front();
+                // Sliding window of last 20 keystroke timestamps
+                device.timing_window.push_back(now);
+                if device.timing_window.len() > 20 {
+                    device.timing_window.pop_front();
+                }
+
+                // Check keystroke speed
+                let is_rapid = if device.timing_window.len() >= 2 {
+                    let last = device.timing_window[device.timing_window.len() - 2];
+                    now.duration_since(last).as_millis() < INJECTION_THRESHOLD_MS
+                } else {
+                    false
+                };
+
+                if is_rapid {
+                    device.rapid_count += 1;
+                } else {
+                    device.rapid_count = 0;
+                }
+
+                // Collect key code into payload buffer (sandboxed devices)
+                if device.is_sandboxed() {
+                    device.payload_buf.push(k.code() as u8);
+                }
+
+                // ── Payload Detection ─────────────────────────────────────────
+                if device.rapid_count >= PAYLOAD_TRIGGER_COUNT {
+                    handle_payload_detected(device, approved_registry);
+                }
             }
-
-            // Check keystroke speed
-            let is_rapid = if device.timing_window.len() >= 2 {
-                let last = device.timing_window[device.timing_window.len() - 2];
-                now.duration_since(last).as_millis() < INJECTION_THRESHOLD_MS
-            } else {
-                false
-            };
-
-            if is_rapid {
-                device.rapid_count += 1;
-            } else {
-                device.rapid_count = 0;
-            }
-
-            // Collect key code into payload buffer (sandboxed devices)
-            if device.is_sandboxed() {
-                device.payload_buf.push(ev.code() as u8);
-            }
-
-            // ── Payload Detection ─────────────────────────────────────────
-            if device.rapid_count >= PAYLOAD_TRIGGER_COUNT {
-                handle_payload_detected(device, approved_registry);
-            }
-
-            // ── Approval command detection ─────────────────────────────────
-            // If an APPROVED device types the magic sequence, it votes to
-            // approve a pending device. The magic sequence is read from
-            // /etc/anti-ducky/approve_token (set by admin).
-            // (In production, this would check a rolling TOTP or OTP.)
         }
     }
 }

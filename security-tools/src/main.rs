@@ -80,6 +80,34 @@ enum Commands {
     /// Run the Libre-Cyber-ScareCrow Fake VM/Analysis Environment daemon
     #[command(name = "scarecrow")]
     ScareCrow,
+
+    /// Manage the Anti-Evil Maid protection
+    #[command(name = "aem")]
+    Aem {
+        /// Setup AEM
+        #[arg(long)]
+        setup: bool,
+
+        /// Specify the main kernel
+        #[arg(long)]
+        main_kernel: Option<String>,
+
+        /// Specify the backup kernel
+        #[arg(long)]
+        backup_kernel: Option<String>,
+
+        /// Run the AEM daemon
+        #[arg(long)]
+        daemon: bool,
+
+        /// Number of decoy kernels (or "random")
+        #[arg(long)]
+        decoy_count: Option<String>,
+
+        /// Run a filesystem hash check
+        #[arg(long)]
+        fs_hash_check: bool,
+    },
 }
 
 fn main() {
@@ -100,20 +128,25 @@ fn main() {
         }
         Commands::KernelWatcher { setup, start } => {
             if setup {
+                println!(">> Kernel Watcher setup initiated...");
                 kernel_watcher::run_setup();
             } else if start {
                 if kernel_watcher::verify_tamper_password() {
+                    println!(">> Kernel Watcher daemon starting...");
                     kernel_watcher::start_watcher();
                 } else {
                     eprintln!("Authentication failed. Tamper protection activated.");
                     std::process::exit(1);
                 }
             } else {
-                println!("Please specify either --setup or --start");
+                println!("Usage: arch-rusty-security-suite kernel-watcher --setup OR --start");
             }
         }
         Commands::ScareCrow => {
             scarecrow::start_scarecrow();
+        }
+        Commands::Aem { setup, main_kernel, backup_kernel, daemon, decoy_count, fs_hash_check } => {
+            anti_evil_maid::run(setup, main_kernel.clone(), backup_kernel.clone(), daemon, decoy_count.clone(), fs_hash_check);
         }
     }
 }
