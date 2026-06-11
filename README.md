@@ -102,10 +102,15 @@ All security tools are bundled into a **single Rust binary**: `arch-rusty-securi
 
 | Subcommand | Description |
 |------------|-------------|
-| `arch-rusty-security-suite otp` | Native Rust TOTP/OTP 2FA (Boot/Login/SSH via PAM) |
-| `arch-rusty-security-suite input-guard` | Intelligent USB HID Input Manager & RubberDucky Detector |
-| `arch-rusty-security-suite verify-iso` | Verify Arch Linux ISO integrity against official checksums |
-| `arch-rusty-security-suite verify-release <file> <sha256>` | Verify downloaded release binary integrity |
+| 🔐 `arch-rusty-security-suite libre-otp` | Native Rust TOTP/OTP 2FA (Boot/Login/SSH via PAM). Includes Double OTP & Bypass modes. |
+| 🛡️ `arch-rusty-security-suite ducky` | Intelligent USB HID Input Manager & RubberDucky Sandbox |
+| 👁️ `arch-rusty-security-suite kernel-watcher` | Asynchronous file-monitoring EDR daemon & rootkit quarantine |
+| 👻 `arch-rusty-security-suite scarecrow` | Decoy VM environment to trigger malware killswitches |
+| 🕵️ `arch-rusty-security-suite aem` | Anti-Evil Maid boot partition hashing and decoy kernels |
+| ☠️ `arch-rusty-security-suite panic` | Emergency DoD 3-pass LUKS wipe via duplicate password |
+| 📱 `arch-rusty-security-suite webhooks` | Real-time systemd webhook alerts (Discord, Slack, NTFY, etc) |
+| 🔍 `arch-rusty-security-suite verify-iso` | Verify Arch Linux ISO integrity against official checksums |
+| 🔒 `arch-rusty-security-suite ssh` | Hardened Ed25519, ChaCha20-Poly1305 SSH + optional PAM 2FA |
 
 ### Download
 

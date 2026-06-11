@@ -9,11 +9,13 @@
 
 - [What is Dusky OS?](#what-is-dusky-os)
 - [Installation](#installation)
+- [Universal Keybinds Search](#universal-keybinds-search)
 - [Core Keyboard Shortcuts](#core-keyboard-shortcuts)
 - [Window Management](#window-management)
 - [Layouts](#layouts)
 - [Tags / Workspaces](#tags--workspaces)
-- [Application Launching](#application-launching)
+- [Application Launching (Rofi)](#application-launching-rofi)
+- [Theming & Aesthetics](#theming--aesthetics)
 - [Media & System Keys](#media--system-keys)
 - [Configuration](#configuration)
 - [Autostart & Session Setup](#autostart--session-setup)
@@ -88,20 +90,32 @@ startx
 
 ---
 
+## Universal Keybinds Search
+
+> [!TIP]
+> **Forget a shortcut?** Use the Universal Searchable Keybinds Menu.
+
+| Shortcut | Action |
+|----------|--------|
+| <kbd>Super</kbd> + <kbd>Shift</kbd> + <kbd>k</kbd> | Open searchable keybinds menu (Rofi/Waybar integration) |
+
+This menu parses your configuration and allows you to fuzzy-search every single keybind mapped in Dusky OS.
+
+---
+
 ## Core Keyboard Shortcuts
 
 > **Note:** Dusky is based on DWM, so it inherits DWM's keybinding conventions. The exact keybindings may differ from vanilla DWM — **always check the `config.h` file in the [Dusky repository](https://github.com/dusklinux/dusky) for the definitive keybindings.** The shortcuts below reflect DWM defaults as a baseline.
 
-The **Mod key** is typically `Super` (Windows key) or `Alt`, depending on the Dusky configuration.
+The **Mod key** is typically <kbd>Super</kbd> (Windows key) or <kbd>Alt</kbd>, depending on the Dusky configuration.
 
 | Shortcut | Action |
 |----------|--------|
-| `Mod + Enter` | Open terminal (usually `st` or `alacritty`) |
-| `Mod + p` | Open application launcher (`dmenu`) |
-| `Mod + d` | Alternative launcher (if configured) |
-| `Mod + Shift + c` | Close focused window |
-| `Mod + Shift + q` | Quit DWM / Dusky (logout) |
-| `Mod + b` | Toggle status bar visibility |
+| <kbd>Mod</kbd> + <kbd>Enter</kbd> | Open terminal (usually `st` or `alacritty`) |
+| <kbd>Mod</kbd> + <kbd>p</kbd> | Open application launcher (`rofi` or `dmenu`) |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>c</kbd> | Close focused window |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>q</kbd> | Quit DWM / Dusky (logout) |
+| <kbd>Mod</kbd> + <kbd>b</kbd> | Toggle status bar visibility |
 
 ---
 
@@ -111,10 +125,10 @@ The **Mod key** is typically `Super` (Windows key) or `Alt`, depending on the Du
 
 | Shortcut | Action |
 |----------|--------|
-| `Mod + j` | Focus next window in stack |
-| `Mod + k` | Focus previous window in stack |
-| `Mod + Return` | Promote focused window to master area |
-| `Mod + Tab` | Switch to last active tag/workspace |
+| <kbd>Mod</kbd> + <kbd>j</kbd> | Focus next window in stack |
+| <kbd>Mod</kbd> + <kbd>k</kbd> | Focus previous window in stack |
+| <kbd>Mod</kbd> + <kbd>Return</kbd> | Promote focused window to master area |
+| <kbd>Mod</kbd> + <kbd>Tab</kbd> | Switch to last active tag/workspace |
 
 ### Resizing
 
@@ -186,20 +200,62 @@ Unlike GNOME/KDE workspaces, DWM tags are more flexible:
 
 ---
 
-## Application Launching
+## Application Launching (Rofi)
+
+Dusky leverages **Rofi** for a beautiful, Waybar-integrated Tokyo Night themed launcher experience.
 
 | Shortcut | Action |
 |----------|--------|
-| `Mod + p` | Open `dmenu_run` (type to search and launch any program) |
-| `Mod + Enter` | Open terminal emulator |
+| <kbd>Mod</kbd> + <kbd>p</kbd> | Open standard app launcher |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>w</kbd> | Window selection menu (switch open windows) |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>e</kbd> | Rofi power menu (Shutdown/Reboot) |
 
-### dmenu Tips
+### Rofi Tips
 
-- Start typing the application name — dmenu fuzzy-matches
-- Use `Tab` to autocomplete
-- `Enter` to launch
-- `Escape` to cancel
-- `Shift + Enter` to run in terminal
+- Start typing the application name — Rofi fuzzy-matches instantly.
+- Use <kbd>Tab</kbd> to autocomplete.
+- <kbd>Enter</kbd> to launch.
+- <kbd>Escape</kbd> to cancel.
+
+---
+
+## Theming & Aesthetics
+
+Dusky allows advanced theming and visual changes using integrated scripts and commands. 
+
+### Tokyo Night Theme Defaults
+By default, Dusky implements a comprehensive Tokyo Night color palette. This applies to the terminal, borders, Rofi, and Waybar.
+
+### Change Wallpaper
+
+Dusky includes advanced scripts to dynamically change wallpapers and sync the system colors.
+
+```bash
+# Set wallpaper and update colors
+dusky-wallpaper --set /path/to/wallpaper.png
+
+# Cycle through random wallpapers in a directory
+dusky-wallpaper --random ~/Pictures/Wallpapers
+```
+
+### Change Window Styles (Borders/Gaps)
+
+You can adjust window gaps and border styling on the fly:
+
+| Shortcut | Action |
+|----------|--------|
+| <kbd>Mod</kbd> + <kbd>-</kbd> | Decrease window gaps |
+| <kbd>Mod</kbd> + <kbd>=</kbd> | Increase window gaps |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>=</kbd> | Reset window gaps to default |
+
+You can also use the CLI:
+```bash
+# Set gaps to 10px
+dusky-gaps --set 10
+
+# Toggle between rounded and sharp borders
+dusky-borders --toggle
+```
 
 ---
 

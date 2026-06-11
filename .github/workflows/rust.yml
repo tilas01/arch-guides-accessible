@@ -245,6 +245,8 @@ jobs:
           files: |
             release-staging/*
             scripts/deploy-security-suite.sh
+            scripts/verify-integrity.sh
+            scripts/verify-integrity.bat
           draft: false
           prerelease: false
         env:
