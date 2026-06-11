@@ -24,9 +24,10 @@
             <p style="color:var(--fg-color); opacity:0.9; text-align:left; line-height:1.6; font-size:0.95rem;">
                 By using the <strong>Arch Guides Dynamic Generator</strong> and the <strong>Arch Rusty Security Suite</strong>, you acknowledge:
                 <br><br>
-                1. <strong>DoD Disk Wipes:</strong> Certain features (like Panic Password) permanently destroy data. There is no recovery.<br>
-                2. <strong>Firmware Lockouts:</strong> Anti-Evil Maid and Libre-OTP will lock you out of your device for 24 hours if triggered. Do not lose your recovery keys.<br>
-                3. <strong>Liability:</strong> The author (tilas01) is not responsible for data loss, system bricking, or targeted attacks failing to be mitigated.
+                🍪 <strong>Session-Only:</strong> We use no cookies. Generation history resets when the tab closes.<br>
+                💥 <strong>DoD Disk Wipes:</strong> Certain features (like Panic Password) permanently destroy data. There is no recovery.<br>
+                🔒 <strong>Firmware Lockouts:</strong> Anti-Evil Maid and Libre-OTP will lock you out of your device for 24 hours if triggered.<br>
+                ⚖️ <strong>Liability:</strong> The author (tilas01) is not responsible for data loss, system bricking, or targeted attacks failing to be mitigated.
             </p>
             <button id="accept-waiver-btn" class="btn" style="background:var(--accent-red); color:var(--bg-color); border:none; margin-top:1.5rem; width:100%;">I Understand and Accept the Risks</button>
         </div>
@@ -90,9 +91,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--bg-lighter);">
                     <div style="display:flex; align-items:center; gap:10px;">
                           <h3 style="margin:0; color:var(--accent-cyan); font-size:1.1rem;">Generator Settings</h3>
-                          <label class="nav-tooltip" data-title="Global Ask Mode" data-desc="If enabled, all configuration and password prompts are asked here in the UI. If disabled, the generated script will prompt you live." style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.9rem; background:var(--bg-darker); padding:0.3rem 0.6rem; border-radius:6px; border:1px solid var(--accent-blue);">
-                              <input type="checkbox" id="global_ask_toggle" checked style="margin:0;"> Ask all questions in generator now
-                          </label>
+                          
                       </div>
                       
                 </div>
@@ -1271,6 +1270,13 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                             📤 Upload
                             <input type="file" id="upload-file-input" accept=".sh,.md,.bash,.txt" style="display:none">
                         </label>
+                          <div style="display:flex; align-items:center; gap:8px; margin-right:auto; background:var(--bg-darker); padding:0.4rem 0.8rem; border-radius:8px; border:1px solid var(--bg-lighter);" class="nav-tooltip" data-title="Global Ask Mode" data-desc="If enabled, all configuration prompts are asked here in the UI. If disabled, the generated script will prompt you live.">
+                              <span style="font-size:0.85rem; color:var(--accent-cyan); font-weight:bold;">Ask in UI Generator:</span>
+                              <label class="switch">
+                                  <input type="checkbox" id="global_ask_toggle" checked>
+                                  <span class="slider"></span>
+                              </label>
+                          </div>
                           <label class="btn nav-tooltip" data-title="Upload Selection Config (.sc)" data-desc="Restore all generator form settings from a previously downloaded .sc JSON config file. This is distinct from the Live Editor which handles .sh/.md files." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem;">
                         📤 Upload .sc Config
                         <input type="file" id="upload-sc-input" accept=".sc" style="display:none">
