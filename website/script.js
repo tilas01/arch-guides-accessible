@@ -1,4 +1,4 @@
-// =============================================
+﻿// =============================================
 // Arch Guides Dynamic - Main Script
 // Arch Rusty Security Suite by tilas01
 // =============================================
@@ -85,7 +85,7 @@ window.toggleHistoryModal = function() {
 };
 
 
-// â”€â”€â”€ Page switching: Generator â†” Output â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Page switching: Generator ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Â Output ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 function showOutputPage(mdContent, shContent, format, scContent) {
     const genArea   = document.querySelector('.layout-container');
     const outputSec = document.getElementById('output-section');
@@ -105,7 +105,7 @@ function showOutputPage(mdContent, shContent, format, scContent) {
             b.setAttribute('data-title', 'Download Markdown Guide');
             b.setAttribute('data-desc', 'Download the generated installation guide as a .md file.');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-cyan);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = '⬇ Download .md';
+            b.textContent = 'Ã¢Â¬â€¡ Download .md';
             b.onclick = () => downloadFile(mdContent, 'arch-install-guide.md');
             dlContainer.appendChild(b);
         }
@@ -115,7 +115,7 @@ function showOutputPage(mdContent, shContent, format, scContent) {
             b.setAttribute('data-title', 'Download Shell Script');
             b.setAttribute('data-desc', 'Download the generated Bash install script as a .sh file. REVIEW before executing!');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-blue);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = '⬇ Download .sh';
+            b.textContent = 'Ã¢Â¬â€¡ Download .sh';
             b.onclick = () => downloadFile(shContent, 'arch-install.sh');
             dlContainer.appendChild(b);
         }
@@ -125,7 +125,7 @@ function showOutputPage(mdContent, shContent, format, scContent) {
             b.setAttribute('data-title', 'Download Selection Config (.sc)');
             b.setAttribute('data-desc', 'Download your exact form selections as a .sc JSON file so you can restore them later.');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-purple);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = '⬇ Download .sc';
+            b.textContent = 'Ã¢Â¬â€¡ Download .sc';
             b.onclick = () => downloadFile(scContent, 'arch-config.sc');
             dlContainer.appendChild(b);
         }
@@ -252,16 +252,15 @@ window.generateOutput = function(auto = false) {
 
     const configJSON = JSON.stringify(getFormValues(), null, 2);
 
-    // â”€â”€ Validation â”€â”€
+    // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Validation Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
     const errors = [];
     
     // Clear previous highlights
     document.querySelectorAll('select').forEach(sel => sel.style.border = '');
 
-    // Strict dropdown checking
+    // Strict dropdown checking: Only validate truly visible selects
     const requiredSelects = Array.from(document.querySelectorAll('select')).filter(sel => {
-        // Only validate visible selects
-        return sel.closest('.form-group') && sel.closest('.form-group').style.display !== 'none';
+        return sel.offsetParent !== null;
     });
 
     let firstErrorEl = null;
@@ -269,27 +268,50 @@ window.generateOutput = function(auto = false) {
     requiredSelects.forEach(sel => {
         if (!sel.value) {
             const stepName = sel.closest('.form-step')?.getAttribute('data-title') || sel.id;
-            errors.push(`<a href="#" style="color:var(--accent-red);text-decoration:underline;" onclick="document.getElementById('${sel.id}').scrollIntoView({behavior:'smooth', block:'center'}); document.getElementById('${sel.id}').focus(); return false;">Must complete step: ${stepName}</a>`);
+            errors.push(`<li style="margin-bottom:0.3rem;"><a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;">${stepName}</a></li>`);
             sel.style.border = '2px solid var(--accent-red)';
             if (!firstErrorEl) firstErrorEl = sel;
         }
     });
 
-    if (fw === "bios" && boot !== "grub") errors.push("Legacy BIOS requires GRUB. UKI/systemd-boot are UEFI only.");
-    if (fw === "bios" && part.includes("luks2")) errors.push("GRUB has limited LUKS2 support on BIOS. Use LUKS1.");
+    if (fw === "bios" && boot !== "grub") errors.push(`<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">Legacy BIOS requires GRUB. UKI/systemd-boot are UEFI only.</span></li>`);
+    if (fw === "bios" && part.includes("luks2")) errors.push(`<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">GRUB has limited LUKS2 support on BIOS. Use LUKS1.</span></li>`);
 
-    let errorDiv = document.getElementById("config-errors");
-    if (!errorDiv) { errorDiv = document.createElement("div"); errorDiv.id = "config-errors"; document.getElementById("install-form").prepend(errorDiv); }
+    const errorBox = document.getElementById("generate-error-box");
+    const errorList = document.getElementById("error-list");
+    const errorCount = document.getElementById("error-count");
+
+    // Remove legacy config-errors if it exists
+    const legacyErrorDiv = document.getElementById("config-errors");
+    if (legacyErrorDiv) legacyErrorDiv.remove();
+
     if (errors.length > 0) {
-        errorDiv.innerHTML = `<div class="alert warning" style="border-left-color:var(--accent-red);"><strong>âš  Generation Blocked (Missing Selections):</strong><ul style="margin-top:0.5rem;line-height:1.6;">${errors.map(e=>`<li>${e}</li>`).join("")}</ul></div>`;
-        if (firstErrorEl) {
-            firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (errorBox && errorList && errorCount) {
+            errorCount.textContent = errors.length;
+            errorList.innerHTML = errors.join("");
+            errorBox.style.display = 'block';
+            
+            // Teleport to first error on click
+            errorBox.onclick = () => {
+                if (firstErrorEl) {
+                    firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstErrorEl.focus();
+                }
+            };
+            
+            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
+            // Fallback if HTML doesn't have the new box
+            let errorDiv = document.createElement("div"); 
+            errorDiv.id = "config-errors"; 
+            document.getElementById("install-form").prepend(errorDiv);
+            errorDiv.innerHTML = `<div class="alert warning" style="border-left-color:var(--accent-red); padding: 0.8rem;"><strong>Ã¢Å¡Â Ã¯Â¸Â Missing Selections:</strong> <ul>${errors.join("")}</ul></div>`;
             window.scrollTo(0, 0);
         }
         return;
     }
-    errorDiv.innerHTML = "";
+    
+    if (errorBox) errorBox.style.display = 'none';
 
     // Default Profiles Check for Apps & Security
     const hasApps = document.querySelectorAll('input[name="post_apps"]:checked').length > 0;
@@ -320,7 +342,7 @@ window.generateOutput = function(auto = false) {
     let partEfi = disk + (disk.includes("nvme") ? "p1" : "1");
     let partRoot = disk + (disk.includes("nvme") ? "p2" : "2");
 
-    // â”€â”€ Proprietary Software Analysis â”€â”€
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Proprietary Software Analysis ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     const propAppsDB = {
         'discord': 'Discord is closed-source and tracks user activity. Use WebCord or matrix-bridges for a libre alternative.',
         'steam': 'Steam is a proprietary storefront and DRM client by Valve.',
@@ -340,7 +362,7 @@ window.generateOutput = function(auto = false) {
     // Strict Libre enforcement
     if (software_type === 'libre' && selectedPropApps.length > 0) {
         const reasons = selectedPropApps.map(a => `\n- ${a.toUpperCase()}: ${propAppsDB[a]}`).join('');
-        if (!confirm(`âš  STRICT LIBRE WARNING âš \n\nYou selected "Libre + Open Source 100% Only", but have selected software containing proprietary code:\n${reasons}\n\nDo you want to override your Libre setting and allow these proprietary blobs?`)) {
+        if (!confirm(`ÃƒÂ¢Ã…Â¡Ã‚Â  STRICT LIBRE WARNING ÃƒÂ¢Ã…Â¡Ã‚Â \n\nYou selected "Libre + Open Source 100% Only", but have selected software containing proprietary code:\n${reasons}\n\nDo you want to override your Libre setting and allow these proprietary blobs?`)) {
             return;
         }
     }
@@ -349,7 +371,6 @@ window.generateOutput = function(auto = false) {
     function buildOutput(cmdOnly) {
         let o = "";
         // Hidden config (only in raw source, stripped from preview)
-        // Hidden config inside markdown for Live Editor compatibility
         const configObj = getFormValues();
         o += '<!-- CONFIG_START\n' + JSON.stringify(configObj) + '\nCONFIG_END -->\n\n';
 
@@ -358,37 +379,63 @@ window.generateOutput = function(auto = false) {
             o += `> *Generated for your specific hardware. Review every command before running.*\n\n`;
             o += `## 1. Partitioning & Formatting (${part} + ${fs})\n\`\`\`bash\n`;
         } else {
-            o += `#!/bin/bash\n# Arch Rusty Security Suite by tilas01 â€” Generated Script\n# WARNING: Review ALL commands!\nset -e\n\n# 1. Partitioning\n`;
+            o += `#!/bin/bash\n# Arch Rusty Security Suite by tilas01 Ã¢â‚¬â€ Generated Script\n# WARNING: Review ALL commands!\nset -e\n\n`;
+            o += `export COLOR_BG="\\e[48;2;26;27;38m"\n`;
+            o += `export COLOR_FG="\\e[38;2;192;202;245m"\n`;
+            o += `export COLOR_RED="\\e[38;2;247;118;142m"\n`;
+            o += `export COLOR_BLUE="\\e[38;2;122;162;247m"\n`;
+            o += `export COLOR_RESET="\\e[0m"\n`;
+            o += `echo -e "\${COLOR_BG}\${COLOR_FG}"\n`;
+            o += `clear\n`;
+            o += `echo -e "\${COLOR_BLUE}========================================================================\${COLOR_RESET}"\n`;
+            o += `echo -e "\${COLOR_BLUE}             ARCH RUSTY SECURITY SUITE Ã¢â‚¬â€ AUTO-INSTALLER                 \${COLOR_RESET}"\n`;
+            o += `echo -e "\${COLOR_BLUE}========================================================================\${COLOR_RESET}\n\n"\n`;
+            
+            // Jetbrains Mono Setup via pacman (only if baremetal, wait, TTY can only use PSF fonts like terminus)
+            o += `pacman -Sy --noconfirm terminus-font\nsetfont ter-v24b\n\n`;
+            
+            o += `# 1. Partitioning\n`;
         }
 
         // Partitioning
         if (fw === "uefi") {
-            o += `sgdisk -Z ${disk}\nsgdisk -n 1:0:+512M -t 1:ef00 ${disk}\nsgdisk -n 2:0:0 -t 2:8300 ${disk}\nmkfs.fat -F32 ${partEfi}\n`;
+            o += `sgdisk -Z ${disk}\nsgdisk -n 1:0:+512M -t 1:ef00 ${disk}\nsgdisk -n 2:0:0 -t 2:8300 ${disk}\n`;
+            o += `partprobe ${disk}\nsleep 2\nmkfs.fat -F32 ${partEfi}\n`;
         } else {
-            o += `sgdisk -Z ${disk}\nsgdisk -n 1:0:+2M -t 1:ef02 ${disk}\nsgdisk -n 2:0:0 -t 2:8300 ${disk}\n`;
+            o += `sgdisk -Z ${disk}\nsgdisk -n 1:0:+2M -t 1:ef02 ${disk}\nsgdisk -n 2:0:0 -t 2:8300 ${disk}\npartprobe ${disk}\nsleep 2\n`;
         }
 
         let targetMount = partRoot;
         if (part === "luks1") {
-            o += `cryptsetup luksFormat --type luks1 -c aes-xts-plain64 -s 512 -h sha512 ${partRoot}\ncryptsetup open ${partRoot} cryptroot\n`;
+            o += `cryptsetup luksFormat --type luks1 -c aes-xts-plain64 -s 512 -h sha512 ${partRoot}\n`;
+            o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
+            o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
             targetMount = "/dev/mapper/cryptroot";
         } else if (part === "luks2") {
-            o += `cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 ${partRoot}\ncryptsetup open ${partRoot} cryptroot\n`;
+            o += `cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 ${partRoot}\n`;
+            o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
+            o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
             targetMount = "/dev/mapper/cryptroot";
         } else if (part.includes("lvm")) {
-            o += `cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 ${partRoot}\ncryptsetup open ${partRoot} cryptlvm\npvcreate /dev/mapper/cryptlvm\nvgcreate vg0 /dev/mapper/cryptlvm\nlvcreate -l 100%FREE vg0 -n root\n`;
+            o += `cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 ${partRoot}\n`;
+            o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
+            o += `cryptsetup open UUID=$LUKS_UUID cryptlvm\npvcreate /dev/mapper/cryptlvm\nvgcreate vg0 /dev/mapper/cryptlvm\nlvcreate -l 100%FREE vg0 -n root\n`;
             targetMount = "/dev/vg0/root";
         }
 
         if (fs === "btrfs") {
-            o += `mkfs.btrfs -f ${targetMount}\nmount ${targetMount} /mnt\nbtrfs subvolume create /mnt/@\nbtrfs subvolume create /mnt/@home\nbtrfs subvolume create /mnt/@var\nbtrfs subvolume create /mnt/@snapshots\numount /mnt\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@ ${targetMount} /mnt\nmkdir -p /mnt/{home,var,.snapshots}\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@home ${targetMount} /mnt/home\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@var ${targetMount} /mnt/var\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@snapshots ${targetMount} /mnt/.snapshots\n`;
+            o += `mkfs.btrfs -f ${targetMount}\nmount ${targetMount} /mnt\nbtrfs subvolume create /mnt/@\nbtrfs subvolume create /mnt/@home\nbtrfs subvolume create /mnt/@var\nbtrfs subvolume create /mnt/@snapshots\numount /mnt\n`;
+            o += `ROOT_UUID=$(blkid -s UUID -o value ${targetMount})\n`;
+            o += `mount -o noatime,compress=zstd,space_cache=v2,subvol=@ UUID=$ROOT_UUID /mnt\nmkdir -p /mnt/{home,var,.snapshots}\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@home UUID=$ROOT_UUID /mnt/home\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@var UUID=$ROOT_UUID /mnt/var\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@snapshots UUID=$ROOT_UUID /mnt/.snapshots\n`;
         } else if (fs === "xfs") {
-            o += `mkfs.xfs -f ${targetMount}\nmount ${targetMount} /mnt\n`;
+            o += `mkfs.xfs -f ${targetMount}\nROOT_UUID=$(blkid -s UUID -o value ${targetMount})\nmount UUID=$ROOT_UUID /mnt\n`;
         } else {
-            o += `mkfs.ext4 ${targetMount}\nmount ${targetMount} /mnt\n`;
+            o += `mkfs.ext4 ${targetMount}\nROOT_UUID=$(blkid -s UUID -o value ${targetMount})\nmount UUID=$ROOT_UUID /mnt\n`;
         }
 
-        if (fw === "uefi") o += `mkdir -p /mnt/efi\nmount ${partEfi} /mnt/efi\n`;
+        if (fw === "uefi") {
+            o += `mkdir -p /mnt/efi\nEFI_UUID=$(blkid -s UUID -o value ${partEfi})\nmount UUID=$EFI_UUID /mnt/efi\n`;
+        }
 
         if (swap_size !== "0") {
             if (fs === "btrfs") o += `btrfs filesystem mkswapfile --size ${swap_size} /mnt/swapfile\n`;
@@ -423,8 +470,28 @@ window.generateOutput = function(auto = false) {
         o += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
 
         if (cmdOnly) {
-            o += `\ncat << 'EOF' > /mnt/chroot_script.sh\n#!/bin/bash\npasswd root\n`;
-            for (let u = 1; u <= user_count; u++) o += `read -p "Username ${u}: " u${u}\nuseradd -m -G wheel -s /bin/bash "$u${u}"\npasswd "$u${u}"\n`;
+            o += `\ncat << 'EOF' > /mnt/chroot_script.sh\n#!/bin/bash\nexport COLOR_BLUE="\\e[38;2;122;162;247m"\nexport COLOR_RESET="\\e[0m"\n`;
+            o += `echo -e "\${COLOR_BLUE}>> ENTERING CHROOT: Post-Install Configuration...\${COLOR_RESET}"\n`;
+            o += `passwd root\n`;
+            for (let u = 1; u <= user_count; u++) {
+                o += `read -p "Username ${u}: " u${u}\nuseradd -m -G wheel -s /bin/bash "$u${u}"\npasswd "$u${u}"\n`;
+            }
+            
+            o += `echo -e "\\n\\e[38;2;247;118;142m>> Interactive Configuration\\e[0m"\n`;
+            o += `read -p "Install JetBrains Mono & Terminal Themes? (y/N): " setup_themes\n`;
+            o += `if [[ "$setup_themes" =~ ^[Yy]$ ]]; then\n`;
+            o += `  pacman -S --noconfirm ttf-jetbrains-mono ttf-jetbrains-mono-nerd\n`;
+            o += `  echo "Available Themes: 1) Tokyo Night  2) Dracula  3) Gruvbox  4) Nordic"\n`;
+            o += `  read -p "Select Theme (1-4): " theme_sel\n`;
+            o += `  case "$theme_sel" in\n`;
+            o += `    1) THEME="tokyonight" ;;\n`;
+            o += `    2) THEME="dracula" ;;\n`;
+            o += `    3) THEME="gruvbox" ;;\n`;
+            o += `    4) THEME="nordic" ;;\n`;
+            o += `    *) THEME="tokyonight" ;;\n`;
+            o += `  esac\n`;
+            o += `  echo "Theme $THEME selected (Configuration will be applied via dotfiles / user bashrc)"\n`;
+            o += `fi\n`;
         } else {
             o += `arch-chroot /mnt\n`;
         }
@@ -448,6 +515,11 @@ window.generateOutput = function(auto = false) {
         if (fw === "bios" || boot.includes("grub")) {
             o += `pacman -S --noconfirm grub efibootmgr\n`;
             o += fw === "uefi" ? `grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB\n` : `grub-install --target=i386-pc ${disk}\n`;
+            if (part !== "unencrypted") {
+                o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
+                o += `sed -i "s|^GRUB_CMDLINE_LINUX=.*|GRUB_CMDLINE_LINUX=\\"cryptdevice=UUID=$LUKS_UUID:cryptroot root=/dev/mapper/cryptroot\\"|" /etc/default/grub\n`;
+                o += `echo "GRUB_ENABLE_CRYPTODISK=y" >> /etc/default/grub\n`;
+            }
             o += `grub-mkconfig -o /boot/grub/grub.cfg\n`;
         } else if (boot.includes("uki")) {
             o += `pacman -S --noconfirm sbsigntools efitools efibootmgr\n`;
@@ -523,7 +595,7 @@ window.generateOutput = function(auto = false) {
         // Hardened OpenSSH setup
         if (post_apps.includes('openssh')) {
             if (!cmdOnly) o += `\`\`\`\n\n### OpenSSH Server Setup (Hardened)\n\`\`\`bash\n`;
-            else o += `\n# OpenSSH — Hardened Setup\n`;
+            else o += `\n# OpenSSH Ã¢â‚¬â€ Hardened Setup\n`;
             o += `# Generate Ed25519 host keys\n`;
             o += `ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ""\n`;
             o += `rm -f /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key /etc/ssh/ssh_host_ecdsa_key\n`;
@@ -547,12 +619,12 @@ window.generateOutput = function(auto = false) {
             o += `systemctl enable sshd.service\n`;
             o += `echo "# SSH private key saved: $USER_SSH_DIR/id_ed25519"\n`;
             o += `echo "# Copy id_ed25519 to your client machine before rebooting!"\n`;
-            if (!cmdOnly) o += `\`\`\`\n\n> ⚠️ **Save your SSH private key** (\`~/.ssh/id_ed25519\`) to your client machine before rebooting. Password auth is disabled.\n\n`;
+            if (!cmdOnly) o += `\`\`\`\n\n> Ã¢Å¡Â Ã¯Â¸Â **Save your SSH private key** (\`~/.ssh/id_ed25519\`) to your client machine before rebooting. Password auth is disabled.\n\n`;
         }
 
         // Snapper hooks
         if (post_apps.includes('snapper')) {
-            o += `# Snapper — BTRFS snapshot config\n`;
+            o += `# Snapper Ã¢â‚¬â€ BTRFS snapshot config\n`;
             o += `snapper -c root create-config /\n`;
             o += `systemctl enable --now snapper-timeline.timer snapper-cleanup.timer\n`;
             o += `# Install grub-btrfs for rollback menu\n`;
@@ -572,7 +644,7 @@ window.generateOutput = function(auto = false) {
             if (!cmdOnly) o += `\n### Dusky OS Auto-Setup\n> Watch the [YouTube guide](https://www.youtube.com/watch?v=JmgvSdEIK8c) and read the [dusky repo](https://github.com/dusklinux/dusky) cheatsheet before running.\n\n\`\`\`bash\n`;
             else o += `\n# Dusky OS Auto-Setup (by dusklinux)\n# Watch: https://www.youtube.com/watch?v=JmgvSdEIK8c\n# Repo:  https://github.com/dusklinux/dusky\n`;
             o += `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && ./install.sh"\n`;
-            if (!cmdOnly) o += `\`\`\`\n\n> 📋 **Cheatsheet**: \`/tmp/dusky/cheatsheet.md\` — Hyprland keybinds and workflow\n`;
+            if (!cmdOnly) o += `\`\`\`\n\n> Ã°Å¸â€œâ€¹ **Cheatsheet**: \`/tmp/dusky/cheatsheet.md\` Ã¢â‚¬â€ Hyprland keybinds and workflow\n`;
         }
 
         if (vm_guest === "vbox") o += `systemctl enable vboxservice.service\n`;
@@ -606,7 +678,33 @@ window.generateOutput = function(auto = false) {
                 o += `\n# Configuring Panic Password\narch-rusty-security-suite panic --setup\n`;
             }
             if (arss_tools.includes("evil-maid")) {
-                o += `\n# Configuring Anti-Evil Maid\narch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup}\n`;
+                if (cmdOnly) {
+                    o += `\n# Configuring Anti-Evil Maid (Interactive)\n`;
+                    o += `echo -e "\\n\\e[38;2;247;118;142m>> Anti-Evil Maid Configuration\\e[0m"\n`;
+                    o += `echo "Decoy Kernels setup:"\n`;
+                    o += `echo "1) 1 Decoy Kernel"\n`;
+                    o += `echo "2) 2 Decoy Kernels"\n`;
+                    o += `echo "3) Random (Cryptographically secure selection)"\n`;
+                    o += `read -p "Select Decoy Mode (1-3): " aem_decoy_mode\n`;
+                    o += `case "$aem_decoy_mode" in\n`;
+                    o += `  1) DECOY_MODE="--decoy-count 1" ;;\n`;
+                    o += `  2) DECOY_MODE="--decoy-count 2" ;;\n`;
+                    o += `  3) DECOY_MODE="--decoy-count random" ;;\n`;
+                    o += `  *) DECOY_MODE="--decoy-count 1" ;;\n`;
+                    o += `esac\n`;
+                    o += `arch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} $DECOY_MODE\n`;
+                } else {
+                    o += `\n# Configuring Anti-Evil Maid\narch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} --decoy-count 1\n`;
+                }
+                
+                o += `cat << 'AEM_DAEMON' > /etc/systemd/system/arss-aem.service\n[Unit]\nDescription=ARSS Anti-Evil Maid Daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/arch-rusty-security-suite aem --daemon\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nAEM_DAEMON\n`;
+                o += `systemctl enable arss-aem.service\n`;
+                
+                // Add regular file system hash checks via cron
+                o += `cat << 'AEM_HASH' > /usr/local/bin/arss-fs-hash-check.sh\n#!/bin/bash\n`;
+                o += `arch-rusty-security-suite aem --fs-hash-check >> /var/log/arss-fs-hash.log 2>&1\nAEM_HASH\n`;
+                o += `chmod +x /usr/local/bin/arss-fs-hash-check.sh\n`;
+                o += `(crontab -l 2>/dev/null; echo "0 * * * * /usr/local/bin/arss-fs-hash-check.sh") | crontab -\n`;
             }
             if (arss_tools.includes("anti-ducky")) {
                 o += `\n# Configuring Input Guard (Anti-Ducky)\narch-rusty-security-suite ducky --approve-current\n`;
@@ -655,33 +753,44 @@ window.generateOutput = function(auto = false) {
             o += `arch-rusty-security-suite verify-iso /dev/sr0  # or USB path\n`;
         }
 
-        if (auto_updates === "yes") {
+        if (auto_updates === "yes" || post_apps.includes("unattended-upgrades")) {
             if (!cmdOnly) o += `\`\`\`\n\n## 10. Auto Updates\n\`\`\`bash\n`;
             else o += `\n# 10. Auto Updates\n`;
-            o += `systemctl enable cronie\ncat << 'CRON_SCRIPT' > /usr/local/bin/auto-update.sh\n#!/bin/bash\n`;
-            o += `echo "[$(date)] Starting full system auto-update..." >> /var/log/auto-update.log\n`;
-            o += `pacman -Syu --noconfirm >> /var/log/auto-update.log 2>&1\n`;
-            o += `if id "builder" >/dev/null 2>&1 && command -v paru >/dev/null 2>&1; then\n`;
-            o += `  su - builder -c "paru -Sua --noconfirm" >> /var/log/auto-update.log 2>&1\n`;
-            o += `fi\n`;
-            o += `echo "[$(date)] System update complete." >> /var/log/auto-update.log\n`;
-            o += `# If system is inactive (0 users logged in), reboot to apply kernel/systemd updates\n`;
-            o += `if [ "$(who | wc -l)" -eq 0 ]; then\n`;
-            o += `  echo "[$(date)] System inactive. Rebooting to apply updates..." >> /var/log/auto-update.log\n`;
-            o += `  reboot\n`;
-            o += `fi\n`;
-            o += `CRON_SCRIPT\nchmod +x /usr/local/bin/auto-update.sh\n(crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/auto-update.sh") | crontab -\n`;
+            o += `systemctl enable cronie\n`;
+            if (post_apps.includes("unattended-upgrades")) {
+                o += `su - builder -c "paru -S --noconfirm unattended-upgrades"\n`;
+                o += `mkdir -p /etc/unattended-upgrades\n`;
+                o += `cat << 'UPCONF' > /etc/unattended-upgrades/unattended-upgrades.conf\n`;
+                o += `Unattended-Upgrade::Automatic-Reboot "true";\n`;
+                o += `Unattended-Upgrade::Automatic-Reboot-Time "03:00";\n`;
+                o += `UPCONF\n`;
+                o += `systemctl enable --now unattended-upgrades.timer\n`;
+            } else {
+                o += `cat << 'CRON_SCRIPT' > /usr/local/bin/auto-update.sh\n#!/bin/bash\n`;
+                o += `echo "[$(date)] Starting full system auto-update..." >> /var/log/auto-update.log\n`;
+                o += `pacman -Syu --noconfirm >> /var/log/auto-update.log 2>&1\n`;
+                o += `if id "builder" >/dev/null 2>&1 && command -v paru >/dev/null 2>&1; then\n`;
+                o += `  su - builder -c "paru -Sua --noconfirm" >> /var/log/auto-update.log 2>&1\n`;
+                o += `fi\n`;
+                o += `echo "[$(date)] System update complete." >> /var/log/auto-update.log\n`;
+                o += `# If system is inactive (0 users logged in), reboot to apply kernel/systemd updates\n`;
+                o += `if [ "$(who | wc -l)" -eq 0 ]; then\n`;
+                o += `  echo "[$(date)] System inactive. Rebooting to apply updates..." >> /var/log/auto-update.log\n`;
+                o += `  reboot\n`;
+                o += `fi\n`;
+                o += `CRON_SCRIPT\nchmod +x /usr/local/bin/auto-update.sh\n(crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/auto-update.sh") | crontab -\n`;
+            }
         }
 
-        // â”€â”€ Download Cheatsheets â”€â”€
+        // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Download Cheatsheets ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
         if (cmdOnly) {
             o += `\n# Downloading Cheatsheets\n`;
-            o += `mkdir -p /home/$NEWUSER/cheatsheets\n`;
-            o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/arch-commands.md" -o /home/$NEWUSER/cheatsheets/arch-commands.md\n`;
+            o += `mkdir -p /home/$u1/cheatsheets\n`;
+            o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/arch-commands.md" -o /home/$u1/cheatsheets/arch-commands.md\n`;
             if (desktop === 'dusky') {
-                o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/duskyos-hyprland.md" -o /home/$NEWUSER/cheatsheets/duskyos-hyprland.md\n`;
+                o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/duskyos-hyprland.md" -o /home/$u1/cheatsheets/duskyos-hyprland.md\n`;
             }
-            o += `chown -R $NEWUSER:$NEWUSER /home/$NEWUSER/cheatsheets\n`;
+            o += `chown -R $u1:$u1 /home/$u1/cheatsheets\n`;
         } else {
             o += `\n### 11. Download Cheatsheets\n\`\`\`bash\nmkdir -p ~/cheatsheets\ncurl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/arch-commands.md" -o ~/cheatsheets/arch-commands.md\n`;
             if (desktop === 'dusky') {
@@ -690,18 +799,33 @@ window.generateOutput = function(auto = false) {
             o += `\`\`\`\n`;
         }
 
+        // Setup Phase 2 Script Rollover
         if (cmdOnly) {
+            o += `\ncat << 'ROLLOVER' > /home/$u1/post_boot_setup.sh\n`;
+            o += `#!/bin/bash\n`;
+            o += `echo -e "\\e[38;2;122;162;247mWelcome to your new Arch Installation!\\e[0m"\n`;
+            if (desktop === "dusky") {
+                o += `echo "Please log in and run 'Hyprland' to start your desktop environment."\n`;
+            }
+            o += `echo "Cleaning up installer scripts..."\n`;
+            o += `rm -f /home/$u1/post_boot_setup.sh\n`;
+            o += `ROLLOVER\n`;
+            o += `chmod +x /home/$u1/post_boot_setup.sh\n`;
+            o += `chown $u1:$u1 /home/$u1/post_boot_setup.sh\n`;
+            // Add execution of rollover to bashrc so it runs on first login
+            o += `echo "/home/$u1/post_boot_setup.sh" >> /home/$u1/.bashrc\n`;
+            
             o += `EOF\nchmod +x /mnt/chroot_script.sh\narch-chroot /mnt /chroot_script.sh\n`;
             if (cleanup === "yes") o += `arch-chroot /mnt pacman -Scc --noconfirm\nrm -rf /mnt/var/cache/pacman/pkg/* /mnt/tmp/*\n`;
-            o += `rm /mnt/chroot_script.sh\necho "Install complete! Run: reboot"\n`;
+            o += `rm -f /mnt/chroot_script.sh\necho -e "\${COLOR_BLUE}>> INSTALL COMPLETE! You may now run 'reboot'\${COLOR_RESET}"\n`;
         } else {
-            o += `\`\`\`\n\n---\n*Guide complete. Reboot into your ${desktop !== "none" ? desktop : "TTY"} environment.*\n*Generated by [Arch Guides Dynamic](https://tilas01.github.io/arch-guides-dynamic/) â€” by [tilas01](https://github.com/tilas01)*\n`;
+            o += `\`\`\`\n\n---\n*Guide complete. Reboot into your ${desktop !== "none" ? desktop : "TTY"} environment.*\n*Generated by [Arch Guides Dynamic](https://tilas01.github.io/arch-guides-dynamic/) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â by [tilas01](https://github.com/tilas01)*\n`;
         }
 
         return o;
     }
 
-    // â”€â”€ Render â”€â”€
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Render ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     // For auto-mode (re-generate on form change): keep output section in whatever state it's in
     // For manual generate: showOutputPage() is called after this function builds the HTML
     const outputSection = document.getElementById('output-section');
@@ -715,14 +839,14 @@ window.generateOutput = function(auto = false) {
 
     // ISO pre-setup
     let isoHTML = "";
-    if (iso_setup === "ssh") isoHTML = `<div class="alert warning"><strong>ðŸ“¡ Run on Arch ISO first:</strong><pre><code>systemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
-    else if (iso_setup === "ssh_curl") isoHTML = `<div class="alert warning"><strong>ðŸ“¡ Run on Arch ISO first:</strong><pre><code>pacman -Sy --noconfirm curl\nsystemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
+    if (iso_setup === "ssh") isoHTML = `<div class="alert warning"><strong>ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¡ Run on Arch ISO first:</strong><pre><code>systemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
+    else if (iso_setup === "ssh_curl") isoHTML = `<div class="alert warning"><strong>ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¡ Run on Arch ISO first:</strong><pre><code>pacman -Sy --noconfirm curl\nsystemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
 
-    // ── Smart Analysis & Proprietary Warnings ──
+    // Ã¢â€â‚¬Ã¢â€â‚¬ Smart Analysis & Proprietary Warnings Ã¢â€â‚¬Ã¢â€â‚¬
     let analysisWarnings = 0;
     let analysisErrors = 0;
     if (selectedPropApps.length > 0 && software_type !== 'libre') {
-        let warnStr = `\n\n## ⚠️ Proprietary Software Notice\n> You have chosen to include software containing proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
+        let warnStr = `\n\n## Ã¢Å¡Â Ã¯Â¸Â Proprietary Software Notice\n> You have chosen to include software containing proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
         selectedPropApps.forEach(a => warnStr += `- **${a.toUpperCase()}**: ${propAppsDB[a]}\n`);
         mdOutput += warnStr;
         analysisWarnings += selectedPropApps.length;
@@ -736,46 +860,46 @@ window.generateOutput = function(auto = false) {
 
     let html = isoHTML;
 
-    // â”€â”€ BOX 1: Markdown Editor â”€â”€
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ BOX 1: Markdown Editor ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     if (format === "markdown" || format === "both") {
         html += `
         <div class="output-actions">
-            <h3 class="output-title md-edit">ðŸ“ Markdown Guide â€” Live Editor</h3>
+            <h3 class="output-title md-edit">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â Markdown Guide ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Live Editor</h3>
             <div style="display:flex;gap:0.4rem;">
                 <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-md-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .md',2000)">Copy .md</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">ðŸ’¾ .md</button>
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ .md</button>
             </div>
         </div>
         <pre class="output-box editor-md"><code id="raw-md-code" class="language-markdown" contenteditable="true" oninput="updatePreview()">${escapeHTML(mdOutput)}</code></pre>
 
         <div class="output-actions">
-            <h3 class="output-title md-prev">ðŸ‘ Markdown â€” Live Preview</h3>
+            <h3 class="output-title md-prev">ÃƒÂ°Ã…Â¸Ã¢â‚¬ËœÃ‚Â Markdown ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Live Preview</h3>
             <span style="font-size:0.75rem;color:var(--accent-purple);">Renders as you type above</span>
         </div>
         <div id="preview" class="output-box preview-md markdown-body"></div>
         `;
     }
 
-    // â”€â”€ BOX 3: Script Editor â”€â”€
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ BOX 3: Script Editor ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     if (format === "script" || format === "both") {
         html += `
         <div class="output-actions" style="margin-top:1rem;">
-            <h3 class="output-title sh-edit">âš¡ Bash Script â€” Live Editor</h3>
+            <h3 class="output-title sh-edit">ÃƒÂ¢Ã…Â¡Ã‚Â¡ Bash Script ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Live Editor</h3>
             <div style="display:flex;gap:0.4rem;">
                 <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-script-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .sh',2000)">Copy .sh</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">ðŸ’¾ .sh</button>
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ .sh</button>
             </div>
         </div>
         <pre class="output-box editor-sh"><code id="raw-script-code" class="language-bash" contenteditable="true">${escapeHTML(scriptOutput)}</code></pre>
 
         <div class="output-actions" style="margin-top:0.8rem;">
-            <h3 class="output-title ssh-cmd">ðŸ–¥ SSH One-Liner Deploy</h3>
+            <h3 class="output-title ssh-cmd">ÃƒÂ°Ã…Â¸Ã¢â‚¬â€œÃ‚Â¥ SSH One-Liner Deploy</h3>
         </div>
         <pre class="output-box oneliner"><code class="language-bash">${escapeHTML(`cat << 'ARCHEOF' > install.sh\n${scriptOutput}\nARCHEOF\nbash install.sh`)}</code></pre>
         `;
     }
 
-    // â”€â”€ History + state â”€â”€
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ History + state ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     document.getElementById('generated-guide').innerHTML = html;
     if (window.Prism) Prism.highlightAll();
     updatePreview();
@@ -786,7 +910,11 @@ window.generateOutput = function(auto = false) {
         // Push output into the Live Editor directly
         const uploadEditor = document.getElementById('upload-editor');
         if (uploadEditor) {
-            uploadEditor.value = format === 'script' ? scriptOutput : mdOutput;
+            if (format === 'both') {
+                uploadEditor.value = mdOutput + '\n\n---\n\n' + scriptOutput;
+            } else {
+                uploadEditor.value = format === 'script' ? scriptOutput : mdOutput;
+            }
             // Trigger input event to update preview
             uploadEditor.dispatchEvent(new Event('input'));
             
@@ -796,7 +924,7 @@ window.generateOutput = function(auto = false) {
             
             const statusEl = document.getElementById('upload-status');
             if (statusEl) {
-                statusEl.textContent = '✓ New generation applied to Live Editor.';
+                statusEl.textContent = 'Ã¢Å“â€œ New generation applied to Live Editor.';
                 statusEl.style.color = 'var(--accent-green)';
             }
         }
@@ -807,10 +935,10 @@ window.generateOutput = function(auto = false) {
         // Inject .sc code block into html
         const scHtml = `
         <div class="output-actions" style="margin-top:1rem;">
-            <h3 class="output-title sc-edit" style="color:var(--accent-purple);">⚙️ Config File (.sc)</h3>
+            <h3 class="output-title sc-edit" style="color:var(--accent-purple);">Ã¢Å¡â„¢Ã¯Â¸Â Config File (.sc)</h3>
             <div style="display:flex;gap:0.4rem;">
                 <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-sc-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .sc',2000)">Copy .sc</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-purple);color:#000;" onclick="downloadFile(document.getElementById('raw-sc-code').innerText, 'arch-install.sc')">💾 .sc</button>
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-purple);color:#000;" onclick="downloadFile(document.getElementById('raw-sc-code').innerText, 'arch-install.sc')">Ã°Å¸â€™Â¾ .sc</button>
             </div>
         </div>
         <pre class="output-box editor-sc"><code id="raw-sc-code" class="language-json" contenteditable="true">${escapeHTML(configJSONText)}</code></pre>
@@ -822,13 +950,13 @@ window.generateOutput = function(auto = false) {
         if (downloadBtnsContainer) {
             let btnsHTML = '';
             if (format === 'markdown' || format === 'both') {
-                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="📝 Download Guide" data-desc="Save the step-by-step tutorial as a markdown file." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); font-size:0.9rem;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">💾 .md Guide</button>`;
+                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="Ã°Å¸â€œÂ Download Guide" data-desc="Save the step-by-step tutorial as a markdown file." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); font-size:0.9rem;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">Ã°Å¸â€™Â¾ .md Guide</button>`;
             }
             if (format === 'script' || format === 'both') {
-                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="⚡ Download Script" data-desc="Save the executable auto-install Bash script." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:#000; font-size:0.9rem; font-weight:bold;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">💾 .sh Script</button>`;
+                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="Ã¢Å¡Â¡ Download Script" data-desc="Save the executable auto-install Bash script." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:#000; font-size:0.9rem; font-weight:bold;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">Ã°Å¸â€™Â¾ .sh Script</button>`;
             }
             // Always show the .sc config download option
-            btnsHTML += `<button type="button" class="btn tooltip-always" data-title="⚙️ Save Configuration" data-desc="Download your selections as a .sc file so you can upload and restore them later." style="width:auto; padding:0.5rem 1.2rem; background:var(--bg-lighter); border:1px solid var(--accent-cyan); color:var(--accent-cyan); font-size:0.9rem;" onclick="downloadFile(JSON.stringify(window.getFormValues(), null, 2), 'arch-config.sc')">💾 .sc Config</button>`;
+            btnsHTML += `<button type="button" class="btn tooltip-always" data-title="Ã¢Å¡â„¢Ã¯Â¸Â Save Configuration" data-desc="Download your selections as a .sc file so you can upload and restore them later." style="width:auto; padding:0.5rem 1.2rem; background:var(--bg-lighter); border:1px solid var(--accent-cyan); color:var(--accent-cyan); font-size:0.9rem;" onclick="downloadFile(JSON.stringify(window.getFormValues(), null, 2), 'arch-config.sc')">Ã°Å¸â€™Â¾ .sc Config</button>`;
             
             downloadBtnsContainer.innerHTML = btnsHTML;
             if (window.syncTooltipBtn) syncTooltipBtn(); // Re-bind tooltips
@@ -844,7 +972,7 @@ window.generateOutput = function(auto = false) {
     }
 };
 
-// ── Form Serialization & Preview Logic ──
+// Ã¢â€â‚¬Ã¢â€â‚¬ Form Serialization & Preview Logic Ã¢â€â‚¬Ã¢â€â‚¬
 window.getFormValues = function() {
     const data = {
         version: 1,
@@ -876,21 +1004,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Full Suite Toggle Logic
     const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
+    const arssToolsGrid = document.getElementById('arss-tools-grid');
     const arssCheckboxes = document.querySelectorAll('input[name="arss_tools"]');
+    
+    // Store previous states to restore them later
+    let previousArssStates = {};
+    arssCheckboxes.forEach(cb => { previousArssStates[cb.value] = cb.checked; });
+
+    // Create the notice element
+    const fullSuiteNotice = document.createElement('div');
+    fullSuiteNotice.style.display = 'none';
+    fullSuiteNotice.style.padding = '1rem';
+    fullSuiteNotice.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
+    fullSuiteNotice.style.border = '1px solid var(--accent-blue)';
+    fullSuiteNotice.style.borderRadius = '8px';
+    fullSuiteNotice.style.color = 'var(--accent-blue)';
+    fullSuiteNotice.style.marginTop = '0.5rem';
+    fullSuiteNotice.innerHTML = '<strong>Ã°Å¸â€ºÂ¡Ã¯Â¸Â Full Suite Active:</strong> The unified <code>arch-rusty-security-suite</code> binary will be installed. All security modules are included automatically.<br><br><span style="font-size:0.85rem;opacity:0.8;" title="Untoggle \'Using Full Suite\' to select them individually."><em>(Hover for info: Security suite includes this module already. Untoggle to use them individually.)</em></span>';
+    
+    if (arssToolsGrid) {
+        arssToolsGrid.parentNode.insertBefore(fullSuiteNotice, arssToolsGrid.nextSibling);
+    }
     
     if (fullSuiteToggle) {
         fullSuiteToggle.addEventListener('change', function() {
             const isChecked = this.checked;
-            arssCheckboxes.forEach(cb => {
-                cb.checked = isChecked;
-                cb.disabled = isChecked; // Grey out toggle when forced
-                if (isChecked) {
-                    cb.parentElement.style.opacity = '0.7';
-                } else {
-                    cb.parentElement.style.opacity = '1';
-                }
-                cb.dispatchEvent(new Event('change'));
-            });
+            
+            if (isChecked) {
+                // Save current state before overriding
+                arssCheckboxes.forEach(cb => { previousArssStates[cb.value] = cb.checked; });
+                
+                // Hide grid, show notice, and UNCHECK them so their sub-options hide and don't block generation validation
+                if(arssToolsGrid) arssToolsGrid.style.display = 'none';
+                fullSuiteNotice.style.display = 'block';
+                
+                arssCheckboxes.forEach(cb => {
+                    cb.checked = false;
+                    cb.dispatchEvent(new Event('change'));
+                });
+            } else {
+                // Show grid, hide notice, and restore previous states
+                if(arssToolsGrid) arssToolsGrid.style.display = 'grid';
+                fullSuiteNotice.style.display = 'none';
+                
+                arssCheckboxes.forEach(cb => {
+                    cb.checked = previousArssStates[cb.value] || false;
+                    cb.dispatchEvent(new Event('change'));
+                });
+            }
         });
     }
 
@@ -899,9 +1060,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof propAppsDB !== 'undefined' && propAppsDB[cb.value]) {
             const warningSpan = document.createElement('span');
             warningSpan.className = 'prop-warning nav-tooltip';
-            warningSpan.setAttribute('data-title', '⚠️ Proprietary Software');
+            warningSpan.setAttribute('data-title', 'Ã¢Å¡Â Ã¯Â¸Â Proprietary Software');
             warningSpan.setAttribute('data-desc', propAppsDB[cb.value]);
-            warningSpan.innerHTML = ' <span style="color:var(--accent-red); cursor:help;">⚠️</span>';
+            warningSpan.innerHTML = ' <span style="color:var(--accent-red); cursor:help;">Ã¢Å¡Â Ã¯Â¸Â</span>';
             // Insert after the icon
             const iconSpan = cb.parentElement.querySelector('.app-icon');
             if (iconSpan) {
@@ -1014,7 +1175,7 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
                 warn.style.marginLeft = '10px';
                 warn.style.fontSize = '0.85rem';
                 warn.style.fontWeight = 'bold';
-                warn.innerText = '⚠️ Required!';
+                warn.innerText = 'Ã¢Å¡Â Ã¯Â¸Â Required!';
                 if(labelEl) labelEl.appendChild(warn);
             }
         }
@@ -1026,7 +1187,15 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
 
         if (missingFields.length > 0) {
             if(errorCount) errorCount.innerText = missingFields.length;
-            if(errorList) errorList.innerHTML = missingFields.map(f => `<li>${f}</li>`).join('');
+            if(errorList) {
+                // Change from UL list items to inline comma separated links
+                errorList.style.listStyleType = "none";
+                errorList.style.paddingLeft = "0";
+                errorList.innerHTML = missingFields.map(f => {
+                    const safeF = f.replace(/'/g, "\\'");
+                    return `<a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;" onclick="event.stopPropagation(); const els=Array.from(document.querySelectorAll('#install-form select')); const target=els.find(s=>s.parentElement.innerText.includes('${safeF}')); if(target)target.scrollIntoView({behavior:'smooth',block:'center'}); return false;">${f}</a>`;
+                }).join(', ');
+            }
             if(errorBox) {
                 errorBox.style.display = 'block';
                 errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1053,7 +1222,7 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
     }
 });
 
-// ── Tooltip toggle (emoji button, always-enabled) ──
+// Ã¢â€â‚¬Ã¢â€â‚¬ Tooltip toggle (emoji button, always-enabled) Ã¢â€â‚¬Ã¢â€â‚¬
 let tooltipsEnabled = sessionStorage.getItem('tooltips_enabled') !== 'false';
 const tooltipToggleBtn = document.getElementById('toggle-tooltips-btn');
 
@@ -1061,10 +1230,10 @@ function syncTooltipBtn() {
     if (!tooltipToggleBtn) return;
     const on = window.tooltipsEnabled !== false;
     tooltipToggleBtn.classList.toggle('disabled', !on);
-    tooltipToggleBtn.setAttribute('data-title', on ? 'ℹ️ Tooltips: ON' : 'ℹ️ Tooltips: OFF');
+    tooltipToggleBtn.setAttribute('data-title', on ? 'Ã¢â€žÂ¹Ã¯Â¸Â Tooltips: ON' : 'Ã¢â€žÂ¹Ã¯Â¸Â Tooltips: OFF');
     tooltipToggleBtn.setAttribute('data-desc', on
         ? 'Tooltips are ON. Hover (desktop) or tap (mobile) any element for info. Click to disable.'
-        : 'Tooltips are OFF. Only ℹ️ and 🕓 always show. Click to re-enable.');
+        : 'Tooltips are OFF. Only Ã¢â€žÂ¹Ã¯Â¸Â and Ã°Å¸â€¢â€œ always show. Click to re-enable.');
 }
 
 if (tooltipToggleBtn) {
@@ -1099,12 +1268,12 @@ const wikiMap = {
     'Desktop Environment':          '?page=07-post-installation.md',
     'DNS Caching':                  '?page=07-post-installation.md',
     'Display Server':               '?page=xorg-vs-wayland.md',
-    '🦀 Arch Rusty Security Suite': '?page=security-suite.md',
-    'ARSS — Security Tools':        '?page=security-suite.md',
+    'Ã°Å¸Â¦â‚¬ Arch Rusty Security Suite': '?page=security-suite.md',
+    'ARSS Ã¢â‚¬â€ Security Tools':        '?page=security-suite.md',
     'Anti-Evil Maid Decoys':        '?page=security-suite.md',
     'Other Security Tools':         '?page=security-suite.md',
 };
-// Note: updateInfoPanel sidebar removed — unified tooltip.js handles all tooltips
+// Note: updateInfoPanel sidebar removed Ã¢â‚¬â€ unified tooltip.js handles all tooltips
 
 // Back to generator button
 const backToGenBtn = document.getElementById('back-to-gen-btn');
@@ -1115,7 +1284,7 @@ const clearOutputBtn = document.getElementById('clear-output-btn');
 if (clearOutputBtn) clearOutputBtn.addEventListener('click', window.clearGeneratedOutput);
 
 
-// â”€â”€ Custom scripts toggle â”€â”€
+// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Custom scripts toggle ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 const customScriptsSelect = document.getElementById('use-custom-scripts');
 const customScriptsContainer = document.getElementById('custom-scripts-container');
 if (customScriptsSelect && customScriptsContainer) {
@@ -1131,26 +1300,9 @@ if (securityToolsSelect && libreOtpModeContainer) {
     });
 }
 
-// â”€â”€ Full Suite Toggle â”€â”€
-const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
-if (fullSuiteToggle) {
-    fullSuiteToggle.addEventListener('change', () => {
-        const arssCheckboxes = document.querySelectorAll('input[name="arss_tools"]');
-        arssCheckboxes.forEach(cb => {
-            if (fullSuiteToggle.checked) {
-                cb.checked = true;
-                cb.disabled = true;
-                cb.parentElement.style.opacity = '0.6';
-            } else {
-                cb.disabled = false;
-                cb.parentElement.style.opacity = '1';
-            }
-            cb.dispatchEvent(new Event('change'));
-        });
-    });
-}
 
-// â”€â”€ Smart Analysis â”€â”€
+
+// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Smart Analysis ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 window.smartAnalysisWarnings = [];
 function validateConfigurations() {
     const fw = document.getElementById('firmware')?.value || 'uefi';
@@ -1211,9 +1363,9 @@ function validateConfigurations() {
         }
     }
 
-    if (part.value === 'unencrypted') warnings.push("⚠️ No encryption — physical access = full compromise.");
-    if (gpuBrand === 'nvidia' && softwareType === 'libre') warnings.push("⚠️ Nvidia + Libre = Nouveau only. Limited performance.");
-    if (displayServer === 'wayland' && (desktop === 'dusky' || desktop === 'dwm')) warnings.push(`⚠️ ${desktop} requires X11/Xorg. Wayland will break it.`);
+    if (part.value === 'unencrypted') warnings.push("Ã¢Å¡Â Ã¯Â¸Â No encryption Ã¢â‚¬â€ physical access = full compromise.");
+    if (gpuBrand === 'nvidia' && softwareType === 'libre') warnings.push("Ã¢Å¡Â Ã¯Â¸Â Nvidia + Libre = Nouveau only. Limited performance.");
+    if (displayServer === 'wayland' && (desktop === 'dusky' || desktop === 'dwm')) warnings.push(`Ã¢Å¡Â Ã¯Â¸Â ${desktop} requires X11/Xorg. Wayland will break it.`);
 
     window.smartAnalysisWarnings = warnings;
     const div = document.getElementById('global-warnings');
@@ -1227,7 +1379,7 @@ function validateConfigurations() {
 
 validateConfigurations();
 
-// â”€â”€ Config restore â”€â”€
+// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Config restore ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 const restoreConfig = sessionStorage.getItem('arch_restore_config');
 if (restoreConfig) {
     try {
@@ -1252,7 +1404,7 @@ if (banner) banner.style.cursor = 'pointer';
 // Update history tooltip on load
 updateHistoryTooltip();
 
-// â”€â”€â”€ Live Editor / Upload Handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Live Editor / Upload Handler ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 (function initLiveEditor() {
     const fileInput      = document.getElementById('upload-file-input');
     const clearBtn       = document.getElementById('upload-clear-btn');
@@ -1307,7 +1459,7 @@ updateHistoryTooltip();
         // Check extension
         const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
         if (!VALID_EXTS.includes(ext)) {
-            setStatus('âš  Invalid file type. Only .sh, .md, .bash, or .txt files are accepted.', 'var(--accent-red)');
+            setStatus('ÃƒÂ¢Ã…Â¡Ã‚Â  Invalid file type. Only .sh, .md, .bash, or .txt files are accepted.', 'var(--accent-red)');
             if (fileInput) fileInput.value = '';
             return;
         }
@@ -1324,7 +1476,7 @@ updateHistoryTooltip();
 
             // Populate editor
             if (editor) editor.value = text;
-            if (filenameEl) filenameEl.textContent = file.name + (isValid ? '' : ' (no valid config â€” editable only)');
+            if (filenameEl) filenameEl.textContent = file.name + (isValid ? '' : ' (no valid config ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â editable only)');
 
             // Show/hide restore button
             if (restoreBtn)  restoreBtn.style.display  = isValid ? '' : 'none';
@@ -1336,15 +1488,15 @@ updateHistoryTooltip();
             if (editorWrapper) editorWrapper.style.display  = '';
 
             if (isValid) {
-                setStatus('âœ“ Valid config file â€” settings can be restored to the generator.', 'var(--accent-green)');
+                setStatus('ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Valid config file ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â settings can be restored to the generator.', 'var(--accent-green)');
             } else {
-                setStatus('â„¹ No valid config header found. Showing file as editable text only.', 'var(--accent-orange, #ff9e64)');
+                setStatus('ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¹ No valid config header found. Showing file as editable text only.', 'var(--accent-orange, #ff9e64)');
             }
         };
         reader.readAsText(file);
     }
 
-    // â”€â”€ Event listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Event listeners ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     if (fileInput) fileInput.addEventListener('change', function() {
         loadFile(this.files[0]);
     });
@@ -1367,8 +1519,8 @@ updateHistoryTooltip();
             const el = document.getElementById(map[k] || k);
             if (el) el.value = parsedConfig[k];
         });
-        setStatus('âœ“ Settings restored to generator! Adjust options above then re-generate.', 'var(--accent-green)');
-        setTimeout(() => setStatus(isValid ? 'âœ“ Valid config file loaded.' : '', 'var(--accent-cyan)'), 4000);
+        setStatus('ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Settings restored to generator! Adjust options above then re-generate.', 'var(--accent-green)');
+        setTimeout(() => setStatus(isValid ? 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Valid config file loaded.' : '', 'var(--accent-cyan)'), 4000);
         validateConfigurations();
         // Scroll to top of generator
         const form = document.getElementById('install-form');
@@ -1393,10 +1545,9 @@ updateHistoryTooltip();
             if (sec) sec.scrollIntoView({ behavior: 'smooth' });
         });
     }
-    }
 })();
 
-// ─── Bind Generate Button ───
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Bind Generate Button Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Duplicate listener removed to prevent double-firing and bypassing validation.
 
 const historyBtn = document.getElementById('history-btn');
@@ -1407,24 +1558,18 @@ if (historyBtn) {
     });
 }
 
-// ─── Full Suite Toggle Auto-Lock ───
-const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
-if (fullSuiteToggle) {
-    fullSuiteToggle.addEventListener('change', function() {
-        const isChecked = this.checked;
-        document.querySelectorAll('input[name="arss_tools"]').forEach(cb => {
-            cb.checked = isChecked;
-            cb.disabled = isChecked; // Lock out changes while suite is enabled
-            // Show a visual cue it's locked by full suite
-            if (isChecked) {
-                cb.parentElement.style.opacity = '0.6';
-                cb.parentElement.setAttribute('data-desc', 'Locked by Full Suite Toggle: ' + cb.parentElement.getAttribute('data-desc'));
-            } else {
-                cb.parentElement.style.opacity = '1';
-                cb.parentElement.setAttribute('data-desc', cb.parentElement.getAttribute('data-desc').replace('Locked by Full Suite Toggle: ', ''));
+
+// Dynamic document.title on scroll
+document.addEventListener('DOMContentLoaded', () => {
+    const steps = document.querySelectorAll('.form-step');
+    if (!steps.length) return;
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const title = entry.target.getAttribute('data-title');
+                if (title) document.title = 'Arch Guides | ' + title;
             }
         });
-        // Reveal sub-options
-        document.querySelectorAll('input[name="arss_tools"]').forEach(cb => cb.dispatchEvent(new Event('change')));
-    });
-}
+    }, { threshold: 0.5 });
+    steps.forEach(step => observer.observe(step));
+});
