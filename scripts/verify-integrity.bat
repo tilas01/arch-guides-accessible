@@ -15,7 +15,16 @@ if not exist "%BINARY%" (
     exit /b 1
 )
 if not exist "%SHA_FILE%" (
-    echo Error: Missing .sha256 file.
+    echo [i] Missing .sha256 file. Attempting to download...
+    curl -sLO "https://github.com/tilas01/arch-guides-dynamic/releases/latest/download/%SHA_FILE%"
+)
+if not exist "%ASC_FILE%" (
+    echo [i] Missing .asc file. Attempting to download...
+    curl -sLO "https://github.com/tilas01/arch-guides-dynamic/releases/latest/download/%ASC_FILE%"
+)
+
+if not exist "%SHA_FILE%" (
+    echo [ERROR] Failed to download or find "%SHA_FILE%".
     exit /b 1
 )
 

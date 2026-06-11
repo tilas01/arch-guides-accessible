@@ -179,12 +179,23 @@ curl -sL https://mirror.rackspace.com/archlinux/iso/latest/sha256sums.txt
 
 ## Build from Source
 
+### Full Security Suite
 ```bash
 git clone https://github.com/tilas01/arch-guides-dynamic.git
 cd arch-guides-dynamic/security-tools
 cargo build --release --locked
 sha256sum target/release/arch-rusty-security-suite
 # Compare against the published release hash for full reproducible trust
+```
+
+### Standalone Modules
+You can also compile individual modules standalone:
+```bash
+cargo install libre-otp --git https://github.com/tilas01/arch-guides-dynamic
+cargo install anti-ducky --git https://github.com/tilas01/arch-guides-dynamic
+cargo install anti-evil-maid --git https://github.com/tilas01/arch-guides-dynamic
+cargo install kernel-watcher --git https://github.com/tilas01/arch-guides-dynamic
+cargo install scarecrow --git https://github.com/tilas01/arch-guides-dynamic
 ```
 
 ---
@@ -293,6 +304,7 @@ echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-securit
 | **dusklinux** | Creator of Dusky OS — the minimal Arch-based distro featured in this project | [GitHub](https://github.com/dusklinux) · [YouTube](https://www.youtube.com/watch?v=JmgvSdEIK8c) |
 | **arch-minimal-install** | Inspiration for the minimal installation approach and modular guide structure | — |
 | **vmonaco** | Creator of kloak, the keystroke anonymizer referenced in the security tools | [GitHub](https://github.com/vmonaco/kloak) |
+| **v3 Contributor** | Extensive architecture, security suite modularization, and UI improvements for v3 release | — |
 | **AI Assistance** | Multiple AI models were used during development; all output was reviewed and authored by tilas01 | — |
 
 ---
