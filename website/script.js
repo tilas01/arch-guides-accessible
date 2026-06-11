@@ -243,6 +243,8 @@ window.generateOutput = function(auto = false) {
     // ARSS sub-options
     const libreOtpMode = gv('libre_otp_mode','login');
     const otp_recovery = gv('otp_recovery','5');
+    const otp_bypass = gv('otp_bypass','0');
+    const otp_double = gv('otp_double','no');
     const webhook_provider = gv('webhook_provider','ntfy');
     const webhook_url = gv('webhook_url','');
     const aem_main = gv('aem-kernel-main','linux');
@@ -595,7 +597,10 @@ window.generateOutput = function(auto = false) {
                 o += `arch-rusty-security-suite webhooks --install-service\n`;
             }
             if (arss_tools.includes("libre-otp")) {
-                o += `\n# Configuring Libre OTP\narch-rusty-security-suite libre-otp --setup --mode ${libreOtpMode} --hash ${otp_sha} --recovery-codes ${otp_recovery}\n`;
+                let otpOpts = `--setup --mode ${libreOtpMode} --hash ${otp_sha} --recovery-codes ${otp_recovery}`;
+                if (otp_bypass !== "0" && otp_bypass !== "") otpOpts += ` --bypass-uses ${otp_bypass}`;
+                if (otp_double === "yes") otpOpts += ` --double-otp`;
+                o += `\n# Configuring Libre OTP\narch-rusty-security-suite libre-otp ${otpOpts}\n`;
             }
             if (arss_tools.includes("panic-password")) {
                 o += `\n# Configuring Panic Password\narch-rusty-security-suite panic --setup\n`;
@@ -782,26 +787,39 @@ window.generateOutput = function(auto = false) {
             
             const statusEl = document.getElementById('upload-status');
             if (statusEl) {
-                statusEl.textContent = 'âœ“ New generation applied to Live Editor.';
+                statusEl.textContent = '✓ New generation applied to Live Editor.';
                 statusEl.style.color = 'var(--accent-green)';
             }
         }
 
         // Generate .sc config string
         const configJSONText = JSON.stringify(window.getFormValues(), null, 2);
-
+        
+        // Inject .sc code block into html
+        const scHtml = `
+        <div class="output-actions" style="margin-top:1rem;">
+            <h3 class="output-title sc-edit" style="color:var(--accent-purple);">⚙️ Config File (.sc)</h3>
+            <div style="display:flex;gap:0.4rem;">
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-sc-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .sc',2000)">Copy .sc</button>
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-purple);color:#000;" onclick="downloadFile(document.getElementById('raw-sc-code').innerText, 'arch-install.sc')">💾 .sc</button>
+            </div>
+        </div>
+        <pre class="output-box editor-sc"><code id="raw-sc-code" class="language-json" contenteditable="true">${escapeHTML(configJSONText)}</code></pre>
+        `;
+        document.getElementById('generated-guide').innerHTML += scHtml;
+        
         // Populate the download buttons dynamically
         const downloadBtnsContainer = document.getElementById('download-btns');
         if (downloadBtnsContainer) {
             let btnsHTML = '';
             if (format === 'markdown' || format === 'both') {
-                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="ðŸ“  Download Guide" data-desc="Save the step-by-step tutorial as a markdown file." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); font-size:0.9rem;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">ðŸ’¾ .md Guide</button>`;
+                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="📝 Download Guide" data-desc="Save the step-by-step tutorial as a markdown file." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); font-size:0.9rem;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">💾 .md Guide</button>`;
             }
             if (format === 'script' || format === 'both') {
-                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="âš¡ Download Script" data-desc="Save the executable auto-install Bash script." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:#000; font-size:0.9rem; font-weight:bold;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">ðŸ’¾ .sh Script</button>`;
+                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="⚡ Download Script" data-desc="Save the executable auto-install Bash script." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:#000; font-size:0.9rem; font-weight:bold;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">💾 .sh Script</button>`;
             }
             // Always show the .sc config download option
-            btnsHTML += `<button type="button" class="btn tooltip-always" data-title="âš™ï¸  Save Configuration" data-desc="Download your selections as a .sc file so you can upload and restore them later." style="width:auto; padding:0.5rem 1.2rem; background:var(--bg-lighter); border:1px solid var(--accent-cyan); color:var(--accent-cyan); font-size:0.9rem;" onclick="downloadFile(JSON.stringify(window.getFormValues(), null, 2), 'arch-config.sc')">ðŸ’¾ .sc Config</button>`;
+            btnsHTML += `<button type="button" class="btn tooltip-always" data-title="⚙️ Save Configuration" data-desc="Download your selections as a .sc file so you can upload and restore them later." style="width:auto; padding:0.5rem 1.2rem; background:var(--bg-lighter); border:1px solid var(--accent-cyan); color:var(--accent-cyan); font-size:0.9rem;" onclick="downloadFile(JSON.stringify(window.getFormValues(), null, 2), 'arch-config.sc')">💾 .sc Config</button>`;
             
             downloadBtnsContainer.innerHTML = btnsHTML;
             if (window.syncTooltipBtn) syncTooltipBtn(); // Re-bind tooltips
@@ -899,6 +917,38 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====================================================================
 // UI EVENT HANDLERS
 // ====================================================================
+
+function injectNoSelectionProvided() {
+    document.querySelectorAll('#install-form select').forEach(select => {
+        // Remove existing if any to avoid duplicates
+        const existing = Array.from(select.options).find(o => o.value === "");
+        if (existing) existing.remove();
+
+        const opt = document.createElement('option');
+        opt.value = "";
+        opt.text = "No Selection Provided";
+        opt.disabled = true;
+        opt.selected = true;
+        opt.hidden = true; // Hides it from the dropdown list once opened
+        select.insertBefore(opt, select.firstChild);
+
+        // Permanently remove it once a valid selection is made
+        select.addEventListener('change', function handler() {
+            if (this.value !== "") {
+                const placeholder = Array.from(this.options).find(o => o.value === "");
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                this.removeEventListener('change', handler); // Clean up
+                // Remove red border if present
+                this.style.border = "";
+                const warn = this.parentElement.querySelector('.req-warning');
+                if (warn) warn.remove();
+            }
+        });
+    });
+}
+document.addEventListener('DOMContentLoaded', injectNoSelectionProvided);
 document.getElementById('generate-btn').addEventListener('click', function(e) {
     e.preventDefault();
     let missingFields = [];
@@ -1282,20 +1332,35 @@ updateHistoryTooltip();
     }
 })();
 
-// â”€â”€â”€ Bind Generate Button â”€â”€â”€
-const generateBtn = document.getElementById('generate-btn');
-if (generateBtn) {
-    generateBtn.addEventListener('click', () => {
-        if (typeof window.generateOutput === 'function') {
-            window.generateOutput(false);
-        }
-    });
-}
+// ─── Bind Generate Button ───
+// Duplicate listener removed to prevent double-firing and bypassing validation.
 
 const historyBtn = document.getElementById('history-btn');
 if (historyBtn) {
     historyBtn.addEventListener('click', (e) => {
         e.preventDefault();
         window.toggleHistoryModal();
+    });
+}
+
+// ─── Full Suite Toggle Auto-Lock ───
+const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
+if (fullSuiteToggle) {
+    fullSuiteToggle.addEventListener('change', function() {
+        const isChecked = this.checked;
+        document.querySelectorAll('input[name="arss_tools"]').forEach(cb => {
+            cb.checked = isChecked;
+            cb.disabled = isChecked; // Lock out changes while suite is enabled
+            // Show a visual cue it's locked by full suite
+            if (isChecked) {
+                cb.parentElement.style.opacity = '0.6';
+                cb.parentElement.setAttribute('data-desc', 'Locked by Full Suite Toggle: ' + cb.parentElement.getAttribute('data-desc'));
+            } else {
+                cb.parentElement.style.opacity = '1';
+                cb.parentElement.setAttribute('data-desc', cb.parentElement.getAttribute('data-desc').replace('Locked by Full Suite Toggle: ', ''));
+            }
+        });
+        // Reveal sub-options
+        document.querySelectorAll('input[name="arss_tools"]').forEach(cb => cb.dispatchEvent(new Event('change')));
     });
 }

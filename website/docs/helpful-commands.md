@@ -373,26 +373,26 @@ The generator also creates a symlink: `ln -s /usr/bin/doas /usr/bin/sudo` for co
 
 | Shortcut | Action |
 |----------|--------|
-| `Super` | Activities overview |
-| `Super + A` | Application grid |
-| `Super + L` | Lock screen |
-| `Alt + Tab` | Switch between windows |
-| `Alt + F2` | Run dialog |
-| `Super + ←/→` | Snap window left/right |
-| `Super + ↑` | Maximize window |
-| `Super + ↓` | Restore/minimize window |
-| `Ctrl + Alt + Delete` | Log out dialog |
-| `Super + Page Up/Down` | Switch workspaces |
-| `Super + Shift + Page Up/Down` | Move window to workspace |
-| `Print` | Screenshot (full screen) |
-| `Shift + Print` | Screenshot (selection) |
-| `Alt + Print` | Screenshot (window) |
-| `Super + E` | File manager |
-| `Super + Tab` | Switch applications |
-| `Ctrl + Alt + T` | Open terminal (if configured) |
-| `Alt + F4` | Close window |
-| `Super + H` | Minimize window |
-| `Super + D` | Show desktop |
+| <kbd>Super</kbd> | Activities overview |
+| <kbd>Super</kbd> + <kbd>A</kbd> | Application grid |
+| <kbd>Super</kbd> + <kbd>L</kbd> | Lock screen |
+| <kbd>Alt</kbd> + <kbd>Tab</kbd> | Switch between windows |
+| <kbd>Alt</kbd> + <kbd>F2</kbd> | Run dialog |
+| <kbd>Super</kbd> + <kbd>←</kbd>/<kbd>→</kbd> | Snap window left/right |
+| <kbd>Super</kbd> + <kbd>↑</kbd> | Maximize window |
+| <kbd>Super</kbd> + <kbd>↓</kbd> | Restore/minimize window |
+| <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Delete</kbd> | Log out dialog |
+| <kbd>Super</kbd> + <kbd>Page Up/Down</kbd> | Switch workspaces |
+| <kbd>Super</kbd> + <kbd>Shift</kbd> + <kbd>Page Up/Down</kbd> | Move window to workspace |
+| <kbd>Print</kbd> | Screenshot (full screen) |
+| <kbd>Shift</kbd> + <kbd>Print</kbd> | Screenshot (selection) |
+| <kbd>Alt</kbd> + <kbd>Print</kbd> | Screenshot (window) |
+| <kbd>Super</kbd> + <kbd>E</kbd> | File manager |
+| <kbd>Super</kbd> + <kbd>Tab</kbd> | Switch applications |
+| <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd> | Open terminal (if configured) |
+| <kbd>Alt</kbd> + <kbd>F4</kbd> | Close window |
+| <kbd>Super</kbd> + <kbd>H</kbd> | Minimize window |
+| <kbd>Super</kbd> + <kbd>D</kbd> | Show desktop |
 
 **GNOME-specific commands:**
 ```bash
@@ -413,24 +413,24 @@ gsettings list-recursively
 
 | Shortcut | Action |
 |----------|--------|
-| `Super / Meta` | Application launcher |
-| `Meta + E` | File manager (Dolphin) |
-| `Alt + Tab` | Window switching |
-| `Meta + ←/→` | Snap window left/right |
-| `Meta + ↑` | Maximize window |
-| `Meta + ↓` | Minimize window |
-| `Ctrl + F1-F4` | Switch virtual desktop 1-4 |
-| `Meta + L` | Lock screen |
-| `Print` | Screenshot (Spectacle) |
-| `Meta + Print` | Active window screenshot |
-| `Shift + Print` | Rectangular region screenshot |
-| `Meta + D` | Show desktop |
-| `Alt + F4` | Close window |
-| `Alt + F2` | KRunner (command launcher) |
-| `Meta + Tab` | Task switcher (alternative) |
-| `Ctrl + Alt + Delete` | Log out / shutdown |
-| `Meta + Shift + ←/→` | Move window to another desktop |
-| `Meta + PgUp/PgDn` | Switch activity |
+| <kbd>Super / Meta</kbd> | Application launcher |
+| <kbd>Meta</kbd> + <kbd>E</kbd> | File manager (Dolphin) |
+| <kbd>Alt</kbd> + <kbd>Tab</kbd> | Window switching |
+| <kbd>Meta</kbd> + <kbd>←</kbd>/<kbd>→</kbd> | Snap window left/right |
+| <kbd>Meta</kbd> + <kbd>↑</kbd> | Maximize window |
+| <kbd>Meta</kbd> + <kbd>↓</kbd> | Minimize window |
+| <kbd>Ctrl</kbd> + <kbd>F1-F4</kbd> | Switch virtual desktop 1-4 |
+| <kbd>Meta</kbd> + <kbd>L</kbd> | Lock screen |
+| <kbd>Print</kbd> | Screenshot (Spectacle) |
+| <kbd>Meta</kbd> + <kbd>Print</kbd> | Active window screenshot |
+| <kbd>Shift</kbd> + <kbd>Print</kbd> | Rectangular region screenshot |
+| <kbd>Meta</kbd> + <kbd>D</kbd> | Show desktop |
+| <kbd>Alt</kbd> + <kbd>F4</kbd> | Close window |
+| <kbd>Alt</kbd> + <kbd>F2</kbd> | KRunner (command launcher) |
+| <kbd>Meta</kbd> + <kbd>Tab</kbd> | Task switcher (alternative) |
+| <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Delete</kbd> | Log out / shutdown |
+| <kbd>Meta</kbd> + <kbd>Shift</kbd> + <kbd>←</kbd>/<kbd>→</kbd> | Move window to another desktop |
+| <kbd>Meta</kbd> + <kbd>PgUp/PgDn</kbd> | Switch activity |
 
 **KDE-specific commands:**
 ```bash
@@ -451,34 +451,34 @@ balooctl disable  # Disable file indexing
 
 ### DWM Shortcuts
 
-> DWM (Dynamic Window Manager) from [suckless.org](https://dwm.suckless.org/). Default Mod key is usually `Alt` (`Mod1`) or `Super` (`Mod4`).
+> DWM (Dynamic Window Manager) from [suckless.org](https://dwm.suckless.org/). Default Mod key is usually <kbd>Alt</kbd> (`Mod1`) or <kbd>Super</kbd> (`Mod4`).
 
 | Shortcut | Action |
 |----------|--------|
-| `Mod + Enter` | Open terminal (`st`) |
-| `Mod + p` | Open dmenu (application launcher) |
-| `Mod + j` | Focus next window |
-| `Mod + k` | Focus previous window |
-| `Mod + h` | Decrease master area |
-| `Mod + l` | Increase master area |
-| `Mod + Return` | Promote window to master |
-| `Mod + Shift + c` | Close focused window |
-| `Mod + t` | Tiled layout |
-| `Mod + f` | Floating layout |
-| `Mod + m` | Monocle layout |
-| `Mod + Space` | Toggle between layouts |
-| `Mod + Shift + Space` | Toggle floating for window |
-| `Mod + 1-9` | Switch to tag 1-9 |
-| `Mod + Shift + 1-9` | Move window to tag 1-9 |
-| `Mod + 0` | View all tags |
-| `Mod + Shift + 0` | Apply all tags to window |
-| `Mod + i` | Increase master count |
-| `Mod + d` | Decrease master count |
-| `Mod + b` | Toggle status bar |
-| `Mod + Tab` | View previous tag |
-| `Mod + Shift + q` | Quit DWM |
-| `Mod + Mouse1` | Move floating window |
-| `Mod + Mouse3` | Resize floating window |
+| <kbd>Mod</kbd> + <kbd>Enter</kbd> | Open terminal (`st`) |
+| <kbd>Mod</kbd> + <kbd>p</kbd> | Open dmenu (application launcher) |
+| <kbd>Mod</kbd> + <kbd>j</kbd> | Focus next window |
+| <kbd>Mod</kbd> + <kbd>k</kbd> | Focus previous window |
+| <kbd>Mod</kbd> + <kbd>h</kbd> | Decrease master area |
+| <kbd>Mod</kbd> + <kbd>l</kbd> | Increase master area |
+| <kbd>Mod</kbd> + <kbd>Return</kbd> | Promote window to master |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>c</kbd> | Close focused window |
+| <kbd>Mod</kbd> + <kbd>t</kbd> | Tiled layout |
+| <kbd>Mod</kbd> + <kbd>f</kbd> | Floating layout |
+| <kbd>Mod</kbd> + <kbd>m</kbd> | Monocle layout |
+| <kbd>Mod</kbd> + <kbd>Space</kbd> | Toggle between layouts |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> | Toggle floating for window |
+| <kbd>Mod</kbd> + <kbd>1-9</kbd> | Switch to tag 1-9 |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>1-9</kbd> | Move window to tag 1-9 |
+| <kbd>Mod</kbd> + <kbd>0</kbd> | View all tags |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>0</kbd> | Apply all tags to window |
+| <kbd>Mod</kbd> + <kbd>i</kbd> | Increase master count |
+| <kbd>Mod</kbd> + <kbd>d</kbd> | Decrease master count |
+| <kbd>Mod</kbd> + <kbd>b</kbd> | Toggle status bar |
+| <kbd>Mod</kbd> + <kbd>Tab</kbd> | View previous tag |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>q</kbd> | Quit DWM |
+| <kbd>Mod</kbd> + <kbd>Mouse1</kbd> | Move floating window |
+| <kbd>Mod</kbd> + <kbd>Mouse3</kbd> | Resize floating window |
 
 **DWM installation (manual):**
 ```bash
@@ -599,10 +599,14 @@ cp arch-rusty-security-suite-linux-x86_64 /usr/local/bin/arch-rusty-security-sui
 
 | Command | Description |
 |---------|-------------|
-| `arch-rusty-security-suite otp --setup --algo sha1` | Setup OTP 2FA (SHA1 compatible) |
-| `arch-rusty-security-suite otp --setup --algo sha256` | Setup OTP 2FA (SHA256) |
-| `arch-rusty-security-suite otp --setup --algo sha512` | Setup OTP 2FA (SHA512) |
-| `arch-rusty-security-suite input-guard --init` | Initialize Input Guard (anti-rubber-ducky) |
+| `arch-rusty-security-suite libre-otp --setup` | Setup OTP 2FA (Includes Double OTP & Bypass flags) |
+| `arch-rusty-security-suite ducky --approve-current` | Initialize Input Guard (anti-rubber-ducky sandbox) |
+| `arch-rusty-security-suite kernel-watcher --setup` | Setup Async EDR Daemon |
+| `arch-rusty-security-suite scarecrow` | Setup Decoy VM environment |
+| `arch-rusty-security-suite aem --setup` | Setup Anti-Evil Maid Boot Partition Hashing |
+| `arch-rusty-security-suite panic --setup` | Setup Emergency DoD 3-pass LUKS Wipe |
+| `arch-rusty-security-suite webhooks --install-service` | Setup Real-Time Webhook Alerts |
+| `arch-rusty-security-suite ssh --harden` | Harden SSH (Ed25519, ChaCha20-Poly1305, no password) |
 | `arch-rusty-security-suite verify-iso /dev/sr0` | Verify Arch ISO integrity |
 
 ### Kloak — Keystroke Anonymization

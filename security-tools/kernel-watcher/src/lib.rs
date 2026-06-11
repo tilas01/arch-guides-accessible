@@ -1,3 +1,5 @@
+#![allow(clippy::collapsible_if)]
+
 use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
@@ -5,13 +7,20 @@ use argon2::{
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use rand_core::OsRng;
 use rpassword::prompt_password;
+use sha2::{Digest, Sha256};
+use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
 use std::sync::mpsc::channel;
+use std::thread;
+use std::time::Duration;
+use walkdir::WalkDir;
 use zeroize::Zeroize;
 
 const TAMPER_HASH_FILE: &str = "/etc/arch-rusty-security-suite/tamper.hash";
+const EVIL_MAID_HASH_FILE: &str = "/etc/arch-rusty-security-suite/evil_maid.hash";
+const QUARANTINE_DIR: &str = "/var/quarantine/arss";
 
 pub fn run_setup() {
     println!("=== Kernel Watcher Tamper Protection Setup ===");
@@ -66,8 +75,80 @@ pub fn verify_tamper_password() -> bool {
     is_valid
 }
 
+pub fn setup_evil_maid_hash() {
+    println!("=== Anti-Evil-Maid Hash Setup ===");
+    let mut hasher = Sha256::new();
+
+    println!("Hashing /boot partition. This may take a moment...");
+    for entry in WalkDir::new("/boot").into_iter().filter_map(|e| e.ok()) {
+        if entry.file_type().is_file() {
+            if let Ok(content) = fs::read(entry.path()) {
+                hasher.update(&content);
+            }
+        }
+    }
+
+    let hash = hex::encode(hasher.finalize());
+
+    if let Some(parent) = Path::new(EVIL_MAID_HASH_FILE).parent() {
+        fs::create_dir_all(parent).unwrap_or_default();
+    }
+
+    // In a production scenario, we would encrypt this hash with a TPM key or user password.
+    // Here we save it directly for demonstration of the integrity check.
+    fs::write(EVIL_MAID_HASH_FILE, &hash).expect("Failed to write Evil Maid hash");
+    println!(
+        "Anti-Evil-Maid baseline hash stored successfully: {}",
+        &hash[..16]
+    );
+}
+
+pub fn check_evil_maid_hash() -> bool {
+    let stored_hash = fs::read_to_string(EVIL_MAID_HASH_FILE).unwrap_or_default();
+    if stored_hash.is_empty() {
+        return true; // Not set up
+    }
+
+    let mut hasher = Sha256::new();
+    for entry in WalkDir::new("/boot").into_iter().filter_map(|e| e.ok()) {
+        if entry.file_type().is_file() {
+            if let Ok(content) = fs::read(entry.path()) {
+                hasher.update(&content);
+            }
+        }
+    }
+
+    let current_hash = hex::encode(hasher.finalize());
+
+    if current_hash != stored_hash.trim() {
+        eprintln!("\n=======================================================");
+        eprintln!("                  [RED ALERT]                          ");
+        eprintln!(" ANTI-EVIL-MAID INTEGRITY CHECK FAILED                 ");
+        eprintln!("=======================================================");
+        eprintln!("The cryptographic hash of the /boot partition DOES NOT MATCH the baseline.");
+        eprintln!(
+            "This indicates a highly probable EVIL MAID attack (e.g. initramfs/kernel tampering)."
+        );
+        eprintln!("Do NOT enter your LUKS decryption password.");
+        eprintln!("Recommendation: Restore /boot from a trusted backup immediately.");
+        eprintln!("=======================================================\n");
+        return false;
+    }
+
+    println!("Anti-Evil-Maid integrity check passed.");
+    true
+}
+
 pub fn start_watcher() {
     println!("Starting Kernel Watcher (Semi-EDR File Monitor)...");
+
+    // Start background rootkit scanner
+    thread::spawn(|| {
+        loop {
+            scan_for_rootkits();
+            thread::sleep(Duration::from_secs(60));
+        }
+    });
 
     let (tx, rx) = channel();
 
@@ -149,10 +230,11 @@ fn handle_event(event: Event) {
                 || path_str.contains("/boot")
             {
                 alert_msg.push_str(&format!(
-                    "[EXPLOIT/ROOTKIT WARNING] System persistence/tampering detected:\n  -> {}\n",
+                    "[ROOTKIT/EXPLOIT WARNING] Critical system path modified:\n  -> {}\n",
                     path_str
                 ));
                 threat_detected = true;
+                quarantine_file(&path_str);
             } else if path_str.contains("/dev/input") {
                 alert_msg.push_str(&format!(
                     "[KEYLOGGER WARNING] Unauthorized raw input device manipulation:\n  -> {}\n",
@@ -187,4 +269,55 @@ fn send_ntfy_alert(message: &str) {
         .arg(message)
         .arg(&url)
         .output();
+}
+
+fn scan_for_rootkits() {
+    // 1. Check for hidden kernel modules by comparing /sys/module to /proc/modules
+    let mut sys_modules = HashSet::new();
+    if let Ok(entries) = fs::read_dir("/sys/module") {
+        for entry in entries.filter_map(|e| e.ok()) {
+            if let Ok(name) = entry.file_name().into_string() {
+                sys_modules.insert(name);
+            }
+        }
+    }
+
+    if let Ok(proc_modules) = fs::read_to_string("/proc/modules") {
+        for line in proc_modules.lines() {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if !parts.is_empty() {
+                let mod_name = parts[0];
+                if !sys_modules.contains(mod_name) {
+                    eprintln!(
+                        "[ROOTKIT ALERT] Module {} is in /proc/modules but hidden from /sys/module!",
+                        mod_name
+                    );
+                }
+            }
+        }
+    }
+
+    // 2. Memory Integrity - check if kcore is readable and kallsyms isn't hijacked
+    // (Simulated advanced check)
+    if let Ok(kallsyms) = fs::read_to_string("/proc/kallsyms") {
+        if kallsyms.contains("sys_call_table") {
+            // A basic integrity check could analyze sys_call_table address
+        }
+    }
+}
+
+fn quarantine_file(path: &str) {
+    let _ = fs::create_dir_all(QUARANTINE_DIR);
+    let filename = Path::new(path).file_name().unwrap_or_default();
+    let dest = format!("{}/{}", QUARANTINE_DIR, filename.to_string_lossy());
+    if fs::rename(path, &dest).is_ok() {
+        println!(
+            "[AUTO-CLEANUP] Malicious artifact {} quarantined to {}",
+            path, dest
+        );
+    } else {
+        // Fallback to remove if we can't move
+        let _ = fs::remove_file(path);
+        println!("[AUTO-CLEANUP] Malicious artifact {} deleted", path);
+    }
 }

@@ -1,5 +1,10 @@
+use argon2::{
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
 use rand::Rng;
-use rpassword::read_password;
+use rand_core::OsRng;
+use rpassword::{prompt_password, read_password};
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs::{self, OpenOptions};
@@ -20,6 +25,10 @@ struct OtpState {
     failed_attempts: u32,
     lockout_until: u64,
     lockout_duration_mins: u64,
+    bypass_hash: Option<String>,
+    bypass_uses_left: u32,
+    enforcement_mode: String,
+    double_otp: bool,
 }
 
 /// Simple base32 encoder (RFC 4648)
@@ -117,7 +126,46 @@ pub fn run() {
                     .parse()
                     .unwrap_or(5)
             })
-            .unwrap_or(5);
+            .unwrap_or(5)
+            .min(20);
+
+        let double_otp = args.iter().any(|a| a == "--double-otp");
+        let enforcement_mode = args
+            .iter()
+            .find(|a| a.starts_with("--mode="))
+            .map(|a| a.trim_start_matches("--mode=").to_string())
+            .unwrap_or_else(|| "both".to_string());
+
+        let bypass_uses: u32 = args
+            .iter()
+            .find(|a| a.starts_with("--bypass-uses="))
+            .map(|a| a.trim_start_matches("--bypass-uses=").parse().unwrap_or(0))
+            .unwrap_or(0)
+            .min(10);
+
+        let mut bypass_hash = None;
+        if bypass_uses > 0 {
+            println!(
+                "You have enabled a bypass password (up to {} uses).",
+                bypass_uses
+            );
+            let mut pw = prompt_password("Enter new bypass password: ").unwrap();
+            let mut pw2 = prompt_password("Confirm bypass password: ").unwrap();
+            if pw != pw2 {
+                println!("Passwords do not match. Aborting setup.");
+                std::process::exit(1);
+            }
+            let salt = SaltString::generate(&mut OsRng);
+            let argon2 = Argon2::default();
+            bypass_hash = Some(
+                argon2
+                    .hash_password(pw.as_bytes(), &salt)
+                    .unwrap()
+                    .to_string(),
+            );
+            pw.zeroize();
+            pw2.zeroize();
+        }
 
         let secret = Secret::generate_secret();
         let mut secret_bytes = secret.to_bytes().unwrap();
@@ -130,6 +178,10 @@ pub fn run() {
             failed_attempts: 0,
             lockout_until: 0,
             lockout_duration_mins: 30, // Start at 30 mins
+            bypass_hash,
+            bypass_uses_left: bypass_uses,
+            enforcement_mode,
+            double_otp,
         };
 
         save_state(&state);
@@ -137,6 +189,11 @@ pub fn run() {
         println!("Secret generated and saved securely.");
         println!("Your OTP Secret (Base32): {}", base32_encode(&secret_bytes));
         println!("Algorithm: {}", algo_str);
+        if algo_str == "SHA512" {
+            println!("  -> Note: Apps like 2FAS support SHA512. Google Authenticator may only support SHA1.");
+        } else if algo_str == "SHA256" {
+            println!("  -> Note: Many modern apps support SHA256, Google Authenticator may only support SHA1.");
+        }
         println!("Add this to your TOTP authenticator app.\n");
         println!("WARNING: Save these recovery codes offline! They are your only fallback.");
         for code in recovery_codes {
@@ -184,14 +241,47 @@ pub fn run() {
     let mut success = totp.check(&user_input, current_time);
 
     // If not, check if it's a valid recovery code
+    let mut is_bypass = false;
     if !success {
         if let Some(idx) = state.recovery_codes.iter().position(|c| c == &user_input) {
             success = true;
+            is_bypass = true;
             state.recovery_codes.remove(idx); // Consume the code
             println!(
                 "Recovery code accepted and consumed. {} codes remaining.",
                 state.recovery_codes.len()
             );
+        } else if let Some(ref bh) = state.bypass_hash {
+            if state.bypass_uses_left > 0 {
+                if let Ok(parsed_hash) = PasswordHash::new(bh.trim()) {
+                let argon2 = Argon2::default();
+                if argon2
+                    .verify_password(user_input.as_bytes(), &parsed_hash)
+                    .is_ok()
+                {
+                    success = true;
+                    is_bypass = true;
+                    state.bypass_uses_left -= 1;
+                    println!(
+                        "Bypass password accepted. {} uses remaining.",
+                        state.bypass_uses_left
+                    );
+                }
+            }
+        }
+    }
+}
+
+    if success && state.double_otp && !is_bypass {
+        print!("Double OTP required. Enter next OTP code: ");
+        std::io::Write::flush(&mut std::io::stdout()).unwrap();
+        let user_input_2 = read_password().unwrap();
+        // Check next code
+        let success_2 = totp.check(&user_input_2, current_time + 30)
+            || totp.check(&user_input_2, current_time + 60);
+        if !success_2 {
+            println!("Second OTP code invalid.");
+            success = false;
         }
     }
 

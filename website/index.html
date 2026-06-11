@@ -38,6 +38,13 @@
             <span class="nav-sep">|</span>
             <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="Full Arch Linux documentation with same parity as the generator. Every generator option is explained so you can manually configure your system.">📖 Wiki</a>
             <span class="nav-sep">|</span>
+            <a href="wiki.html#security-suite" class="nav-link nav-tooltip security-suite-nav" 
+               data-title="🦀 Security Suite" 
+               data-desc="tilas01's custom Rust tools. Individual or Full Suite. Reproducible builds. Left-click: View Releases. Right-click: View Wiki."
+               onclick="window.open('https://github.com/tilas01/arch-guides-dynamic/releases', '_blank'); return false;"
+               oncontextmenu="window.location.href='wiki.html#security-suite'; return false;"
+               >🦀 Security Suite</a>
+            <span class="nav-sep">|</span>
             <a href="wiki.html#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
             <span class="nav-sep">|</span>
             <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Includes SHA256 hashes and optional GPG verification.">📦 Releases</a>
@@ -473,12 +480,32 @@
                                     <option value="sha512">SHA512 (Maximum)</option>
                                 </select>
                             </div>
-                            <div class="form-group form-step" data-title="OTP Recovery Codes" data-desc="Generate 5 backup recovery codes during setup. Each code is single-use. If a recovery code is used, an alert is sent via webhook.">
+                            <div class="form-group form-step" data-title="Double OTP Verification" data-desc="Require two consecutive valid OTP codes (must wait 30s) or two different authenticators. Extreme security mode.">
+                                <label>Double OTP:</label>
+                                <select id="otp_double">
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="no" >No (Standard)</option>
+                                    <option value="yes">Yes (High Security)</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-step" data-title="Bypass Password" data-desc="Set a custom bypass password that can be used up to a specified number of times to bypass OTP entirely.">
+                                <label>Bypass Uses:</label>
+                                <select id="otp_bypass">
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="0" >None (Recommended)</option>
+                                    <option value="1">1 Use</option>
+                                    <option value="3">3 Uses</option>
+                                    <option value="5">5 Uses</option>
+                                    <option value="10">10 Uses</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-step" data-title="OTP Recovery Codes" data-desc="Generate backup recovery codes during setup. Each code is single-use. If a recovery code is used, an alert is sent via webhook.">
                                 <label>Recovery Codes:</label>
                                 <select id="otp_recovery">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="5" >5 codes (Recommended)</option>
                                     <option value="10">10 codes</option>
+                                    <option value="20">20 codes</option>
                                     <option value="0">None (not recommended)</option>
                                 </select>
                             </div>
