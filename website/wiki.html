@@ -75,9 +75,11 @@
         <p>Libre-OTP integrates TOTP (Time-Based One-Time Passwords) directly into the Linux PAM (Pluggable Authentication Modules) stack. This enforces two-factor authentication before decryption at boot, upon logging into the TTY, or when accessing the system via SSH.</p>
         <h3>Features</h3>
         <ul>
+            <li><strong>Escalating Bruteforce Lockout:</strong> Prevents bruteforce attacks by locking the system for 30 minutes after 3 failed attempts, adding 30 minutes for every subsequent failure (max 24 hours).</li>
+            <li><strong>Lockout Bypass:</strong> Set a cryptographically unique bypass password (Argon2id hashed) to manually override the lockout timer.</li>
+            <li><strong>KeePassXC Integration:</strong> Automatically generates an importable CSV for KeePassXC to securely store your recovery codes.</li>
             <li>Supports SHA-1, SHA-256, and SHA-512 hashing algorithms.</li>
-            <li>Generates offline recovery codes for emergency access.</li>
-            <li>Fully compatible with Aegis, Google Authenticator, and Authy.</li>
+            <li>Generates offline recovery codes of custom length for emergency access.</li>
         </ul>
         <div class="alert">
             <strong>Warning:</strong> Losing your Authenticator App and Recovery Codes will result in permanent loss of access to your machine.
@@ -135,12 +137,9 @@
     <div class="section" id="kernel-watcher">
         <h2><span class="icon">👁️</span> Malicious Kernel Behavior Watcher (Semi-EDR)</h2>
         <p>The ARSS Kernel Watcher acts as an asynchronous, highly-optimized semi-EDR (Endpoint Detection and Response) daemon written in Rust.</p>
-        <h3>Detection Capabilities:</h3>
-        <ul>
-            <li><strong>Infostealers:</strong> Immediately detects unauthorized reads to `~/.config/google-chrome/Default/Login Data`, `~/.mozilla/firefox`, and `~/.ssh/`.</li>
-            <li><strong>Keyloggers:</strong> Detects processes silently hooking into `/dev/input/` without owning the active TTY.</li>
-            <li><strong>Rootkits:</strong> Monitors `kprobes` and `/sys/module/` for unauthorized, unsigned kernel module injections.</li>
-        </ul>
+        <h3>Infostealer & Exploit Protection</h3>
+        <p>It utilizes high-performance filesystem monitoring and system heuristics to detect unauthorized access to critical configuration files (`/boot`, `cron`, `ld.so.preload`) as well as highly sensitive data structures like SSH keys, AWS credentials, browser cookies, and your <strong>KeePassXC ARSS Database</strong>.</p>
+        <p>If an infostealer or rootkit attempts to exfiltrate or modify these files, Kernel Watcher instantly triggers a quarantine action and sends a push notification to your phone.</p>
     </div>
 
 

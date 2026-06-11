@@ -211,15 +211,24 @@ systemctl enable --now input-guard.service
 
 ## Libre OTP: Two-Factor Authentication
 
+Native Rust TOTP/OTP 2FA for Linux login, boot, and SSH via PAM integration.
+
+| Feature | Description |
+|---------|-------------|
+| **Escalating Lockout** | Prevents bruteforcing. 3 failed attempts = 30 min lockout. Each subsequent 3 fails adds 30 mins (max 24 hours). |
+| **Lockout Bypass** | A cryptographically unique bypass password (hashed with Argon2id) that can override the lockout timer. |
+| **KeePassXC Output** | Securely generates an importable CSV and monitors `~/.keepassxc/arss.kdbx` for Infostealer tampering. |
+| **Custom Recovery Keys** | Set exact length and count of recovery codes. |
+
 ```bash
-# Setup
-arch-rusty-security-suite otp --setup --algo sha256
+# Setup with SHA256 and custom recovery length
+arch-rusty-security-suite otp --setup --hash=SHA256 --recovery-codes=10 --recovery-len=12 --bypass-uses=5
+
+# KeePassXC Import (Run as user)
+keepassxc-cli import /etc/libre-otp/keepass_import.csv ~/.keepassxc/arss.kdbx
 
 # PAM integration (SSH)
 echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/sshd
-
-# PAM integration (login)
-echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/login
 ```
 
 ---

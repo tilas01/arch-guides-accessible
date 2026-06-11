@@ -718,11 +718,20 @@ window.generateOutput = function(auto = false) {
     if (iso_setup === "ssh") isoHTML = `<div class="alert warning"><strong>ðŸ“¡ Run on Arch ISO first:</strong><pre><code>systemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
     else if (iso_setup === "ssh_curl") isoHTML = `<div class="alert warning"><strong>ðŸ“¡ Run on Arch ISO first:</strong><pre><code>pacman -Sy --noconfirm curl\nsystemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
 
-    // â”€â”€ Append Proprietary Warnings to Markdown Output â”€â”€
+    // ── Smart Analysis & Proprietary Warnings ──
+    let analysisWarnings = 0;
+    let analysisErrors = 0;
     if (selectedPropApps.length > 0 && software_type !== 'libre') {
-        let warnStr = `\n\n## âš  Proprietary Software Notice\n> You have chosen to include software containing proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
+        let warnStr = `\n\n## ⚠️ Proprietary Software Notice\n> You have chosen to include software containing proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
         selectedPropApps.forEach(a => warnStr += `- **${a.toUpperCase()}**: ${propAppsDB[a]}\n`);
         mdOutput += warnStr;
+        analysisWarnings += selectedPropApps.length;
+    }
+
+    if (selectedPropApps.length > 0 && software_type === 'libre') {
+        analysisErrors += 1;
+        let conflictStr = `\n\n> [!CAUTION]\n> **LIBRE CONFLICT**: You selected "Fully Libre (Strict)" software type, but included proprietary applications (${selectedPropApps.join(', ')}). Your system will NOT be fully libre!\n`;
+        mdOutput += conflictStr;
     }
 
     let html = isoHTML;
@@ -865,6 +874,42 @@ document.addEventListener('DOMContentLoaded', () => {
         if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
     }
 
+    // Full Suite Toggle Logic
+    const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
+    const arssCheckboxes = document.querySelectorAll('input[name="arss_tools"]');
+    
+    if (fullSuiteToggle) {
+        fullSuiteToggle.addEventListener('change', function() {
+            const isChecked = this.checked;
+            arssCheckboxes.forEach(cb => {
+                cb.checked = isChecked;
+                cb.disabled = isChecked; // Grey out toggle when forced
+                if (isChecked) {
+                    cb.parentElement.style.opacity = '0.7';
+                } else {
+                    cb.parentElement.style.opacity = '1';
+                }
+                cb.dispatchEvent(new Event('change'));
+            });
+        });
+    }
+
+    // Proprietary App Warnings UI
+    document.querySelectorAll('input[name="post_apps"]').forEach(cb => {
+        if (typeof propAppsDB !== 'undefined' && propAppsDB[cb.value]) {
+            const warningSpan = document.createElement('span');
+            warningSpan.className = 'prop-warning nav-tooltip';
+            warningSpan.setAttribute('data-title', '⚠️ Proprietary Software');
+            warningSpan.setAttribute('data-desc', propAppsDB[cb.value]);
+            warningSpan.innerHTML = ' <span style="color:var(--accent-red); cursor:help;">⚠️</span>';
+            // Insert after the icon
+            const iconSpan = cb.parentElement.querySelector('.app-icon');
+            if (iconSpan) {
+                iconSpan.insertAdjacentElement('afterend', warningSpan);
+            }
+        }
+    });
+
     // Handle .sc upload
     const scInput = document.getElementById('upload-sc-input');
     if (scInput) {
@@ -975,18 +1020,37 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
         }
     });
 
-    if (missingFields.length > 0) {
-        let alertMsg = "Generation Failed! You have not filled out the following fields:\n";
-        missingFields.forEach(f => alertMsg += "- " + f + "\n");
-        alert(alertMsg);
-        
-        const firstMissing = document.querySelector('#install-form select[style*="border"]');
-        if (firstMissing) firstMissing.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-    }
+        const errorBox = document.getElementById('generate-error-box');
+        const errorList = document.getElementById('error-list');
+        const errorCount = document.getElementById('error-count');
+
+        if (missingFields.length > 0) {
+            if(errorCount) errorCount.innerText = missingFields.length;
+            if(errorList) errorList.innerHTML = missingFields.map(f => `<li>${f}</li>`).join('');
+            if(errorBox) {
+                errorBox.style.display = 'block';
+                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                errorBox.onclick = function() {
+                    const firstMissing = document.querySelector('#install-form select[style*="border"]');
+                    if (firstMissing) firstMissing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                };
+            }
+            return;
+        } else {
+            if(errorBox) errorBox.style.display = 'none';
+        }
     
     // Clear any previous global warnings or errors
     window.generateOutput(false);
+    
+    // Fallback if showOutputPage is missing
+    const outSec = document.getElementById('output-section');
+    if (outSec) {
+        document.getElementById('install-form').style.display = 'none';
+        outSec.style.display = 'block';
+        outSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 });
 
 // ── Tooltip toggle (emoji button, always-enabled) ──
