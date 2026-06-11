@@ -230,6 +230,8 @@ window.generateOutput = function(auto = false) {
     
     const isoVerify = gv('iso_verify', 'yes');
     const advDoasMode = gv('adv_doas_mode', 'both');
+    const advThemeMode = gv('adv_theme_mode', 'tokyonight');
+    const advAemMode = gv('adv_aem_mode', '1');
     const advSnapperMode = gv('adv_snapper_mode', 'default');
 
     const useCustomScripts = gv('use-custom-scripts','no') === 'yes';
@@ -544,20 +546,29 @@ window.generateOutput = function(auto = false) {
 
             
             o += `echo -e "\\n\\e[38;2;247;118;142m>> Interactive Configuration\\e[0m"\n`;
-            o += `read -p "Install JetBrains Mono & Terminal Themes? (y/N): " setup_themes\n`;
-            o += `if [[ "$setup_themes" =~ ^[Yy]$ ]]; then\n`;
-            o += `  pacman -S --noconfirm ttf-jetbrains-mono ttf-jetbrains-mono-nerd\n`;
-            o += `  echo "Available Themes: 1) Tokyo Night  2) Dracula  3) Gruvbox  4) Nordic"\n`;
-            o += `  read -p "Select Theme (1-4): " theme_sel\n`;
-            o += `  case "$theme_sel" in\n`;
-            o += `    1) THEME="tokyonight" ;;\n`;
-            o += `    2) THEME="dracula" ;;\n`;
-            o += `    3) THEME="gruvbox" ;;\n`;
-            o += `    4) THEME="nordic" ;;\n`;
-            o += `    *) THEME="tokyonight" ;;\n`;
-            o += `  esac\n`;
-            o += `  echo "Theme $THEME selected (Configuration will be applied via dotfiles / user bashrc)"\n`;
-            o += `fi\n`;
+            
+            if (configMode === 'interactive') {
+                o += `read -p "Install JetBrains Mono & Terminal Themes? (y/N): " setup_themes\n`;
+                o += `if [[ "$setup_themes" =~ ^[Yy]$ ]]; then\n`;
+                o += `  pacman -S --noconfirm ttf-jetbrains-mono ttf-jetbrains-mono-nerd\n`;
+                o += `  echo "Available Themes: 1) Tokyo Night  2) Dracula  3) Gruvbox  4) Nordic"\n`;
+                o += `  read -p "Select Theme (1-4): " theme_sel\n`;
+                o += `  case "$theme_sel" in\n`;
+                o += `    1) THEME="tokyonight" ;;\n`;
+                o += `    2) THEME="dracula" ;;\n`;
+                o += `    3) THEME="gruvbox" ;;\n`;
+                o += `    4) THEME="nordic" ;;\n`;
+                o += `    *) THEME="tokyonight" ;;\n`;
+                o += `  esac\n`;
+                o += `  echo "Theme $THEME selected (Configuration will be applied via dotfiles / user bashrc)"\n`;
+                o += `fi\n`;
+            } else {
+                o += `\n# Install JetBrains Mono & Theme (Pre-configured)\n`;
+                o += `pacman -S --noconfirm ttf-jetbrains-mono ttf-jetbrains-mono-nerd\n`;
+                o += `THEME="${advThemeMode}"\n`;
+                o += `echo "Theme $THEME selected (Configuration will be applied via dotfiles / user bashrc)"\n`;
+            }
+
         } else {
             o += `arch-chroot /mnt\n`;
         }
@@ -1181,6 +1192,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const postApps = Array.from(document.querySelectorAll('input[name="post_apps"]:checked')).map(el => el.value);
             if (advDoas) advDoas.style.display = postApps.includes('doas') ? 'block' : 'none';
             if (advSnapper) advSnapper.style.display = postApps.includes('snapper') ? 'block' : 'none';
+            
+            const advTheme = document.getElementById('adv-theme');
+            const advAem = document.getElementById('adv-aem');
+            const advUsernames = document.getElementById('adv-usernames');
+            
+            if (advTheme) advTheme.style.display = postApps.includes('jb_mono') ? 'block' : 'none';
+            if (advAem) advAem.style.display = Array.from(document.querySelectorAll('input[name="arss_tools"]:checked')).map(el=>el.value).includes('anti-evil-maid') ? 'block' : 'none';
+            
+            if (advUsernames) {
+                advUsernames.style.display = 'block';
+                const container = document.getElementById('adv-usernames-container');
+                const count = parseInt(document.getElementById('user_count').value) || 1;
+                
+                // Only redraw if count changed
+                if (container && container.children.length !== count) {
+                    container.innerHTML = '';
+                    for (let i=1; i<=count; i++) {
+                        container.innerHTML += `<div style="display:flex; align-items:center; gap:8px;">
+                            <label style="width:100px; font-size:0.85rem;">User ${i} Name:</label>
+                            <input type="text" id="user_name_${i}" value="user${i}" style="padding:0.3rem; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-color); color:var(--fg-color);">
+                        </div>`;
+                    }
+                }
+            }
+
         } else {
             advContainer.style.display = 'none';
         }
