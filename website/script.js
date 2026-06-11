@@ -584,30 +584,30 @@ window.generateOutput = function(auto = false) {
         if (post_apps.includes('clamav')) o += `freshclam\nsystemctl enable --now clamav-freshclam\n`;
         
         if (post_apps.includes('doas')) {
-            const doasMode = document.getElementById('doas_mode')?.value || 'both';
             o += `\n# Configure Doas\n`;
             o += `echo "permit persist :wheel" > /etc/doas.conf\n`;
             o += `chown -c root:root /etc/doas.conf\n`;
             o += `chmod -c 0400 /etc/doas.conf\n`;
             
-            if (doasMode === 'replace') {
-                o += `\n# Fully Replace Sudo with Doas Wrapper\n`;
-                o += `pacman -Rdd --noconfirm sudo || true\n`; // Force remove sudo without breaking dependencies
-                o += `cat << 'EOF' > /usr/local/bin/sudo\n`;
-                o += `#!/bin/bash\n`;
-                o += `# Doas Wrapper script for applications hardcoding sudo\n`;
-                o += `args=()\n`;
-                o += `for arg in "$@"; do\n`;
-                o += `  if [[ "$arg" == "-E" ]]; then continue; fi # Doas drops env by default, ignore -E\n`;
-                o += `  if [[ "$arg" == "-i" ]]; then args+=("-s"); continue; fi # Translate -i to -s\n`;
-                o += `  if [[ "$arg" == "-v" ]]; then doas -C /etc/doas.conf; exit $?; fi\n`;
-                o += `  args+=("$arg")\n`;
-                o += `done\n`;
-                o += `exec /usr/bin/doas "\${args[@]}"\n`;
-                o += `EOF\n`;
-                o += `chmod +x /usr/local/bin/sudo\n`;
-                o += `ln -sf /usr/local/bin/sudo /usr/bin/sudo\n`;
-            }
+            // Interactive bash prompt for Doas Wrapper
+            o += `\n# Interactive Doas Wrapper Prompt\n`;
+            o += `doas_prompt() {\n`;
+            o += `  exec < /dev/tty\n`;
+            o += `  echo -e "\\n\\e[38;2;122;162;247m======================================\\e[0m"\n`;
+            o += `  echo "Doas Configuration"\n`;
+            o += `  echo -e "\\e[38;2;122;162;247m======================================\\e[0m"\n`;
+            o += `  read -p "Do you want to fully replace Sudo with a Doas Wrapper? (y/n): " ans\n`;
+            o += `  if [[ "$ans" =~ ^[Yy]$ ]]; then\n`;
+            o += `    echo "Fully replacing sudo..."\n`;
+            o += `    pacman -Rdd --noconfirm sudo || true\n`;
+            o += `    cat << 'EOF' > /usr/local/bin/sudo\n#!/bin/bash\n# Doas Wrapper script\nargs=()\nfor arg in "$@"; do\n  if [[ "$arg" == "-E" ]]; then continue; fi\n  if [[ "$arg" == "-i" ]]; then args+=("-s"); continue; fi\n  if [[ "$arg" == "-v" ]]; then doas -C /etc/doas.conf; exit $?; fi\n  args+=("$arg")\ndone\nexec /usr/bin/doas "\${args[@]}"\nEOF\n`;
+            o += `    chmod +x /usr/local/bin/sudo\n`;
+            o += `    ln -sf /usr/local/bin/sudo /usr/bin/sudo\n`;
+            o += `  else\n`;
+            o += `    echo "Keeping standard sudo alongside doas."\n`;
+            o += `  fi\n`;
+            o += `}\n`;
+            o += `doas_prompt\n`;
         }
 
         // Desktop environments
@@ -1049,15 +1049,7 @@ document.addEventListener('DOMContentLoaded', () => {
         libreOtpContainer.style.display = libreOtpCb.checked ? 'block' : 'none';
     }
 
-    const doasCb = document.getElementById('doas-checkbox');
-    const doasContainer = document.getElementById('doas-mode-container');
-    if (doasCb && doasContainer) {
-        doasCb.addEventListener('change', () => {
-            doasContainer.style.display = doasCb.checked ? 'block' : 'none';
-        });
-        // Init
-        doasContainer.style.display = doasCb.checked ? 'block' : 'none';
-    }
+    // Removed Doas UI toggle logic
 
     // Dynamic Proprietary Highlighting Logic
     const softwareTypeSelect = document.getElementById('software_type');

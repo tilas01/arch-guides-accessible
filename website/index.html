@@ -234,24 +234,12 @@
 
                     <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Libre-only users will see compatibility notes. All apps are 100% open source unless noted.">
                         <label>Post-Install Apps:</label>
-                        <p style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;">⚠️ <strong>Proprietary / Non-Libre Warning:</strong> Apps highlighted in <span style="color:var(--accent-red);font-weight:bold;">Red</span> (e.g., Firefox firmware blobs, Signal Electron build, Chromium, Flatpak) contain proprietary code or conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
+                        <p style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;">⚠️ <strong>Proprietary / Non-Libre Warning:</strong> Apps highlighted with <span style="color:var(--accent-red);font-weight:bold;">[!]</span> (e.g., Firefox firmware blobs, Signal Electron build, Chromium, Flatpak) contain proprietary code or conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                         <div id="post_apps_container" class="app-grid-container">
                             <div class="app-category-header">📦 AUR</div>
                             <label class="app-item" title="paru
 --
-paru
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 AUR
-Website: https://github.com/Morganamilo/paru
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 AUR
-Website: https://github.com/Morganamilo/paru
+Rust-based AUR helper — build & install AUR packages
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
@@ -259,19 +247,7 @@ Website: https://github.com/Morganamilo/paru">
                                 <input type="checkbox" name="post_apps" value="paru" checked>
                                 <span class="app-icon">🦀</span> <a href="https://github.com/Morganamilo/paru" target="_blank">paru</a> <span title="paru
 --
-paru
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 AUR
-Website: https://github.com/Morganamilo/paru
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 AUR
-Website: https://github.com/Morganamilo/paru
+Rust-based AUR helper — build & install AUR packages
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
@@ -280,17 +256,17 @@ Website: https://github.com/Morganamilo/paru" style="cursor:help; margin-left:0.
                             <div class="app-category-header">🌐 Browsers</div>
                             <label class="app-item" title="Firefox [PROPRIETARY]
 --
-Firefox
+Open source web browser by Mozilla. Contains proprietary firmware blobs.
 
 WARNING: Contains closed-source telemetry and firmware blobs.
 
 Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
 Website: https://mozilla.org/firefox/">
-                                <input type="checkbox" name="post_apps" value="firefox" checked>
-                                <span class="app-icon">🦊</span> <a href="https://mozilla.org/firefox/" target="_blank" style="color:var(--accent-red); font-weight:bold;">Firefox</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Firefox [PROPRIETARY]
+                                <input type="checkbox" name="post_apps" value="firefox">
+                                <span class="app-icon">🦊</span> <a href="https://mozilla.org/firefox/" target="_blank">Firefox</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Firefox [PROPRIETARY]
 --
-Firefox
+Open source web browser by Mozilla. Contains proprietary firmware blobs.
 
 WARNING: Contains closed-source telemetry and firmware blobs.
 
@@ -300,19 +276,7 @@ Website: https://mozilla.org/firefox/" style="cursor:help; margin-left:0.3rem;">
                             </label>
                             <label class="app-item" title="LibreWolf
 --
-LibreWolf
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 AUR
-Website: https://librewolf.net/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 AUR
-Website: https://librewolf.net/
+Privacy-hardened Firefox fork — no telemetry
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
@@ -320,19 +284,7 @@ Website: https://librewolf.net/">
                                 <input type="checkbox" name="post_apps" value="librewolf">
                                 <span class="app-icon">🐺</span> <a href="https://librewolf.net/" target="_blank">LibreWolf</a> <span title="LibreWolf
 --
-LibreWolf
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 AUR
-Website: https://librewolf.net/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 AUR
-Website: https://librewolf.net/
+Privacy-hardened Firefox fork — no telemetry
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
@@ -340,19 +292,7 @@ Website: https://librewolf.net/" style="cursor:help; margin-left:0.3rem;">ℹ️
                             </label>
                             <label class="app-item" title="Tor Browser
 --
-Tor Browser
-
-Build
---
-Reproducible
-Source
---
-📁 AUR
-Website: https://torproject.org/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR
-Website: https://torproject.org/
+Anonymous web browsing via Tor network
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 AUR
@@ -360,19 +300,7 @@ Website: https://torproject.org/">
                                 <input type="checkbox" name="post_apps" value="tor-browser">
                                 <span class="app-icon">🧅</span> <a href="https://torproject.org/" target="_blank">Tor Browser</a> <span title="Tor Browser
 --
-Tor Browser
-
-Build
---
-Reproducible
-Source
---
-📁 AUR
-Website: https://torproject.org/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR
-Website: https://torproject.org/
+Anonymous web browsing via Tor network
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 AUR
@@ -380,7 +308,7 @@ Website: https://torproject.org/" style="cursor:help; margin-left:0.3rem;">ℹ�
                             </label>
                             <label class="app-item" title="Chromium [PROPRIETARY]
 --
-Chromium
+Open source browser engine. Google integration can compromise privacy.
 
 WARNING: Google integration modules contain non-libre code.
 
@@ -388,9 +316,9 @@ Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
 Website: https://www.chromium.org/">
                                 <input type="checkbox" name="post_apps" value="chromium">
-                                <span class="app-icon">🔵</span> <a href="https://www.chromium.org/" target="_blank" style="color:var(--accent-red); font-weight:bold;">Chromium</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Chromium [PROPRIETARY]
+                                <span class="app-icon">🔵</span> <a href="https://www.chromium.org/" target="_blank">Chromium</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Chromium [PROPRIETARY]
 --
-Chromium
+Open source browser engine. Google integration can compromise privacy.
 
 WARNING: Google integration modules contain non-libre code.
 
@@ -400,19 +328,7 @@ Website: https://www.chromium.org/" style="cursor:help; margin-left:0.3rem;">ℹ
                             </label>
                             <label class="app-item" title="Ungoogled Chromium
 --
-Ungoogled Chromium
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 AUR
-Website: https://github.com/ungoogled-software/ungoogled-chromium
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 AUR
-Website: https://github.com/ungoogled-software/ungoogled-chromium
+Chromium without Google integration
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
@@ -420,19 +336,7 @@ Website: https://github.com/ungoogled-software/ungoogled-chromium">
                                 <input type="checkbox" name="post_apps" value="ungoogled-chromium">
                                 <span class="app-icon">🌐</span> <a href="https://github.com/ungoogled-software/ungoogled-chromium" target="_blank">Ungoogled Chromium</a> <span title="Ungoogled Chromium
 --
-Ungoogled Chromium
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 AUR
-Website: https://github.com/ungoogled-software/ungoogled-chromium
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 AUR
-Website: https://github.com/ungoogled-software/ungoogled-chromium
+Chromium without Google integration
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
@@ -441,7 +345,7 @@ Website: https://github.com/ungoogled-software/ungoogled-chromium" style="cursor
                             <div class="app-category-header">🔒 Security</div>
                             <label class="app-item" title="Signal [PROPRIETARY]
 --
-Signal
+End-to-end encrypted messaging app. Uses proprietary Electron blobs.
 
 WARNING: The Electron build system relies on closed-source precompiled binaries.
 
@@ -449,9 +353,9 @@ Build Integrity: Non-Reproducible (Requires trusting the developer or CI system)
 Source: 📁 AUR
 Website: https://signal.org/">
                                 <input type="checkbox" name="post_apps" value="signal">
-                                <span class="app-icon">💬</span> <a href="https://signal.org/" target="_blank" style="color:var(--accent-red); font-weight:bold;">Signal</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Signal [PROPRIETARY]
+                                <span class="app-icon">💬</span> <a href="https://signal.org/" target="_blank">Signal</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Signal [PROPRIETARY]
 --
-Signal
+End-to-end encrypted messaging app. Uses proprietary Electron blobs.
 
 WARNING: The Electron build system relies on closed-source precompiled binaries.
 
@@ -461,19 +365,7 @@ Website: https://signal.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</s
                             </label>
                             <label class="app-item" title="KeePassXC
 --
-KeePassXC
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://keepassxc.org/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://keepassxc.org/
+Offline password manager with TOTP support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -481,19 +373,7 @@ Website: https://keepassxc.org/">
                                 <input type="checkbox" name="post_apps" value="keepassxc">
                                 <span class="app-icon">🔑</span> <a href="https://keepassxc.org/" target="_blank">KeePassXC</a> <span title="KeePassXC
 --
-KeePassXC
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://keepassxc.org/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://keepassxc.org/
+Offline password manager with TOTP support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -501,19 +381,7 @@ Website: https://keepassxc.org/" style="cursor:help; margin-left:0.3rem;">ℹ️
                             </label>
                             <label class="app-item" title="ClamAV
 --
-ClamAV
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 Arch Extra
-Website: https://www.clamav.net/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 Arch Extra
-Website: https://www.clamav.net/
+Open source antivirus engine
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
@@ -521,19 +389,7 @@ Website: https://www.clamav.net/">
                                 <input type="checkbox" name="post_apps" value="clamav">
                                 <span class="app-icon">🛡️</span> <a href="https://www.clamav.net/" target="_blank">ClamAV</a> <span title="ClamAV
 --
-ClamAV
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 Arch Extra
-Website: https://www.clamav.net/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 Arch Extra
-Website: https://www.clamav.net/
+Open source antivirus engine
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
@@ -541,19 +397,7 @@ Website: https://www.clamav.net/" style="cursor:help; margin-left:0.3rem;">ℹ�
                             </label>
                             <label class="app-item" title="Firejail
 --
-Firejail
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://firejail.wordpress.com/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://firejail.wordpress.com/
+SUID sandbox for restricting app access
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -561,19 +405,7 @@ Website: https://firejail.wordpress.com/">
                                 <input type="checkbox" name="post_apps" value="firejail">
                                 <span class="app-icon">🏰</span> <a href="https://firejail.wordpress.com/" target="_blank">Firejail</a> <span title="Firejail
 --
-Firejail
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://firejail.wordpress.com/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://firejail.wordpress.com/
+SUID sandbox for restricting app access
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -581,72 +413,26 @@ Website: https://firejail.wordpress.com/" style="cursor:help; margin-left:0.3rem
                             </label>
                             <label class="app-item" title="Doas
 --
-Doas
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas
+⭐ RECOMMENDED
+OpenDoas privilege escalation (sudo alternative)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
 Website: https://github.com/Duncaen/OpenDoas">
-                                <input type="checkbox" name="post_apps" value="doas" id="doas-checkbox">
-                                <span class="app-icon">⚙️</span> <a href="https://github.com/Duncaen/OpenDoas" target="_blank">Doas</a> <span title="Doas
+                                <input type="checkbox" name="post_apps" value="doas">
+                                <span class="app-icon">⚙️</span> <a href="https://github.com/Duncaen/OpenDoas" target="_blank" style="font-weight:bold; color:var(--accent-yellow);">Doas ⭐</a> <span title="Doas
 --
-Doas
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas
+⭐ RECOMMENDED
+OpenDoas privilege escalation (sudo alternative)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
 Website: https://github.com/Duncaen/OpenDoas" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Privilege</span>
                             </label>
-                            
-                            <!-- Doas sub-options (visible when doas checked) -->
-                            <div id="doas-mode-container" style="display:none; margin-left:0.8rem; padding-left:0.8rem; border-left:2px solid var(--accent-purple); width: 100%;">
-                                <div class="form-group form-step" data-title="Doas Integration Mode" data-desc="Keep both Sudo and Doas, or fully replace Sudo. Replace mode creates a Bash Wrapper that safely translates common sudo syntax into doas.">
-                                    <label>Integration:</label>
-                                    <select id="doas_mode">
-                                        <option value="" disabled selected hidden>No Selection Provided</option>
-                                        <option value="both">Keep Sudo & Doas</option>
-                                        <option value="replace">Fully Replace Sudo (Symlink/Wrapper)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="app-category-header" style="margin-top: 1rem;">💻 Dev / Terminal</div>
+                            <div class="app-category-header">💻 Dev / Terminal</div>
                             <label class="app-item" title="Neovim
 --
-Neovim
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://neovim.io/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://neovim.io/
+Hyperextensible terminal text editor
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -654,19 +440,7 @@ Website: https://neovim.io/">
                                 <input type="checkbox" name="post_apps" value="neovim" checked>
                                 <span class="app-icon">📝</span> <a href="https://neovim.io/" target="_blank">Neovim</a> <span title="Neovim
 --
-Neovim
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://neovim.io/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://neovim.io/
+Hyperextensible terminal text editor
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -674,19 +448,7 @@ Website: https://neovim.io/" style="cursor:help; margin-left:0.3rem;">ℹ️</sp
                             </label>
                             <label class="app-item" title="Alacritty
 --
-Alacritty
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://alacritty.org/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://alacritty.org/
+GPU-accelerated terminal emulator written in Rust
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -694,19 +456,7 @@ Website: https://alacritty.org/">
                                 <input type="checkbox" name="post_apps" value="alacritty">
                                 <span class="app-icon">⬛</span> <a href="https://alacritty.org/" target="_blank">Alacritty</a> <span title="Alacritty
 --
-Alacritty
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://alacritty.org/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://alacritty.org/
+GPU-accelerated terminal emulator written in Rust
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -714,19 +464,7 @@ Website: https://alacritty.org/" style="cursor:help; margin-left:0.3rem;">ℹ️
                             </label>
                             <label class="app-item" title="kitty
 --
-kitty
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://sw.kovidgoyal.net/kitty/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://sw.kovidgoyal.net/kitty/
+Fast GPU-based terminal with image support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -734,19 +472,7 @@ Website: https://sw.kovidgoyal.net/kitty/">
                                 <input type="checkbox" name="post_apps" value="kitty">
                                 <span class="app-icon">🐱</span> <a href="https://sw.kovidgoyal.net/kitty/" target="_blank">kitty</a> <span title="kitty
 --
-kitty
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://sw.kovidgoyal.net/kitty/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://sw.kovidgoyal.net/kitty/
+Fast GPU-based terminal with image support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -754,53 +480,21 @@ Website: https://sw.kovidgoyal.net/kitty/" style="cursor:help; margin-left:0.3re
                             </label>
                             <label class="app-item" title="Zsh
 --
-Zsh
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
+Feature-rich shell with autocomplete and themes
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra">
                                 <input type="checkbox" name="post_apps" value="zsh">
                                 <span class="app-icon">🐚</span> Zsh <span title="Zsh
 --
-Zsh
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
+Feature-rich shell with autocomplete and themes
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Shell</span>
                             </label>
                             <label class="app-item" title="VSCodium
 --
-VSCodium
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 AUR
-Website: https://vscodium.com/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 AUR
-Website: https://vscodium.com/
+Telemetry-free VS Code
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
@@ -808,19 +502,7 @@ Website: https://vscodium.com/">
                                 <input type="checkbox" name="post_apps" value="vscodium">
                                 <span class="app-icon">📘</span> <a href="https://vscodium.com/" target="_blank">VSCodium</a> <span title="VSCodium
 --
-VSCodium
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 AUR
-Website: https://vscodium.com/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 AUR
-Website: https://vscodium.com/
+Telemetry-free VS Code
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
@@ -828,19 +510,7 @@ Website: https://vscodium.com/" style="cursor:help; margin-left:0.3rem;">ℹ️<
                             </label>
                             <label class="app-item" title="Git
 --
-Git
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://git-scm.com/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://git-scm.com/
+Version control system
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -848,19 +518,7 @@ Website: https://git-scm.com/">
                                 <input type="checkbox" name="post_apps" value="git" checked>
                                 <span class="app-icon">🔀</span> <a href="https://git-scm.com/" target="_blank">Git</a> <span title="Git
 --
-Git
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://git-scm.com/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://git-scm.com/
+Version control system
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -868,53 +526,21 @@ Website: https://git-scm.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</
                             </label>
                             <label class="app-item" title="tmux
 --
-tmux
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
+Terminal multiplexer — split panes and sessions
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra">
                                 <input type="checkbox" name="post_apps" value="tmux">
                                 <span class="app-icon">🪟</span> tmux <span title="tmux
 --
-tmux
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
+Terminal multiplexer — split panes and sessions
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Multiplex</span>
                             </label>
                             <label class="app-item" title="htop
 --
-htop
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/htop-dev/htop
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/htop-dev/htop
+Interactive process viewer — shows CPU, RAM, processes in real-time
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -922,19 +548,7 @@ Website: https://github.com/htop-dev/htop">
                                 <input type="checkbox" name="post_apps" value="htop" checked>
                                 <span class="app-icon">📊</span> <a href="https://github.com/htop-dev/htop" target="_blank">htop</a> <span title="htop
 --
-htop
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/htop-dev/htop
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/htop-dev/htop
+Interactive process viewer — shows CPU, RAM, processes in real-time
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -942,19 +556,7 @@ Website: https://github.com/htop-dev/htop" style="cursor:help; margin-left:0.3re
                             </label>
                             <label class="app-item" title="pfetch
 --
-pfetch
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/dylanaraps/pfetch
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/dylanaraps/pfetch
+Minimal system information display tool written in POSIX shell
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -962,19 +564,7 @@ Website: https://github.com/dylanaraps/pfetch">
                                 <input type="checkbox" name="post_apps" value="pfetch">
                                 <span class="app-icon">🖥️</span> <a href="https://github.com/dylanaraps/pfetch" target="_blank">pfetch</a> <span title="pfetch
 --
-pfetch
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/dylanaraps/pfetch
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/dylanaraps/pfetch
+Minimal system information display tool written in POSIX shell
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -982,19 +572,7 @@ Website: https://github.com/dylanaraps/pfetch" style="cursor:help; margin-left:0
                             </label>
                             <label class="app-item" title="fastfetch
 --
-fastfetch
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/fastfetch-cli/fastfetch
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/fastfetch-cli/fastfetch
+Fast system info tool written in C — like neofetch but actively maintained
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1002,19 +580,7 @@ Website: https://github.com/fastfetch-cli/fastfetch">
                                 <input type="checkbox" name="post_apps" value="fastfetch" checked>
                                 <span class="app-icon">⚡</span> <a href="https://github.com/fastfetch-cli/fastfetch" target="_blank">fastfetch</a> <span title="fastfetch
 --
-fastfetch
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/fastfetch-cli/fastfetch
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/fastfetch-cli/fastfetch
+Fast system info tool written in C — like neofetch but actively maintained
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1023,87 +589,35 @@ Website: https://github.com/fastfetch-cli/fastfetch" style="cursor:help; margin-
                             <div class="app-category-header">🎬 Media / Files</div>
                             <label class="app-item" title="Thunar
 --
-Thunar
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
+Lightweight GTK file manager (Xfce)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra">
                                 <input type="checkbox" name="post_apps" value="thunar">
                                 <span class="app-icon">📁</span> Thunar <span title="Thunar
 --
-Thunar
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
+Lightweight GTK file manager (Xfce)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Files</span>
                             </label>
                             <label class="app-item" title="Nautilus
 --
-Nautilus
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
+GNOME's default file manager
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra">
                                 <input type="checkbox" name="post_apps" value="nautilus">
                                 <span class="app-icon">📂</span> Nautilus <span title="Nautilus
 --
-Nautilus
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
+GNOME's default file manager
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Files</span>
                             </label>
                             <label class="app-item" title="mpv
 --
-mpv
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://mpv.io/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://mpv.io/
+Minimal, scriptable media player
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1111,19 +625,7 @@ Website: https://mpv.io/">
                                 <input type="checkbox" name="post_apps" value="mpv">
                                 <span class="app-icon">▶️</span> <a href="https://mpv.io/" target="_blank">mpv</a> <span title="mpv
 --
-mpv
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://mpv.io/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://mpv.io/
+Minimal, scriptable media player
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1131,19 +633,7 @@ Website: https://mpv.io/" style="cursor:help; margin-left:0.3rem;">ℹ️</span>
                             </label>
                             <label class="app-item" title="VLC
 --
-VLC
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 Arch Extra
-Website: https://www.videolan.org/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 Arch Extra
-Website: https://www.videolan.org/
+Universal media player
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
@@ -1151,19 +641,7 @@ Website: https://www.videolan.org/">
                                 <input type="checkbox" name="post_apps" value="vlc">
                                 <span class="app-icon">🔶</span> <a href="https://www.videolan.org/" target="_blank">VLC</a> <span title="VLC
 --
-VLC
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 Arch Extra
-Website: https://www.videolan.org/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 Arch Extra
-Website: https://www.videolan.org/
+Universal media player
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
@@ -1171,19 +649,7 @@ Website: https://www.videolan.org/" style="cursor:help; margin-left:0.3rem;">ℹ
                             </label>
                             <label class="app-item" title="OBS Studio
 --
-OBS Studio
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 Arch Extra
-Website: https://obsproject.com/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 Arch Extra
-Website: https://obsproject.com/
+Screen recording and streaming
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
@@ -1191,19 +657,7 @@ Website: https://obsproject.com/">
                                 <input type="checkbox" name="post_apps" value="obs">
                                 <span class="app-icon">🎥</span> <a href="https://obsproject.com/" target="_blank">OBS Studio</a> <span title="OBS Studio
 --
-OBS Studio
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 Arch Extra
-Website: https://obsproject.com/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 Arch Extra
-Website: https://obsproject.com/
+Screen recording and streaming
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
@@ -1211,19 +665,7 @@ Website: https://obsproject.com/" style="cursor:help; margin-left:0.3rem;">ℹ�
                             </label>
                             <label class="app-item" title="GIMP
 --
-GIMP
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://gimp.org/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://gimp.org/
+Open source image editor
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1231,19 +673,7 @@ Website: https://gimp.org/">
                                 <input type="checkbox" name="post_apps" value="gimp">
                                 <span class="app-icon">🎨</span> <a href="https://gimp.org/" target="_blank">GIMP</a> <span title="GIMP
 --
-GIMP
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://gimp.org/
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://gimp.org/
+Open source image editor
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1251,19 +681,7 @@ Website: https://gimp.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</spa
                             </label>
                             <label class="app-item" title="LibreOffice
 --
-LibreOffice
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 Arch Extra
-Website: https://www.libreoffice.org/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 Arch Extra
-Website: https://www.libreoffice.org/
+Full office suite — Libre alternative to Microsoft Office
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
@@ -1271,19 +689,7 @@ Website: https://www.libreoffice.org/">
                                 <input type="checkbox" name="post_apps" value="libreoffice">
                                 <span class="app-icon">📄</span> <a href="https://www.libreoffice.org/" target="_blank">LibreOffice</a> <span title="LibreOffice
 --
-LibreOffice
-
-Build
---
-Mostly Reproducible
-Source
---
-📁 Arch Extra
-Website: https://www.libreoffice.org/
-
-Build Integrity: Mostly Reproducible (Minor metadata differs, code is verifiable)
-Source: 📁 Arch Extra
-Website: https://www.libreoffice.org/
+Full office suite — Libre alternative to Microsoft Office
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
@@ -1292,7 +698,7 @@ Website: https://www.libreoffice.org/" style="cursor:help; margin-left:0.3rem;">
                             <div class="app-category-header">🔧 System</div>
                             <label class="app-item" title="Flatpak [PROPRIETARY]
 --
-Flatpak
+Sandboxed app distribution via Flathub
 
 WARNING: Flatpak itself is open-source, but Flathub distributes proprietary binaries like Discord and Spotify.
 
@@ -1300,9 +706,9 @@ Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
 Website: ">
                                 <input type="checkbox" name="post_apps" value="flatpak">
-                                <span class="app-icon">📦</span> Flatpak <span title="Flatpak [PROPRIETARY]
+                                <span class="app-icon">📦</span> Flatpak <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Flatpak [PROPRIETARY]
 --
-Flatpak
+Sandboxed app distribution via Flathub
 
 WARNING: Flatpak itself is open-source, but Flathub distributes proprietary binaries like Discord and Spotify.
 
@@ -1312,155 +718,63 @@ Website: " style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="a
                             </label>
                             <label class="app-item" title="unattended-upgrades
 --
-unattended-upgrades
-
-Build
---
-Reproducible
-Source
---
-📁 AUR
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR
+Automatic security and system updates via cron
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 AUR">
                                 <input type="checkbox" name="post_apps" value="unattended-upgrades">
                                 <span class="app-icon">🤖</span> unattended-upgrades <span title="unattended-upgrades
 --
-unattended-upgrades
-
-Build
---
-Reproducible
-Source
---
-📁 AUR
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR
+Automatic security and system updates via cron
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Auto-Update</span>
                             </label>
                             <label class="app-item" title="Timeshift
 --
-Timeshift
-
-Build
---
-Reproducible
-Source
---
-📁 AUR
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR
+System snapshot and restore (works with BTRFS)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 AUR">
                                 <input type="checkbox" name="post_apps" value="timeshift">
                                 <span class="app-icon">⏪</span> Timeshift <span title="Timeshift
 --
-Timeshift
-
-Build
---
-Reproducible
-Source
---
-📁 AUR
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR
+System snapshot and restore (works with BTRFS)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Backup</span>
                             </label>
                             <label class="app-item" title="NetworkManager
 --
-NetworkManager
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Core
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core
+Network connection manager with GUI support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Core">
                                 <input type="checkbox" name="post_apps" value="networkmanager" checked>
                                 <span class="app-icon">📡</span> NetworkManager <span title="NetworkManager
 --
-NetworkManager
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Core
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core
+Network connection manager with GUI support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Network</span>
                             </label>
                             <label class="app-item" title="Bluetooth (bluez + bluez-utils)
 --
-Bluetooth (bluez + bluez-utils)
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Core
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core
+Bluetooth stack
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Core">
                                 <input type="checkbox" name="post_apps" value="bluetooth">
                                 <span class="app-icon">🔵</span> Bluetooth <span title="Bluetooth (bluez + bluez-utils)
 --
-Bluetooth (bluez + bluez-utils)
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Core
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core
+Bluetooth stack
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">bluez</span>
                             </label>
                             <label class="app-item" title="PipeWire
 --
-PipeWire
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://gitlab.freedesktop.org/pipewire/pipewire
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://gitlab.freedesktop.org/pipewire/pipewire
+Modern audio/video server replacing PulseAudio and JACK — zero-latency audio graph
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1468,19 +782,7 @@ Website: https://gitlab.freedesktop.org/pipewire/pipewire">
                                 <input type="checkbox" name="post_apps" value="pipewire" checked>
                                 <span class="app-icon">🔊</span> <a href="https://gitlab.freedesktop.org/pipewire/pipewire" target="_blank">PipeWire</a> <span title="PipeWire
 --
-PipeWire
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://gitlab.freedesktop.org/pipewire/pipewire
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://gitlab.freedesktop.org/pipewire/pipewire
+Modern audio/video server replacing PulseAudio and JACK — zero-latency audio graph
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1488,19 +790,7 @@ Website: https://gitlab.freedesktop.org/pipewire/pipewire" style="cursor:help; m
                             </label>
                             <label class="app-item" title="OpenSSH Server
 --
-OpenSSH Server
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Core
-Website: https://github.com/openssh/openssh-portable
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core
-Website: https://github.com/openssh/openssh-portable
+Hardened SSH daemon — auto-generates Ed25519 keys, disables root login, password auth disabled, key-auth only with strict sshd_config
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Core
@@ -1508,19 +798,7 @@ Website: https://github.com/openssh/openssh-portable">
                                 <input type="checkbox" name="post_apps" value="openssh" checked>
                                 <span class="app-icon">🔐</span> <a href="https://github.com/openssh/openssh-portable" target="_blank">OpenSSH</a> <span title="OpenSSH Server
 --
-OpenSSH Server
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Core
-Website: https://github.com/openssh/openssh-portable
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core
-Website: https://github.com/openssh/openssh-portable
+Hardened SSH daemon — auto-generates Ed25519 keys, disables root login, password auth disabled, key-auth only with strict sshd_config
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Core
@@ -1528,39 +806,17 @@ Website: https://github.com/openssh/openssh-portable" style="cursor:help; margin
                             </label>
                             <label class="app-item" title="Snapper
 --
-Snapper
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/openSUSE/snapper
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/openSUSE/snapper
+⭐ RECOMMENDED
+BTRFS/LVM snapshot manager — automated filesystem restore points before and after every pacman transaction
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
 Website: https://github.com/openSUSE/snapper">
                                 <input type="checkbox" name="post_apps" value="snapper">
-                                <span class="app-icon">📸</span> <a href="https://github.com/openSUSE/snapper" target="_blank">Snapper</a> <span title="Snapper
+                                <span class="app-icon">📸</span> <a href="https://github.com/openSUSE/snapper" target="_blank" style="font-weight:bold; color:var(--accent-yellow);">Snapper ⭐</a> <span title="Snapper
 --
-Snapper
-
-Build
---
-Reproducible
-Source
---
-📁 Arch Extra
-Website: https://github.com/openSUSE/snapper
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/openSUSE/snapper
+⭐ RECOMMENDED
+BTRFS/LVM snapshot manager — automated filesystem restore points before and after every pacman transaction
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
@@ -1569,19 +825,7 @@ Website: https://github.com/openSUSE/snapper" style="cursor:help; margin-left:0.
                             <div class="app-category-header">🎨 Dusky OS</div>
                             <label class="app-item" title="Dusky OS auto-setup
 --
-Dusky OS auto-setup
-
-Build
---
-Reproducible
-Source
---
-📁 GitHub / dusklinux
-Website: https://github.com/dusklinux/dusky
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 GitHub / dusklinux
-Website: https://github.com/dusklinux/dusky
+Automated Hyprland desktop setup by dusklinux — installs dotfiles, themes, and full Wayland environment. Includes cheatsheet. Watch YouTube guide before running.
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 GitHub / dusklinux
@@ -1589,25 +833,14 @@ Website: https://github.com/dusklinux/dusky">
                                 <input type="checkbox" name="post_apps" value="dusky-setup">
                                 <span class="app-icon">🌙</span> <a href="https://github.com/dusklinux/dusky" target="_blank">Dusky Setup</a> <span title="Dusky OS auto-setup
 --
-Dusky OS auto-setup
-
-Build
---
-Reproducible
-Source
---
-📁 GitHub / dusklinux
-Website: https://github.com/dusklinux/dusky
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 GitHub / dusklinux
-Website: https://github.com/dusklinux/dusky
+Automated Hyprland desktop setup by dusklinux — installs dotfiles, themes, and full Wayland environment. Includes cheatsheet. Watch YouTube guide before running.
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 GitHub / dusklinux
 Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Auto-desktop</span>
                             </label>
                         </div>
+                        <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre users: Firefox firmware blobs, Flatpak proprietary apps, Signal Electron build, and Chromium may conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                     </div>
 
                     <div class="form-group form-step" data-title="Automatic System Updates" data-desc="Daily cron job to auto-update pacman packages with logging.">
