@@ -449,7 +449,7 @@ OpenDoas privilege escalation (sudo alternative)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Privilege</span>
+Website: https://github.com/Duncaen/OpenDoas" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Privilege</span> <button type="button" class="btn-configure" data-app="doas" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
                             </label>
                             <div class="app-category-header">💻 Dev / Terminal</div>
                             <label class="app-item" title="Neovim
@@ -842,7 +842,7 @@ BTRFS/LVM snapshot manager — automated filesystem restore points before and af
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/openSUSE/snapper" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Snapshots</span>
+Website: https://github.com/openSUSE/snapper" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Snapshots</span> <button type="button" class="btn-configure" data-app="snapper" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
                             </label>
                             <div class="app-category-header">🎨 Dusky OS</div>
                             <label class="app-item" title="Dusky OS auto-setup
@@ -1024,7 +1024,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                                     <input type="checkbox" name="arss_tools" value="evil-maid" id="arss-evil-maid" style="accent-color:var(--accent-orange, #ff9e64); width:18px; height:18px;">
                                     <span style="font-size:1.3rem;">🕵️</span>
                                     <div>
-                                        <strong style="color:var(--accent-orange, #ff9e64); font-size:0.88rem;">Anti-Evil Maid</strong>
+                                        <strong style="color:var(--accent-orange, #ff9e64); font-size:0.88rem; display:flex; align-items:center; gap:5px;">Anti-Evil Maid <button type="button" class="btn-configure" data-app="aem" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem;">⚙️ Config</button></strong>
                                         <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">Decoy kernels &amp; tamper detection</div>
                                     </div>
                                 </label>
@@ -1229,54 +1229,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
 
                     
 
-                    <div id="advanced_config_container" style="display:none; padding:15px; border-left:4px solid var(--accent-blue); background:rgba(122,162,247,0.05); margin-bottom:1.5rem;">
-                        <h4 style="margin-top:0; margin-bottom:10px;"><span class="icon">⚙️</span> Advanced App Configuration & Security</h4>
-                        <p style="font-size:0.8rem; color:var(--text-color); opacity:0.8; margin-bottom:15px;">Configure app sub-options and set system passwords securely.</p>
-                        
-                        
 
-                        
-                          <div class="form-group" id="adv-usernames" style="display:none;">
-                              <label>System Usernames: <a href="wiki.html#advanced-config-usernames" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
-                              <div id="adv-usernames-container" style="display:flex; flex-direction:column; gap:8px;"></div>
-                          </div>
-
-                          <div class="form-group" id="adv-theme" style="display:none;">
-                              <label>JetBrains Terminal Theme: <a href="wiki.html#advanced-config-themes" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
-                              <select id="adv_theme_mode">
-                                  <option value="tokyonight">TokyoNight (Default)</option>
-                                  <option value="catppuccin">Catppuccin Macchiato</option>
-                                  <option value="rosepine">Rosé Pine</option>
-                                  <option value="dracula">Dracula</option>
-                              </select>
-                          </div>
-
-                          <div class="form-group" id="adv-aem" style="display:none;">
-                              <label>AEM Decoy Count: <a href="wiki.html#advanced-config-aem" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
-                              <select id="adv_aem_mode">
-                                  <option value="1">1 Decoy Image (Standard)</option>
-                                  <option value="2">2 Decoy Images</option>
-                                  <option value="3">3 Decoy Images (Maximum Paranoia)</option>
-                              </select>
-                          </div>
-
-<div class="form-group" id="adv-doas" style="display:none;">
-                            <label>Doas Integration Mode: <a href="wiki.html#advanced-config-doas" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
-                            <select id="adv_doas_mode">
-                                <option value="both">Keep Sudo intact alongside Doas</option>
-                                <option value="replace">Fully replace Sudo with Doas wrapper</option>
-                                <option value="remove">Remove Sudo entirely (no wrapper)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group" id="adv-snapper" style="display:none;">
-                            <label>Snapper Timeline Mode: <a href="wiki.html#advanced-config-snapper" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
-                            <select id="adv_snapper_mode">
-                                <option value="default">Pre/Post Transaction Snapshots Only</option>
-                                <option value="timeline">Enable Hourly/Daily Timeline</option>
-                            </select>
-                        </div>
-                    </div>
                     <div class="form-group form-step" data-title="Script Generation Style" data-desc="Choose how the generated bash script functions. Unified creates a single self-persisting script that auto-rolls over across the first reboot. Split creates two manual files.">
                         <label>Script Generation Style:</label>
                         <select id="script-style">
@@ -1294,19 +1247,20 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         </div>
                     </div>
 
+                    <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Quiet: hides non-critical output. Normal: standard output. Debug/Verbose: prints every executed command (set -x).">
+                        <label>Script Verbosity Level (Advanced):</label>
+                        <select id="verbosity_level">
+                            <option value="normal" selected>Normal</option>
+                            <option value="quiet">Quiet</option>
+                            <option value="debug">Debug / Verbose</option>
+                        </select>
+                    </div>
+
                     <div id="generate-error-box" class="alert error" style="display:none; margin-bottom: 1rem; border: 1px solid var(--accent-red); padding: 1rem; cursor: pointer;">
                         <strong>⚠️ <span id="error-count">0</span> Missing/Invalid Fields:</strong>
                         <ul id="error-list" style="margin-top: 0.5rem; margin-bottom: 0;"></ul>
-                        <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Quiet: hides non-critical output. Normal: standard output. Debug/Verbose: prints every executed command (set -x).">
-                          <label>Script Verbosity Level (Advanced):</label>
-                          <select id="verbosity_level">
-                              <option value="normal" selected>Normal</option>
-                              <option value="quiet">Quiet</option>
-                              <option value="debug">Debug / Verbose</option>
-                          </select>
-                      </div>
-                      <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
-                      </div>
+                        <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
+                    </div>
                       <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="margin-top: 0.8rem;">⚙️ Generate Custom Guide</button>
                 </form>
 
@@ -1442,6 +1396,21 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
         </div>
         <p style="font-size:0.8rem; color:var(--fg-color); margin-top:1rem;">All security concepts from the open-source community. GNU AGPLv3 License.</p>
     </footer>
+<!-- App Configurer Modal Overlay -->
+<div id="app-config-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
+    <div style="background:var(--bg-darker); border:1px solid var(--accent-blue); border-radius:12px; padding:2rem; width:90%; max-width:500px; box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative;">
+        <button id="close-modal-btn" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-color); font-size:1.5rem; cursor:pointer;">&times;</button>
+        
+        <h3 id="modal-title" style="color:var(--accent-cyan); margin-top:0;">⚙️ App Configurer</h3>
+        <p id="modal-desc" style="font-size:0.85rem; color:#8b949e; margin-bottom:1.5rem;"></p>
+        
+        <div id="modal-content-area" style="display:flex; flex-direction:column; gap:1rem;">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+
+        <button id="save-modal-btn" class="btn" style="margin-top:1.5rem; width:100%;">Save Configuration</button>
+    </div>
+</div>
 </body>
 </html>
 

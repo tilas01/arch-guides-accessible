@@ -225,6 +225,7 @@ window.generateOutput = function(auto = false) {
     const gpu_brand = gv('gpu_brand','amd');
     const vm_guest = gv('vm_guest','none');
     const auto_updates = gv('auto_updates','no');
+    const verbosity_level = gv('verbosity_level','normal');
 
     const configMode = document.getElementById('global_ask_toggle')?.checked ? 'preconfigured' : 'interactive';
     
@@ -374,7 +375,7 @@ window.generateOutput = function(auto = false) {
     // Strict Libre enforcement
     if (software_type === 'libre' && selectedPropApps.length > 0) {
         const reasons = selectedPropApps.map(a => `\n- ${a.toUpperCase()}: ${propAppsDB[a]}`).join('');
-        if (!confirm(`ÃƒÂ¢Ã…Â¡Ã‚Â  STRICT LIBRE WARNING ÃƒÂ¢Ã…Â¡Ã‚Â \n\nYou selected "Libre + Open Source 100% Only", but have selected software containing proprietary code:\n${reasons}\n\nDo you want to override your Libre setting and allow these proprietary blobs?`)) {
+        if (!confirm(`⚠ STRICT LIBRE WARNING ⚠\n\nYou selected "Libre + Open Source 100% Only", but have selected software containing proprietary code:\n${reasons}\n\nDo you want to override your Libre setting and allow these proprietary blobs?`)) {
             return;
         }
     }
@@ -391,7 +392,10 @@ window.generateOutput = function(auto = false) {
             o += `> *Generated for your specific hardware. Review every command before running.*\n\n`;
             o += `## 1. Partitioning & Formatting (${part} + ${fs})\n\`\`\`bash\n`;
         } else {
-            o += `#!/bin/bash\n# Arch Rusty Security Suite by tilas01 Ã¢â‚¬â€ Generated Script\n# WARNING: Review ALL commands!\nset -e\n\n`;
+            o += `#!/bin/bash\n# Arch Rusty Security Suite by tilas01 — Generated Script\n# WARNING: Review ALL commands!\nset -e\n`;
+            if (verbosity_level === 'debug') o += `set -x\n`;
+            if (verbosity_level === 'quiet') o += `exec >/dev/null\n`;
+            o += `\n`;
             o += `export COLOR_BG="\\e[48;2;26;27;38m"\n`;
             o += `export COLOR_FG="\\e[38;2;192;202;245m"\n`;
             o += `export COLOR_RED="\\e[38;2;247;118;142m"\n`;
@@ -403,6 +407,27 @@ window.generateOutput = function(auto = false) {
             o += `echo -e "\${COLOR_BLUE}             ARCH RUSTY SECURITY SUITE Ã¢â‚¬â€ AUTO-INSTALLER                 \${COLOR_RESET}"\n`;
             o += `echo -e "\${COLOR_BLUE}========================================================================\${COLOR_RESET}\n\n"\n`;
             
+            if (configMode === 'preconfigured') {
+                o += `echo -e "\\e[33m[!] WALK-AWAY AUTOMATION: Collecting Credentials Upfront\\e[0m"\n`;
+                o += `echo "This script will cache your passwords into volatile memory to perform a completely unattended installation."\n`;
+                o += `echo "All passwords will be securely wiped (unset) immediately upon completion."\n\n`;
+                if (part !== "unencrypted") {
+                    o += `read -s -p "Enter LUKS Encryption Password: " LUKS_PASS\necho\n`;
+                    o += `read -s -p "Confirm LUKS Password: " LUKS_PASS2\necho\n`;
+                    o += `if [ "$LUKS_PASS" != "$LUKS_PASS2" ]; then echo "Passwords do not match!"; exit 1; fi\n\n`;
+                }
+                o += `read -s -p "Enter Root Password: " ROOT_PASS\necho\n`;
+                o += `read -s -p "Confirm Root Password: " ROOT_PASS2\necho\n`;
+                o += `if [ "$ROOT_PASS" != "$ROOT_PASS2" ]; then echo "Passwords do not match!"; exit 1; fi\n\n`;
+                for (let u = 1; u <= user_count; u++) {
+                    o += `read -p "Enter Username ${u}: " USER_NAME_${u}\n`;
+                    o += `read -s -p "Enter password for $USER_NAME_${u}: " USER_PASS_${u}\necho\n`;
+                    o += `read -s -p "Confirm password for $USER_NAME_${u}: " USER_PASS2_${u}\necho\n`;
+                    o += `if [ "$USER_PASS_${u}" != "$USER_PASS2_${u}" ]; then echo "Passwords do not match!"; exit 1; fi\n\n`;
+                }
+                o += `echo -e "\\e[32m[+] Credentials cached securely. Starting unattended installation...\\e[0m"\nsleep 2\n\n`;
+            }
+
             // Jetbrains Mono Setup via pacman (only if baremetal, wait, TTY can only use PSF fonts like terminus)
             o += `pacman -Sy --noconfirm terminus-font\nsetfont ter-v24b\n\n`;
             
@@ -419,17 +444,17 @@ window.generateOutput = function(auto = false) {
 
         let targetMount = partRoot;
         if (part === "luks1") {
-            o += `cryptsetup luksFormat --type luks1 -c aes-xts-plain64 -s 512 -h sha512 ${partRoot}\n`;
+            o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks1 -c aes-xts-plain64 -s 512 -h sha512 - ${partRoot}\n`;
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
             targetMount = "/dev/mapper/cryptroot";
         } else if (part === "luks2") {
-            o += `cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 ${partRoot}\n`;
+            o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 - ${partRoot}\n`;
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
             targetMount = "/dev/mapper/cryptroot";
         } else if (part.includes("lvm")) {
-            o += `cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 ${partRoot}\n`;
+            o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 - ${partRoot}\n`;
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptlvm\npvcreate /dev/mapper/cryptlvm\nvgcreate vg0 /dev/mapper/cryptlvm\nlvcreate -l 100%FREE vg0 -n root\n`;
             targetMount = "/dev/vg0/root";
@@ -525,9 +550,7 @@ window.generateOutput = function(auto = false) {
                     o += `> **Note:** The passwords below are censored in this guide for your security.\n\n`
                     o += `passwd root\n`;
                 } else {
-                    o += `read -s -p "Enter root password: " rootpass\necho\n`;
-                    o += `read -s -p "Confirm root password: " rootpass2\necho\n`;
-                    o += `if [ "$rootpass" = "$rootpass2" ]; then echo "root:$rootpass" | chpasswd; else echo "Passwords do not match!"; exit 1; fi\n`;
+                    o += `echo "root:$ROOT_PASS" | chpasswd\n`;
                 }
 
                 for (let u = 1; u <= user_count; u++) {
@@ -536,11 +559,16 @@ window.generateOutput = function(auto = false) {
                         o += `useradd -m -G wheel -s /bin/bash "${gv('user_name_'+u, 'user'+u)}"\n`;
                         o += `passwd "${gv('user_name_'+u, 'user'+u)}"\n`;
                     } else {
-                        o += `read -p "Enter Username ${u}: " u${u}\n`;
-                        o += `useradd -m -G wheel -s /bin/bash "$u${u}"\n`;
-                        o += `read -s -p "Enter password for $u${u}: " upass\necho\n`;
-                        o += `read -s -p "Confirm password for $u${u}: " upass2\necho\n`;
-                        o += `if [ "$upass" = "$upass2" ]; then echo "$u${u}:$upass" | chpasswd; else echo "Passwords do not match!"; exit 1; fi\n`;
+                        if (configMode === 'preconfigured') {
+                            o += `useradd -m -G wheel -s /bin/bash "$USER_NAME_${u}"\n`;
+                            o += `echo "$USER_NAME_${u}:$USER_PASS_${u}" | chpasswd\n`;
+                        } else {
+                            o += `read -p "Enter Username ${u}: " u${u}\n`;
+                            o += `useradd -m -G wheel -s /bin/bash "$u${u}"\n`;
+                            o += `read -s -p "Enter password for $u${u}: " upass\necho\n`;
+                            o += `read -s -p "Confirm password for $u${u}: " upass2\necho\n`;
+                            o += `if [ "$upass" = "$upass2" ]; then echo "$u${u}:$upass" | chpasswd; else echo "Passwords do not match!"; exit 1; fi\n`;
+                        }
                     }
                 }
 
@@ -818,6 +846,15 @@ window.generateOutput = function(auto = false) {
                 if (otp_bypass !== "0" && otp_bypass !== "") otpOpts += ` --bypass-uses ${otp_bypass}`;
                 if (otp_double === "yes") otpOpts += ` --double-otp`;
                 o += `\n# Configuring Libre OTP\narch-rusty-security-suite libre-otp ${otpOpts}\n`;
+                o += `\n# Injecting Libre OTP into PAM\n`;
+                if (libreOtpMode === "boot" || libreOtpMode === "both" || libreOtpMode === "all") {
+                    o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/system-auth\n`;
+                    o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/su\n`;
+                    o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/sudo\n`;
+                }
+                if (libreOtpMode === "ssh" || libreOtpMode === "both" || libreOtpMode === "all") {
+                    o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/sshd\n`;
+                }
             }
             if (arss_tools.includes("panic-password")) {
                 o += `\n# Configuring Panic Password\narch-rusty-security-suite panic --setup\n`;
@@ -962,7 +999,15 @@ window.generateOutput = function(auto = false) {
             
             o += `EOF\nchmod +x /mnt/chroot_script.sh\narch-chroot /mnt /chroot_script.sh\n`;
             if (cleanup === "yes") o += `arch-chroot /mnt pacman -Scc --noconfirm\nrm -rf /mnt/var/cache/pacman/pkg/* /mnt/tmp/*\n`;
-            o += `rm -f /mnt/chroot_script.sh\necho -e "\${COLOR_BLUE}>> INSTALL COMPLETE! You may now run 'reboot'\${COLOR_RESET}"\n`;
+            o += `rm -f /mnt/chroot_script.sh\n`;
+            if (configMode === 'preconfigured') {
+                o += `echo -e "\\e[33m[!] WALK-AWAY AUTOMATION: Securely wiping credentials from memory...\\e[0m"\n`;
+                o += `unset LUKS_PASS LUKS_PASS2 ROOT_PASS ROOT_PASS2\n`;
+                for (let u = 1; u <= user_count; u++) {
+                    o += `unset USER_NAME_${u} USER_PASS_${u} USER_PASS2_${u}\n`;
+                }
+            }
+            o += `echo -e "\${COLOR_BLUE}>> INSTALL COMPLETE! You may now run 'reboot'\${COLOR_RESET}"\n`;
         } else {
             o += `\`\`\`\n\n---\n*Guide complete. Reboot into your ${desktop !== "none" ? desktop : "TTY"} environment.*\n*Generated by [Arch Guides Dynamic](https://tilas01.github.io/arch-guides-dynamic/) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â by [tilas01](https://github.com/tilas01)*\n`;
         }
@@ -1158,81 +1203,99 @@ document.addEventListener('DOMContentLoaded', () => {
         libreOtpContainer.style.display = libreOtpCb.checked ? 'block' : 'none';
     }
 
-        // Advanced Configuration Logic
-    const configModeSel = document.getElementById('config_mode');
-    const advContainer = document.getElementById('advanced_config_container');
-    const advDoas = document.getElementById('adv-doas');
-    const advSnapper = document.getElementById('adv-snapper');
-    const outputFormatSel = document.getElementById('outputformat');
-
-    const globalAskToggle = document.getElementById('global_ask_toggle');
-    const advContainer = document.getElementById('advanced_config_container');
-    const advDoas = document.getElementById('adv-doas');
-    const advSnapper = document.getElementById('adv-snapper');
-    const outputFormatSel = document.getElementById('outputformat');
-    const userCountInput = document.getElementById('user_count');
-    const passwordFieldsContainer = document.getElementById('password-fields-container');
-
-    
-
-    function updateAdvancedConfigUI() {
-        if (!globalAskToggle || !advContainer) return;
-        
-        // Force preconfigured if output is markdown
-        if (outputFormatSel && outputFormatSel.value === 'markdown') {
-            globalAskToggle.checked = true;
-        }
-
-        if (globalAskToggle.checked) {
-            advContainer.style.display = 'block';
-            
-            
-            
-            // Show sub-options based on selected apps
-            const postApps = Array.from(document.querySelectorAll('input[name="post_apps"]:checked')).map(el => el.value);
-            if (advDoas) advDoas.style.display = postApps.includes('doas') ? 'block' : 'none';
-            if (advSnapper) advSnapper.style.display = postApps.includes('snapper') ? 'block' : 'none';
-            
-            const advTheme = document.getElementById('adv-theme');
-            const advAem = document.getElementById('adv-aem');
-            const advUsernames = document.getElementById('adv-usernames');
-            
-            if (advTheme) advTheme.style.display = postApps.includes('jb_mono') ? 'block' : 'none';
-            if (advAem) advAem.style.display = Array.from(document.querySelectorAll('input[name="arss_tools"]:checked')).map(el=>el.value).includes('anti-evil-maid') ? 'block' : 'none';
-            
-            if (advUsernames) {
-                advUsernames.style.display = 'block';
-                const container = document.getElementById('adv-usernames-container');
-                const count = parseInt(document.getElementById('user_count').value) || 1;
-                
-                // Only redraw if count changed
-                if (container && container.children.length !== count) {
-                    container.innerHTML = '';
-                    for (let i=1; i<=count; i++) {
-                        container.innerHTML += `<div style="display:flex; align-items:center; gap:8px;">
-                            <label style="width:100px; font-size:0.85rem;">User ${i} Name:</label>
-                            <input type="text" id="user_name_${i}" value="user${i}" style="padding:0.3rem; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-color); color:var(--fg-color);">
-                        </div>`;
-                    }
-                }
-            }
-
-        } else {
-            advContainer.style.display = 'none';
-        }
+    // Modal Config State
+    const hiddenStateHtml = `
+        <input type="hidden" id="adv_doas_mode" value="both">
+        <input type="hidden" id="adv_snapper_mode" value="default">
+        <input type="hidden" id="adv_aem_mode" value="1">
+        <input type="hidden" id="adv_theme_mode" value="tokyonight">
+    `;
+    if (!document.getElementById('adv_doas_mode')) {
+        document.getElementById('generator-form').insertAdjacentHTML('beforeend', hiddenStateHtml);
     }
 
-    if (globalAskToggle) globalAskToggle.addEventListener('change', updateAdvancedConfigUI);
-    if (outputFormatSel) outputFormatSel.addEventListener('change', updateAdvancedConfigUI);
-    if (userCountInput) userCountInput.addEventListener('change', updateAdvancedConfigUI);
-    
-    // Listen to changes on post_apps checkboxes to show/hide sub-options dynamically
-    document.querySelectorAll('input[name="post_apps"]').forEach(cb => {
-        cb.addEventListener('change', updateAdvancedConfigUI);
+    function updateConfigButtons() {
+        const doasChecked = document.querySelector('input[name="post_apps"][value="doas"]')?.checked;
+        const snapperChecked = document.querySelector('input[name="post_apps"][value="snapper"]')?.checked;
+        const aemChecked = document.querySelector('input[name="arss_tools"][value="anti-evil-maid"]')?.checked;
+        
+        const btnDoas = document.querySelector('.btn-configure[data-app="doas"]');
+        const btnSnapper = document.querySelector('.btn-configure[data-app="snapper"]');
+        const btnAem = document.querySelector('.btn-configure[data-app="aem"]');
+        
+        if (btnDoas) btnDoas.style.display = doasChecked ? 'inline-block' : 'none';
+        if (btnSnapper) btnSnapper.style.display = snapperChecked ? 'inline-block' : 'none';
+        if (btnAem) btnAem.style.display = aemChecked ? 'inline-block' : 'none';
+    }
+
+    document.querySelectorAll('input[name="post_apps"], input[name="arss_tools"]').forEach(cb => {
+        cb.addEventListener('change', updateConfigButtons);
+    });
+    updateConfigButtons();
+
+    // Modal Logic
+    const modal = document.getElementById('app-config-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const modalContent = document.getElementById('modal-content-area');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const saveModalBtn = document.getElementById('save-modal-btn');
+    let currentConfigApp = null;
+
+    document.querySelectorAll('.btn-configure').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            currentConfigApp = btn.getAttribute('data-app');
+            modal.style.display = 'flex';
+            
+            if (currentConfigApp === 'doas') {
+                modalTitle.innerHTML = '⚙️ Configure Doas Wrapper';
+                modalDesc.innerHTML = 'Doas Integration Mode. Replace sudo completely or keep both. <a href="wiki.html#advanced-config-doas" target="_blank" style="color:var(--accent-purple);">Wiki Help</a>';
+                const currentVal = document.getElementById('adv_doas_mode').value;
+                modalContent.innerHTML = `
+                    <select id="temp_doas_mode" style="padding:0.5rem; background:var(--bg-color); color:var(--text-color); border:1px solid var(--border-color); border-radius:4px;">
+                        <option value="both" ${currentVal==='both'?'selected':''}>Keep Sudo intact alongside Doas</option>
+                        <option value="replace" ${currentVal==='replace'?'selected':''}>Fully replace Sudo with Doas wrapper (Symlink)</option>
+                        <option value="remove" ${currentVal==='remove'?'selected':''}>Remove Sudo entirely</option>
+                    </select>
+                `;
+            } else if (currentConfigApp === 'snapper') {
+                modalTitle.innerHTML = '⚙️ Configure Snapper';
+                modalDesc.innerHTML = 'Snapper Timeline Mode. Set how often BTRFS snapshots occur. <a href="wiki.html#advanced-config-snapper" target="_blank" style="color:var(--accent-purple);">Wiki Help</a>';
+                const currentVal = document.getElementById('adv_snapper_mode').value;
+                modalContent.innerHTML = `
+                    <select id="temp_snapper_mode" style="padding:0.5rem; background:var(--bg-color); color:var(--text-color); border:1px solid var(--border-color); border-radius:4px;">
+                        <option value="default" ${currentVal==='default'?'selected':''}>Pre/Post Transaction Snapshots Only</option>
+                        <option value="timeline" ${currentVal==='timeline'?'selected':''}>Enable Hourly/Daily Timeline Automations</option>
+                    </select>
+                `;
+            } else if (currentConfigApp === 'aem') {
+                modalTitle.innerHTML = '⚙️ Configure Anti-Evil Maid';
+                modalDesc.innerHTML = 'AEM Decoy Count. Increase for maximum paranoia but slower boot times. <a href="wiki.html#advanced-config-aem" target="_blank" style="color:var(--accent-purple);">Wiki Help</a>';
+                const currentVal = document.getElementById('adv_aem_mode').value;
+                modalContent.innerHTML = `
+                    <select id="temp_aem_mode" style="padding:0.5rem; background:var(--bg-color); color:var(--text-color); border:1px solid var(--border-color); border-radius:4px;">
+                        <option value="1" ${currentVal==='1'?'selected':''}>1 Decoy Image (Standard)</option>
+                        <option value="2" ${currentVal==='2'?'selected':''}>2 Decoy Images</option>
+                        <option value="3" ${currentVal==='3'?'selected':''}>3 Decoy Images (Paranoid)</option>
+                    </select>
+                `;
+            }
+        });
     });
 
-    // Init Advanced Config UI
-    updateAdvancedConfigUI();
+    closeModalBtn?.addEventListener('click', () => modal.style.display = 'none');
+    saveModalBtn?.addEventListener('click', () => {
+        if (currentConfigApp === 'doas') {
+            document.getElementById('adv_doas_mode').value = document.getElementById('temp_doas_mode').value;
+        } else if (currentConfigApp === 'snapper') {
+            document.getElementById('adv_snapper_mode').value = document.getElementById('temp_snapper_mode').value;
+        } else if (currentConfigApp === 'aem') {
+            document.getElementById('adv_aem_mode').value = document.getElementById('temp_aem_mode').value;
+        }
+        modal.style.display = 'none';
+    });
 
     // Dynamic Proprietary Highlighting Logic
     const softwareTypeSelect = document.getElementById('software_type');
