@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arch Rusty Security Suite — Official Wiki</title>
+    <title>Arch Rusty Security Suite â€” Official Wiki</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -62,16 +62,16 @@
 </head>
 <body>
 
-    <a href="index.html" class="home-btn">← Back to Generator</a>
+    <a href="index.html" class="home-btn">â† Back to Generator</a>
 
     <header>
-        <h1>🦀 Arch Rusty Security Suite (ARSS)</h1>
+        <h1>ðŸ¦€ Arch Rusty Security Suite (ARSS)</h1>
         <p class="subtitle">The Official Documentation & Wiki</p>
         <p style="font-size: 0.9rem; color: #8b949e;">Developed by <strong><a href="https://github.com/tilas01" target="_blank">tilas01</a></strong></p>
     </header>
 
     <div class="section" id="libre-otp">
-        <h2><span class="icon">🔐</span> Libre-OTP (Boot & Login 2FA)</h2>
+        <h2><span class="icon">ðŸ”</span> Libre-OTP (Boot & Login 2FA)</h2>
         <p>Libre-OTP integrates TOTP (Time-Based One-Time Passwords) directly into the Linux PAM (Pluggable Authentication Modules) stack. This enforces two-factor authentication before decryption at boot, upon logging into the TTY, or when accessing the system via SSH.</p>
         <h3>Features</h3>
         <ul>
@@ -87,32 +87,32 @@
     </div>
 
     <div class="section" id="input-guard">
-        <h2><span class="icon">🛡️</span> Input Guard (Anti-Ducky)</h2>
+        <h2><span class="icon">ðŸ›¡ï¸</span> Input Guard (Anti-Ducky)</h2>
         <p>Input Guard is a robust USB HID sandbox designed to defeat malicious hardware like the USB Rubber Ducky, Bash Bunny, or compromised O.MG cables.</p>
         <h3>How it Works</h3>
-        <p>Upon installation, Input Guard catalogs all currently connected USB devices. Any new HID (Human Interface Device) plugged into the system is automatically blocked until manually authorized via the CLI tool. It also monitors typing speed heuristics—if an "authorized" keyboard begins typing at 10,000 WPM, it is immediately severed and flagged as a spoofed malicious device.</p>
+        <p>Upon installation, Input Guard catalogs all currently connected USB devices. Any new HID (Human Interface Device) plugged into the system is automatically blocked until manually authorized via the CLI tool. It also monitors typing speed heuristicsâ€”if an "authorized" keyboard begins typing at 10,000 WPM, it is immediately severed and flagged as a spoofed malicious device.</p>
     </div>
 
     <div class="section" id="iso-verifier">
-        <h2><span class="icon">🔍</span> ISO Verification & Integrity</h2>
+        <h2><span class="icon">ðŸ”</span> ISO Verification & Integrity</h2>
         <p>Before installing Arch Linux, it is critical to verify that the `.iso` image was not tampered with during download. This module automatically fetches the official SHA-256 checksums from the Arch Linux mirrors and verifies your local or USB-mounted ISO image.</p>
     </div>
 
     <div class="section" id="panic-password">
-        <h2><span class="icon">☠️</span> Panic Password (Duress Wipe)</h2>
+        <h2><span class="icon">â˜ ï¸</span> Panic Password (Duress Wipe)</h2>
         <p>The Panic Password module provides emergency duress protection. When you install ARSS, you can set a secondary LUKS decryption password.</p>
         <h3>Mechanics</h3>
         <p>If you are compelled to unlock your device under duress, entering the Panic Password (instead of your real password) twice in a row triggers an immediate, irreversible DoD 3-pass overwrite of your entire LUKS header and partition data. The system will be permanently destroyed, rendering all encrypted data mathematically unrecoverable.</p>
     </div>
 
     <div class="section" id="webhooks">
-        <h2><span class="icon">📱</span> Notification Webhooks</h2>
+        <h2><span class="icon">ðŸ“±</span> Notification Webhooks</h2>
         <p>Connects ARSS directly to your mobile device via Webhooks. The suite natively supports <a href="https://ntfy.sh" target="_blank">ntfy.sh</a> (a free, open-source, no-signup push notification service), but can be configured for Discord, Slack, Bark, or custom JSON payloads.</p>
         <p>Whenever the Kernel Watcher detects malware, or Anti-Evil-Maid detects tampering, an instant push notification is fired to your phone.</p>
     </div>
 
     <div class="section" id="hardened-ssh">
-        <h2><span class="icon">🔒</span> Hardened SSH + OTP</h2>
+        <h2><span class="icon">ðŸ”’</span> Hardened SSH + OTP</h2>
         <p>This module aggressively hardens the OpenSSH daemon by enforcing the strictest cryptographic standards.</p>
         <ul>
             <li>Disables Root Login entirely.</li>
@@ -124,18 +124,18 @@
     </div>
 
     <div class="section" id="anti-evil-maid">
-        <h2><span class="icon">🕵️</span> Anti-Evil Maid (AEM)</h2>
+        <h2><span class="icon">ðŸ•µï¸</span> Anti-Evil Maid (AEM)</h2>
         <p>The "Evil Maid" attack occurs when an attacker gains brief physical access to your unattended machine and modifies the unencrypted `/boot` partition (e.g., injecting a keylogger into the kernel or initramfs) to steal your LUKS decryption password the next time you boot.</p>
         <p>ARSS AEM creates decoy kernel images and verifies the cryptographic checksum of the real kernel on every boot. If the checksum mismatches, it alerts you via webhook and halts the boot sequence.</p>
     </div>
 
     <div class="section" id="kloak">
-        <h2><span class="icon">🥷</span> Kloak Anonymizer</h2>
+        <h2><span class="icon">ðŸ¥·</span> Kloak Anonymizer</h2>
         <p><code>kloak</code> (by vmonaco) is a keystroke anonymization tool. Modern behavioral biometrics can uniquely identify you simply by analyzing the millisecond delays between your keystrokes. Kloak intercepts raw `/dev/input` events and obfuscates the timing, making your typing pattern completely unidentifiable to web trackers and malware.</p>
     </div>
 
     <div class="section" id="kernel-watcher">
-        <h2><span class="icon">👁️</span> Malicious Kernel Behavior Watcher (Semi-EDR)</h2>
+        <h2><span class="icon">ðŸ‘ï¸</span> Malicious Kernel Behavior Watcher (Semi-EDR)</h2>
         <p>The ARSS Kernel Watcher acts as an asynchronous, highly-optimized semi-EDR (Endpoint Detection and Response) daemon written in Rust.</p>
         <h3>Infostealer & Exploit Protection</h3>
         <p>It utilizes high-performance filesystem monitoring and system heuristics to detect unauthorized access to critical configuration files (`/boot`, `cron`, `ld.so.preload`) as well as highly sensitive data structures like SSH keys, AWS credentials, browser cookies, and your <strong>KeePassXC ARSS Database</strong>.</p>
@@ -144,7 +144,7 @@
 
 
     <div class="section" id="cheatsheets">
-        <h2><span class="icon">📄</span> Quick-Reference Cheatsheets</h2>
+        <h2><span class="icon">ðŸ“„</span> Quick-Reference Cheatsheets</h2>
         <p>Use these cheatsheets to quickly reference Arch Linux commands and Desktop Environment workflows.</p>
         
         <h3>Arch Linux Commands</h3>
@@ -172,14 +172,66 @@
     </div>
 
     <div class="section" id="scarecrow">
-        <h2><span class="icon">👻</span> Libre-Cyber-ScareCrow (Sandbox Spoofing)</h2>
+        <h2><span class="icon">ðŸ‘»</span> Libre-Cyber-ScareCrow (Sandbox Spoofing)</h2>
         <p>Advanced malware and infostealers often possess "anti-analysis" killswitches. If they detect they are inside a Virtual Machine (VM) or a security researcher's sandbox, they immediately self-terminate to avoid detection.</p>
         <p>Libre-Cyber-ScareCrow weaponizes this behavior. It turns your bare-metal Arch Linux installation into a "fake" analysis environment by spawning lightweight, sleeping dummy processes (`VBoxService`, `vmtoolsd`, `wireshark`, `ida64`) and creating fake sandbox artifacts (`/tmp/cuckoo`).</p>
         <p>When malware lands on your system and scans the process tree, it will be tricked into thinking it is inside a hostile security sandbox, triggering its own killswitch and destroying itself before executing its payload.</p>
     </div>
 
-    <footer style="text-align: center; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color); color: #8b949e;">
-        <p>🛠️ Arch Rusty Security Suite by tilas01. Licensed under MIT / GPL-3.0.</p>
+        <div class="section" id="generator-steps">
+        <h2><span class="icon">⚙️</span> Generator Configuration Steps</h2>
+        <p>This section explains every dropdown option available in the Arch Guides Dynamic generator.</p>
+        
+        <h3>1. Firmware & Disk</h3>
+        <ul>
+            <li><strong>Firmware Type:</strong> Select UEFI (modern) or Legacy BIOS (old). UEFI is strongly recommended.</li>
+            <li><strong>File System:</strong> Btrfs supports snapshots and subvolumes. Ext4 is the traditional reliable choice.</li>
+            <li><strong>Target Disk:</strong> The physical drive to format (e.g., /dev/sda, /dev/nvme0n1). <strong>Warning:</strong> Use <code>lsblk</code> to verify the correct drive, as it will be entirely wiped.</li>
+        </ul>
+
+        <h3>2. Encryption & Boot</h3>
+        <ul>
+            <li><strong>Partitioning & LUKS:</strong> LUKS2 provides modern encryption defaults (Argon2id). Choose LUKS1 only if constrained by legacy BIOS/GRUB limitations. Unencrypted is not recommended for portable devices.</li>
+            <li><strong>Init System:</strong> systemd is standard. OpenRC/dinit are for advanced users preferring alternative service managers.</li>
+            <li><strong>Bootloader:</strong> UKI (Unified Kernel Image) bundles the kernel, initramfs, and cmdline into one Secure Boot-compatible EFI file. GRUB is standard. systemd-boot is a lightweight alternative.</li>
+            <li><strong>Linux Kernels:</strong> linux-hardened includes grsecurity-like patches for exploit mitigation. linux-zen provides desktop performance.</li>
+        </ul>
+
+        <h3>3. Desktop & Software</h3>
+        <ul>
+            <li><strong>Software Type:</strong> 'Strictly Libre' installs only open-source software without proprietary blobs. Proprietary enables microcode and closed-source drivers (e.g., Nvidia).</li>
+            <li><strong>Desktop Environment:</strong> Choose DuskyOS (custom Hyprland/Wayland), standard Hyprland, DWM, or no GUI.</li>
+            <li><strong>Display Server:</strong> Wayland is modern and secure; Xorg is legacy but sometimes required for older apps/hardware.</li>
+        </ul>
+    </div>
+
+    <div class="section" id="memory-integrity">
+        <h2><span class="icon">🧠</span> Memory Integrity Checker</h2>
+        <p>The Memory Integrity Checker is a core component of the ARSS Kernel Watcher. It constantly hashes and validates the live running kernel structures by analyzing <code>/proc/kcore</code> and <code>/proc/kallsyms</code>.</p>
+        <p>If an advanced rootkit attempts to patch syscall tables in live memory or hide malicious kernel modules (Direct Kernel Object Manipulation - DKOM), the integrity checker will detect the checksum mismatch and alert you instantly.</p>
+    </div>
+
+    <div class="section" id="downloads">
+        <h2><span class="icon">⬇️</span> Downloads & Installation</h2>
+        <p>All tools can be compiled directly via Cargo. Ensure you have the Rust toolchain installed (<code>pacman -S rust</code>).</p>
+        
+        <h3>Full Security Suite</h3>
+        <code>cargo install arch-rusty-security-suite --git https://github.com/tilas01/arch-guides-dynamic</code>
+        <p>Installs the unified binary containing all modules.</p>
+
+        <h3>Standalone Modules</h3>
+        <ul>
+            <li><strong>Libre-OTP:</strong> <code>cargo install libre-otp --git https://github.com/tilas01/arch-guides-dynamic</code></li>
+            <li><strong>Input Guard:</strong> <code>cargo install anti-ducky --git https://github.com/tilas01/arch-guides-dynamic</code></li>
+            <li><strong>Anti-Evil Maid:</strong> <code>cargo install anti-evil-maid --git https://github.com/tilas01/arch-guides-dynamic</code></li>
+            <li><strong>Kernel Watcher:</strong> <code>cargo install kernel-watcher --git https://github.com/tilas01/arch-guides-dynamic</code></li>
+            <li><strong>Scarecrow:</strong> <code>cargo install scarecrow --git https://github.com/tilas01/arch-guides-dynamic</code></li>
+        </ul>
+    </div>
+
+
+<footer style="text-align: center; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color); color: #8b949e;">
+        <p>ðŸ› ï¸ Arch Rusty Security Suite by tilas01. Licensed under GNU AGPLv3.</p>
     </footer>
 
 </body>
