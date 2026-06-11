@@ -227,7 +227,7 @@ window.generateOutput = function(auto = false) {
     const auto_updates = gv('auto_updates','no');
 
     const configMode = document.getElementById('global_ask_toggle')?.checked ? 'preconfigured' : 'interactive';
-    const censorPasswords = document.getElementById('censor_passwords')?.checked !== false;
+    
     const isoVerify = gv('iso_verify', 'yes');
     const advDoasMode = gv('adv_doas_mode', 'both');
     const advSnapperMode = gv('adv_snapper_mode', 'default');
@@ -516,8 +516,8 @@ window.generateOutput = function(auto = false) {
         if (cmdOnly) {
             o += `\ncat << 'EOF' > /mnt/chroot_script.sh\n#!/bin/bash\nexport COLOR_BLUE="\\e[38;2;122;162;247m"\nexport COLOR_RESET="\\e[0m"\n`;
             o += `echo -e "\${COLOR_BLUE}>> ENTERING CHROOT: Post-Install Configuration...\${COLOR_RESET}"\n`;
-            if (configMode === 'interactive' || censorPasswords) {
-                // Interactive prompts for root and user
+            
+                // Interactive prompts for root and user (Passwords are never stored in plaintext)
                 o += `\n# Set Root Password\n`;
                 if (!cmdOnly) {
                     o += `> **Note:** The passwords below are censored in this guide for your security.\n\n`
@@ -541,20 +541,7 @@ window.generateOutput = function(auto = false) {
                         o += `if [ "$upass" = "$upass2" ]; then echo "$u${u}:$upass" | chpasswd; else echo "Passwords do not match!"; exit 1; fi\n`;
                     }
                 }
-            } else {
-                // Pre-configured passwords
-                const rootPass = gv('root_pass', 'root');
-                o += `\n# Set Root Password (Unattended)\n`;
-                o += `echo "root:${rootPass}" | chpasswd\n`;
-                
-                for (let u = 1; u <= user_count; u++) {
-                    const uname = gv('user_name_' + u, 'user' + u);
-                    const upass = gv('user_pass_' + u, 'password');
-                    o += `\n# Set User ${u} Account (Unattended)\n`;
-                    o += `useradd -m -G wheel -s /bin/bash "${uname}"\n`;
-                    o += `echo "${uname}:${upass}" | chpasswd\n`;
-                }
-            }
+
             
             o += `echo -e "\\n\\e[38;2;247;118;142m>> Interactive Configuration\\e[0m"\n`;
             o += `read -p "Install JetBrains Mono & Terminal Themes? (y/N): " setup_themes\n`;
@@ -1175,56 +1162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userCountInput = document.getElementById('user_count');
     const passwordFieldsContainer = document.getElementById('password-fields-container');
 
-    function renderPasswordFields() {
-        if (!passwordFieldsContainer) return;
-        const users = parseInt(userCountInput ? userCountInput.value : 1) || 1;
-        let html = `
-            <div style="display:flex; gap:10px; align-items:flex-end;">
-                <div style="flex:1;">
-                    <label>Root Password:</label>
-                    <input type="password" id="root_pass" placeholder="Enter root password">
-                </div>
-                <div style="flex:1;">
-                    <label>Confirm Root Password:</label>
-                    <input type="password" id="root_pass_confirm" placeholder="Confirm root password">
-                </div>
-                <button type="button" class="btn" style="width:auto; padding:0.4rem 0.8rem;" onclick="togglePasswordVisibility(['root_pass', 'root_pass_confirm'])">👁️</button>
-            </div>
-        `;
-        
-        for (let i = 1; i <= users; i++) {
-            html += `
-                <div style="display:flex; gap:10px; align-items:flex-end; margin-top:10px;">
-                    <div style="flex:1;">
-                        <label>Username ${i}:</label>
-                        <input type="text" id="user_name_${i}" placeholder="Enter username ${i}" value="user${i}">
-                    </div>
-                    <div style="flex:1;">
-                        <label>User ${i} Password:</label>
-                        <input type="password" id="user_pass_${i}" placeholder="Enter password">
-                    </div>
-                    <div style="flex:1;">
-                        <label>Confirm Password ${i}:</label>
-                        <input type="password" id="user_pass_confirm_${i}" placeholder="Confirm password">
-                    </div>
-                    <button type="button" class="btn" style="width:auto; padding:0.4rem 0.8rem;" onclick="togglePasswordVisibility(['user_pass_${i}', 'user_pass_confirm_${i}'])">👁️</button>
-                </div>
-            `;
-        }
-        
-        // Only update if changed to preserve typed passwords if possible, or just overwrite on user_count change.
-        // For simplicity, we just overwrite when user_count changes.
-        passwordFieldsContainer.innerHTML = html;
-    }
     
-    window.togglePasswordVisibility = function(ids) {
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.type = el.type === 'password' ? 'text' : 'password';
-        });
-    };
-
-    let lastUserCount = -1;
 
     function updateAdvancedConfigUI() {
         if (!globalAskToggle || !advContainer) return;
@@ -1237,11 +1175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (globalAskToggle.checked) {
             advContainer.style.display = 'block';
             
-            const currentUserCount = parseInt(userCountInput ? userCountInput.value : 1) || 1;
-            if (currentUserCount !== lastUserCount) {
-                renderPasswordFields();
-                lastUserCount = currentUserCount;
-            }
+            
             
             // Show sub-options based on selected apps
             const postApps = Array.from(document.querySelectorAll('input[name="post_apps"]:checked')).map(el => el.value);
@@ -1449,17 +1383,7 @@ document.addEventListener('DOMContentLoaded', injectNoSelectionProvided);
 document.getElementById('generate-btn').addEventListener('click', function(e) {
     e.preventDefault();
     
-    // Check plaintext password acknowledgement
-    const globalAsk = document.getElementById('global_ask_toggle');
-    const censorPass = document.getElementById('censor_passwords');
-    const plainAck = document.getElementById('plaintext_ack');
-    if (globalAsk && globalAsk.checked && censorPass && !censorPass.checked) {
-        if (plainAck && !plainAck.checked) {
-            alert("⚠️ Security Warning: You have chosen to store passwords in plaintext. You must check the acknowledgement box before generating.");
-            plainAck.parentElement.style.color = "red";
-            return;
-        }
-    }
+    
 
     let missingFields = [];
     

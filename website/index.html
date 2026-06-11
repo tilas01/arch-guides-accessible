@@ -1216,23 +1216,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         <h4 style="margin-top:0; margin-bottom:10px;"><span class="icon">⚙️</span> Advanced App Configuration & Security</h4>
                         <p style="font-size:0.8rem; color:var(--text-color); opacity:0.8; margin-bottom:15px;">Configure app sub-options and set system passwords securely.</p>
                         
-                        <div class="form-group" style="margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid var(--bg-lighter);">
-                            <label style="display:flex; align-items:center; gap:5px;">
-                                <input type="checkbox" id="censor_passwords" style="margin:0;" onchange="document.getElementById('plaintext_ack_container').style.display = this.checked ? 'none' : 'block';">
-                                Censor passwords in Bash script / Markdown (Requires manual typing live)
-                            </label>
-                            
-                            <div id="plaintext_ack_container" style="display:block; margin-top:10px; padding:10px; background:rgba(255,100,100,0.1); border-left:4px solid var(--accent-red);">
-                                <label style="display:flex; align-items:center; gap:5px; color:var(--accent-red); font-size:0.85rem; font-weight:bold;">
-                                    <input type="checkbox" id="plaintext_ack" style="margin:0;">
-                                    ⚠️ I acknowledge my passwords will be stored in plaintext inside the downloaded .sh / .md files.
-                                </label>
-                            </div>
-                        </div>
-
-                        <div id="password-fields-container" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid var(--bg-lighter);">
-                            <!-- Passwords will be injected here by JS -->
-                        </div>
+                        
 
                         <div class="form-group" id="adv-doas" style="display:none;">
                             <label>Doas Integration Mode: <a href="wiki.html#advanced-config-doas" target="_blank" style="text-decoration:none;"><span title="Teleport to Wiki help" style="cursor:help; margin-left:0.3rem;">ℹ️</span></a></label>
