@@ -21,7 +21,7 @@ const appData = {
     'keepassxc': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false },
     'clamav': { build: 'Mostly Reproducible', src: '📁 Arch Extra', isProp: false },
     'firejail': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false },
-    'doas': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false },
+    'doas': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false, isRecommended: true },
     'neovim': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false },
     'alacritty': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false },
     'kitty': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false },
@@ -46,7 +46,7 @@ const appData = {
     'bluetooth': { build: '100% Reproducible', src: '📁 Arch Core', isProp: false },
     'pipewire': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false },
     'openssh': { build: '100% Reproducible', src: '📁 Arch Core', isProp: false },
-    'snapper': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false },
+    'snapper': { build: '100% Reproducible', src: '📁 Arch Extra', isProp: false, isRecommended: true },
     'dusky-setup': { build: '100% Reproducible', src: '📁 GitHub / dusklinux', isProp: false }
 };
 
@@ -75,10 +75,11 @@ let replaced = html.replace(appRegex, (match, titleAttr, value, inputAttrs, inne
     let buildStr = buildDefs[appInfo.build] || appInfo.build;
     
     let newTitle = '';
+    let recStr = appInfo.isRecommended ? '⭐ RECOMMENDED\n' : '';
     if (appInfo.isProp) {
         newTitle = `${appName} [PROPRIETARY]\n--\n${appDesc}\n\nWARNING: ${appInfo.propDesc}\n\nBuild Integrity: ${buildStr}\nSource: ${appInfo.src}\nWebsite: ${websiteUrl}`;
     } else {
-        newTitle = `${appName}\n--\n${appDesc}\n\nBuild Integrity: ${buildStr}\nSource: ${appInfo.src}`;
+        newTitle = `${appName}\n--\n${recStr}${appDesc}\n\nBuild Integrity: ${buildStr}\nSource: ${appInfo.src}`;
         if (websiteUrl) newTitle += `\nWebsite: ${websiteUrl}`;
     }
     
