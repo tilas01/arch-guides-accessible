@@ -226,6 +226,10 @@ window.generateOutput = function(auto = false) {
     const vm_guest = gv('vm_guest','none');
     const auto_updates = gv('auto_updates','no');
 
+    const configMode = gv('config_mode', 'interactive');
+    const advDoasMode = gv('adv_doas_mode', 'both');
+    const advSnapperMode = gv('adv_snapper_mode', 'default');
+
     const useCustomScripts = gv('use-custom-scripts','no') === 'yes';
 
     // Checkboxes arrays
@@ -589,25 +593,37 @@ window.generateOutput = function(auto = false) {
             o += `chown -c root:root /etc/doas.conf\n`;
             o += `chmod -c 0400 /etc/doas.conf\n`;
             
-            // Interactive bash prompt for Doas Wrapper
-            o += `\n# Interactive Doas Wrapper Prompt\n`;
-            o += `doas_prompt() {\n`;
-            o += `  exec < /dev/tty\n`;
-            o += `  echo -e "\\n\\e[38;2;122;162;247m======================================\\e[0m"\n`;
-            o += `  echo "Doas Configuration"\n`;
-            o += `  echo -e "\\e[38;2;122;162;247m======================================\\e[0m"\n`;
-            o += `  read -p "Do you want to fully replace Sudo with a Doas Wrapper? (y/n): " ans\n`;
-            o += `  if [[ "$ans" =~ ^[Yy]$ ]]; then\n`;
-            o += `    echo "Fully replacing sudo..."\n`;
-            o += `    pacman -Rdd --noconfirm sudo || true\n`;
-            o += `    cat << 'EOF' > /usr/local/bin/sudo\n#!/bin/bash\n# Doas Wrapper script\nargs=()\nfor arg in "$@"; do\n  if [[ "$arg" == "-E" ]]; then continue; fi\n  if [[ "$arg" == "-i" ]]; then args+=("-s"); continue; fi\n  if [[ "$arg" == "-v" ]]; then doas -C /etc/doas.conf; exit $?; fi\n  args+=("$arg")\ndone\nexec /usr/bin/doas "\${args[@]}"\nEOF\n`;
-            o += `    chmod +x /usr/local/bin/sudo\n`;
-            o += `    ln -sf /usr/local/bin/sudo /usr/bin/sudo\n`;
-            o += `  else\n`;
-            o += `    echo "Keeping standard sudo alongside doas."\n`;
-            o += `  fi\n`;
-            o += `}\n`;
-            o += `doas_prompt\n`;
+            if (configMode === 'interactive') {
+                o += `\n# Interactive Doas Wrapper Prompt\n`;
+                o += `doas_prompt() {\n`;
+                o += `  exec < /dev/tty\n`;
+                o += `  echo -e "\\n\\e[38;2;122;162;247m======================================\\e[0m"\n`;
+                o += `  echo "Doas Configuration"\n`;
+                o += `  echo -e "\\e[38;2;122;162;247m======================================\\e[0m"\n`;
+                o += `  read -p "Do you want to fully replace Sudo with a Doas Wrapper? (y/n): " ans\n`;
+                o += `  if [[ "$ans" =~ ^[Yy]$ ]]; then\n`;
+                o += `    echo "Fully replacing sudo..."\n`;
+                o += `    pacman -Rdd --noconfirm sudo || true\n`;
+                o += `    cat << 'EOF' > /usr/local/bin/sudo\n#!/bin/bash\n# Doas Wrapper script\nargs=()\nfor arg in "$@"; do\n  if [[ "$arg" == "-E" ]]; then continue; fi\n  if [[ "$arg" == "-i" ]]; then args+=("-s"); continue; fi\n  if [[ "$arg" == "-v" ]]; then doas -C /etc/doas.conf; exit $?; fi\n  args+=("$arg")\ndone\nexec /usr/bin/doas "\${args[@]}"\nEOF\n`;
+                o += `    chmod +x /usr/local/bin/sudo\n`;
+                o += `    ln -sf /usr/local/bin/sudo /usr/bin/sudo\n`;
+                o += `  else\n`;
+                o += `    echo "Keeping standard sudo alongside doas."\n`;
+                o += `  fi\n`;
+                o += `}\n`;
+                o += `doas_prompt\n`;
+            } else {
+                if (advDoasMode === 'replace') {
+                    o += `\n# Fully Replace Sudo with Doas Wrapper (Pre-configured)\n`;
+                    o += `pacman -Rdd --noconfirm sudo || true\n`;
+                    o += `cat << 'EOF' > /usr/local/bin/sudo\n#!/bin/bash\n# Doas Wrapper script\nargs=()\nfor arg in "$@"; do\n  if [[ "$arg" == "-E" ]]; then continue; fi\n  if [[ "$arg" == "-i" ]]; then args+=("-s"); continue; fi\n  if [[ "$arg" == "-v" ]]; then doas -C /etc/doas.conf; exit $?; fi\n  args+=("$arg")\ndone\nexec /usr/bin/doas "\${args[@]}"\nEOF\n`;
+                    o += `chmod +x /usr/local/bin/sudo\n`;
+                    o += `ln -sf /usr/local/bin/sudo /usr/bin/sudo\n`;
+                } else if (advDoasMode === 'remove') {
+                    o += `\n# Remove Sudo entirely (Pre-configured)\n`;
+                    o += `pacman -Rdd --noconfirm sudo || true\n`;
+                }
+            }
         }
 
         // Desktop environments
@@ -660,9 +676,33 @@ window.generateOutput = function(auto = false) {
 
         // Snapper hooks
         if (post_apps.includes('snapper')) {
-            o += `# Snapper Ã¢â‚¬â€ BTRFS snapshot config\n`;
+            o += `# Snapper BTRFS snapshot config\n`;
             o += `snapper -c root create-config /\n`;
-            o += `systemctl enable --now snapper-timeline.timer snapper-cleanup.timer\n`;
+            
+            if (configMode === 'interactive') {
+                o += `\n# Interactive Snapper Timeline Prompt\n`;
+                o += `snapper_prompt() {\n`;
+                o += `  exec < /dev/tty\n`;
+                o += `  echo -e "\\n\\e[38;2;122;162;247m======================================\\e[0m"\n`;
+                o += `  echo "Snapper Timeline Configuration"\n`;
+                o += `  echo -e "\\e[38;2;122;162;247m======================================\\e[0m"\n`;
+                o += `  read -p "Do you want to enable automatic hourly/daily timeline snapshots? (y/n): " ans\n`;
+                o += `  if [[ "$ans" =~ ^[Yy]$ ]]; then\n`;
+                o += `    echo "Enabling timeline snapshots..."\n`;
+                o += `    systemctl enable --now snapper-timeline.timer snapper-cleanup.timer\n`;
+                o += `  else\n`;
+                o += `    echo "Timeline disabled. Pre/Post pacman snapshots only."\n`;
+                o += `  fi\n`;
+                o += `}\n`;
+                o += `snapper_prompt\n`;
+            } else {
+                if (advSnapperMode === 'timeline') {
+                    o += `systemctl enable --now snapper-timeline.timer snapper-cleanup.timer\n`;
+                } else {
+                    o += `# Timeline snapshots disabled by user selection.\n`;
+                }
+            }
+
             o += `# Install grub-btrfs for rollback menu\n`;
             o += `systemctl enable --now grub-btrfsd.service\n`;
         } else if (fs === "btrfs") {
@@ -1049,7 +1089,48 @@ document.addEventListener('DOMContentLoaded', () => {
         libreOtpContainer.style.display = libreOtpCb.checked ? 'block' : 'none';
     }
 
-    // Removed Doas UI toggle logic
+        // Advanced Configuration Logic
+    const configModeSel = document.getElementById('config_mode');
+    const advContainer = document.getElementById('advanced_config_container');
+    const advDoas = document.getElementById('adv-doas');
+    const advSnapper = document.getElementById('adv-snapper');
+    const outputFormatSel = document.getElementById('outputformat');
+
+    function updateAdvancedConfigUI() {
+        if (!configModeSel || !advContainer) return;
+        
+        // Force preconfigured if output is markdown
+        if (outputFormatSel && outputFormatSel.value === 'markdown') {
+            configModeSel.value = 'preconfigured';
+        }
+
+        if (configModeSel.value === 'preconfigured') {
+            advContainer.style.display = 'block';
+            
+            // Show sub-options based on selected apps
+            const postApps = Array.from(document.querySelectorAll('input[name="post_apps"]:checked')).map(el => el.value);
+            if (advDoas) advDoas.style.display = postApps.includes('doas') ? 'block' : 'none';
+            if (advSnapper) advSnapper.style.display = postApps.includes('snapper') ? 'block' : 'none';
+            
+            // Hide container if no apps with advanced config are selected
+            if (!postApps.includes('doas') && !postApps.includes('snapper')) {
+                advContainer.style.display = 'none';
+            }
+        } else {
+            advContainer.style.display = 'none';
+        }
+    }
+
+    if (configModeSel) configModeSel.addEventListener('change', updateAdvancedConfigUI);
+    if (outputFormatSel) outputFormatSel.addEventListener('change', updateAdvancedConfigUI);
+    
+    // Listen to changes on post_apps checkboxes to show/hide sub-options dynamically
+    document.querySelectorAll('input[name="post_apps"]').forEach(cb => {
+        cb.addEventListener('change', updateAdvancedConfigUI);
+    });
+
+    // Init Advanced Config UI
+    updateAdvancedConfigUI();
 
     // Dynamic Proprietary Highlighting Logic
     const softwareTypeSelect = document.getElementById('software_type');
