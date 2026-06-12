@@ -1,3 +1,4 @@
+pub mod gui;
 use std::fs;
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
@@ -6,9 +7,30 @@ use std::process::{Command, Stdio};
 use std::thread;
 use std::time::Duration;
 
+#[cfg(unix)]
+const DRIVER_BYTES: &[u8] = include_bytes!("driver/driver.ko");
+
 pub fn start_scarecrow() {
     println!("=== Libre-Cyber-ScareCrow Initialization ===");
     println!("Creating fake analysis environment and sandbox artifacts...");
+
+    #[cfg(unix)]
+    {
+        println!("Dropping Cyber-ScareCrow Linux Kernel Module (LKM) to disk...");
+        let driver_path = "/tmp/scarecrow_lkm.ko";
+        if let Err(e) = fs::write(driver_path, DRIVER_BYTES) {
+            eprintln!("Failed to write LKM to disk: {}. Are you running as root?", e);
+        } else {
+            println!("  -> LKM dropped to: {}", driver_path);
+            println!("Loading Cyber-ScareCrow Ring-0 Netfilter/Kprobes module...");
+            let status = Command::new("insmod").arg(driver_path).status();
+            if status.is_ok() && status.unwrap().success() {
+                println!("  -> LKM loaded successfully! System sandboxed.");
+            } else {
+                eprintln!("  -> Failed to load LKM. Check dmesg for details.");
+            }
+        }
+    }
 
     // 1. Create Dummy Artifacts
     let artifacts = vec![
@@ -70,3 +92,4 @@ pub fn start_scarecrow() {
         thread::sleep(Duration::from_secs(86400));
     }
 }
+

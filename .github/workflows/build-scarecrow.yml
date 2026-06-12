@@ -1,0 +1,24 @@
+name: Build scarecrow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'security-tools/scarecrow/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build Release
+        run: cargo build --release
+        working-directory: security-tools/scarecrow
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: scarecrow-binary
+          path: security-tools/scarecrow/target/release/scarecrow
