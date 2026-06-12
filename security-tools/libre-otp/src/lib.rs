@@ -1,3 +1,4 @@
+pub mod gui;
 use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
@@ -416,3 +417,4 @@ pub fn run() {
         std::process::exit(1);
     }
 }
+

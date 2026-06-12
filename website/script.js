@@ -898,8 +898,8 @@ window.generateOutput = function(auto = false) {
                 o += `\n# Installing Kloak (Keystroke Anonymisation)\npacman -S --noconfirm kloak\nsystemctl enable kloak\n`;
             }
             if (arss_tools.includes("kernel-watcher")) {
-                o += `\n# Configuring Kernel Watcher (Semi-EDR)\narch-rusty-security-suite kernel-watcher --setup\n`;
-                o += `cat << 'EOF' > /etc/systemd/system/arss-kernel-watcher.service\n[Unit]\nDescription=ARSS Kernel Watcher EDR Daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/arch-rusty-security-suite kernel-watcher --start\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nEOF\n`;
+                o += `\n# Configuring Kernel Watcher (Semi-EDR)\nkernel-watcher --setup\n`;
+                o += `cat << 'EOF' > /etc/systemd/system/arss-kernel-watcher.service\n[Unit]\nDescription=ARSS Kernel Watcher EDR Daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/kernel-watcher\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nEOF\n`;
                 o += `systemctl enable arss-kernel-watcher.service\n`;
             }
             if (arss_tools.includes("scarecrow")) {

@@ -21,6 +21,8 @@
 //! IMPORTANT: This daemon must run as root (or with CAP_INPUT_RAW).
 //! Install as systemd service: see /etc/systemd/system/anti-ducky.service
 
+pub mod gui;
+
 use evdev::{Device, InputEvent, InputEventKind, Key};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -427,7 +429,7 @@ pub fn run() {
         log("WARNING: No keyboard input devices found. Check /dev/input/event* permissions.");
     }
 
-    for (path, _device) in initial_keyboards {
+    for (path, _device) in initial_keyboards.into_iter() {
         register_device(&path, &approved_registry, &mut monitored);
     }
 
@@ -449,7 +451,7 @@ pub fn run() {
         // Periodically rescan for newly inserted devices
         if last_scan.elapsed() >= scan_interval {
             let new_keyboards = enumerate_keyboards();
-            for (path, _) in new_keyboards {
+            for (path, _) in new_keyboards.into_iter() {
                 if !monitored.contains_key(&path) {
                     log(&format!("New input device detected: {}", path));
                     register_device(&path, &approved_registry, &mut monitored);

@@ -1,3 +1,4 @@
+pub mod gui;
 use chrono::Local;
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -217,3 +218,4 @@ fn run_fs_hash_check() {
     // A real implementation would check against a manifest.
     println!("File system hash check complete. See {}", log_file);
 }
+

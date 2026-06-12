@@ -1,3 +1,4 @@
+pub mod gui;
 #![allow(clippy::collapsible_if)]
 
 use argon2::{
@@ -327,3 +328,4 @@ fn quarantine_file(path: &str) {
         println!("[AUTO-CLEANUP] Malicious artifact {} deleted", path);
     }
 }
+

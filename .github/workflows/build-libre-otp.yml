@@ -1,0 +1,24 @@
+name: Build libre-otp
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'security-tools/libre-otp/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build Release
+        run: cargo build --release
+        working-directory: security-tools/libre-otp
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: libre-otp-binary
+          path: security-tools/libre-otp/target/release/libre-otp

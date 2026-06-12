@@ -1,0 +1,24 @@
+name: Build anti-ducky
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'security-tools/anti-ducky/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build Release
+        run: cargo build --release
+        working-directory: security-tools/anti-ducky
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: anti-ducky-binary
+          path: security-tools/anti-ducky/target/release/anti-ducky
