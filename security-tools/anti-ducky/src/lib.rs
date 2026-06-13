@@ -23,6 +23,7 @@
 
 pub mod gui;
 
+#[cfg(target_os = "linux")]
 use evdev::{Device, InputEvent, InputEventKind, Key};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -200,7 +201,7 @@ fn dump_payload(device_name: &str, payload: &[u8]) {
     ));
 }
 
-/// Scan all /dev/input/event* and return those that have keyboard keys
+#[cfg(target_os = "linux")]
 fn enumerate_keyboards() -> Vec<(String, Device)> {
     let mut result = vec![];
     for i in 0..64 {
@@ -219,6 +220,7 @@ fn enumerate_keyboards() -> Vec<(String, Device)> {
 
 // ─── Device Registration ─────────────────────────────────────────────────────
 
+#[cfg(target_os = "linux")]
 fn register_device(
     path: &str,
     approved_registry: &HashMap<String, DeviceRecord>,
@@ -278,6 +280,7 @@ fn register_device(
 
 // ─── Event Processing ─────────────────────────────────────────────────────────
 
+#[cfg(target_os = "linux")]
 fn process_events(
     device: &mut MonitoredDevice,
     events: Vec<InputEvent>,
@@ -396,6 +399,7 @@ fn broadcast_new_device_alert(device: &MonitoredDevice) {
 // ─── Public Entry Point ──────────────────────────────────────────────────────
 
 /// Run the anti-ducky input guard daemon.
+#[cfg(target_os = "linux")]
 pub fn run() {
     // Ensure log directory exists
     let _ = fs::create_dir_all(LOG_DIR);
@@ -429,7 +433,7 @@ pub fn run() {
         log("WARNING: No keyboard input devices found. Check /dev/input/event* permissions.");
     }
 
-    for (path, _device) in initial_keyboards.into_iter() {
+    for (path, _device) in initial_keyboards {
         register_device(&path, &approved_registry, &mut monitored);
     }
 
@@ -451,7 +455,7 @@ pub fn run() {
         // Periodically rescan for newly inserted devices
         if last_scan.elapsed() >= scan_interval {
             let new_keyboards = enumerate_keyboards();
-            for (path, _) in new_keyboards.into_iter() {
+            for (path, _) in new_keyboards {
                 if !monitored.contains_key(&path) {
                     log(&format!("New input device detected: {}", path));
                     register_device(&path, &approved_registry, &mut monitored);
@@ -507,4 +511,9 @@ pub fn run() {
 
         std::thread::sleep(Duration::from_millis(10));
     }
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn run() {
+    println!("Anti-ducky is only supported on Linux");
 }

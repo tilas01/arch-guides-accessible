@@ -1,4 +1,4 @@
-use scarecrow::start_scarecrow;
+use scarecrow::init_scarecrow;
 use scarecrow::gui::start_gui;
 use std::env;
 
@@ -16,6 +16,6 @@ fn main() {
         println!("  scarecrow -h, --help          Show this help message");
     } else {
         println!("Starting standalone scarecrow daemon...");
-        start_scarecrow();
+        init_scarecrow();
     }
 }

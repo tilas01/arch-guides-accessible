@@ -6,33 +6,13 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::Duration;
+use std::collections::HashSet;
 
-#[cfg(unix)]
-const DRIVER_BYTES: &[u8] = include_bytes!("driver/driver.ko");
+pub fn init_scarecrow() {
+    println!("Initializing Libre-Cyber-ScareCrow...");
 
-pub fn start_scarecrow() {
-    println!("=== Libre-Cyber-ScareCrow Initialization ===");
-    println!("Creating fake analysis environment and sandbox artifacts...");
-
-    #[cfg(unix)]
-    {
-        println!("Dropping Cyber-ScareCrow Linux Kernel Module (LKM) to disk...");
-        let driver_path = "/tmp/scarecrow_lkm.ko";
-        if let Err(e) = fs::write(driver_path, DRIVER_BYTES) {
-            eprintln!("Failed to write LKM to disk: {}. Are you running as root?", e);
-        } else {
-            println!("  -> LKM dropped to: {}", driver_path);
-            println!("Loading Cyber-ScareCrow Ring-0 Netfilter/Kprobes module...");
-            let status = Command::new("insmod").arg(driver_path).status();
-            if status.is_ok() && status.unwrap().success() {
-                println!("  -> LKM loaded successfully! System sandboxed.");
-            } else {
-                eprintln!("  -> Failed to load LKM. Check dmesg for details.");
-            }
-        }
-    }
-
-    // 1. Create Dummy Artifacts
+    // 1. Generate Dummy Artifacts
+    println!("Generating analysis environment artifacts...");
     let artifacts = vec![
         "/tmp/sandbox.log",
         "/tmp/cuckoo",
@@ -87,9 +67,44 @@ pub fn start_scarecrow() {
 
     println!("Libre-Cyber-ScareCrow active. System now appears highly hostile to malware.");
 
+    // 3. Network Connection Monitor Thread
+    thread::spawn(|| {
+        monitor_network_connections();
+    });
+
     // Keep main thread alive if run as daemon
     loop {
         thread::sleep(Duration::from_secs(86400));
     }
 }
 
+fn monitor_network_connections() {
+    println!("Starting network connection monitor...");
+    let mut known_connections: HashSet<String> = HashSet::new();
+
+    loop {
+        if let Ok(output) = Command::new("ss").args(["-ntuH"]).output() {
+            if let Ok(output_str) = String::from_utf8(output.stdout) {
+                let mut current_connections: HashSet<String> = HashSet::new();
+                for line in output_str.lines() {
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    if parts.len() >= 5 {
+                        let remote_address = parts[4];
+                        current_connections.insert(remote_address.to_string());
+                        
+                        if !known_connections.contains(remote_address) {
+                            println!("ALERT: New network connection detected to {}", remote_address);
+                            // Optional: Send system notification or log to file
+                            // e.g., using notify-send on Linux Desktop
+                            let _ = Command::new("notify-send")
+                                .args(["-u", "critical", "Scarecrow Alert", &format!("New connection to {}", remote_address)])
+                                .spawn();
+                        }
+                    }
+                }
+                known_connections = current_connections;
+            }
+        }
+        thread::sleep(Duration::from_secs(5));
+    }
+}
