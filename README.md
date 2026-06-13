@@ -24,7 +24,7 @@
 > 
 > **You are solely responsible for your own machine.** You must ALWAYS manually review code and commands before executing them. We strongly recommend testing in a VM and cross-referencing with the official Arch Wiki.
 > 
-> **Licensing & Commercial Use:** This project is licensed under the **GNU AGPLv3**. This mathematically prevents theft and closing of the source code. You are strictly forbidden from copying the full application, changing the title, and re-releasing it or selling it as a proprietary product without fully open-sourcing all modifications under the AGPLv3 and providing attribution to `tilas01`.
+> **Licensing & Commercial Use:** This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license. You are free to use, modify, and distribute this software for any non-commercial project. You are strictly forbidden from selling it, re-releasing it for profit, or using it to make money. You must provide clear attribution to `tilas01` and share any modifications under the same license.
 
 ---
 
@@ -155,5 +155,5 @@ This project integrates tools, configurations, and concepts from brilliant devel
 
 **Copyright (c) 2026 tilas01**
 
-This project is licensed under the **[GNU Affero General Public License v3.0 (AGPLv3)](LICENSE)**.
-By using, modifying, or distributing this software, you agree to the strict terms of the AGPLv3, which mandates that any derivative works or network services built upon this codebase must also release their full source code under the AGPLv3 and provide explicit attribution.
+This project is licensed under the **[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](LICENSE)**.
+By using, modifying, or distributing this software, you agree to the strict terms of this license, which mandates that you may not use it to make money, and any derivative works must also be released under the same license and provide explicit attribution.
