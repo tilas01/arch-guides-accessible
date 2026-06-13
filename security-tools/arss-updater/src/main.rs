@@ -164,7 +164,7 @@ fn main() -> eframe::Result<()> {
         eframe::run_native(
             "ARSS Updater",
             options,
-            Box::new(|_cc| Ok(Box::new(UpdaterApp::default()))),
+            Box::new(|_cc| Box::new(UpdaterApp::default())),
         )
     } else {
         run_cli_mode(args);
