@@ -2,7 +2,7 @@
 members = [
     "anti-ducky",
     "libre-otp",
-    "arch-iso-verifier", "kernel-watcher", "scarecrow", "scarecrow/scarecrow-ebpf", "anti-evil-maid", "arss-updater",
+    "arch-iso-verifier", "kernel-watcher", "scarecrow", "anti-evil-maid", "arss-updater",
 ]
 resolver = "2"
 

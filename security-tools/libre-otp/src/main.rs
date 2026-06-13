@@ -1,4 +1,4 @@
-use libre_otp::start_otp;
+use libre_otp::run;
 use libre_otp::gui::start_gui;
 use std::env;
 
@@ -16,6 +16,6 @@ fn main() {
         println!("  libre-otp -h, --help          Show this help message");
     } else {
         println!("Starting standalone libre-otp daemon...");
-        start_otp();
+        run();
     }
 }

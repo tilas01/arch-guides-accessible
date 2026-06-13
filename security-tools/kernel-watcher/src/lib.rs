@@ -1,6 +1,5 @@
-pub mod gui;
 #![allow(clippy::collapsible_if)]
-
+pub mod gui;
 use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
