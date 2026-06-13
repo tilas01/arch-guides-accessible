@@ -292,15 +292,7 @@
                 <p><a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" style="color:var(--accent-purple); font-weight:bold;">Or click here to manually view releases on GitHub.</a></p>
             </div>`;
 
-            try {
-                const response = await fetch('https://api.github.com/repos/tilas01/arch-guides-dynamic/releases');
-                
-                if (!response.ok) {
-                    container.innerHTML = fallbackHTML;
-                    return;
-                }
-                const data = await response.json();
-                
+            function renderWikiReleases(data) {
                 if (data.length === 0) {
                     container.innerHTML = '<p style="color:#8b949e;">No releases published yet.</p>';
                     return;
@@ -319,19 +311,43 @@
                         assetLinks += '</div>';
                     }
 
-                    htmlContent += `<li style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
-                        <strong style="color:var(--accent-blue); font-size:1.1rem;">${release.name || release.tag_name}</strong> 
-                        <span style="font-size:0.85rem; color:#8b949e; margin-left:1rem;">📅 ${date}</span>
-                        <div style="margin-top:0.3rem;">
-                            <a href="${release.html_url}" target="_blank" style="color:var(--accent-purple); text-decoration:none;">View Release Notes &rarr;</a>
-                        </div>
-                        ${assetLinks}
-                    </li>`;
+                    htmlContent += `
+                        <li style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
+                            <h3 style="margin:0 0 0.5rem 0; color:var(--accent-green);">
+                                <a href="${release.html_url}" target="_blank" style="color:inherit; text-decoration:none;">${release.name || release.tag_name}</a>
+                            </h3>
+                            <div style="font-size:0.85rem; color:#8b949e; margin-bottom:0.5rem;">🕒 Published: ${date}</div>
+                            <div style="font-size:0.9rem; line-height:1.4;">${release.body ? release.body.substring(0, 200) + '...' : 'No description'}</div>
+                            ${assetLinks}
+                        </li>
+                    `;
                 });
                 htmlContent += '</ul>';
                 container.innerHTML = htmlContent;
-            } catch (err) {
+            }
+
+            const cacheKey = 'gh_releases_cache';
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) {
+                try {
+                    renderWikiReleases(JSON.parse(cached));
+                    return;
+                } catch(e) {}
+            }
+
+            try {
+                const response = await fetch('https://api.github.com/repos/tilas01/arch-guides-dynamic/releases');
+                
+                if (!response.ok) {
+                    container.innerHTML = fallbackHTML;
+                    return;
+                }
+                const data = await response.json();
+                sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                renderWikiReleases(data);
+            } catch (error) {
                 container.innerHTML = fallbackHTML;
+                console.error("Failed to load releases:", error);
             }
         });
     </script>
