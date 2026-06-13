@@ -272,6 +272,12 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Download Static Latest Release
+        uses: actions/download-artifact@v4
+        with:
+          name: security-tools-all
+          path: './website/static-releases'
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
