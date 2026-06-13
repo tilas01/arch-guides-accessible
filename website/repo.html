@@ -34,16 +34,28 @@
         const branch = 'main';
 
         async function fetchTree(path = '') {
-            const url = "https://api.github.com/repos/ + owner + / + repo + /contents/ + path + ?ref= + branch + ";
+            const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+            const cacheKey = `gh_repo_cache_${path || 'root'}`;
+            
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) {
+                try {
+                    renderTree(JSON.parse(cached));
+                    document.getElementById('api-status').textContent = 'Live tracking main branch (Cached Session)';
+                    return;
+                } catch(e) {}
+            }
+
             try {
-                const res = await fetch(url.replace(/"/g, ''));
+                const res = await fetch(url);
                 if (!res.ok) throw new Error('API limit or network error');
                 const data = await res.json();
+                sessionStorage.setItem(cacheKey, JSON.stringify(data));
                 renderTree(data);
                 document.getElementById('api-status').textContent = 'Live tracking main branch';
             } catch (e) {
                 document.getElementById('api-status').textContent = 'API Exhausted. Opening GitHub...';
-                setTimeout(() => window.location.href = '"https://github.com/ + owner + / + repo + "', 2000);
+                setTimeout(() => window.location.href = `https://github.com/${owner}/${repo}`, 2000);
             }
         }
 
@@ -70,12 +82,19 @@
             closeBtn.style.display = 'inline-block';
             codeView.textContent = 'Loading...';
             
-            try {
-                const res = await fetch(url);
-                const text = await res.text();
-                codeView.textContent = text;
-            } catch(e) {
-                codeView.textContent = 'Failed to load file content.';
+            const cacheKey = `gh_file_cache_${url}`;
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) {
+                codeView.textContent = cached;
+            } else {
+                try {
+                    const res = await fetch(url);
+                    const text = await res.text();
+                    sessionStorage.setItem(cacheKey, text);
+                    codeView.textContent = text;
+                } catch(e) {
+                    codeView.textContent = 'Failed to load file content.';
+                }
             }
 
             closeBtn.onclick = () => {
