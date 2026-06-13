@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <rect width="100%" height="100%" rx="16" fill="#13141c" stroke="#bb9af7" stroke-width="4"/>
+  <text x="50%" y="45%" font-family="monospace" font-size="52" font-weight="bold" fill="#bb9af7" text-anchor="middle" dominant-baseline="middle">
+    ARCH GUIDES WIKI
+  </text>
+  <text x="50%" y="75%" font-family="monospace" font-size="22" fill="#7aa2f7" text-anchor="middle" dominant-baseline="middle">
+    >_ Official Documentation & Reference
+  </text>
+</svg>
