@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
+#[cfg(target_os = "linux")]
 use std::os::unix::fs::PermissionsExt;
 use std::time::{SystemTime, UNIX_EPOCH};
 use totp_rs::{Algorithm, Secret, TOTP};
@@ -85,10 +86,12 @@ fn save_state(state: &OtpState) {
         .open(CONFIG_PATH)
         .expect("Failed to open secret file for writing");
 
-    // Enforce strict permissions
-    let mut perms = file.metadata().unwrap().permissions();
-    perms.set_mode(0o600);
-    file.set_permissions(perms).unwrap();
+    #[cfg(target_os = "linux")]
+    {
+        let mut perms = file.metadata().unwrap().permissions();
+        perms.set_mode(0o600);
+        file.set_permissions(perms).unwrap();
+    }
 
     file.write_all(json.as_bytes())
         .expect("Failed to write state");
@@ -241,9 +244,13 @@ pub fn run() {
         ));
         fs::write(csv_path, csv_content).unwrap();
 
-        let mut perms = fs::metadata(csv_path).unwrap().permissions();
-        perms.set_mode(0o600);
-        fs::set_permissions(csv_path, perms).unwrap();
+        #[cfg(target_os = "linux")]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = fs::metadata(csv_path).unwrap().permissions();
+            perms.set_mode(0o600);
+            fs::set_permissions(csv_path, perms).unwrap();
+        }
 
         println!("\n[KeePassXC Integration]");
         println!(

@@ -143,7 +143,7 @@ fn main() {
             }
         }
         Commands::ScareCrow => {
-            scarecrow::start_scarecrow();
+            scarecrow::init_scarecrow();
         }
         Commands::Aem {
             setup,
