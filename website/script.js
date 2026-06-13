@@ -1634,7 +1634,7 @@ const clearOutputBtn = document.getElementById('clear-output-btn');
 if (clearOutputBtn) clearOutputBtn.addEventListener('click', window.clearGeneratedOutput);
 
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Custom scripts toggle ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ⬇️ Custom scripts toggle ⬇️
 const customScriptsSelect = document.getElementById('use-custom-scripts');
 const customScriptsContainer = document.getElementById('custom-scripts-container');
 if (customScriptsSelect && customScriptsContainer) {
@@ -1652,7 +1652,7 @@ if (securityToolsSelect && libreOtpModeContainer) {
 
 
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Smart Analysis ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ⬇️ Smart Analysis ⬇️
 window.smartAnalysisWarnings = [];
 function validateConfigurations() {
     const fw = document.getElementById('firmware')?.value || 'uefi';
@@ -1700,16 +1700,29 @@ function validateConfigurations() {
 
     // DuskyOS Automation Lock
     const duskyAppCb = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
+    const displayServerSelect = document.getElementById('display_server');
+    
     if (desktop === 'dusky') {
         if (duskyAppCb) {
             duskyAppCb.checked = true;
             duskyAppCb.disabled = true;
             duskyAppCb.parentElement.style.opacity = '0.6';
         }
+        if (displayServer === 'xorg') {
+            alert("Invalid Config: DuskyOS (Hyprland) requires Wayland. Automatically presetting to Wayland.");
+            if (displayServerSelect) displayServerSelect.value = 'wayland';
+        }
     } else {
         if (duskyAppCb) {
             duskyAppCb.disabled = false;
             duskyAppCb.parentElement.style.opacity = '1';
+        }
+    }
+
+    if (desktop === 'dwm') {
+        if (displayServer === 'wayland') {
+            alert("Invalid Config: DWM requires Xorg. Automatically presetting to Xorg.");
+            if (displayServerSelect) displayServerSelect.value = 'xorg';
         }
     }
 
