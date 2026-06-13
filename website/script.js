@@ -664,6 +664,8 @@ window.generateOutput = function(auto = false) {
 
         if (!cmdOnly) o += `\`\`\`\n\n## 6. Desktop & Apps\n\`\`\`bash\n`;
         else o += `\n# 6. Desktop & Apps\n`;
+        
+        o += `\n### POST-INSTALL BOUNDARY ###\n`;
 
         // AUR
         const needsAUR = post_apps.length > 0 || desktop === "dusky";
