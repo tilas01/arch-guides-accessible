@@ -1259,7 +1259,17 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         <ul id="error-list" style="margin-top: 0.5rem; margin-bottom: 0;"></ul>
                         <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
                     </div>
-                      <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="margin-top: 0.8rem;">⚙️ Generate Custom Guide</button>
+                    <div style="display:flex; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap;">
+                        <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="width:auto;">⚙️ Generate Custom Guide</button>
+                        
+                        <div style="display:flex; align-items:center; gap:8px;" class="nav-tooltip" data-title="Apply Selection Changes Live" data-desc="Automatically regenerates the guide when you change a setting and routes you to the live editor output page.">
+                            <span style="font-size:0.9rem; color:var(--accent-cyan); font-weight:bold;">Apply Selection Changes Live:</span>
+                            <label class="switch">
+                                <input type="checkbox" id="live_generation_toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
                 </form>
 
                 <!-- ── Upload / Live Editor Section ── -->
