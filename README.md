@@ -1,6 +1,8 @@
 <!-- Author: tilas01 | Main Developer & Maintainer -->
 
-<img src="img/banner.png" width="100%" alt="Arch Guides Banner">
+<p align="center">
+  <img src="img/banner.png" width="100%" alt="Arch Guides Banner">
+</p>
 
 <h1 align="center">Arch Guides: Accessible & Modular</h1>
 
@@ -14,273 +16,113 @@
 
 ---
 
-## Legal Disclaimer & Waiver
-
-> **AI-GENERATED CONTENT & STRICT LIABILITY WAIVER:**
-> This repository was built with the assistance of AI (multiple models), with manual curation, review, and authorship by **tilas01**. All scripts are **"AS IS"** without warranty. You must review every command before execution. Test in a VM first. 
+## ⚖️ Legal Disclaimer & Liability Waiver
+> **AI-GENERATED CONTENT & NO WARRANTY:** 
+> This website, its entire repository, and the dynamically generated scripts/configurations were built with the assistance of Artificial Intelligence. 
+> 
+> By using this repository or the hosted website, you explicitly agree that all scripts and instructions are provided **"AS IS", WITHOUT WARRANTY OF ANY KIND**, express or implied. The authors hold absolutely **NO liability** for any data loss, system damage, hardware failure, or security breaches resulting from the use of these tools. 
+> 
+> **You are solely responsible for your own machine.** You must ALWAYS manually review code and commands before executing them. We strongly recommend testing in a VM and cross-referencing with the official Arch Wiki.
 > 
 > **Licensing & Commercial Use:** This project is licensed under the **GNU AGPLv3**. This mathematically prevents theft and closing of the source code. You are strictly forbidden from copying the full application, changing the title, and re-releasing it or selling it as a proprietary product without fully open-sourcing all modifications under the AGPLv3 and providing attribution to `tilas01`.
 
 ---
 
-## Table of Contents
+## 🌐 Public Hosted Resources
+*   **[Interactive Dynamic Install Generator](https://tilas01.github.io/arch-guides-dynamic/)** - Dynamically generates an installation guide tailored exactly to your hardware and security needs.
+*   **[Static Arch Guides Wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html)** - A comprehensive, modular documentation repository aggregating the best guides.
+*   **[OS Shortcut & Command cheatsheet for dusky 2026 os release](docs/dusky-cheatsheet.md)** - A full cheatsheet to use the entire Dusky OS and its tools (if you selected it in the auto-installer).
+*   **[Arch Command Cheatsheet](docs/helpful-commands.md)** - General Arch Linux command cheatsheet for maintenance and pacman.
 
-- [About](#about)
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [Manual Installation Guide](#manual-installation-guide)
-- [Arch Rusty Security Suite](#arch-rusty-security-suite)
-- [Integrity Verification](#integrity-verification)
-- [Build from Source](#build-from-source)
-- [Input Guard (Anti-RubberDucky)](#input-guard-anti-rubberducky)
-- [Libre OTP: Two-Factor Authentication](#libre-otp-two-factor-authentication)
-- [Post-Install Apps](#post-install-apps)
-- [Cheatsheets](#cheatsheets)
-- [Credits & Acknowledgements](#credits--acknowledgements)
-- [License](#license)
+> **Note:** The auto script generator is completely optional and is just a tool to make installation much easier. You can use the native tools manually and follow the Wiki directly to reduce downloads and learn the process yourself!
 
 ---
 
-## About
-
-**Arch Guides** is a comprehensive, modular resource for installing and securing Arch Linux. It provides an interactive web-based generator that produces custom installation guides and scripts tailored to your hardware, security preferences, and desktop environment — along with a full security suite, cheatsheets, and post-install references.
-
----
-
-## Features
-
-- 🔧 **Custom Install Guide Generator** — Interactive web tool that produces tailored `.md` guides and `.sh` scripts for your exact hardware and preferences
-- 📖 **Comprehensive Wiki** — Step-by-step reference covering every stage of an Arch installation
-- 🛡️ **Arch Rusty Security Suite** — A single Rust binary bundling OTP 2FA, USB Input Guard, and ISO/release verification
-- 📋 **Cheatsheets** — Quick-reference guides for Arch commands, Dusky OS, DWM, GNOME, KDE Plasma, and Xorg vs Wayland
-- 🔐 **Integrity Verification** — SHA256 checksums and optional GPG signature verification for all release binaries
-- 🌐 **SSH Deploy** — One-liner remote deployment from the generator for headless installs
+## 📑 Table of Contents
+1. [Arch Dynamic Installation Setup Guide](#arch-dynamic-installation-setup-guide)
+2. [Quick Setup: Automated Batch Installer](#quick-setup-automated-batch-installer)
+3. [Manual Dynamic Setup Guide](#manual-dynamic-setup-guide)
+4. [Included Payloads & Security Projects](#included-payloads--security-projects)
+5. [Credits & Acknowledgements](#credits--acknowledgements)
 
 ---
 
-## Quick Start
+## 🛠️ Arch Dynamic Installation Setup Guide
 
-1. Visit the **[Arch Guides Generator](https://tilas01.github.io/arch-guides-dynamic/)**
-2. Configure your hardware, security level, and desktop environment
-3. Click **"Generate Custom Guide"**
-4. Download your custom `.md` tutorial and/or `.sh` script
+This guide allows you to generate a custom-tailored Arch Linux installation script and markdown tutorial based on your specific hardware, security needs, and software philosophy.
 
-> The generator is optional. Follow the [Wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html) manually if you prefer.
-
-### SSH Deploy (Optional)
-
-```bash
-# On the Arch ISO:
-systemctl start sshd
-echo 'root:arch' | chpasswd
-ip addr
-
-# On your other machine:
-ssh root@<ISO_IP>
-# Paste the SSH one-liner from the generator
-```
+**To get started:**
+1. Visit the [Dynamic Generator Website](https://tilas01.github.io/arch-guides-dynamic/).
+2. Select your CPU, GPU, Firmware, and VM configurations.
+3. Choose your display server (Xorg Minimal vs Wayland) and Desktop Environment (Dusky OS, GNOME, etc.).
+4. Choose your filesystem (BTRFS for snapshots, XFS for performance).
+5. Select your security parameters (Full Disk Encryption, Libre OTP, Anti-RubberDucky).
+6. Generate the script!
 
 ---
 
-## Manual Installation Guide
-
-| Step | Guide |
-|------|-------|
-| 1. Pre-Installation | [docs/01-pre-installation.md](docs/01-pre-installation.md) |
-| 2. Partitioning | [docs/02-partitioning/](docs/02-partitioning/) |
-| 3. Base Installation | [docs/03-base-installation.md](docs/03-base-installation.md) |
-| 4. Bootloaders | [docs/04-bootloaders/](docs/04-bootloaders/) |
-| 5. Secure Boot | [docs/05-secure-boot/](docs/05-secure-boot/) |
-| 6. Dual Boot | [docs/06-dual-boot/](docs/06-dual-boot/) |
-| 7. Post-Installation | [docs/07-post-installation.md](docs/07-post-installation.md) |
+## ⚡ Quick Setup: Automated Batch Installer
+If you generated the automated bash script, you can deploy it directly over SSH to the live Arch ISO!
+1. Boot into the Arch ISO.
+2. In the generator, set **Arch ISO Pre-Install Setup** to `Start SSHd`.
+3. Type the generated command on the ISO to start the SSH daemon and set a root password.
+4. Copy the generated `cat << 'EOF' > install.sh ...` deploy command.
+5. Paste it into your terminal on your other machine connected via SSH.
+6. Run `bash install.sh` and watch it install!
 
 ---
 
-## Arch Rusty Security Suite
-
-All security tools are bundled into a **single Rust binary**: `arch-rusty-security-suite`
-
-| Subcommand | Description |
-|------------|-------------|
-| 🔐 `arch-rusty-security-suite libre-otp` | Native Rust TOTP/OTP 2FA (Boot/Login/SSH via PAM). Includes Double OTP & Bypass modes. |
-| 🛡️ `arch-rusty-security-suite ducky` | Intelligent USB HID Input Manager & RubberDucky Sandbox |
-| 👁️ `arch-rusty-security-suite kernel-watcher` | Asynchronous file-monitoring EDR daemon & rootkit quarantine |
-| 👻 `arch-rusty-security-suite scarecrow` | Decoy VM environment to trigger malware killswitches |
-| 🕵️ `arch-rusty-security-suite aem` | Anti-Evil Maid boot partition hashing and decoy kernels |
-| ☠️ `arch-rusty-security-suite panic` | Emergency DoD 3-pass LUKS wipe via duplicate password |
-| 📱 `arch-rusty-security-suite webhooks` | Real-time systemd webhook alerts (Discord, Slack, NTFY, etc) |
-| 🔍 `arch-rusty-security-suite verify-iso` | Verify Arch Linux ISO integrity against official checksums |
-| 🔒 `arch-rusty-security-suite ssh` | Hardened Ed25519, ChaCha20-Poly1305 SSH + optional PAM 2FA |
-
-### Download
-
-All releases are available on the [**Releases page**](https://github.com/tilas01/arch-guides-dynamic/releases/latest).
-
-```bash
-# Download latest release
-VERSION=$(curl -s "https://api.github.com/repos/tilas01/arch-guides-dynamic/releases/latest" | grep '"tag_name"' | cut -d'"' -f4)
-curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/${VERSION}/arch-rusty-security-suite-linux-x86_64"
-curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/${VERSION}/arch-rusty-security-suite-linux-x86_64.sha256"
-
-# Verify and install
-sha256sum -c arch-rusty-security-suite-linux-x86_64.sha256
-chmod +x arch-rusty-security-suite-linux-x86_64
-sudo cp arch-rusty-security-suite-linux-x86_64 /usr/local/bin/arch-rusty-security-suite
-```
+## 📖 Manual Dynamic Setup Guide
+If you prefer to install manually, every selection in the generator has a corresponding guide!
+*   [01. Pre-Installation](docs/01-pre-installation.md)
+*   [02. Partitioning](docs/02-partitioning/)
+*   [03. Base Installation](docs/03-base-installation.md)
+*   [04. Bootloaders](docs/04-bootloaders/)
+*   [05. Secure Boot](docs/05-secure-boot/)
+*   [10. Generator Selections & Dusky OS Explanation](docs/10-generator-selections-and-dusky.md)
+*   [Display Server Guide: Xorg vs Wayland](docs/xorg-vs-wayland.md)
 
 ---
 
-## Integrity Verification
+## 🛡️ Included Payloads & Security Projects
 
-### SHA256 Check
+<p align="center">
+  <img src="img/banner.png" width="80%" alt="Security Projects Banner">
+</p>
 
-```bash
-sha256sum -c arch-rusty-security-suite-linux-x86_64.sha256
-# Expected: "arch-rusty-security-suite-linux-x86_64: OK"
-```
+The security tools in this repository are standalone modules. They are open-source Rust tools built to enhance Linux security and integrate deeply with Arch Linux.
 
-### Self-Verify Using the Suite
+<div align="center">
 
-```bash
-arch-rusty-security-suite verify-release \
-    arch-rusty-security-suite-linux-x86_64 \
-    arch-rusty-security-suite-linux-x86_64.sha256
-```
+### 🔐 Libre OTP
+Native Rust TOTP/OTP 2FA providing Two-Factor Authentication during Boot, Login, or SSH. Customizable SHA algorithms.
+<br><br>
 
-### GPG Signature (Optional)
+### 🛡️ Input Guard (Anti-RubberDucky)
+A native Rust daemon that monitors input speeds, sandboxes unknown USB HID devices, and blocks automated keystroke injection attacks.
+<br><br>
 
-If a `.asc` signature file is provided with the release:
+### 🥷 Kloak
+Anonymizes keystroke timing to prevent biometric profiling (by vmonaco).
+<br><br>
 
-```bash
-gpg --recv-keys <TILAS01_KEY_ID>
-gpg --verify arch-rusty-security-suite-linux-x86_64.asc arch-rusty-security-suite-linux-x86_64
-```
+### 🕵️ Anti-Evil Maid
+Generates generic kernel decoy entries to obfuscate your real encrypted boot target and checks boot integrity.
+<br><br>
 
-### Manual Hash Comparison
+### 👁️ Kernel Watcher (Semi-EDR)
+Real-time async file monitoring. Detects infostealers accessing browser/SSH data, and userland rootkits.
+<br><br>
 
-```bash
-sha256sum arch-rusty-security-suite-linux-x86_64
-cat arch-rusty-security-suite-linux-x86_64.sha256
-# Compare — they must be identical
-```
+### 👻 ScareCrow
+Spoofs a fake Virtual Machine and analysis sandbox to trick advanced malware into self-terminating.
+<br><br>
 
-### Verify Arch ISO
-
-```bash
-# Using the suite:
-arch-rusty-security-suite verify-iso /path/to/archlinux-*.iso
-
-# Manual:
-sha256sum /path/to/archlinux-*.iso
-curl -sL https://mirror.rackspace.com/archlinux/iso/latest/sha256sums.txt
-```
+</div>
 
 ---
 
-## Build from Source
-
-### Full Security Suite
-```bash
-git clone https://github.com/tilas01/arch-guides-dynamic.git
-cd arch-guides-dynamic/security-tools
-cargo build --release --locked
-sha256sum target/release/arch-rusty-security-suite
-# Compare against the published release hash for full reproducible trust
-```
-
-### Standalone Modules
-You can also compile individual modules standalone:
-```bash
-cargo install libre-otp --git https://github.com/tilas01/arch-guides-dynamic
-cargo install anti-ducky --git https://github.com/tilas01/arch-guides-dynamic
-cargo install anti-evil-maid --git https://github.com/tilas01/arch-guides-dynamic
-cargo install kernel-watcher --git https://github.com/tilas01/arch-guides-dynamic
-cargo install scarecrow --git https://github.com/tilas01/arch-guides-dynamic
-```
-
----
-
-## Input Guard (Anti-RubberDucky)
-
-> Completely rewritten as an **Intelligent USB HID Input Manager**.
-
-| Feature | Description |
-|---------|-------------|
-| **Auto Sandbox** | New USB HID devices are sandboxed — keystrokes captured but NOT forwarded |
-| **Payload Detection** | Injection-speed events (< 15ms) trigger forensic payload capture |
-| **2-of-N Approval** | New devices need 2 approved devices to run `arch-rusty-security-suite input-guard --approve <fingerprint>` |
-| **SSH Backup** | SSH (with OTP) is a required backup approval channel |
-| **Wall Alerts** | All events broadcast to every TTY and SSH session |
-
-```bash
-# Setup
-arch-rusty-security-suite input-guard --init
-systemctl enable --now input-guard.service
-```
-
----
-
-## Libre OTP: Two-Factor Authentication
-
-Native Rust TOTP/OTP 2FA for Linux login, boot, and SSH via PAM integration.
-
-| Feature | Description |
-|---------|-------------|
-| **Escalating Lockout** | Prevents bruteforcing. 3 failed attempts = 30 min lockout. Each subsequent 3 fails adds 30 mins (max 24 hours). |
-| **Lockout Bypass** | A cryptographically unique bypass password (hashed with Argon2id) that can override the lockout timer. |
-| **KeePassXC Output** | Securely generates an importable CSV and monitors `~/.keepassxc/arss.kdbx` for Infostealer tampering. |
-| **Custom Recovery Keys** | Set exact length and count of recovery codes. |
-
-```bash
-# Setup with SHA256 and custom recovery length
-arch-rusty-security-suite otp --setup --hash=SHA256 --recovery-codes=10 --recovery-len=12 --bypass-uses=5
-
-# KeePassXC Import (Run as user)
-keepassxc-cli import /etc/libre-otp/keepass_import.csv ~/.keepassxc/arss.kdbx
-
-# PAM integration (SSH)
-echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/sshd
-```
-
----
-
-## Post-Install Apps
-
-| App | Install | Description | Libre? |
-|-----|---------|-------------|--------|
-| [paru](https://github.com/Morganamilo/paru) | `yay -S paru` | AUR helper (Rust) | ✅ |
-| [Firefox](https://mozilla.org) | `pacman -S firefox` | Web browser | ⚠️ non-libre firmware |
-| [LibreWolf](https://librewolf.net) | `paru -S librewolf` | Privacy-focused Firefox fork | ✅ |
-| [Tor Browser](https://torproject.org) | `paru -S tor-browser` | Anonymity browser | ✅ |
-| [Signal](https://signal.org) | `paru -S signal-desktop` | E2E encrypted messaging | ⚠️ some non-libre |
-| [KeePassXC](https://keepassxc.org) | `pacman -S keepassxc` | Password manager | ✅ |
-| [Neovim](https://neovim.io) | `pacman -S neovim` | Text editor | ✅ |
-| [Alacritty](https://alacritty.org) | `pacman -S alacritty` | GPU-accelerated terminal | ✅ |
-| [VSCodium](https://vscodium.com) | `paru -S vscodium` | Code editor (libre VS Code) | ✅ |
-| [mpv](https://mpv.io) | `pacman -S mpv` | Media player | ✅ |
-| [OBS Studio](https://obsproject.com) | `pacman -S obs-studio` | Streaming & recording | ✅ |
-| [Flatpak](https://flatpak.org) | `pacman -S flatpak` | Universal app format | ⚠️ may include proprietary |
-| [kloak](https://github.com/vmonaco/kloak) | Build from source | Keystroke anonymizer | ✅ |
-
-> ✅ = Fully libre/open source | ⚠️ = Free to use but may include non-libre components
-
----
-
-## Cheatsheets
-
-| Cheatsheet | Link |
-|------------|------|
-| **Arch Commands** (pacman, systemd, disk, security) | [docs/cheatsheets/arch-commands.md](docs/cheatsheets/arch-commands.md) |
-| **Dusky OS Shortcuts** | [docs/cheatsheets/duskyos-hyprland.md](docs/cheatsheets/duskyos-hyprland.md) |
-| **DWM Window Manager** | [docs/helpful-commands.md#-dwm-window-manager-cheatsheet](docs/helpful-commands.md#-dwm-window-manager-cheatsheet) |
-| **GNOME Keyboard Shortcuts** | [docs/helpful-commands.md#-gnome-keyboard-shortcuts](docs/helpful-commands.md#-gnome-keyboard-shortcuts) |
-| **KDE Plasma Shortcuts** | [docs/helpful-commands.md#-kde-plasma-shortcuts](docs/helpful-commands.md#-kde-plasma-shortcuts) |
-| **Xorg vs Wayland** | [docs/xorg-vs-wayland.md](docs/xorg-vs-wayland.md) |
-| **Generator Selections Explained** | [docs/10-generator-selections-and-dusky.md](docs/10-generator-selections-and-dusky.md) |
-
----
-
-## Credits & Acknowledgements
+## ⭐ Credits & Acknowledgements
 
 <h3 align="center">
   <a href="https://github.com/tilas01">
@@ -293,19 +135,19 @@ echo 'auth required pam_exec.so expose_authtok /usr/local/bin/arch-rusty-securit
 </h3>
 
 <p align="center">
-  Creator of Arch Guides, the Arch Rusty Security Suite, and all project code.<br>
+  Creator of Arch Guides, the Security Tools, and all project code.<br>
   All AI-generated content has been manually curated, reviewed, and authored by tilas01.
 </p>
 
----
+This project integrates tools, configurations, and concepts from brilliant developers across the open-source community. If you use these tools, please check out their official pages!
 
-| Contributor | Role | Links |
-|-------------|------|-------|
-| **dusklinux** | Creator of Dusky OS — the minimal Arch-based distro featured in this project | [GitHub](https://github.com/dusklinux) · [YouTube](https://www.youtube.com/watch?v=JmgvSdEIK8c) |
-| **arch-minimal-install** | Inspiration for the minimal installation approach and modular guide structure | — |
-| **vmonaco** | Creator of kloak, the keystroke anonymizer referenced in the security tools | [GitHub](https://github.com/vmonaco/kloak) |
-| **v3 Contributor** | Extensive architecture, security suite modularization, and UI improvements for v3 release | — |
-| **AI Assistance** | Multiple AI models were used during development; all output was reviewed and authored by tilas01 | — |
+*   **[Max-Baz Arch Install Guide](https://github.com/maximbaz/dotfiles)** - Core inspiration for the modularity and security concepts of this project.
+*   **[Dusky OS / dusklinux](https://github.com/dusklinux/dusky)** - An incredible, fully riced, and blazing-fast Arch OS. Included as an auto-install option! Check out [Dusky's Demo Video on YouTube](https://www.youtube.com/watch?v=JmgvSdEIK8c).
+*   **[Kloak](https://github.com/vmonaco/kloak)** - Keystroke anonymization tool created by vmonaco.
+*   **Anti-RubberDucky Concepts** - Inspired by various open-source HID injection mitigation tools developed by the community. 
+*   **Tilas01 Security Tools** - Libre-OTP, Anti-Ducky, Kernel Watcher, Anti-Evil-Maid, and ScareCrow custom Rust implementations authored by tilas01 for this repository.
+
+*This repository is provided purely for educational and security research purposes.*
 
 ---
 
