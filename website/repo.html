@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Arch Guides | Git Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background-color: #1a1b26; color: #a9b1d6; font-family: 'Courier New', Courier, monospace; }
+        .repo-container { max-width: 900px; margin: 2rem auto; background: #24283b; border-radius: 12px; padding: 2rem; border: 1px solid #414868; }
+        .back-btn { color: #7aa2f7; text-decoration: none; font-weight: bold; margin-bottom: 1rem; display: inline-block; }
+        .back-btn:hover { color: #bb9af7; text-decoration: underline; }
+        .tree-item { padding: 0.5rem; border-bottom: 1px solid #414868; cursor: pointer; }
+        .tree-item:hover { background: #1f2335; }
+        .folder { color: #7aa2f7; font-weight: bold; }
+        .file { color: #a9b1d6; }
+        #code-view { display: none; background: #1a1b26; padding: 1rem; border-radius: 8px; border: 1px solid #565f89; overflow-x: auto; white-space: pre-wrap; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="repo-container">
+        <a href="index.html" class="back-btn">&larr; Back to Generator</a>
+        <h1 style="color:#bb9af7;">>_ Source Viewer</h1>
+        <p style="color:#e0af68; font-size:0.9rem;" id="api-status">Fetching directory tree via GitHub API...</p>
+        
+        <div id="tree-view"></div>
+        <button id="close-file-btn" style="display:none; margin-bottom:1rem; background:#f7768e; border:none; border-radius:4px; padding:0.5rem; cursor:pointer; color:#1a1b26; font-weight:bold;">Close File</button>
+        <pre id="code-view"></pre>
+    </div>
+
+    <script>
+        const owner = 'tilas01';
+        const repo = 'arch-guides-dynamic';
+        const branch = 'main';
+
+        async function fetchTree(path = '') {
+            const url = "https://api.github.com/repos/ + owner + / + repo + /contents/ + path + ?ref= + branch + ";
+            try {
+                const res = await fetch(url.replace(/"/g, ''));
+                if (!res.ok) throw new Error('API limit or network error');
+                const data = await res.json();
+                renderTree(data);
+                document.getElementById('api-status').textContent = 'Live tracking main branch';
+            } catch (e) {
+                document.getElementById('api-status').textContent = 'API Exhausted. Opening GitHub...';
+                setTimeout(() => window.location.href = '"https://github.com/ + owner + / + repo + "', 2000);
+            }
+        }
+
+        function renderTree(items) {
+            const treeDiv = document.getElementById('tree-view');
+            treeDiv.innerHTML = '';
+            items.sort((a,b) => (a.type === 'dir' ? -1 : 1)).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'tree-item ' + (item.type === 'dir' ? 'folder' : 'file');
+                div.textContent = (item.type === 'dir' ? '?? ' : '?? ') + item.name;
+                div.onclick = () => {
+                    if (item.type === 'dir') fetchTree(item.path);
+                    else fetchFile(item.download_url);
+                };
+                treeDiv.appendChild(div);
+            });
+        }
+
+        async function fetchFile(url) {
+            document.getElementById('tree-view').style.display = 'none';
+            const codeView = document.getElementById('code-view');
+            const closeBtn = document.getElementById('close-file-btn');
+            codeView.style.display = 'block';
+            closeBtn.style.display = 'inline-block';
+            codeView.textContent = 'Loading...';
+            
+            try {
+                const res = await fetch(url);
+                const text = await res.text();
+                codeView.textContent = text;
+            } catch(e) {
+                codeView.textContent = 'Failed to load file content.';
+            }
+
+            closeBtn.onclick = () => {
+                codeView.style.display = 'none';
+                closeBtn.style.display = 'none';
+                document.getElementById('tree-view').style.display = 'block';
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => fetchTree());
+    </script>
+</body>
+</html>
