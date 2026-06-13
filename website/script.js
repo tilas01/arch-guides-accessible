@@ -87,13 +87,33 @@ window.toggleHistoryModal = function() {
 
 // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Page switching: Generator ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Â Output ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 function showOutputPage(mdContent, shContent, format, scContent) {
-    const genArea   = document.querySelector('.layout-container');
-    const outputSec = document.getElementById('output-section');
-    if (!outputSec) return;
+    // Save to sessionStorage for live.html
+    sessionStorage.setItem('live_md', mdContent || '');
+    sessionStorage.setItem('live_sh', shContent || '');
+    
+    // Attempt to split install vs post-install scripts (Fallback split mechanism)
+    let postSh = '';
+    let mainSh = shContent || '';
+    if (shContent && shContent.includes('### POST-INSTALL BOUNDARY ###')) {
+        const parts = shContent.split('### POST-INSTALL BOUNDARY ###');
+        mainSh = parts[0].trim();
+        postSh = parts[1].trim();
+    }
+    sessionStorage.setItem('live_sh', mainSh);
+    sessionStorage.setItem('live_post_sh', postSh);
 
-    // Hide generator, show output
-    if (genArea) genArea.style.display = 'none';
-    outputSec.style.display = 'block';
+    // Check if Live Generation Toggle is checked
+    const liveToggle = document.getElementById('live_generation_toggle');
+    if (liveToggle && liveToggle.checked) {
+        window.location.href = "live.html";
+        return;
+    }
+
+    // Scroll to Live Editor instead of hiding form
+    const liveEditor = document.getElementById('live-editor');
+    if (liveEditor) {
+        liveEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     // Build dynamic download buttons
     const dlContainer = document.getElementById('download-btns');
@@ -1064,25 +1084,6 @@ window.generateOutput = function(auto = false) {
 
         <div class="output-actions">
             <h3 class="output-title md-prev">ÃƒÂ°Ã…Â¸Ã¢â‚¬ËœÃ‚Â Markdown ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Live Preview</h3>
-            <span style="font-size:0.75rem;color:var(--accent-purple);">Renders as you type above</span>
-        </div>
-        <div id="preview" class="output-box preview-md markdown-body"></div>
-        `;
-    }
-
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ BOX 3: Script Editor ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
-    if (format === "script" || format === "both") {
-        html += `
-        <div class="output-actions" style="margin-top:1rem;">
-            <h3 class="output-title sh-edit">ÃƒÂ¢Ã…Â¡Ã‚Â¡ Bash Script ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Live Editor</h3>
-            <div style="display:flex;gap:0.4rem;">
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-script-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .sh',2000)">Copy .sh</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ .sh</button>
-            </div>
-        </div>
-        <pre class="output-box editor-sh"><code id="raw-script-code" class="language-bash" contenteditable="true">${escapeHTML(scriptOutput)}</code></pre>
-
-        <div class="output-actions" style="margin-top:0.8rem;">
             <h3 class="output-title ssh-cmd">ÃƒÂ°Ã…Â¸Ã¢â‚¬â€œÃ‚Â¥ SSH One-Liner Deploy</h3>
         </div>
         <pre class="output-box oneliner"><code class="language-bash">${escapeHTML(`cat << 'ARCHEOF' > install.sh\n${scriptOutput}\nARCHEOF\nbash install.sh`)}</code></pre>
@@ -1540,12 +1541,17 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
     // Clear any previous global warnings or errors
     window.generateOutput(false);
     
-    // Fallback if showOutputPage is missing
-    const outSec = document.getElementById('output-section');
-    if (outSec) {
-        document.getElementById('install-form').style.display = 'none';
-        outSec.style.display = 'block';
-        outSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Check if Live Generation Toggle is checked
+    const liveToggle = document.getElementById('live_generation_toggle');
+    if (liveToggle && liveToggle.checked) {
+        window.location.href = "live.html";
+        return;
+    }
+    
+    // Scroll to the Live Editor section beneath the form
+    const liveEditor = document.getElementById('live-editor');
+    if (liveEditor) {
+        liveEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 });
 

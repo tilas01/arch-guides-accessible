@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Arch Guides | Live Output</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--bg-lighter);">
+        <a href="index.html" class="btn" style="width:auto; background:var(--bg-lighter); color:var(--accent-blue); padding:0.5rem 1rem;">&larr; Back to Generator</a>
+        <h2 style="color:var(--accent-purple); margin:0;">Live Output Editor</h2>
+    </header>
+
+    <div class="layout-container">
+        <section id="output-section" style="width:100%;">
+            <div class="output-actions">
+                <h3 class="output-title md-edit">Markdown Guide (.md)</h3>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn" style="width:auto; padding:0.4rem 1rem;" onclick="downloadContent('raw-md-code', 'arch_guide.md')">Download .md</button>
+                    <button class="btn" style="width:auto; padding:0.4rem 1rem; background:var(--accent-green); color:#1a1b26;" onclick="window.Prism && Prism.highlightAll()">Highlight Syntax</button>
+                </div>
+            </div>
+            <pre class="output-box editor-md" id="raw-md-code" contenteditable="true" spellcheck="false" style="min-height: 200px;">Loading...</pre>
+
+            <div class="output-actions" style="margin-top:2rem;">
+                <h3 class="output-title sh-edit">Install Script (.sh)</h3>
+                <button class="btn" style="width:auto; padding:0.4rem 1rem;" onclick="downloadContent('raw-script-code', 'install.sh')">Download install.sh</button>
+            </div>
+            <pre class="output-box editor-sh" id="raw-script-code" contenteditable="true" spellcheck="false" style="min-height: 100px;">Loading...</pre>
+
+            <div class="output-actions" style="margin-top:2rem;">
+                <h3 class="output-title ssh-cmd">Post-Install Script (.sh)</h3>
+                <button class="btn" style="width:auto; padding:0.4rem 1rem;" onclick="downloadContent('raw-post-script-code', 'post_install.sh')">Download post_install.sh</button>
+            </div>
+            <pre class="output-box oneliner" id="raw-post-script-code" contenteditable="true" spellcheck="false" style="min-height: 100px;">Loading...</pre>
+
+            <div class="alert info" style="margin-top:2rem;">
+                <strong>GPG Signature Check:</strong> The scripts above dynamically embed GPG integrity checks. Always verify signatures before executing remote scripts.
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const md = sessionStorage.getItem('live_md') || 'No guide generated yet. Return to generator.';
+            const sh = sessionStorage.getItem('live_sh') || '# No install script generated yet.';
+            const post_sh = sessionStorage.getItem('live_post_sh') || '# No post-install script generated yet.';
+            
+            document.getElementById('raw-md-code').textContent = md;
+            document.getElementById('raw-script-code').textContent = sh;
+            document.getElementById('raw-post-script-code').textContent = post_sh;
+        });
+
+        function downloadContent(id, filename) {
+            const content = document.getElementById(id).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+    </script>
+</body>
+</html>

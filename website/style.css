@@ -453,7 +453,7 @@ noscript .js-only { display: none !important; }
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: var(--bg-lighter);
+  background-color: var(--accent-red); /* Red when off */
   transition: .4s;
   border-radius: 20px;
 }
@@ -467,7 +467,7 @@ noscript .js-only { display: none !important; }
   border-radius: 50%;
 }
 input:checked + .slider {
-  background-color: var(--accent-green);
+  background-color: var(--accent-blue); /* Blue when on */
 }
 input:checked + .slider:before {
   transform: translateX(16px);
