@@ -104,6 +104,54 @@
     </div>
 
     <script>
+        function showOverlay(message) {
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100vw';
+            overlay.style.height = '100vh';
+            overlay.style.backgroundColor = 'rgba(26, 27, 38, 0.9)';
+            overlay.style.display = 'flex';
+            overlay.style.flexDirection = 'column';
+            overlay.style.justifyContent = 'center';
+            overlay.style.alignItems = 'center';
+            overlay.style.zIndex = '9999';
+            
+            const msgBox = document.createElement('div');
+            msgBox.style.background = '#24283b';
+            msgBox.style.padding = '2rem';
+            msgBox.style.borderRadius = '12px';
+            msgBox.style.border = '2px solid #f7768e';
+            msgBox.style.color = '#c0caf5';
+            msgBox.style.fontSize = '1.2rem';
+            msgBox.style.textAlign = 'center';
+            msgBox.style.boxShadow = '0 10px 30px rgba(0,0,0,0.8)';
+            msgBox.innerHTML = `<h3>⚠️ Notice</h3><p>${message}</p>`;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Close';
+            closeBtn.style.marginTop = '1rem';
+            closeBtn.style.padding = '0.5rem 1rem';
+            closeBtn.style.background = '#f7768e';
+            closeBtn.style.color = '#1a1b26';
+            closeBtn.style.border = 'none';
+            closeBtn.style.borderRadius = '6px';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.fontWeight = 'bold';
+            closeBtn.onclick = () => document.body.removeChild(overlay);
+
+            msgBox.appendChild(closeBtn);
+            overlay.appendChild(msgBox);
+            document.body.appendChild(overlay);
+
+            setTimeout(() => {
+                if(document.body.contains(overlay)) {
+                    document.body.removeChild(overlay);
+                }
+            }, 5000);
+        }
+
         async function fetchReleases() {
             const listDiv = document.getElementById('releases-list');
             const rateDiv = document.getElementById('rate-limit-display');
@@ -117,8 +165,8 @@
                 if (limitLeft !== null) {
                     rateDiv.textContent = `API Tokens Remaining: ${limitLeft}`;
                     if (parseInt(limitLeft) <= 0) {
-                        rateDiv.textContent = 'API Tokens Exhausted! Redirecting...';
-                        setTimeout(() => window.location.href = fallbackUrl, 2000);
+                        showOverlay('API Tokens Exhausted! Opening in GitHub...');
+                        setTimeout(() => window.location.href = fallbackUrl, 2500);
                         return;
                     }
                 }
@@ -158,7 +206,8 @@
             } catch (error) {
                 rateDiv.textContent = 'API Error! Redirecting to GitHub...';
                 listDiv.innerHTML = `<p style="text-align:center; color:#f7768e;">Failed to load releases. Redirecting...</p>`;
-                setTimeout(() => window.location.href = fallbackUrl, 2000);
+                showOverlay('Failed to load resources. Opening in GitHub...');
+                setTimeout(() => window.location.href = fallbackUrl, 2500);
             }
         }
 

@@ -1,19 +1,16 @@
-# <img src="img/icon.svg" width="50" height="50" align="center" style="border-radius: 8px;"> libre-otp
+<div align="center">
+  <img src="img/icon.png" alt="Icon" width="128" height="128">
+  <h1>Libre Otp</h1>
+  <p><strong>Universal 2FA/OTP integration across the Arch ecosystem.</strong></p>
+</div>
 
-**Arch Rusty Security Suite — Individual Module**
+## Features
+- Native Arch Linux support (Wayland/Xorg via eframe)
+- Minimalist Tokyo Night UI design
+- Background root daemon capability
 
-This repository is part of the [Arch Guides Dynamic](https://github.com/tilas01/arch-guides-dynamic) monorepo. It contains the source code for **libre-otp**.
-
-## Installation
-You can build and install this tool independently using Cargo:
-\\\ash
-cargo install --path .
-\\\
-Or install it directly from the Git repository:
-\\\ash
-cargo install libre-otp --git https://github.com/tilas01/arch-guides-dynamic
-\\\
-
-## Automatic Builds
-This tool is automatically built and tested using GitHub Actions. Check the Releases tab on the main repository for pre-compiled binaries.
-
+## Usage
+Run directly from terminal:
+```bash
+./libre-otp --interactive
+```
