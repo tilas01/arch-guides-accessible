@@ -19,3 +19,6 @@ sha2 = "0.10"
 
 eframe = "0.27.2"
 egui = "0.27.2"
+[target.'cfg(target_os = "linux")'.dependencies]
+aya = "0.12.0"
+aya-log = "0.2.0"

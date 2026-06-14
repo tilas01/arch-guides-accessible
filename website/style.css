@@ -11,7 +11,7 @@
     --accent-orange: #ff9e64;
     --bg-darker: #16161e;
     --bg-lighter: #24283b;
-    --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

@@ -1,5 +1,7 @@
 #![allow(clippy::collapsible_if)]
 pub mod gui;
+#[cfg(target_os = "linux")]
+use aya::Bpf;
 use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
