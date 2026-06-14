@@ -1072,11 +1072,11 @@ window.generateOutput = function(auto = false) {
 
     let html = isoHTML;
 
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ BOX 1: Markdown Editor ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // ÃƒÂ¢Ã¢â‚¬Â Ã¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬Â Ã¢â€šÂ¬ BOX 1: Markdown Editor ÃƒÂ¢Ã¢â‚¬Â Ã¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬Â Ã¢â€šÂ¬
     if (format === "markdown" || format === "both") {
         html += `
         <div class="output-actions">
-            <h3 class="output-title md-edit">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â Markdown Guide ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Live Editor</h3>
+            <h3 class="output-title md-edit">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â  Markdown Guide ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â  Live Editor</h3>
             <div style="display:flex;gap:0.4rem;">
                 <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-md-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .md',2000)">Copy .md</button>
                 <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ .md</button>
@@ -1089,6 +1089,19 @@ window.generateOutput = function(auto = false) {
             <h3 class="output-title ssh-cmd">ÃƒÂ°Ã…Â¸Ã¢â‚¬â€œÃ‚Â¥ SSH One-Liner Deploy</h3>
         </div>
         <pre class="output-box oneliner"><code class="language-bash">${escapeHTML(`cat << 'ARCHEOF' > install.sh\n${scriptOutput}\nARCHEOF\nbash install.sh`)}</code></pre>
+        `;
+    }
+
+    if (format === "script" || format === "both") {
+        html += `
+        <div class="output-actions" style="margin-top:1.5rem;">
+            <h3 class="output-title script-edit">⚡ Bash Script — Live Editor</h3>
+            <div style="display:flex;gap:0.4rem;">
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-script-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .sh',2000)">Copy .sh</button>
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">💾 .sh</button>
+            </div>
+        </div>
+        <pre class="output-box editor-script"><code id="raw-script-code" class="language-bash" contenteditable="true">${escapeHTML(scriptOutput)}</code></pre>
         `;
     }
 
@@ -1565,10 +1578,13 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
         return;
     }
     
-    // Scroll to the Live Editor section beneath the form
-    const liveEditor = document.getElementById('live-editor');
-    if (liveEditor) {
-        liveEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Show output section and hide generator form
+    const outSec = document.getElementById('output-section');
+    const genForm = document.querySelector('.generator-form');
+    if (outSec && genForm) {
+        outSec.style.display = 'block';
+        genForm.style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 });
 

@@ -42,7 +42,7 @@
                 data-desc="View and restore previous generations from this session. Session-only — no cookies, resets when tab closes."
                 onclick="toggleHistoryModal()">&#x1F553;</button>
             <button id="toggle-tooltips-btn" type="button" class="tooltip-always"
-                data-title="ℹ️ Tooltips: ON"
+                data-title=" Tooltips: ON"
                 data-desc="Tooltips are ON. Hover any element for details. Tap to disable. This button always shows regardless of toggle.">&#x2139;️</button>
         </div>
         <h1>Arch Guides Wiki &amp; Generator</h1>
@@ -57,15 +57,15 @@
             <a href="wiki.html#security-suite" class="nav-link nav-tooltip security-suite-nav" 
                data-title="🦀 Security Suite" 
                data-desc="tilas01's custom Rust tools. Individual or Full Suite. Reproducible builds. Left-click: View Releases. Right-click: View Wiki."
-               onclick="window.open('https://github.com/tilas01/arch-guides-dynamic/releases', '_blank'); return false;"
+               onclick="window.open('releases.html', '_blank'); return false;"
                oncontextmenu="window.location.href='wiki.html#security-suite'; return false;"
                >🦀 Security Suite</a>
             <span class="nav-sep">|</span>
             <a href="wiki.html#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Includes SHA256 hashes and optional GPG verification.">📦 Security Tools Releases</a>
+            <a href="releases.html" class="nav-link nav-tooltip" data-title="Releases" data-desc="All tilas01 reproducible releases. Download pre-built binaries for Arch Rusty Security Suite. Includes SHA256 hashes and optional GPG verification.">📦 Security Tools Releases</a>
             <span class="nav-sep">|</span>
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01.">🔗 Repository</a>
+            <a href="repo.html" class="nav-link nav-tooltip" data-title="Repository" data-desc="Full source code on GitHub. Created and maintained by tilas01.">🔗 Repository</a>
         </nav>
     </header>
 
@@ -271,7 +271,7 @@ Rust-based AUR helper — build & install AUR packages
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
-Website: https://github.com/Morganamilo/paru" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">AUR Helper</span>
+Website: https://github.com/Morganamilo/paru" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">AUR Helper</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('paru')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <div class="app-category-header">🌐 Browsers</div>
@@ -293,7 +293,7 @@ WARNING: Contains closed-source telemetry and firmware blobs.
 
 Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
-Website: https://mozilla.org/firefox/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Browser</span>
+Website: https://mozilla.org/firefox/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('firefox')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="LibreWolf
@@ -310,7 +310,7 @@ Privacy-hardened Firefox fork — no telemetry
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
-Website: https://librewolf.net/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Privacy</span>
+Website: https://librewolf.net/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Privacy</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('librewolf')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Tor Browser
@@ -327,7 +327,7 @@ Anonymous web browsing via Tor network
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 AUR
-Website: https://torproject.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Anon</span>
+Website: https://torproject.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Anon</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('tor-browser')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Chromium [PROPRIETARY]
@@ -348,7 +348,7 @@ WARNING: Google integration modules contain non-libre code.
 
 Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
-Website: https://www.chromium.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Browser</span>
+Website: https://www.chromium.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('chromium')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Ungoogled Chromium
@@ -365,7 +365,7 @@ Chromium without Google integration
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
-Website: https://github.com/ungoogled-software/ungoogled-chromium" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Browser</span>
+Website: https://github.com/ungoogled-software/ungoogled-chromium" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('ungoogled-chromium')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <div class="app-category-header">🔒 Security</div>
@@ -387,7 +387,7 @@ WARNING: The Electron build system relies on closed-source precompiled binaries.
 
 Build Integrity: Non-Reproducible (Requires trusting the developer or CI system)
 Source: 📁 AUR
-Website: https://signal.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">E2E Msg</span>
+Website: https://signal.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">E2E Msg</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('signal')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="KeePassXC
@@ -404,7 +404,7 @@ Offline password manager with TOTP support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://keepassxc.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Passwords</span>
+Website: https://keepassxc.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Passwords</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('keepassxc')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="ClamAV
@@ -421,7 +421,7 @@ Open source antivirus engine
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
-Website: https://www.clamav.net/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Antivirus</span>
+Website: https://www.clamav.net/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Antivirus</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('clamav')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Firejail
@@ -438,7 +438,7 @@ SUID sandbox for restricting app access
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://firejail.wordpress.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Sandbox</span>
+Website: https://firejail.wordpress.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Sandbox</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('firejail')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Doas
@@ -457,7 +457,7 @@ OpenDoas privilege escalation (sudo alternative)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Privilege</span> <button type="button" class="btn-configure" data-app="doas" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
+Website: https://github.com/Duncaen/OpenDoas" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Privilege</span> <button type="button" class="btn-configure" data-app="doas" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('doas')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <div class="app-category-header">💻 Dev / Terminal</div>
@@ -475,7 +475,7 @@ Hyperextensible terminal text editor
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://neovim.io/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Editor</span>
+Website: https://neovim.io/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Editor</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('neovim')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Alacritty
@@ -492,7 +492,7 @@ GPU-accelerated terminal emulator written in Rust
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://alacritty.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Terminal</span>
+Website: https://alacritty.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Terminal</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('alacritty')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="kitty
@@ -509,7 +509,7 @@ Fast GPU-based terminal with image support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://sw.kovidgoyal.net/kitty/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Terminal</span>
+Website: https://sw.kovidgoyal.net/kitty/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Terminal</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('kitty')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Zsh
@@ -524,7 +524,7 @@ Source: 📁 Arch Extra">
 Feature-rich shell with autocomplete and themes
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Shell</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Shell</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('zsh')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="VSCodium
@@ -541,7 +541,7 @@ Telemetry-free VS Code
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
-Website: https://vscodium.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">IDE</span>
+Website: https://vscodium.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">IDE</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('vscodium')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Git
@@ -558,7 +558,7 @@ Version control system
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://git-scm.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">VCS</span>
+Website: https://git-scm.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">VCS</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('git')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="tmux
@@ -573,7 +573,7 @@ Source: 📁 Arch Extra">
 Terminal multiplexer — split panes and sessions
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Multiplex</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Multiplex</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('tmux')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="htop
@@ -590,7 +590,7 @@ Interactive process viewer — shows CPU, RAM, processes in real-time
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/htop-dev/htop" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Monitor</span>
+Website: https://github.com/htop-dev/htop" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Monitor</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('htop')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="pfetch
@@ -607,7 +607,7 @@ Minimal system information display tool written in POSIX shell
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/dylanaraps/pfetch" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Sysinfo</span>
+Website: https://github.com/dylanaraps/pfetch" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Sysinfo</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('pfetch')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="fastfetch
@@ -624,7 +624,7 @@ Fast system info tool written in C — like neofetch but actively maintained
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/fastfetch-cli/fastfetch" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Sysinfo</span>
+Website: https://github.com/fastfetch-cli/fastfetch" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Sysinfo</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('fastfetch')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <div class="app-category-header">🎬 Media / Files</div>
@@ -640,7 +640,7 @@ Source: 📁 Arch Extra">
 Lightweight GTK file manager (Xfce)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Files</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Files</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('thunar')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Nautilus
@@ -655,7 +655,7 @@ Source: 📁 Arch Extra">
 GNOME's default file manager
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Files</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Files</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('nautilus')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="mpv
@@ -672,7 +672,7 @@ Minimal, scriptable media player
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://mpv.io/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Player</span>
+Website: https://mpv.io/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Player</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('mpv')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="VLC
@@ -689,7 +689,7 @@ Universal media player
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
-Website: https://www.videolan.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Player</span>
+Website: https://www.videolan.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Player</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('vlc')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="OBS Studio
@@ -706,7 +706,7 @@ Screen recording and streaming
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
-Website: https://obsproject.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Record</span>
+Website: https://obsproject.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Record</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('obs')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="GIMP
@@ -723,7 +723,7 @@ Open source image editor
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://gimp.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Images</span>
+Website: https://gimp.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Images</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('gimp')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="LibreOffice
@@ -740,7 +740,7 @@ Full office suite — Libre alternative to Microsoft Office
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
-Website: https://www.libreoffice.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Office</span>
+Website: https://www.libreoffice.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Office</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('libreoffice')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <div class="app-category-header">🔧 System</div>
@@ -762,7 +762,7 @@ WARNING: Flatpak itself is open-source, but Flathub distributes proprietary bina
 
 Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
-Website: " style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Apps</span>
+Website: " style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Apps</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('flatpak')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="unattended-upgrades
@@ -777,7 +777,7 @@ Source: 📁 AUR">
 Automatic security and system updates via cron
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Auto-Update</span>
+Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Auto-Update</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('unattended-upgrades')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Timeshift
@@ -792,7 +792,7 @@ Source: 📁 AUR">
 System snapshot and restore (works with BTRFS)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Backup</span>
+Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Backup</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('timeshift')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="NetworkManager
@@ -807,7 +807,7 @@ Source: 📁 Arch Core">
 Network connection manager with GUI support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Network</span>
+Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Network</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('networkmanager')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Bluetooth (bluez + bluez-utils)
@@ -822,7 +822,7 @@ Source: 📁 Arch Core">
 Bluetooth stack
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">bluez</span>
+Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">bluez</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('bluetooth')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="PipeWire
@@ -839,7 +839,7 @@ Modern audio/video server replacing PulseAudio and JACK — zero-latency audio g
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://gitlab.freedesktop.org/pipewire/pipewire" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Audio</span>
+Website: https://gitlab.freedesktop.org/pipewire/pipewire" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Audio</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('pipewire')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="OpenSSH Server
@@ -856,7 +856,7 @@ Hardened SSH daemon — auto-generates Ed25519 keys, disables root login, passwo
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Core
-Website: https://github.com/openssh/openssh-portable" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">SSH Server</span>
+Website: https://github.com/openssh/openssh-portable" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">SSH Server</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('openssh')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <label class="app-item" title="Snapper
@@ -875,7 +875,7 @@ BTRFS/LVM snapshot manager — automated filesystem restore points before and af
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/openSUSE/snapper" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Snapshots</span> <button type="button" class="btn-configure" data-app="snapper" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
+Website: https://github.com/openSUSE/snapper" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Snapshots</span> <button type="button" class="btn-configure" data-app="snapper" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('snapper')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <div class="app-category-header">🎨 Dusky OS</div>
@@ -893,7 +893,7 @@ Automated Hyprland desktop setup by dusklinux — installs dotfiles, themes, and
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 GitHub / dusklinux
-Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Auto-desktop</span>
+Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Auto-desktop</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('dusky-setup')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                         </div>
@@ -997,7 +997,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
 
                             <label style="margin-bottom:0.6rem;">🦀 ARSS Security Modules:</label>
                             <div class="alert info" style="background-color: rgba(33, 150, 243, 0.1); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
-                                <strong>ℹ️ Integrity Verification:</strong> The Arch Rusty Security Suite is fully reproducible. It is highly recommended to verify the binary signature using GPG and SHA256 checksums from the Releases page.
+                                <strong> Integrity Verification:</strong> The Arch Rusty Security Suite is fully reproducible. It is highly recommended to verify the binary signature using GPG and SHA256 checksums from the Releases page.
                             </div>
                             <div class="app-grid" id="arss-tools-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:0.6rem;">
                                 <!-- Libre OTP -->
