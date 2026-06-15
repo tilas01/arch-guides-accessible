@@ -15,6 +15,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+
 </head>
 <body>
 
@@ -160,19 +164,51 @@
                         </div>
                     </div>
                     
-                    <div class="form-group form-step" data-title="Encryption Options" data-desc="LUKS2 is post-quantum secure. LUKS1 works with legacy GRUB. LVM adds flexible volumes.">
-                        <label>Encryption:</label>
-                        <select id="partitioning">
-                                    <option value="" disabled selected hidden>No Selection Provided</option>
-                                    <option value="unencrypted">Unencrypted (No Security)</option>
-                            <option value="luks1">LUKS1 (GRUB Compatible)</option>
-                            <option value="luks2" >LUKS2 (Post-Quantum Argon2id)</option>
-                            <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes)</option>
-                        </select>
-                    </div>
                     
-                    <div class="form-group form-step" data-title="Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
-                        <label>Init System:</label>
+<div class="form-group form-step" data-title="⚙️ Encryption Layering (Cyber Chef)" data-desc="Mix and match encryption protocols. Layer Post-Quantum Kyber on top of LUKS2 AES-GCM for maximum theoretical security, or stick to standard LUKS1 for legacy bootloaders.">
+    <label>⚙️ Encryption Layers:</label>
+    <div style="background:var(--bg-darker); border:1px solid var(--border-color); border-radius:8px; padding:1rem; margin-top:0.5rem;">
+        <p style="font-size:0.85rem; color:var(--fg-color); margin-top:0; margin-bottom:1rem;">Select your base layer and optional post-quantum overlays. Stacked from bottom to top.</p>
+        
+        <!-- Base Layer -->
+        <div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
+            <strong style="color:var(--accent-purple);">Layer 1: Base Disk Encryption</strong>
+            <select id="partitioning" style="margin-top:0.5rem; width:100%;">
+                <option value="" disabled selected hidden>No Selection Provided</option>
+                <option value="unencrypted">Unencrypted (No Security)</option>
+                <option value="luks1">LUKS1 (Legacy GRUB Compatible)</option>
+                <option value="luks2">LUKS2 (Argon2id - Recommended)</option>
+                <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes)</option>
+            </select>
+        </div>
+
+        <!-- Cipher Layer -->
+        <div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
+            <strong style="color:var(--accent-blue);">Layer 2: Cipher Algorithm</strong>
+            <select id="encryption_cipher" style="margin-top:0.5rem; width:100%;">
+                <option value="aes-xts-plain64" selected>AES-256-XTS (Standard)</option>
+                <option value="aes-gcm-random">AES-256-GCM (Authenticated)</option>
+                <option value="serpent-xts-plain64">Serpent-256-XTS (High Margin of Security)</option>
+            </select>
+        </div>
+
+        <!-- Post-Quantum Overlay -->
+        <div>
+            <strong style="color:var(--accent-cyan);">Layer 3: Post-Quantum Overlay</strong>
+            <select id="encryption_pq" style="margin-top:0.5rem; width:100%;">
+                <option value="none" selected>None (Standard Classical Security)</option>
+                <option value="kyber1024">Kyber-1024 Hybrid (Experimental NIST PQ)</option>
+            </select>
+            <div style="font-size:0.75rem; color:var(--accent-red); margin-top:0.5rem;">
+                ⚠️ <strong>WARNING:</strong> Post-Quantum overlays (Kyber) are highly experimental in early Linux kernels. May cause boot failure.
+            </div>
+        </div>
+    </div>
+</div>
+
+                    
+                    <div class="form-group form-step" data-title="⚙️ Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
+                        <label>Init System:
                         <select id="init_system">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="systemd" >systemd (Modern, sd-encrypt)</option>
@@ -180,8 +216,8 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Bootloader Choice" data-desc="UKI Custom uses your own keys in UEFI. UKI Shim uses Microsoft trust chain. systemd-boot is minimal. GRUB is legacy.">
-                        <label>Bootloader & Secure Boot:</label>
+                    <div class="form-group form-step" data-title="⚙️ Bootloader Choice" data-desc="UKI Custom uses your own keys in UEFI. UKI Shim uses Microsoft trust chain. systemd-boot is minimal. GRUB is legacy.">
+                        <label>Bootloader & Secure Boot:
                         <select id="bootloader">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="uki-custom" >UKI + Custom Keys (Fortress)</option>
@@ -191,8 +227,8 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Main Kernel" data-desc="Hardened has security patches. Zen is for gaming. Standard is balanced. LTS is stable.">
-                        <label>Main Kernel:</label>
+                    <div class="form-group form-step" data-title="⚙️ Main Kernel" data-desc="Hardened has security patches. Zen is for gaming. Standard is balanced. LTS is stable.">
+                        <label>Main Kernel:
                         <select id="kernel-main">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="linux-hardened" >linux-hardened (Max Security)</option>
@@ -971,8 +1007,8 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
     
 
 
-                    <div class="form-group form-step" data-title="DNS Caching" data-desc="Local DNS resolver for faster lookups. systemd-resolved is built-in. unbound is secure and recursive. dnscrypt-proxy encrypts DNS queries.">
-                        <label>DNS Caching:</label>
+                    <div class="form-group form-step" data-title="⚙️ DNS Caching" data-desc="Local DNS resolver for faster lookups. systemd-resolved is built-in. unbound is secure and recursive. dnscrypt-proxy encrypts DNS queries.">
+                        <label>DNS Caching:
                         <select id="dns">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="systemd-resolved" >systemd-resolved</option>

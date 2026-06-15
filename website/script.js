@@ -5,6 +5,27 @@
 
 // ---- Form Initialization & "No Selection" Injection ----
 document.addEventListener('DOMContentLoaded', () => {
+
+// ---- Full Suite Toggle Logic ----
+const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
+if (fullSuiteToggle) {
+    fullSuiteToggle.addEventListener('change', (e) => {
+        const arssTools = document.querySelectorAll('input[name="arss_tools"]');
+        arssTools.forEach(tool => {
+            if (e.target.checked) {
+                tool.checked = true;
+                tool.disabled = true;
+                tool.parentElement.setAttribute('title', 'Included and managed automatically by the Full Security Suite.');
+                tool.parentElement.style.opacity = '0.7';
+            } else {
+                tool.disabled = false;
+                tool.parentElement.removeAttribute('title');
+                tool.parentElement.style.opacity = '1';
+            }
+        });
+    });
+}
+
     
     // Ensure 'No Selection Provided' text is greyed out
     document.querySelectorAll('#install-form select').forEach(sel => {
