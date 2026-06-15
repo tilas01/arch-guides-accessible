@@ -40,7 +40,11 @@ const HISTORY_KEY = 'arch_gen_history';
 function saveToHistory(mdContent, shContent, format) {
     let history = [];
     try { history = JSON.parse(sessionStorage.getItem(HISTORY_KEY)) || []; } catch(e) {}
-    history.unshift({ timestamp: new Date().toLocaleString(), format, md: mdContent || '', sh: shContent || '' });
+    history.unshift({ timestamp: (() => {
+            const d = new Date();
+            const pad = n => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        })(), format, md: mdContent || '', sh: shContent || '' });
     if (history.length > 10) history = history.slice(0, 10);
     sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history));
     updateHistoryTooltip();
@@ -2239,7 +2243,11 @@ window.confirmAndSaveLiveEditor = function() {
     let history = JSON.parse(localStorage.getItem('arss_history') || '[]');
     const newEntry = {
         id: Date.now().toString(),
-        timestamp: new Date().toLocaleString(),
+        timestamp: (() => {
+            const d = new Date();
+            const pad = n => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        })(),
         md: finalMd,
         sh: finalSh,
         post: finalPost,
@@ -2288,6 +2296,33 @@ window.confirmAndSaveLiveEditor = function() {
         }
     }
     
+    
+    // Render SSH Deployment Commands
+    const sshContainer = document.getElementById('ssh-commands-container');
+    if (sshContainer) {
+        if (!isSplit || !finalPost.trim()) {
+            // Unified Mode
+            sshContainer.innerHTML = `
+                <div style="background:var(--bg-color); border-left:4px solid var(--accent-cyan); padding:0.8rem; border-radius:4px;">
+                    <strong style="color:var(--accent-cyan); font-size:0.8rem; display:block; margin-bottom:0.4rem;">1. Transfer & Execute Unified Script:</strong>
+                    <code style="color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; word-break:break-all;">scp install.sh root@&lt;TARGET-IP&gt;:/root/ && ssh root@&lt;TARGET-IP&gt; "bash /root/install.sh"</code>
+                </div>
+            `;
+        } else {
+            // Split Mode
+            sshContainer.innerHTML = `
+                <div style="background:var(--bg-color); border-left:4px solid var(--accent-cyan); padding:0.8rem; border-radius:4px;">
+                    <strong style="color:var(--accent-cyan); font-size:0.8rem; display:block; margin-bottom:0.4rem;">1. Transfer & Execute Install Script:</strong>
+                    <code style="color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; word-break:break-all;">scp install.sh root@&lt;TARGET-IP&gt;:/root/ && ssh root@&lt;TARGET-IP&gt; "bash /root/install.sh"</code>
+                </div>
+                <div style="background:var(--bg-color); border-left:4px solid var(--accent-blue); padding:0.8rem; border-radius:4px;">
+                    <strong style="color:var(--accent-blue); font-size:0.8rem; display:block; margin-bottom:0.4rem;">2. After Reboot & Login, Transfer & Execute Post-Install Script:</strong>
+                    <code style="color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; word-break:break-all;">scp post_install.sh &lt;USERNAME&gt;@&lt;TARGET-IP&gt;:~/ && ssh &lt;USERNAME&gt;@&lt;TARGET-IP&gt; "bash ~/post_install.sh"</code>
+                </div>
+            `;
+        }
+    }
+
     window.scrollTo({ top: outSec.offsetTop - 20, behavior: 'smooth' });
 };
 
