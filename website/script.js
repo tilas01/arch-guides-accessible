@@ -2158,3 +2158,226 @@ window.toggleLiveEditorMode = function() {
         textarea.style.display = 'block';
     }
 };
+
+// ====================================================================
+// NEW SPA WORKFLOW: History & Modals & File Uploads
+// ====================================================================
+
+// Clear Generator Form
+window.clearFormSelections = function() {
+    document.querySelectorAll('#install-form select').forEach(sel => {
+        sel.value = "";
+        sel.style.border = "";
+        const warn = sel.parentElement.querySelector('.req-warning');
+        if (warn) warn.remove();
+        
+        // Re-inject "No Selection Provided" if missing
+        if (!Array.from(sel.options).find(o => o.value === "")) {
+            const opt = document.createElement('option');
+            opt.value = "";
+            opt.text = "No Selection Provided";
+            opt.disabled = true;
+            opt.selected = true;
+            opt.hidden = true;
+            sel.insertBefore(opt, sel.firstChild);
+        }
+    });
+    
+    document.querySelectorAll('#install-form input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+        cb.dispatchEvent(new Event('change'));
+    });
+    
+    document.querySelectorAll('input[type="text"]').forEach(input => input.value = "");
+    
+    const errBox = document.getElementById('generate-error-box');
+    if (errBox) errBox.style.display = 'none';
+};
+
+// Split Scripts Toggle in Live Editor
+window.toggleSplitScripts = function() {
+    const toggle = document.getElementById('split-scripts-toggle');
+    const postContainer = document.getElementById('live-editor-post-sh-container');
+    const titleInstall = document.getElementById('title-install-sh');
+    
+    if (toggle.checked) {
+        // Split Mode
+        postContainer.style.display = 'block';
+        titleInstall.textContent = "Install Script (.sh)";
+    } else {
+        // Unified Mode
+        postContainer.style.display = 'none';
+        titleInstall.textContent = "Unified Install & Post-Install Script (.sh)";
+    }
+};
+
+// Confirm & Save Live Editor
+window.confirmAndSaveLiveEditor = function() {
+    // Collect final strings
+    const finalMd = document.getElementById('live-editor-textarea-md').value;
+    
+    let finalSh = document.getElementById('live-editor-textarea-sh').value;
+    let finalPost = document.getElementById('live-editor-textarea-post').value;
+    
+    const isSplit = document.getElementById('split-scripts-toggle').checked;
+    if (!isSplit) {
+        // Unified Mode: Inject post-install script at the end of the install script
+        // with auto-execution and clean-up wrappers
+        if (finalPost.trim() !== "") {
+            finalSh += "\n\n# ==========================================\n";
+            finalSh += "# AUTO-EXECUTING POST-INSTALL SCRIPT\n";
+            finalSh += "# ==========================================\n";
+            finalSh += "echo 'Running Post-Install Configuration...'\n";
+            finalSh += finalPost;
+            finalSh += "\n\n# Cleanup and Exit\n";
+            finalSh += "echo 'Installation and Post-Install Complete.'\n";
+        }
+        finalPost = ""; // Clear post since it's unified
+    }
+    
+    // Save to LocalStorage History
+    let history = JSON.parse(localStorage.getItem('arss_history') || '[]');
+    const newEntry = {
+        id: Date.now().toString(),
+        timestamp: new Date().toLocaleString(),
+        md: finalMd,
+        sh: finalSh,
+        post: finalPost,
+        sc: sessionStorage.getItem('last_generated_sc') || '{}'
+    };
+    
+    history.unshift(newEntry);
+    
+    // Rolling cache: Keep max 10 to avoid quota limits
+    if (history.length > 10) {
+        history.pop();
+    }
+    
+    try {
+        localStorage.setItem('arss_history', JSON.stringify(history));
+    } catch(e) {
+        alert("Storage quota exceeded! Clearing oldest history items...");
+        history = history.slice(0, 5);
+        localStorage.setItem('arss_history', JSON.stringify(history));
+    }
+    
+    // Transition to Static Output
+    document.getElementById('live-editor').style.display = 'none';
+    const outSec = document.getElementById('output-section');
+    outSec.style.display = 'block';
+    
+    // Populate static blocks
+    document.getElementById('static-md').querySelector('code').textContent = finalMd;
+    document.getElementById('static-install').querySelector('code').textContent = finalSh;
+    
+    const postContainer = document.getElementById('static-post-container');
+    if (!isSplit || !finalPost.trim()) {
+        postContainer.style.display = 'none';
+        document.getElementById('static-title-install').innerHTML = "⚙️ Unified Install Script (.sh)";
+    } else {
+        postContainer.style.display = 'block';
+        document.getElementById('static-post').querySelector('code').textContent = finalPost;
+        document.getElementById('static-title-install').innerHTML = "⚙️ Install Script (.sh)";
+    }
+    
+    if (window.Prism) {
+        Prism.highlightElement(document.getElementById('static-md').querySelector('code'));
+        Prism.highlightElement(document.getElementById('static-install').querySelector('code'));
+        if (isSplit && finalPost.trim()) {
+            Prism.highlightElement(document.getElementById('static-post').querySelector('code'));
+        }
+    }
+    
+    window.scrollTo({ top: outSec.offsetTop - 20, behavior: 'smooth' });
+};
+
+// Handle Raw File Uploads (.sh / .md)
+document.addEventListener('DOMContentLoaded', () => {
+    const srcInput = document.getElementById('upload-source-input');
+    if (srcInput) {
+        srcInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const content = ev.target.result;
+                const ext = file.name.split('.').pop().toLowerCase();
+                
+                // Show Live Editor, hide generator
+                document.querySelector('.generator-form').style.display = 'none';
+                document.getElementById('live-editor').style.display = 'block';
+                
+                if (ext === 'md') {
+                    document.getElementById('live-editor-textarea-md').value = content;
+                } else if (ext === 'sh') {
+                    document.getElementById('live-editor-textarea-sh').value = content;
+                }
+                
+                // Switch to raw edit mode
+                document.getElementById('live-preview-toggle').checked = false;
+                window.toggleLiveEditorMode();
+                
+                window.scrollTo({ top: document.getElementById('live-editor').offsetTop - 20, behavior: 'smooth' });
+            };
+            reader.readAsText(file);
+        });
+    }
+});
+
+// Generation History Modal Logic
+window.openHistoryModal = function() {
+    const modal = document.getElementById('history-modal');
+    const list = document.getElementById('history-list');
+    modal.style.display = 'flex';
+    
+    const history = JSON.parse(localStorage.getItem('arss_history') || '[]');
+    if (history.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:var(--fg-color); opacity:0.7;">No history available.</p>';
+        return;
+    }
+    
+    list.innerHTML = history.map(h => `
+        <div style="background:var(--bg-color); border:1px solid var(--border-color); padding:1rem; border-radius:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem;">
+                <strong style="color:var(--accent-blue);">${h.timestamp}</strong>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadString('${btoa(unescape(encodeURIComponent(h.md)))}', 'arch_guide.md')">📄 Guide</button>
+                <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadString('${btoa(unescape(encodeURIComponent(h.sh)))}', 'install.sh')">⚙️ Install</button>
+                ${h.post ? `<button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadString('${btoa(unescape(encodeURIComponent(h.post)))}', 'post_install.sh')">🚀 Post</button>` : ''}
+                <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem; background:var(--bg-lighter);" onclick="downloadString('${btoa(unescape(encodeURIComponent(h.sc)))}', 'config.sc')">📦 Config</button>
+            </div>
+        </div>
+    `).join('');
+};
+
+window.clearHistory = function() {
+    if (confirm("Are you sure you want to clear all generation history?")) {
+        localStorage.removeItem('arss_history');
+        openHistoryModal(); // refresh
+    }
+};
+
+window.downloadString = function(b64, filename) {
+    const text = decodeURIComponent(escape(atob(b64)));
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+};
+
+window.downloadContentStatic = function(id, filename) {
+    const content = document.getElementById(id).querySelector('code').textContent;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+};
+
+window.downloadAllOutput = function() {
+    alert("In a real environment, this would zip the currently displayed .md and .sh files. Use the individual buttons for now.");
+};

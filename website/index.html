@@ -51,6 +51,7 @@
             <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">⚙️ Generator</a>
             <span class="nav-sep">|</span>
             <a href="#live-editor" id="live-editor-nav" class="nav-link nav-tooltip" data-title="Live Editor" data-desc="Upload a previously generated .sh or .md file to view, edit and re-download it. Files are read locally — nothing is sent to any server. If the file has no valid config header it will be shown as read-only text.">📝 Live Editor</a>
+                <a href="#" class="nav-link nav-tooltip" data-title="Generation History" data-desc="View past generated configurations, install scripts, and markdown guides cached in your browser." onclick="openHistoryModal(); return false;">🕰️ History</a>
             <span class="nav-sep">|</span>
             <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="Full Arch Linux documentation with same parity as the generator. Every generator option is explained so you can manually configure your system.">📖 Wiki</a>
             <span class="nav-sep">|</span>
@@ -92,6 +93,9 @@
                     <h3 style="margin:0; color:var(--accent-cyan); font-size:1.1rem;">Generator Settings</h3>
                     
                     <div style="display:flex; align-items:center; gap:15px; margin-left: auto;">
+                        <button type="button" class="btn nav-tooltip" data-title="Clear Form Selections" data-desc="Reset all dropdowns and checkboxes to default empty states." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--bg-lighter); color:var(--accent-red); font-size:0.85rem; border:1px solid var(--accent-red); border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem; margin:0;" onclick="clearFormSelections()">
+                            🗑️ Clear Selections
+                        </button>
                         <label class="btn nav-tooltip" data-title="Upload Selection Config (.sc)" data-desc="Restore all generator form settings from a previously downloaded .sc JSON config file." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem; margin:0;">
                             📤 Upload .sc Config
                             <input type="file" id="upload-sc-input" accept=".sc" style="display:none">
@@ -1316,25 +1320,54 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                 </form>
 
                 <!-- ── Upload / Live Editor Section ── -->
-                <section id="live-editor" style="margin-top:1.5rem; background:var(--bg-darker); border:1px solid var(--bg-lighter); border-radius:12px; padding:1.2rem;">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <h3 style="color:var(--accent-cyan); margin:0; font-size:1rem;" class="nav-tooltip" data-title="Static Live Editor" data-desc="Real-time static preview of your generated configuration. Toggle to edit raw source or view syntax highlighting.">📝 Live Editor</h3>
-        <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:0.85rem; color:var(--accent-blue); font-weight:bold;">Raw Edit</span>
-            <label class="switch nav-tooltip" data-title="Toggle Editor Mode" data-desc="Switch between Raw Text Editor and Syntax Highlighted Preview">
-                <input type="checkbox" id="live-preview-toggle" onchange="window.toggleLiveEditorMode()">
-                <span class="slider round" style="background-color: var(--bg-lighter); border: 1px solid var(--accent-purple);"></span>
-            </label>
-            <span style="font-size:0.85rem; color:var(--accent-green); font-weight:bold;">Syntax Preview</span>
+                <section id="live-editor" style="display:none; margin-top:1.5rem; background:var(--bg-darker); border:1px solid var(--bg-lighter); border-radius:12px; padding:1.2rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <h3 style="color:var(--accent-cyan); margin:0; font-size:1.1rem;" class="nav-tooltip" data-title="Live Editor (Staging)" data-desc="Make manual edits before finalizing. Click Confirm & Save when ready.">📝 Live Editor (Staging)</h3>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:0.85rem; color:var(--accent-blue); font-weight:bold;">Raw Edit</span>
+                <label class="switch nav-tooltip" data-title="Toggle Editor Mode" data-desc="Switch between Raw Text Editor and Syntax Highlighted Preview">
+                    <input type="checkbox" id="live-preview-toggle" onchange="window.toggleLiveEditorMode()">
+                    <span class="slider round" style="background-color: var(--bg-lighter); border: 1px solid var(--accent-purple);"></span>
+                </label>
+                <span style="font-size:0.85rem; color:var(--accent-green); font-weight:bold;">Syntax Preview</span>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:8px; margin-left:15px; border-left:1px solid var(--border-color); padding-left:15px;">
+                <span style="font-size:0.85rem; color:var(--accent-orange); font-weight:bold;">Split Install / Post-Install</span>
+                <label class="switch nav-tooltip" data-title="Split Scripts" data-desc="If toggled off, combines the Install and Post-Install scripts into one unified view.">
+                    <input type="checkbox" id="split-scripts-toggle" checked onchange="window.toggleSplitScripts()">
+                    <span class="slider round" style="background-color: var(--bg-lighter); border: 1px solid var(--accent-orange);"></span>
+                </label>
+            </div>
         </div>
+        
+        <button class="btn nav-tooltip" data-title="Confirm & Save" data-desc="Finalizes your edits, pushes them to History, and moves to the Static Output view." style="background:var(--accent-green); color:var(--bg-darker); font-weight:bold; padding:0.5rem 1.2rem;" onclick="confirmAndSaveLiveEditor()">
+            ✅ Confirm & Save
+        </button>
     </div>
     
-    <div id="live-editor-content" style="margin-top: 1rem; position:relative;">
-        <div class="alert info" style="background-color: rgba(187, 154, 247, 0.1); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
-            <strong>Editor Mode:</strong> Changes made in raw edit mode will automatically sync. Click 'Generate' again to rebuild from UI options.
+    <div id="live-editor-content" style="display:flex; flex-direction:column; gap:1.5rem;">
+        <!-- Markdown Guide -->
+        <div>
+            <h4 style="color:var(--accent-purple); margin-bottom:0.5rem;">Markdown Guide (.md)</h4>
+            <textarea id="live-editor-textarea-md" class="raw-edit-mode" style="width:100%; min-height:200px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; resize:vertical;"></textarea>
+            <pre id="live-editor-preview-md" class="syntax-preview-mode" style="display:none; width:100%; min-height:200px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; overflow-x:auto;"><code class="language-markdown"></code></pre>
         </div>
-        <textarea id="live-editor-textarea" style="width:100%; min-height:400px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; display:block; resize:vertical;"></textarea>
-        <pre id="live-editor-preview" style="width:100%; min-height:400px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; display:none; overflow-x:auto;"><code class="language-bash" id="live-editor-code"></code></pre>
+        
+        <!-- Install Script -->
+        <div>
+            <h4 style="color:var(--accent-cyan); margin-bottom:0.5rem;" id="title-install-sh">Install Script (.sh)</h4>
+            <textarea id="live-editor-textarea-sh" class="raw-edit-mode" style="width:100%; min-height:200px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; resize:vertical;"></textarea>
+            <pre id="live-editor-preview-sh" class="syntax-preview-mode" style="display:none; width:100%; min-height:200px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; overflow-x:auto;"><code class="language-bash"></code></pre>
+        </div>
+
+        <!-- Post Install Script -->
+        <div id="live-editor-post-sh-container">
+            <h4 style="color:var(--accent-blue); margin-bottom:0.5rem;">Post-Install Script (.sh)</h4>
+            <textarea id="live-editor-textarea-post" class="raw-edit-mode" style="width:100%; min-height:150px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; resize:vertical;"></textarea>
+            <pre id="live-editor-preview-post" class="syntax-preview-mode" style="display:none; width:100%; min-height:150px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; overflow-x:auto;"><code class="language-bash"></code></pre>
+        </div>
     </div>
 </section>
             </section>
@@ -1344,23 +1377,63 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
 
 
         <!-- ── OUTPUT PAGE (shown instead of generator) ── -->
-        <section id="output-section" style="display:none;" class="js-only">
-            <!-- Action bar: Back left, Clear + Downloads right -->
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.2rem;">
-                <button type="button" id="back-to-gen-btn" class="btn tooltip-always"
-                    data-title="← Return to Generator"
-                    data-desc="Go back to the generator form. Your output was auto-saved to session history — no cookies, resets on tab close."
-                    style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-purple); font-size:0.9rem;">← Back to Generator</button>
-                <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
-                    <div id="download-btns" style="display:flex; gap:0.6rem; flex-wrap:wrap;"></div>
-                    <button type="button" id="clear-output-btn" class="btn tooltip-always"
-                        data-title="🗑️ Clear Output"
-                        data-desc="Clear generated output and return to generator. Your output was auto-saved to session history (no cookies) before clearing."
-                        style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-red); font-size:0.9rem;">🗑️ Clear</button>
-                </div>
-            </div>
-            <div id="generated-guide"></div>
-        </section>
+        <section id="output-section" style="display:none; margin-top:2rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem;">
+        <h2 style="color:var(--accent-green); margin:0;">✅ Finalized Output</h2>
+        <div style="display:flex; gap:10px;">
+            <button class="btn nav-tooltip" data-title="Download All" data-desc="Downloads a .zip containing the MD guide, SH scripts, and your .sc configuration." style="background:var(--accent-purple); color:var(--bg-darker); font-weight:bold; padding:0.5rem 1rem;" onclick="downloadAllOutput()">
+                📦 Download All
+            </button>
+            <button class="btn nav-tooltip" data-title="Back to Generator" data-desc="Return to the main configuration menu." style="background:var(--bg-lighter); color:var(--accent-blue); padding:0.5rem 1rem;" onclick="location.reload()">
+                🔄 Start Over
+            </button>
+        </div>
+    </div>
+    
+    <!-- Static Markdown Guide -->
+    <div style="margin-bottom:2.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-darker); padding:1rem; border-top-left-radius:8px; border-top-right-radius:8px; border:1px solid var(--border-color); border-bottom:none;">
+            <h3 style="color:var(--accent-purple); margin:0;">📄 Markdown Guide (.md)</h3>
+            <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-md', 'arch_guide.md')">Download</button>
+        </div>
+        <pre id="static-md" style="width:100%; max-height:500px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:2rem; border:1px solid var(--border-color); border-bottom-left-radius:8px; border-bottom-right-radius:8px; overflow-y:auto; overflow-x:auto;"><code class="language-markdown"></code></pre>
+    </div>
+
+    <!-- Static Install Script -->
+    <div style="margin-bottom:2.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-darker); padding:1rem; border-top-left-radius:8px; border-top-right-radius:8px; border:1px solid var(--border-color); border-bottom:none;">
+            <h3 style="color:var(--accent-cyan); margin:0;" id="static-title-install">⚙️ Install Script (.sh)</h3>
+            <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-install', 'install.sh')">Download</button>
+        </div>
+        <pre id="static-install" style="width:100%; max-height:400px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:2rem; border:1px solid var(--border-color); border-bottom-left-radius:8px; border-bottom-right-radius:8px; overflow-y:auto; overflow-x:auto;"><code class="language-bash"></code></pre>
+    </div>
+
+    <!-- Static Post-Install Script -->
+    <div id="static-post-container" style="margin-bottom:2.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-darker); padding:1rem; border-top-left-radius:8px; border-top-right-radius:8px; border:1px solid var(--border-color); border-bottom:none;">
+            <h3 style="color:var(--accent-blue); margin:0;">🚀 Post-Install Script (.sh)</h3>
+            <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-post', 'post_install.sh')">Download</button>
+        </div>
+        <pre id="static-post" style="width:100%; max-height:300px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:2rem; border:1px solid var(--border-color); border-bottom-left-radius:8px; border-bottom-right-radius:8px; overflow-y:auto; overflow-x:auto;"><code class="language-bash"></code></pre>
+    </div>
+</section>
+
+<!-- Generation History Modal -->
+<div id="history-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999999; justify-content:center; align-items:center;">
+    <div style="background:var(--bg-darker); border:1px solid var(--accent-purple); border-radius:12px; width:90%; max-width:600px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+        <div style="padding:1.5rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; color:var(--accent-purple);">🕰️ Generation History</h3>
+            <button onclick="document.getElementById('history-modal').style.display='none'" style="background:transparent; border:none; color:var(--accent-red); font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="history-list" style="padding:1.5rem; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:1rem;">
+            <!-- History Items Injected Here -->
+        </div>
+        <div style="padding:1rem; border-top:1px solid var(--border-color); text-align:center;">
+            <button class="btn" style="background:transparent; border:1px solid var(--accent-red); color:var(--accent-red); padding:0.4rem 1rem;" onclick="clearHistory()">🗑️ Clear History</button>
+        </div>
+    </div>
+</div>
+
 
     </main>
 

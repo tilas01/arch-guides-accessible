@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const LEGAL_KEY  = 'legal_accepted';
   const WELCOME_KEY = 'welcome_seen';
 
-  const legalDone   = sessionStorage.getItem(LEGAL_KEY) === 'true';
-  const welcomeDone = sessionStorage.getItem(WELCOME_KEY) === 'true';
+  const legalDone   = localStorage.getItem(LEGAL_KEY) === 'true';
+  const welcomeDone = localStorage.getItem(WELCOME_KEY) === 'true';
 
   const isMobile =
     window.innerWidth <= 768 ||
@@ -77,10 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
             scripts, or tools.
           </li>
           <li>
-            <strong style="color:var(--accent-cyan,#7dcfff);">🍪 No Cookies.</strong>
-            This site uses <code>sessionStorage</code> only (generation history &amp;
-            preferences). No persistent cookies or tracking of any kind are used.
-            Your "don't show again" choice is session-scoped and cannot be saved permanently.
+            <strong style="color:var(--accent-cyan,#7dcfff);">🍪 Local Storage Used.</strong>
+            This site uses your browser's <code>localStorage</code> to persistently save your "Don't show again" preference and your Generation History locally on your device. We do not use tracking cookies or send data to servers.
           </li>
         </ol>
       </div>
@@ -92,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </label>
         <label style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;color:var(--accent-cyan,#7dcfff);font-size:0.82rem;">
           <input type="checkbox" id="legal-skip" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--accent-cyan,#7dcfff);">
-          Don't show me this disclaimer again this session (no cookies — resets on tab close)
+          Don't show me this disclaimer again (Saves locally via browser storage)
         </label>
       </div>
 
@@ -120,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btn.addEventListener('click', () => {
       if (!cb.checked) return;
-      if (skip.checked) sessionStorage.setItem(LEGAL_KEY, 'true');
+      if (skip.checked) localStorage.setItem(LEGAL_KEY, 'true');
       overlay.remove();
       document.body.style.overflow = '';
       onAccept();
@@ -177,9 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
             scripts, or tools.
           </li>
           <li>
-            <strong style="color:var(--accent-cyan,#7dcfff);">🍪 No Cookies.</strong>
-            This site uses <code>sessionStorage</code> only. No persistent cookies are used.
-            If you check "Don't ask me again", it will only last until you close this tab. You may be prompted again in future sessions.
+            <strong style="color:var(--accent-cyan,#7dcfff);">🍪 Local Storage Used.</strong>
+            This site uses your browser's <code>localStorage</code> to persistently save your "Don't ask me again" preference and Generation History locally. We do not use tracking cookies.
           </li>
         </ol>
       </div>
@@ -191,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </label>
         <label style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;color:var(--accent-cyan,#7dcfff);font-size:0.82rem;">
           <input type="checkbox" id="combined-skip" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--accent-cyan,#7dcfff);">
-          Don't ask me again (Applies to this session only; no cookies are saved)
+          Don't ask me again (Saves locally via browser storage)
         </label>
       </div>
 
@@ -220,8 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       if (!cb.checked) return;
       if (skip.checked) {
-        sessionStorage.setItem(LEGAL_KEY, 'true');
-        sessionStorage.setItem(WELCOME_KEY, 'true');
+        localStorage.setItem(LEGAL_KEY, 'true');
+        localStorage.setItem(WELCOME_KEY, 'true');
       }
       overlay.remove();
       document.body.style.overflow = '';
