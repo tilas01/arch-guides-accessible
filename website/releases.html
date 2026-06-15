@@ -203,9 +203,7 @@
                 if (limitLeft !== null) {
                     rateDiv.textContent = `API Tokens Remaining: ${limitLeft}`;
                     if (parseInt(limitLeft) <= 0) {
-                        showOverlay('API Tokens Exhausted! Opening in GitHub...');
-                        setTimeout(() => window.location.href = fallbackUrl, 2500);
-                        return;
+                        throw new Error('API Limits Exhausted'); // trigger catch block
                     }
                 }
 
@@ -218,10 +216,33 @@
                 renderData(data);
 
             } catch (error) {
-                rateDiv.textContent = 'API Error! Redirecting to GitHub...';
-                listDiv.innerHTML = `<p style="text-align:center; color:#f7768e;">Failed to load releases. Redirecting...</p>`;
-                showOverlay('Failed to load resources. Opening in GitHub...');
-                setTimeout(() => window.location.href = fallbackUrl, 2500);
+                rateDiv.textContent = 'API Tokens Exhausted! (Using Static Fallback)';
+                rateDiv.innerHTML += ` — <a href="${fallbackUrl}" target="_blank" style="color:var(--accent-blue);text-decoration:underline;">Visit GitHub Directly</a>`;
+                
+                // Render Static Fallback
+                listDiv.innerHTML = `
+                    <div class="alert warning" style="background-color:rgba(247,118,142,0.1); border:1px solid #f7768e; padding:1rem; border-radius:8px; margin-bottom:2rem; color:#f7768e; font-weight:bold;">
+                        ⚠️ GitHub API Limit Exceeded. Showing statically cached releases instead.
+                    </div>
+                    
+                    <div class="release-item">
+                        <h2 class="release-title">
+                            Arch Rusty Security Suite v1.0.0
+                            <span class="release-date">🕒 Last Update: Static Build</span>
+                        </h2>
+                        <p style="color:#c0caf5;">Official dynamic installer drop featuring Anti-Ducky, Libre OTP, and Kernel Watcher modules.</p>
+                        <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="asset-link">⬇️ View All Assets on GitHub</a>
+                    </div>
+                    
+                    <div class="release-item">
+                        <h2 class="release-title">
+                            Arch Guides Dynamic v0.9.5-beta
+                            <span class="release-date">🕒 Last Update: Static Build</span>
+                        </h2>
+                        <p style="color:#c0caf5;">Previous stable release containing the base generator UI.</p>
+                        <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="asset-link">⬇️ View All Assets on GitHub</a>
+                    </div>
+                `;
             }
         }
 

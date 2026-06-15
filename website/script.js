@@ -1478,13 +1478,20 @@ function injectNoSelectionProvided() {
         opt.hidden = true; // Hides it from the dropdown list once opened
         select.insertBefore(opt, select.firstChild);
 
-        // Permanently remove it once a valid selection is made
+        // Instantly remove on interaction to fix iOS Safari ghosting
+        const removePlaceholder = () => {
+            const placeholder = Array.from(select.options).find(o => o.value === "");
+            if (placeholder) placeholder.remove();
+            select.removeEventListener('mousedown', removePlaceholder);
+            select.removeEventListener('touchstart', removePlaceholder);
+        };
+        select.addEventListener('mousedown', removePlaceholder);
+        select.addEventListener('touchstart', removePlaceholder);
+
+        // Standard validation cleanup
         select.addEventListener('change', function handler() {
             if (this.value !== "") {
-                const placeholder = Array.from(this.options).find(o => o.value === "");
-                if (placeholder) {
-                    placeholder.remove();
-                }
+                removePlaceholder();
                 this.removeEventListener('change', handler); // Clean up
                 // Remove red border if present
                 this.style.border = "";
@@ -1497,76 +1504,89 @@ function injectNoSelectionProvided() {
 document.addEventListener('DOMContentLoaded', injectNoSelectionProvided);
 document.getElementById('generate-btn').addEventListener('click', function(e) {
     e.preventDefault();
-    
-    
 
     let missingFields = [];
+    let totalFields = 0;
     
     document.querySelectorAll('#install-form select').forEach(el => {
-        if (!el.disabled && el.offsetParent !== null && el.value === "") {
-            // Get the human readable label name
-            const labelEl = el.parentElement.querySelector('label');
-            const fieldName = labelEl ? labelEl.innerText.replace(':', '') : 'Unknown Field';
-            missingFields.push(fieldName);
-            
-            // Apply visual alerts
-            el.style.border = "2px solid var(--accent-red)";
-            if (!el.parentElement.querySelector('.req-warning')) {
-                const warn = document.createElement('span');
-                warn.className = 'req-warning';
-                warn.style.color = 'var(--accent-red)';
-                warn.style.marginLeft = '10px';
-                warn.style.fontSize = '0.85rem';
-                warn.style.fontWeight = 'bold';
-                warn.innerText = 'Ã¢Å¡Â Ã¯Â¸Â Required!';
-                if(labelEl) labelEl.appendChild(warn);
+        if (!el.disabled && el.offsetParent !== null) {
+            totalFields++;
+            if (el.value === "") {
+                const labelEl = el.parentElement.querySelector('label');
+                const fieldName = labelEl ? labelEl.innerText.replace(':', '') : 'Unknown Field';
+                missingFields.push(fieldName);
             }
         }
     });
 
-        const errorBox = document.getElementById('generate-error-box');
-        const errorList = document.getElementById('error-list');
-        const errorCount = document.getElementById('error-count');
-
-        
-    // --- APP CONFIGURATION VALIDATION HOOK ---
     document.querySelectorAll('input[type="checkbox"][data-requires-config="true"]').forEach(cb => {
         if (cb.checked && cb.dataset.configured !== "true") {
-            const appName = cb.parentElement.innerText.replace('⚙️', '').replace('ℹ️', '').trim();
+            const appName = cb.parentElement.innerText.replace('⚙️', '').trim();
             missingFields.push(`App Configuration missing for: ${appName}`);
-            cb.parentElement.style.border = "2px solid var(--accent-red)";
-            cb.parentElement.style.padding = "5px";
-            cb.parentElement.style.borderRadius = "4px";
-        } else {
-            cb.parentElement.style.border = "none";
         }
     });
-    // -----------------------------------------
 
-        if (missingFields.length > 0) {
-            if(errorCount) errorCount.innerText = missingFields.length;
-            if(errorList) {
-                // Change from UL list items to inline comma separated links
-                errorList.style.listStyleType = "none";
-                errorList.style.paddingLeft = "0";
-                errorList.innerHTML = missingFields.map(f => {
-                    const safeF = f.replace(/'/g, "\\'");
-                    return `<a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;" onclick="event.stopPropagation(); const els=Array.from(document.querySelectorAll('#install-form select')); const target=els.find(s=>s.parentElement.innerText.includes('${safeF}')); if(target)target.scrollIntoView({behavior:'smooth',block:'center'}); return false;">${f}</a>`;
-                }).join(', ');
-            }
+    const errorBox = document.getElementById('generate-error-box');
+
+    if (missingFields.length > 0) {
+        if (missingFields.length === totalFields && document.querySelectorAll('input[type="checkbox"][data-requires-config="true"]:checked').length === 0) {
+            // No input provided at all
             if(errorBox) {
                 errorBox.style.display = 'block';
+                errorBox.innerHTML = '<h3 style="color:var(--accent-red);margin:0;">🚨 No Input Provided</h3><p style="margin-bottom:0;">Please make at least one selection before generating.</p>';
                 errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                errorBox.onclick = function() {
-                    const firstMissing = document.querySelector('#install-form select[style*="border"]');
-                    if (firstMissing) firstMissing.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                };
             }
             return;
         } else {
-            if(errorBox) errorBox.style.display = 'none';
+            // >= 1 selection made
+            document.querySelectorAll('#install-form select').forEach(el => {
+                if (!el.disabled && el.offsetParent !== null && el.value === "") {
+                    el.style.border = "2px solid var(--accent-red)";
+                    if (!el.parentElement.querySelector('.req-warning')) {
+                        const warn = document.createElement('span');
+                        warn.className = 'req-warning';
+                        warn.style.color = 'var(--accent-red)';
+                        warn.style.marginLeft = '10px';
+                        warn.style.fontSize = '0.85rem';
+                        warn.style.fontWeight = 'bold';
+                        warn.innerText = ' 🚨 Required!';
+                        const labelEl = el.parentElement.querySelector('label');
+                        if(labelEl) labelEl.appendChild(warn);
+                    }
+                }
+            });
+
+            document.querySelectorAll('input[type="checkbox"][data-requires-config="true"]').forEach(cb => {
+                if (cb.checked && cb.dataset.configured !== "true") {
+                    cb.parentElement.style.border = "2px solid var(--accent-red)";
+                    cb.parentElement.style.padding = "5px";
+                    cb.parentElement.style.borderRadius = "4px";
+                }
+            });
+
+            if(errorBox) {
+                errorBox.innerHTML = `<h3 style="color:var(--accent-red); margin-top:0;">🚨 Generation Failed: <span id="error-count">${missingFields.length}</span> Missing Selections</h3><p>Please complete the following required fields to generate your guide:</p><div id="error-list"></div>`;
+                const newErrorList = document.getElementById('error-list');
+                if(newErrorList) {
+                    newErrorList.style.listStyleType = "none";
+                    newErrorList.style.paddingLeft = "0";
+                    newErrorList.innerHTML = missingFields.map(f => {
+                        const safeF = f.replace(/'/g, "\\'");
+                        return `<a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;margin-right:10px;line-height:1.8;" onclick="event.stopPropagation(); const els=Array.from(document.querySelectorAll('#install-form select, input[type=\\'checkbox\\']')); const target=els.find(s=>s.parentElement.innerText.includes('${safeF.split(':')[0].trim()}')); if(target)target.scrollIntoView({behavior:'smooth',block:'center'}); return false;">[${f}]</a>`;
+                    }).join(' ');
+                }
+                errorBox.style.display = 'block';
+                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
         }
+    } else {
+        if(errorBox) {
+            errorBox.style.display = 'none';
+            // Restore original error box format incase of future errors
+            errorBox.innerHTML = `<h3 style="color:var(--accent-red); margin-top:0;">🚨 Generation Failed: <span id="error-count">0</span> Missing Selections</h3><p>Please complete the following required fields to generate your guide:</p><ul id="error-list"></ul>`;
+        }
+    }
     
     // Clear any previous global warnings or errors
     window.generateOutput(false);
@@ -2096,3 +2116,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// ====================================================================
+// NEW UI TOGGLES (App Configs & Live Editor)
+// ====================================================================
+
+window.toggleAppConfig = function(appId) {
+    const configDiv = document.getElementById('config-' + appId);
+    const containerDiv = document.getElementById('container-' + appId);
+    const cb = document.getElementById('arss-' + appId);
+    if (!configDiv) return;
+    
+    // Automatically check the box when opening the config if it's not checked
+    if (configDiv.style.display === 'none') {
+        configDiv.style.display = 'block';
+        if (cb) cb.checked = true;
+        if (containerDiv) containerDiv.style.borderColor = "var(--accent-blue)";
+    } else {
+        configDiv.style.display = 'none';
+        if (containerDiv) containerDiv.style.borderColor = "var(--border-color)";
+    }
+};
+
+window.toggleLiveEditorMode = function() {
+    const toggle = document.getElementById('live-preview-toggle');
+    const textarea = document.getElementById('live-editor-textarea');
+    const preview = document.getElementById('live-editor-preview');
+    const code = document.getElementById('live-editor-code');
+    
+    if (toggle.checked) {
+        // Switch to Preview Mode
+        textarea.style.display = 'none';
+        preview.style.display = 'block';
+        code.textContent = textarea.value;
+        if (window.Prism) {
+            Prism.highlightElement(code);
+        }
+    } else {
+        // Switch to Raw Edit Mode
+        preview.style.display = 'none';
+        textarea.style.display = 'block';
+    }
+};
