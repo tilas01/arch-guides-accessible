@@ -1001,23 +1001,29 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                             </div>
                             <div class="app-grid" id="arss-tools-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:0.6rem;">
                                 <!-- Libre OTP -->
-                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Libre OTP — 2FA Authentication" data-desc="TOTP-based two-factor authentication for Linux login, boot, and SSH via PAM integration. Supports SHA1/256/512 hashing. Compatible with Google Authenticator, Aegis, and other TOTP apps. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
-                                    <input type="checkbox" name="arss_tools" value="libre-otp" id="arss-libre-otp" style="accent-color:var(--accent-purple); width:18px; height:18px;">
-                                    <span style="font-size:1.3rem;">🔐</span>
-                                    <div>
-                                        <strong style="color:var(--accent-purple); font-size:0.88rem;">Libre OTP</strong>
-                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">2FA for boot/login/SSH</div>
-                                    </div>
-                                </label>
-                                <!-- Input Guard -->
-                                <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#input-guard', '_blank'); return false;" data-title="Input Guard — Anti-Ducky" data-desc="USB HID sandboxing and Rubber Ducky detection. Approves current input devices at install, blocks new unknown USB HID devices, detects device ID spoofing and inhuman typing speeds. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
-                                    <input type="checkbox" name="arss_tools" value="anti-ducky" id="arss-anti-ducky" style="accent-color:var(--accent-purple); width:18px; height:18px;">
-                                    <span style="font-size:1.3rem;">🛡️</span>
-                                    <div>
-                                        <strong style="color:var(--accent-purple); font-size:0.88rem;">Input Guard</strong>
-                                        <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">USB HID sandbox &amp; ducky detector</div>
-                                    </div>
-                                </label>
+                                <div style="display:flex; flex-direction:column; gap:0.5rem; background:var(--bg-lighter); border:1px solid var(--border-color); border-radius:8px; transition:border-color 0.2s;" id="container-libre-otp">
+    <div style="display:flex; flex-direction:column; gap:0.5rem; background:var(--bg-lighter); border:1px solid var(--border-color); border-radius:8px; transition:border-color 0.2s;" id="container-anti-ducky">
+    <label class="app-card nav-tooltip" style="display:flex; align-items:center; justify-content:space-between; padding:0.7rem; cursor:pointer;" data-title="Input Guard — Anti-Ducky" data-desc="USB HID sandboxing and Rubber Ducky detection. Approves current input devices at install, blocks new unknown USB HID devices, detects device ID spoofing and inhuman typing speeds.">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+            <input type="checkbox" name="arss_tools" value="anti-ducky" id="arss-anti-ducky" data-requires-config="true" data-configured="false" style="accent-color:var(--accent-purple); width:18px; height:18px;" onchange="toggleAppConfig('anti-ducky')">
+            <div>
+                <strong style="color:var(--accent-purple); font-size:0.88rem;">Input Guard</strong>
+                <div style="font-size:0.75rem; color:var(--fg-color); opacity:0.8;">USB HID sandbox & ducky detector</div>
+            </div>
+        </div>
+        <span class="nav-tooltip" style="font-size:1.3rem; cursor:pointer;" data-title="Configure App" data-desc="Open advanced configuration parameters" onclick="toggleAppConfig('anti-ducky'); event.preventDefault();">⚙️</span>
+    </label>
+    <div id="config-anti-ducky" style="display:none; padding:1rem; border-top:1px solid var(--border-color); background:var(--bg-color); border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+        <label style="color:var(--accent-cyan); font-size:0.85rem; margin-bottom:0.3rem;">Quorum Threshold (Required)</label>
+        <select id="anti-ducky-quorum" style="width:100%; margin-bottom:0.8rem; padding:0.5rem; background:var(--bg-dark); border:1px solid var(--border-color); color:var(--fg-color); border-radius:4px;" onchange="document.getElementById('arss-anti-ducky').dataset.configured = this.value ? 'true' : 'false'">
+            <option value="" disabled selected hidden>No Selection Provided</option>
+            <option value="1">1 (Strict)</option>
+            <option value="2">2 (Standard)</option>
+            <option value="3">3 (Relaxed)</option>
+        </select>
+        <div style="font-size:0.75rem; color:var(--accent-blue);">See <a href="wiki.html#input-guard" target="_blank" style="color:var(--accent-cyan); text-decoration:underline;">Input Guard Documentation</a> for setup details.</div>
+    </div>
+</div>
                                 <!-- ISO Verifier -->
                                 <label class="app-card nav-tooltip" oncontextmenu="window.open('wiki.html#iso-verifier', '_blank'); return false;" data-title="Arch ISO Verification" data-desc="Verify Arch Linux ISO integrity via SHA-256 hash comparison against official Arch mirrors. Recommended as the first step before any install when security tools are enabled. Right-click for wiki." style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem; border:1px solid var(--bg-lighter); border-radius:8px; cursor:pointer; transition:border-color 0.2s;">
                                     <input type="checkbox" name="arss_tools" value="iso-verifier" id="arss-iso-verifier" style="accent-color:var(--accent-purple); width:18px; height:18px;">
@@ -1311,37 +1317,26 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
 
                 <!-- ── Upload / Live Editor Section ── -->
                 <section id="live-editor" style="margin-top:1.5rem; background:var(--bg-darker); border:1px solid var(--bg-lighter); border-radius:12px; padding:1.2rem;">
-                    <h3 style="color:var(--accent-cyan); margin:0 0 0.5rem 0; font-size:1rem;">📝 Live Editor &amp; Upload</h3>
-                    <p style="font-size:0.82rem; color:var(--fg-color); margin-bottom:0.8rem; line-height:1.5;">
-                        Upload a previously generated <code>.sh</code> or <code>.md</code> file to restore, view, and edit it.
-                        Files must have been generated by this tool to auto-restore settings.
-                        If the file has no valid config header it will be marked as invalid and shown as editable text only.
-                        <strong style="color:var(--accent-cyan);">Nothing is sent to any server — all processing is local.</strong>
-                    </p>
-                    <div style="display:flex; flex-wrap:wrap; gap:0.6rem; align-items:center; margin-bottom:0.6rem;">
-                        <label class="btn nav-tooltip" data-title="Upload .sh or .md File" data-desc="Select a .sh script or .md guide previously generated by this tool. Both file types are supported. If no valid config header is found, the file will be shown as editable text only. Nothing is uploaded to any server." style="cursor:pointer; width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); color:var(--bg-color); font-size:0.9rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:8px;">
-                            📤 Upload
-                            <input type="file" id="upload-file-input" accept=".sh,.md,.bash,.txt" style="display:none">
-                        </label>
-                          
-                          
-                        <button type="button" id="upload-clear-btn" class="btn nav-tooltip" data-title="Clear Upload" data-desc="Clear the currently uploaded file and reset the editor." style="width:auto; padding:0.5rem 1rem; background:var(--accent-red); font-size:0.88rem; display:none;">✕ Clear</button>
-                    </div>
-                    <div id="upload-status" style="font-size:0.82rem; color:var(--accent-cyan); min-height:1.2rem; margin-bottom:0.4rem;"></div>
-                    <div id="upload-editor-wrapper" style="display:none;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
-                            <span id="upload-filename" style="font-size:0.82rem; color:var(--fg-color); font-family:var(--font-mono);"></span>
-                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                                <button type="button" id="upload-restore-btn" class="btn" style="display:none; width:auto; padding:0.4rem 0.9rem; background:var(--accent-green); color:var(--bg-color); font-size:0.82rem;">↩ Restore Settings</button>
-                                <button type="button" id="upload-download-btn" class="btn" style="width:auto; padding:0.4rem 0.9rem; background:var(--accent-cyan); color:var(--bg-color); font-size:0.82rem;">⬇ Download Edited</button>
-                            </div>
-                        </div>
-                        <textarea id="upload-editor" spellcheck="false" style="width:100%; min-height:260px; background:var(--bg-color); color:var(--fg-color); border:1px solid var(--bg-lighter); border-radius:8px; padding:0.8rem; font-family:var(--font-mono); font-size:0.82rem; line-height:1.6; resize:vertical; box-sizing:border-box;"></textarea>
-                    </div>
-                    <div id="upload-restore-btn-wrapper" style="display:none; margin-top:0.6rem;">
-                        <button type="button" id="upload-restore-btn-alt" class="btn" style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:var(--bg-color); font-size:0.88rem;">↩ Restore Config to Generator</button>
-                    </div>
-                </section>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <h3 style="color:var(--accent-cyan); margin:0; font-size:1rem;" class="nav-tooltip" data-title="Static Live Editor" data-desc="Real-time static preview of your generated configuration. Toggle to edit raw source or view syntax highlighting.">📝 Live Editor</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:0.85rem; color:var(--accent-blue); font-weight:bold;">Raw Edit</span>
+            <label class="switch nav-tooltip" data-title="Toggle Editor Mode" data-desc="Switch between Raw Text Editor and Syntax Highlighted Preview">
+                <input type="checkbox" id="live-preview-toggle" onchange="window.toggleLiveEditorMode()">
+                <span class="slider round" style="background-color: var(--bg-lighter); border: 1px solid var(--accent-purple);"></span>
+            </label>
+            <span style="font-size:0.85rem; color:var(--accent-green); font-weight:bold;">Syntax Preview</span>
+        </div>
+    </div>
+    
+    <div id="live-editor-content" style="margin-top: 1rem; position:relative;">
+        <div class="alert info" style="background-color: rgba(187, 154, 247, 0.1); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
+            <strong>Editor Mode:</strong> Changes made in raw edit mode will automatically sync. Click 'Generate' again to rebuild from UI options.
+        </div>
+        <textarea id="live-editor-textarea" style="width:100%; min-height:400px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; display:block; resize:vertical;"></textarea>
+        <pre id="live-editor-preview" style="width:100%; min-height:400px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; display:none; overflow-x:auto;"><code class="language-bash" id="live-editor-code"></code></pre>
+    </div>
+</section>
             </section>
 
             </section>

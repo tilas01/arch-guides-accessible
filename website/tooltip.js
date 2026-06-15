@@ -266,9 +266,12 @@
     function positionMobile() {
         panel.style.left     = '10px';
         panel.style.right    = '10px';
-        panel.style.bottom   = '12px';
-        panel.style.top      = 'auto';
+        // iOS Safari WebKit fix: Place tooltips at the top of the viewport to avoid the dynamic bottom address/toolbar
+        panel.style.top      = 'calc(12px + env(safe-area-inset-top, 0px))';
+        panel.style.bottom   = 'auto';
         panel.style.maxWidth = 'calc(100vw - 22px)';
+        // Ensure z-index is maximum to stay above fixed navbars
+        panel.style.zIndex   = '999999';
     }
 
     // ── Show / Hide ───────────────────────────────────────
