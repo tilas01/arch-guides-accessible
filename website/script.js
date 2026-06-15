@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#install-form select').forEach(sel => {
         if (sel.value === "") sel.style.color = "var(--fg-dim, #888)";
         
-        sel.addEventListener('change', function() {
+        // Trigger immediately on interaction to prevent iOS WebKit ghosting
+        const removePlaceholder = function() {
             this.style.color = ""; // Restore normal color
             // Remove the empty option permanently once clicked
             if (this.options[0] && this.options[0].value === "") {
@@ -20,7 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
             this.style.border = "";
             const warningSpan = this.parentElement.querySelector('.req-warning');
             if (warningSpan) warningSpan.remove();
-        });
+        };
+        sel.addEventListener('mousedown', removePlaceholder);
+        sel.addEventListener('touchstart', removePlaceholder, { passive: true });
+        sel.addEventListener('change', removePlaceholder);
     });
 
     document.querySelectorAll('select').forEach(select => {
@@ -324,17 +328,26 @@ window.generateOutput = function(auto = false) {
         if (auto) return;
         
         if (errorBox && errorList && errorCount) {
-            errorCount.textContent = errors.length;
-            errorList.innerHTML = errors.join("");
-            errorBox.style.display = 'block';
-            
-            // Teleport to first error on click
-            errorBox.onclick = () => {
-                if (firstErrorEl) {
-                    firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstErrorEl.focus();
-                }
-            };
+            if (errors.length === requiredSelects.length) {
+                // Entire form is empty
+                errorCount.textContent = errors.length;
+                errorList.innerHTML = `<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">No input provided! Please configure the generator.</span></li>`;
+                errorBox.style.display = 'block';
+                errorBox.onclick = null; // No teleporting if completely empty
+            } else {
+                // Partial selections missing
+                errorCount.textContent = errors.length;
+                errorList.innerHTML = errors.join("");
+                errorBox.style.display = 'block';
+                
+                // Teleport to first error on click
+                errorBox.onclick = () => {
+                    if (firstErrorEl) {
+                        firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstErrorEl.focus();
+                    }
+                };
+            }
             
             errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
