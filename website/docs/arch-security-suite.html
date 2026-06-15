@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arch Security Suite — Official Wiki</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body { font-family: var(--font-main); }
+        .wiki-container { max-width: 900px; margin: 2rem auto; background: var(--bg-lighter); padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
+        h1, h2, h3 { color: var(--accent-purple); }
+        h2 { border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 2rem; }
+        .back-btn { display: inline-block; color: var(--accent-blue); text-decoration: none; margin-bottom: 1.5rem; font-weight: bold; }
+        .back-btn:hover { color: var(--accent-cyan); text-decoration: underline; }
+        .tool-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .tool-title { color: var(--accent-cyan); font-size: 1.3rem; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: var(--bg-darker); color: var(--fg-color); }
+        .badge.ebpf { border: 1px solid var(--accent-orange); color: var(--accent-orange); }
+        .badge.rust { border: 1px solid var(--accent-red); color: var(--accent-red); }
+        code { background: var(--bg-dark); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9em; color: var(--accent-green); }
+        pre { background: var(--bg-dark); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto; color: var(--fg-color); }
+    </style>
+</head>
+<body>
+    <div class="wiki-container">
+        <a href="../wiki.html" class="back-btn">&larr; Back to Main Wiki</a>
+        
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <img src="../img/banner.png" alt="ARSS Banner" style="max-width: 100%; border-radius: 8px; border: 2px solid var(--accent-blue);" onerror="this.style.display='none'">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Arch Rusty Security Suite (ARSS)</h1>
+            <p style="color: var(--fg-color); font-size: 1.1rem;">Memory-safe, highly optimized kernel and userspace daemon suite written entirely in Rust.</p>
+        </div>
+
+        <div class="alert tip" style="background: rgba(122, 162, 247, 0.1); border-left: 4px solid var(--accent-blue); padding: 1rem; margin-bottom: 2rem; border-radius: 6px;">
+            <strong>💡 Architecture Parity:</strong> All tools in this suite support strict Headless CLI arguments, an Interactive Terminal Wizard (<code>-i</code>), and native X11/Wayland GUI instances (<code>--gui</code>).
+        </div>
+
+        <div class="tool-card">
+            <h3 class="tool-title">🦆 Anti-Ducky <span class="badge rust">Rust</span> <span class="badge">Daemon</span></h3>
+            <p>A keystroke injection defense daemon that monitors `udev` and `evdev` for impossibly fast typing speeds indicative of a Rubber Ducky or BadUSB attack.</p>
+            <h4>Usage</h4>
+            <pre><code># Start the daemon in the background
+sudo systemctl start anti-ducky
+
+# Interactive configuration wizard
+sudo anti-ducky --interactive
+
+# Launch the graphical control panel (X11/Wayland)
+sudo anti-ducky --gui</code></pre>
+        </div>
+
+        <div class="tool-card">
+            <h3 class="tool-title">🦀 ARSS Firewall <span class="badge rust">Rust</span> <span class="badge ebpf">eBPF</span></h3>
+            <p>A state-of-the-art interactive firewall utilizing eBPF (XDP/TC hooks) to intercept network packets directly in the kernel, achieving orders of magnitude lower latency than traditional iptables. Provides a "Little Snitch" style interactive experience.</p>
+            <h4>Usage</h4>
+            <pre><code># Headless CLI: Block an IP immediately
+sudo arss-firewall --block 1.1.1.1
+
+# Interactive TUI Wizard
+sudo arss-firewall -i
+
+# Graphical Control Panel (Requires display server)
+sudo arss-firewall --gui</code></pre>
+        </div>
+
+        <div class="tool-card">
+            <h3 class="tool-title">👁️ Scarecrow <span class="badge rust">Rust</span> <span class="badge ebpf">eBPF</span></h3>
+            <p>Advanced network monitor and anomaly detector. Maps processes to their network sockets in real-time utilizing eBPF kprobes, bypassing user-space obfuscation techniques.</p>
+            <h4>Usage</h4>
+            <pre><code># Run headless monitor and log to /var/log/scarecrow
+sudo scarecrow --daemon
+
+# Launch Interactive CLI interface
+scarecrow -i</code></pre>
+        </div>
+
+        <div class="tool-card">
+            <h3 class="tool-title">🛡️ Kernel Watcher <span class="badge rust">Rust</span> <span class="badge ebpf">eBPF</span></h3>
+            <p>Guards critical kernel data structures against unauthorized modifications. Uses eBPF tracepoints to log module loading and memory writes in real-time.</p>
+        </div>
+
+        <div class="tool-card">
+            <h3 class="tool-title">🔑 Libre OTP <span class="badge rust">Rust</span> <span class="badge">PAM</span></h3>
+            <p>A Pluggable Authentication Module (PAM) written in Rust that enforces Time-based One-Time Passwords (TOTP) during TTY, SSH, or Desktop Environment logins.</p>
+        </div>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="../releases.html" class="btn" style="padding: 0.8rem 2rem; background: var(--accent-purple); color: var(--bg-dark); font-weight: bold; text-decoration: none; border-radius: 8px;">Download Official Binaries</a>
+        </div>
+    </div>
+</body>
+</html>
