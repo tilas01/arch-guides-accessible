@@ -512,7 +512,16 @@ window.generateOutput = function(auto = false) {
             o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
             targetMount = "/dev/mapper/cryptroot";
         } else if (part.includes("lvm")) {
-            o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 - ${partRoot}\n`;
+            
+        let luksType = part.includes("luks1") ? "luks1" : "luks2";
+        let pbkdf = luksType === "luks2" ? "--pbkdf argon2id --iter-time 2000" : "--pbkdf pbkdf2";
+        
+        let pqWarning = enc_pq === "kyber1024" ? `echo -e "\e[1;31m[!] WARNING: KYBER-1024 PQ OVERLAY ENABLED (EXPERIMENTAL)\e[0m"
+` : "";
+        o += pqWarning;
+        o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type ${luksType} --cipher ${enc_cipher} --key-size 512 ${pbkdf} - ${partRoot}
+`;
+
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptlvm\npvcreate /dev/mapper/cryptlvm\nvgcreate vg0 /dev/mapper/cryptlvm\nlvcreate -l 100%FREE vg0 -n root\n`;
             targetMount = "/dev/vg0/root";

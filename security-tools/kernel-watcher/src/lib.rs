@@ -1,5 +1,6 @@
 #![allow(clippy::collapsible_if)]
 pub mod gui;
+pub mod process_monitor;
 #[cfg(target_os = "linux")]
 use aya::Bpf;
 use argon2::{
@@ -143,6 +144,7 @@ pub fn check_evil_maid_hash() -> bool {
 
 pub fn start_watcher() {
     println!("Starting Kernel Watcher (Semi-EDR File Monitor)...");
+    process_monitor::start_process_monitor();
 
     // Start background rootkit scanner
     thread::spawn(|| {

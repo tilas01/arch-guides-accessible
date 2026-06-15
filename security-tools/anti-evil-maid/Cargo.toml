@@ -14,3 +14,5 @@ kernel-watcher = { path = "../kernel-watcher" }
 
 eframe = "0.27.2"
 egui = "0.27.2"
+udev = "0.9.3"
+dialoguer = "0.12.0"
