@@ -1063,16 +1063,11 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                              data-title="ARSS — Security Tools"
                              data-desc="Select which ARSS security modules to include. Each tool has its own sub-options that appear when enabled. All tools are combined into the unified arch-rusty-security-suite binary. Right-click to visit the wiki.">
                             
-                            <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; padding:0.8rem; background:var(--bg-lighter); border-radius:8px; border:1px solid var(--accent-green); cursor:pointer;">
-                                  <input type="checkbox" id="arss-select-all-toggle" onchange="document.querySelectorAll('input[name=\'arss_tools\']').forEach(cb => {cb.checked = this.checked; cb.dispatchEvent(new Event('change'));})" style="width:20px; height:20px; accent-color:var(--accent-green);">
-                                  <span><strong>Select All Security Tools</strong> (Modular Installation — strictly standalone binaries)</span>
-                              </label>
-
                             <label style="margin-bottom:0.6rem;">🦀 ARSS Security Modules:</label>
                             <div class="alert info" style="background-color: rgba(33, 150, 243, 0.1); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
-                                <strong> Integrity Verification:</strong> The Arch Rusty Security Suite is fully reproducible. It is highly recommended to verify the binary signature using GPG and SHA256 checksums from the Releases page.
+                                <strong> ? Integrity Verification:</strong> The Arch Rusty Security Suite is fully reproducible. It is highly recommended to verify the binary signature using GPG and SHA256 checksums from the Releases page.
                             </div>
-                            <div class="app-grid" id="arss-tools-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:0.6rem;">
+                            <div class="app-grid" id="arss-tools-grid" style="display:grid; grid-template-rows: repeat(auto-fill, minmax(60px, 1fr)); grid-auto-flow: column; gap:0.6rem;">
                                 <!-- Libre OTP -->
                                 <div style="display:flex; flex-direction:column; gap:0.5rem; background:var(--bg-lighter); border:1px solid var(--border-color); border-radius:8px; transition:border-color 0.2s;" id="container-libre-otp">
     <div style="display:flex; flex-direction:column; gap:0.5rem; background:var(--bg-lighter); border:1px solid var(--border-color); border-radius:8px; transition:border-color 0.2s;" id="container-anti-ducky">
@@ -1375,10 +1370,10 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         <ul id="error-list" style="margin-top: 0.5rem; margin-bottom: 0;"></ul>
                         <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap; position:sticky; bottom:0; padding:1rem; background:var(--bg-darker); border-top:1px solid var(--accent-cyan); z-index:100; border-radius:8px;">
-                        <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="width:auto;">⚙️ Generate Custom Guide</button>
+                    <div style="display:flex; justify-content:center; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap; position:sticky; bottom:0; padding:1rem; background:var(--bg-darker); border-top:1px solid var(--accent-cyan); z-index:100; border-radius:8px; width:100%;">
+                        <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="flex:1; min-width:200px; max-width:350px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
                         
-                        <div style="display:flex; align-items:center; gap:8px;" class="nav-tooltip" data-title="Apply Selection Changes Live" data-desc="Automatically regenerates the guide when you change a setting and routes you to the live editor output page.">
+                        <div style="display:flex; align-items:center; gap:8px; justify-content:center; flex:1; min-width:200px; max-width:350px;" class="nav-tooltip" data-title="Apply Selection Changes Live" data-desc="Automatically regenerates the guide when you change a setting and routes you to the live editor output page.">
                             <span style="font-size:0.9rem; color:var(--accent-cyan); font-weight:bold;">Apply Selection Changes Live:</span>
                             <label class="switch">
                                 <input type="checkbox" id="live_generation_toggle">
@@ -1449,11 +1444,14 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
         <section id="output-section" style="display:none; margin-top:2rem;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem;">
         <h2 style="color:var(--accent-green); margin:0;">✅ Finalized Output</h2>
-        <div style="display:flex; gap:10px;">
-            <button class="btn nav-tooltip" data-title="Download All" data-desc="Downloads a .zip containing the MD guide, SH scripts, and your .sc configuration." style="background:var(--accent-purple); color:var(--bg-darker); font-weight:bold; padding:0.5rem 1rem;" onclick="downloadAllOutput()">
+        <div style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; align-items:center; width:100%;">
+            <button class="btn nav-tooltip" data-title="Download All" data-desc="Downloads a .zip containing the MD guide, SH scripts, and your .sc configuration." style="flex:1; min-width:150px; max-width:250px; background:var(--accent-purple); color:var(--bg-darker); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="downloadAllOutput()">
                 📦 Download All
             </button>
-            <button class="btn nav-tooltip" data-title="Back to Generator" data-desc="Return to the main configuration menu." style="background:var(--bg-lighter); color:var(--accent-blue); padding:0.5rem 1rem;" onclick="location.reload()">
+            <button class="btn nav-tooltip" data-title="Deploy Configuration" data-desc="Right-click or click this button to instantly execute the deployment." style="flex:1; min-width:150px; max-width:250px; background:var(--accent-green); color:var(--bg-darker); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="deployOutput()" oncontextmenu="deployOutput(); return false;">
+                🚀 Deploy
+            </button>
+            <button class="btn nav-tooltip" data-title="Back to Generator" data-desc="Return to the main configuration menu." style="flex:1; min-width:150px; max-width:250px; background:var(--bg-lighter); color:var(--accent-blue); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="location.reload()">
                 🔄 Start Over
             </button>
         </div>
@@ -1613,4 +1611,6 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
 </div>
 </body>
 </html>
+
+
 
