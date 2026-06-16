@@ -1573,6 +1573,15 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
         }
     });
 
+    
+    // Phase 4: Conflict Checks
+    const deConf = document.getElementById('desktop_env') ? document.getElementById('desktop_env').value : 'none';
+    const rofiSelected = document.querySelector('input[name="post_apps"][value="rofi"]')?.checked;
+    
+    if (deConf === "duskyos" && rofiSelected) {
+        missingFields.push("Conflict: DuskyOS (Custom Tiling WM) relies on its native launcher. Please deselect Rofi to prevent X11 keybind conflicts.");
+    }
+
     const errorBox = document.getElementById('generate-error-box');
 
     if (missingFields.length > 0) {
@@ -2459,3 +2468,21 @@ window.downloadContentStatic = function(id, filename) {
 window.downloadAllOutput = function() {
     alert("In a real environment, this would zip the currently displayed .md and .sh files. Use the individual buttons for now.");
 };
+
+
+// Phase 4: Right-Click Teleport to Wiki
+document.addEventListener('contextmenu', function(e) {
+    let target = e.target.closest('.app-item, .app-card, .form-step label');
+    if (target) {
+        e.preventDefault();
+        let input = target.querySelector('input, select');
+        let id = input ? (input.id || input.name || input.value) : '';
+        if (id) {
+            window.open('wiki.html#' + id, '_blank');
+        } else {
+            // Fallback to text content
+            let text = target.innerText.split('\n')[0].replace(/[^a-zA-Z0-9-]/g, '').toLowerCase();
+            window.open('wiki.html#' + text, '_blank');
+        }
+    }
+});

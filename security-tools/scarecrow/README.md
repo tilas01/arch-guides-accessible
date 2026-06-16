@@ -1,16 +1,7 @@
-<div align="center">
-  <img src="img/icon.png" alt="Icon" width="128" height="128">
-  <h1>Scarecrow</h1>
-  <p><strong>Advanced Ring-0 Linux Kernel Module (LKM) for Netfilter logging and Kprobe execution tracking.</strong></p>
-</div>
+# Scarecrow Decoy System
 
-## Features
-- Native Arch Linux support (Wayland/Xorg via eframe)
-- Minimalist Tokyo Night UI design
-- Background root daemon capability
+![Icon](img/icon.png)
 
-## Usage
-Run directly from terminal:
-```bash
-./scarecrow --interactive
-```
+![Banner](img/banner.png)
+
+Creates a fully convincing, fake Windows/Linux environment when a Duress PIN is entered. Simultaneously triggers a background 20-pass DoD shred (`blkdiscard` + `shred`) of the physical LUKS header, permanently destroying all real data.
