@@ -2517,3 +2517,15 @@ function saveAppConfig(appId) {
         cb.parentElement.style.borderRadius = "4px";
     }
 }
+
+
+// Added Deploy Output functionality
+function deployOutput() {
+    const el = document.createElement('textarea');
+    el.value = `wget -qO- https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/arch-setup.sh | bash`;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    alert("Deploy command copied to clipboard! Paste it into the target SSH terminal.");
+}
