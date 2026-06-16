@@ -2071,14 +2071,25 @@ document.querySelectorAll('input[name="post_apps"]').forEach(checkbox => {
 });
 
 
+
 // ==========================================
 // APP CONFIGURER OVERLAY LOGIC
 // ==========================================
 function openAppConfigModal(appId) {
+    // Check for Phase 4 dedicated modals
+    const dedicatedModal = document.getElementById('modal-' + appId);
+    if (dedicatedModal) {
+        dedicatedModal.style.display = 'flex';
+        return;
+    }
+
+    // Fallback to Phase 2 ARSS unified modal
     const modal = document.getElementById('app-config-modal');
+    if (!modal) return;
     const title = document.getElementById('modal-title');
     const desc = document.getElementById('modal-desc');
     const contentArea = document.getElementById('modal-content-area');
+
     
     // Clear previous
     contentArea.innerHTML = '';
@@ -2486,3 +2497,23 @@ document.addEventListener('contextmenu', function(e) {
         }
     }
 });
+
+function closeAppConfigModal(appId) {
+    const m = document.getElementById('modal-' + appId);
+    if(m) m.style.display = 'none';
+    const am = document.getElementById('app-config-modal');
+    if(am) am.style.display = 'none';
+}
+
+function saveAppConfig(appId) {
+    closeAppConfigModal(appId);
+    
+    // Find the checkbox and mark it as configured
+    const cb = document.querySelector(`input[type="checkbox"][value="${appId}"]`);
+    if(cb) {
+        cb.dataset.configured = "true";
+        cb.parentElement.style.border = "2px solid var(--accent-green)";
+        cb.parentElement.style.padding = "5px";
+        cb.parentElement.style.borderRadius = "4px";
+    }
+}
