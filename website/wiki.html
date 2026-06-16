@@ -162,6 +162,40 @@
         </ul>
     </div>
 
+
+    <div class="section" id="firewall">
+        <h2><span class="icon">🛡️</span> UFW Firewall Profiles</h2>
+        <p>The ARSS Generator allows you to configure Uncomplicated Firewall (UFW) dynamically during installation.</p>
+        <ul>
+            <li><strong>Strict:</strong> Drops all inbound connections. Highly recommended for laptops and portable devices.</li>
+            <li><strong>Web Server:</strong> Allows only HTTP (80) and HTTPS (443). Drops all other inbound traffic.</li>
+            <li><strong>SSH Only:</strong> Allows port 22 (and 2222 if Endlessh is used). Recommended for remote headless servers.</li>
+        </ul>
+        <p>You can always modify these rules post-installation using <code>sudo ufw allow/deny &lt;port&gt;</code>.</p>
+    </div>
+
+    <div class="section" id="fail2ban">
+        <h2><span class="icon">🚫</span> Fail2ban Intrusion Prevention</h2>
+        <p>Fail2ban monitors system logs (like <code>/var/log/auth.log</code>) for automated attacks and brute-force attempts. When it detects multiple failed login attempts from a single IP address, it automatically updates firewall rules to ban that IP.</p>
+        <p>Our default configuration protects the SSH daemon by banning an IP for 1 hour after 3 failed password attempts.</p>
+    </div>
+
+    <div class="section" id="endlessh">
+        <h2><span class="icon">⏳</span> Endlessh (SSH Tarpit)</h2>
+        <p>Endlessh is an SSH tarpit that slowly sends an endless, random SSH banner to clients. This ties up automated SSH scanners and botnets for hours or even weeks, preventing them from attacking other hosts.</p>
+        <p>When you enable Endlessh in the generator, it binds to the default SSH port (22), and automatically moves your real SSH daemon to port <strong>2222</strong>. You must connect to your server using <code>ssh -p 2222 user@host</code>.</p>
+    </div>
+
+    <div class="section" id="yubikey">
+        <h2><span class="icon">🔑</span> Hardware Security Key (FIDO2 / U2F)</h2>
+        <p>The generator supports integrating physical FIDO2/U2F tokens (like YubiKeys) directly into the Linux PAM stack via <code>pam_u2f</code>.</p>
+        <div class="alert">
+            <strong>⚠️ WARNING: Firmware Lockout Risk</strong><br>
+            If you enroll a YubiKey, it will be <em>required</em> to log in, use SSH, or execute Sudo/Doas commands. If you lose your YubiKey and do not have a fallback, you will be permanently locked out of your system. It is highly recommended to enroll backup keys post-installation.
+        </div>
+        <p>When the installation script runs, it will prompt you to plug in your YubiKey and touch the flashing contact point to enroll it. This hardware key can be used completely seamlessly alongside Libre-OTP to provide multi-factor, hardware-backed authentication.</p>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('live-releases-container');

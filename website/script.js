@@ -12,6 +12,17 @@ if (fullSuiteToggle) {
     fullSuiteToggle.addEventListener('change', (e) => {
         const arssTools = document.querySelectorAll('input[name="arss_tools"]');
         arssTools.forEach(tool => {
+        if (tool === 'yubikey') {
+            scriptOutput += `
+echo -e "\\n\\e[1;34m:: Setting up Hardware Security Key (FIDO2/U2F)...\\e[0m"
+arch-chroot /mnt pacman -S --noconfirm pam-u2f libfido2
+echo -e "\\e[1;33mPlease plug in your YubiKey/FIDO2 token and touch it when it flashes to enroll.\\e[0m"
+arch-chroot /mnt su - ${uname} -c "mkdir -p ~/.config/Yubico && pamu2fcfg > ~/.config/Yubico/u2f_keys"
+# Add to system-auth (Required)
+arch-chroot /mnt sed -i '1i auth required pam_u2f.so cue' /etc/pam.d/system-auth
+`;
+        }
+
             if (e.target.checked) {
                 tool.checked = true;
                 tool.disabled = true;
@@ -28,7 +39,7 @@ if (fullSuiteToggle) {
 
     
     // Ensure 'No Selection Provided' text is greyed out
-    document.querySelectorAll('#install-form select').forEach(sel => {
+    document.querySelectorAll('.generator-form select').forEach(sel => {
         if (sel.value === "") sel.style.color = "var(--fg-dim, #888)";
         
         // Trigger immediately on interaction to prevent iOS WebKit ghosting
@@ -1234,7 +1245,7 @@ window.getFormValues = function() {
         inputs: {},
         checkboxes: {}
     };
-    document.querySelectorAll('#install-form select').forEach(el => data.selects[el.id] = el.value);
+    document.querySelectorAll('.generator-form select').forEach(el => data.selects[el.id] = el.value);
     document.querySelectorAll('#install-form input[type="text"], #install-form input[type="number"]').forEach(el => data.inputs[el.id] = el.value);
     document.querySelectorAll('#install-form input[type="checkbox"]').forEach(el => {
         if (!data.checkboxes[el.name]) data.checkboxes[el.name] = [];
@@ -1495,7 +1506,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                     // Trigger UI updates
-                    document.querySelectorAll('#install-form select').forEach(sel => sel.dispatchEvent(new Event('change')));
+                    document.querySelectorAll('.generator-form select').forEach(sel => sel.dispatchEvent(new Event('change')));
                     document.querySelectorAll('#install-form input[type="checkbox"]').forEach(cb => cb.dispatchEvent(new Event('change')));
                     alert('Configuration restored successfully.');
                 } catch (err) {
@@ -1512,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====================================================================
 
 function injectNoSelectionProvided() {
-    document.querySelectorAll('#install-form select').forEach(select => {
+    document.querySelectorAll('.generator-form select').forEach(select => {
         // Remove existing if any to avoid duplicates
         const existing = Array.from(select.options).find(o => o.value === "");
         if (existing) existing.remove();
@@ -1555,7 +1566,7 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
     let missingFields = [];
     let totalFields = 0;
     
-    document.querySelectorAll('#install-form select').forEach(el => {
+    document.querySelectorAll('.generator-form select').forEach(el => {
         if (!el.disabled && el.offsetParent !== null) {
             totalFields++;
             if (el.value === "") {
@@ -1595,7 +1606,7 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
             return;
         } else {
             // >= 1 selection made
-            document.querySelectorAll('#install-form select').forEach(el => {
+            document.querySelectorAll('.generator-form select').forEach(el => {
                 if (!el.disabled && el.offsetParent !== null && el.value === "") {
                     el.style.border = "2px solid var(--accent-red)";
                     if (!el.parentElement.querySelector('.req-warning')) {
@@ -1628,7 +1639,7 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
                     newErrorList.style.paddingLeft = "0";
                     newErrorList.innerHTML = missingFields.map(f => {
                         const safeF = f.replace(/'/g, "\\'");
-                        return `<a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;margin-right:10px;line-height:1.8;" onclick="event.stopPropagation(); const els=Array.from(document.querySelectorAll('#install-form select, input[type=\\'checkbox\\']')); const target=els.find(s=>s.parentElement.innerText.includes('${safeF.split(':')[0].trim()}')); if(target)target.scrollIntoView({behavior:'smooth',block:'center'}); return false;">[${f}]</a>`;
+                        return `<a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;margin-right:10px;line-height:1.8;" onclick="event.stopPropagation(); const els=Array.from(document.querySelectorAll('.generator-form select, input[type=\\'checkbox\\']')); const target=els.find(s=>s.parentElement.innerText.includes('${safeF.split(':')[0].trim()}')); if(target)target.scrollIntoView({behavior:'smooth',block:'center'}); return false;">[${f}]</a>`;
                     }).join(' ');
                 }
                 errorBox.style.display = 'block';
@@ -2232,7 +2243,7 @@ window.toggleLiveEditorMode = function() {
 
 // Clear Generator Form
 window.clearFormSelections = function() {
-    document.querySelectorAll('#install-form select').forEach(sel => {
+    document.querySelectorAll('.generator-form select').forEach(sel => {
         sel.value = "";
         sel.style.border = "";
         const warn = sel.parentElement.querySelector('.req-warning');
