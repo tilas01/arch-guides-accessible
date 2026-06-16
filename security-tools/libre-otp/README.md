@@ -1,16 +1,7 @@
-<div align="center">
-  <img src="img/icon.png" alt="Icon" width="128" height="128">
-  <h1>Libre Otp</h1>
-  <p><strong>Universal 2FA/OTP integration across the Arch ecosystem.</strong></p>
-</div>
+# Libre-OTP Authenticator
 
-## Features
-- Native Arch Linux support (Wayland/Xorg via eframe)
-- Minimalist Tokyo Night UI design
-- Background root daemon capability
+![Icon](img/icon.png)
 
-## Usage
-Run directly from terminal:
-```bash
-./libre-otp --interactive
-```
+![Banner](img/banner.png)
+
+A completely offline, dependency-free Rust implementation of TOTP. Seeds deterministic hardware hashes into your LUKS bootloader, generating a physical 6-digit code on boot matching your smartphone to verify system integrity.

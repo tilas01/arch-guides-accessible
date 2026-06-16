@@ -1,16 +1,7 @@
-<div align="center">
-  <img src="img/icon.png" alt="Icon" width="128" height="128">
-  <h1>Anti Ducky</h1>
-  <p><strong>Automated USB HID sandboxing and threat detection. Blocks malicious keystroke injection.</strong></p>
-</div>
+# Anti-Ducky USB Blocker
 
-## Features
-- Native Arch Linux support (Wayland/Xorg via eframe)
-- Minimalist Tokyo Night UI design
-- Background root daemon capability
+![Icon](img/icon.png)
 
-## Usage
-Run directly from terminal:
-```bash
-./anti-ducky --interactive
-```
+![Banner](img/banner.png)
+
+A Rust-based background daemon that enforces a strict USB whitelist upon screen lock, preventing Rubber Ducky / BadUSB keystroke injection attacks. Supports dynamic udev rules and quorum-based emergency unlocks.

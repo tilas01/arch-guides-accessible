@@ -1,16 +1,7 @@
-<div align="center">
-  <img src="img/icon.png" alt="Icon" width="128" height="128">
-  <h1>Anti Evil Maid</h1>
-  <p><strong>LUKS boot tampering protection and Evil Maid attack deterrence.</strong></p>
-</div>
+# Anti-Evil Maid Integrator
 
-## Features
-- Native Arch Linux support (Wayland/Xorg via eframe)
-- Minimalist Tokyo Night UI design
-- Background root daemon capability
+![Icon](img/icon.png)
 
-## Usage
-Run directly from terminal:
-```bash
-./anti-evil-maid --interactive
-```
+![Banner](img/banner.png)
+
+Automated toolkit that records TPM PCRs, EFI variables, and the `boot` partition structure to detect Evil Maid / physical tampering attacks on next boot. Integrates with Libre-OTP for verifiable boot screens.
