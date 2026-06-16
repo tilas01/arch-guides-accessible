@@ -1,16 +1,7 @@
-<div align="center">
-  <img src="img/icon.png" alt="Icon" width="128" height="128">
-  <h1>Kernel Watcher</h1>
-  <p><strong>Deep system integrity monitoring. Watches for unauthorized module loading.</strong></p>
-</div>
+# Kernel Watcher (SIGSTOP)
 
-## Features
-- Native Arch Linux support (Wayland/Xorg via eframe)
-- Minimalist Tokyo Night UI design
-- Background root daemon capability
+![Icon](img/icon.png)
 
-## Usage
-Run directly from terminal:
-```bash
-./kernel-watcher --interactive
-```
+![Banner](img/banner.png)
+
+Rust-based eBPF/Process monitor that actively hunts for unauthorized screen recorders (OBS, WayVNC) and suspends them via SIGSTOP until an interactive Libre-OTP or Tamper Password authorization is provided.
