@@ -1064,8 +1064,8 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                              data-desc="Select which ARSS security modules to include. Each tool has its own sub-options that appear when enabled. All tools are combined into the unified arch-rusty-security-suite binary. Right-click to visit the wiki.">
                             
                             <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; padding:0.8rem; background:var(--bg-lighter); border-radius:8px; border:1px solid var(--accent-green); cursor:pointer;">
-                                <input type="checkbox" id="arss-full-suite-toggle" style="width:20px; height:20px; accent-color:var(--accent-green);">
-                                <span><strong>Use Full Suite Binary</strong> (Installs the unified <code>arch-rusty-security-suite</code> binary and enables all features below)</span>
+                                <input type="checkbox" id="arss-full-suite-toggle" onchange="if(this.checked) openAppConfigModal('arss-full-suite')" data-requires-config="true" data-configured="false" style="width:20px; height:20px; accent-color:var(--accent-green);">
+                                <span><strong>Use Full Suite Binary</strong> (Installs the unified <code>arch-rusty-security-suite</code> binary and enables all features below)</span> <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('arss-full-suite')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
                             </label>
 
                             <label style="margin-bottom:0.6rem;">🦀 ARSS Security Modules:</label>
