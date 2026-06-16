@@ -1,0 +1,23 @@
+[package]
+name = "uacme_fix"
+version = "0.1.0"
+edition = "2021"
+authors = ["tilas01"]
+description = "A secure, memory-safe remediation utility for auditing and cleaning system modifications caused by the UACME exploit framework."
+repository = "https://github.com/tilas01/uacme_fix"
+
+[dependencies]
+clap = { version = "4.4.11", features = ["derive"] }
+zeroize = { version = "1.7.0", features = ["derive"] }
+colored = "2.1.0"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.51.0"
+winapi = { version = "0.3.9", features = ["winnt", "securitybaseapi", "minwindef", "processthreadsapi"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true
