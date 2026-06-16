@@ -84,7 +84,7 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
     flex-wrap: wrap;
     margin-top: 0.5rem;
 }
-.nav-sep { color: var(--bg-lighter); font-size: 1.1rem; user-select: none; }
+.nav-sep { color: var(--bg-lighter); font-size: 1.1rem; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
 h1, h2, h3 { color: var(--heading-color); margin-bottom: 0.8rem; }
 
