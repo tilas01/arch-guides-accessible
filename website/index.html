@@ -1323,11 +1323,11 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                     
 
 
-                    <div class="form-group form-step" data-title="Script Generation Style" data-desc="Choose how the generated bash script functions. Unified creates a single self-persisting script that auto-rolls over across the first reboot. Split creates two manual files.">
-                        <label>Script Generation Style:</label>
+                    <div class="form-group form-step" data-title="Post-Install Execution" data-desc="Choose how post-install scripts are handled. Auto-Run executes everything seamlessly. Split creates a separate post-install.sh file.">
+                        <label>Post-Install Execution:</label>
                         <select id="script-style">
-                            <option value="unified" selected>Unified Auto-Rollover Script (Recommended)</option>
-                            <option value="split">Split (Pre-Install and Post-Install Scripts)</option>
+                            <option value="unified" selected>Auto-Run Post-Install (Recommended)</option>
+                            <option value="split">Split Scripts (Manual Post-Install)</option>
                         </select>
                     </div>
 
@@ -1354,7 +1354,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         <ul id="error-list" style="margin-top: 0.5rem; margin-bottom: 0;"></ul>
                         <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap; position:sticky; bottom:0; padding:1rem; background:var(--bg-darker); border-top:1px solid var(--accent-cyan); z-index:100; border-radius:8px;">
                         <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="width:auto;">⚙️ Generate Custom Guide</button>
                         
                         <div style="display:flex; align-items:center; gap:8px;" class="nav-tooltip" data-title="Apply Selection Changes Live" data-desc="Automatically regenerates the guide when you change a setting and routes you to the live editor output page.">
