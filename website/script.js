@@ -11,6 +11,7 @@ const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
 if (fullSuiteToggle) {
     fullSuiteToggle.addEventListener('change', (e) => {
         const arssTools = document.querySelectorAll('input[name="arss_tools"]');
+        if (cmdOnly) o += `echo -e "\n\${COLOR_BLUE}:: Installing Arch Rusty Security Suite (ARSS)\${COLOR_RESET}\n\${COLOR_FG}Compiling and installing memory-safe security tools written in Rust.\nWiki: https://github.com/tilas01/arch-guides-dynamic\${COLOR_RESET}"\n`;
         arssTools.forEach(tool => {
         if (tool === 'yubikey') {
             scriptOutput += `
@@ -477,8 +478,8 @@ window.generateOutput = function(auto = false) {
             o += `echo -e "\${COLOR_BLUE}========================================================================\${COLOR_RESET}\n\n"\n`;
             
             if (configMode === 'preconfigured') {
-                o += `echo -e "\\e[33m[!] WALK-AWAY AUTOMATION: Collecting Credentials Upfront\\e[0m"\n`;
-                o += `echo "This script will cache your passwords into volatile memory to perform a completely unattended installation."\n`;
+                o += `echo -e "\${COLOR_RED}[!] WALK-AWAY AUTOMATION: Collecting Credentials Upfront\${COLOR_RESET}"\n`;
+                o += `echo -e "\${COLOR_FG}This script will cache your passwords into volatile memory to perform a completely unattended installation.\${COLOR_RESET}"\n`;
                 o += `echo "All passwords will be securely wiped (unset) immediately upon completion."\n\n`;
                 if (part !== "unencrypted") {
                     o += `read -s -p "Enter LUKS Encryption Password: " LUKS_PASS\necho\n`;
@@ -504,6 +505,12 @@ window.generateOutput = function(auto = false) {
         }
 
         // Partitioning
+        if (cmdOnly) {
+            o += `echo -e "\\n\${COLOR_BLUE}:: Step 1: Disk Partitioning & Formatting\${COLOR_RESET}"\n`;
+            o += `echo -e "\${COLOR_FG}Target: ${disk} | Firmware: ${fw.toUpperCase()}\${COLOR_RESET}"\n`;
+            o += `echo -e "\${COLOR_FG}Wiping partition tables and structuring for Arch Linux. UEFI requires an EFI system partition.\${COLOR_RESET}"\n`;
+            o += `echo -e "\${COLOR_FG}Wiki: https://wiki.archlinux.org/title/Partitioning\${COLOR_RESET}"\n`;
+        }
         if (fw === "uefi") {
             o += `sgdisk -Z ${disk}\nsgdisk -n 1:0:+512M -t 1:ef00 ${disk}\nsgdisk -n 2:0:0 -t 2:8300 ${disk}\n`;
             o += `partprobe ${disk}\nsleep 2\nmkfs.fat -F32 ${partEfi}\n`;
@@ -513,11 +520,13 @@ window.generateOutput = function(auto = false) {
 
         let targetMount = partRoot;
         if (part === "luks1") {
+            if (cmdOnly) o += `echo -e "\\n\${COLOR_BLUE}:: Encrypting with LUKS1\${COLOR_RESET}\\n\${COLOR_FG}Using legacy LUKS1 to support GRUB decryption. AES-XTS-512 encryption.\\nWiki: https://wiki.archlinux.org/title/Dm-crypt\${COLOR_RESET}"\n`;
             o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks1 -c aes-xts-plain64 -s 512 -h sha512 - ${partRoot}\n`;
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
             targetMount = "/dev/mapper/cryptroot";
         } else if (part === "luks2") {
+            if (cmdOnly) o += `echo -e "\\n\${COLOR_BLUE}:: Encrypting with LUKS2\${COLOR_RESET}\\n\${COLOR_FG}Using modern LUKS2 with Argon2id key derivation. Extremely resistant to brute force.\\nWiki: https://wiki.archlinux.org/title/Dm-crypt\${COLOR_RESET}"\n`;
             o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 - ${partRoot}\n`;
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
@@ -539,6 +548,7 @@ window.generateOutput = function(auto = false) {
         }
 
         if (fs === "btrfs") {
+            if (cmdOnly) o += `echo -e "\\n\${COLOR_BLUE}:: Formatting as BTRFS\${COLOR_RESET}\\n\${COLOR_FG}BTRFS supports subvolumes and atomic snapshots. This enables instant system rollbacks.\\nWiki: https://wiki.archlinux.org/title/Btrfs\${COLOR_RESET}"\n`;
             o += `mkfs.btrfs -f ${targetMount}\nmount ${targetMount} /mnt\nbtrfs subvolume create /mnt/@\nbtrfs subvolume create /mnt/@home\nbtrfs subvolume create /mnt/@var\nbtrfs subvolume create /mnt/@snapshots\numount /mnt\n`;
             o += `ROOT_UUID=$(blkid -s UUID -o value ${targetMount})\n`;
             o += `mount -o noatime,compress=zstd,space_cache=v2,subvol=@ UUID=$ROOT_UUID /mnt\nmkdir -p /mnt/{home,var,.snapshots}\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@home UUID=$ROOT_UUID /mnt/home\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@var UUID=$ROOT_UUID /mnt/var\nmount -o noatime,compress=zstd,space_cache=v2,subvol=@snapshots UUID=$ROOT_UUID /mnt/.snapshots\n`;
@@ -581,6 +591,7 @@ window.generateOutput = function(auto = false) {
         let allKernels = kernelMain + " " + kernelMain + "-headers";
         if (kernelBackup !== "none") allKernels += " " + kernelBackup + " " + kernelBackup + "-headers";
 
+        if (cmdOnly) o += `echo -e "\\n\${COLOR_BLUE}:: Step 2: Base System Installation (pacstrap)\${COLOR_RESET}\\n\${COLOR_FG}Downloading and installing the base OS, kernel (${kernelMain}), drivers, and essential tools.\\nWiki: https://wiki.archlinux.org/title/Installation_guide#Install_essential_packages\${COLOR_RESET}"\n`;
         o += `pacstrap -K /mnt base ${allKernels} ${cpuPkg} ${gpuPkg} ${vmPkg} linux-firmware neovim ${adminTools} git ${fsPkg}\n`;
         o += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
           
@@ -705,9 +716,11 @@ window.generateOutput = function(auto = false) {
             }
             o += `grub-mkconfig -o /boot/grub/grub.cfg\n`;
         } else if (boot.includes("uki")) {
+            if (cmdOnly) o += `echo -e "\n\${COLOR_BLUE}:: Step 4: Unified Kernel Image (UKI)\${COLOR_RESET}\n\${COLOR_FG}A UKI bundles the kernel, initramfs, and cmdline into a single EFI file. Extremely secure, built for Secure Boot.\nWiki: https://wiki.archlinux.org/title/Unified_kernel_image\${COLOR_RESET}"\n`;
             o += `pacman -S --noconfirm sbsigntools efitools efibootmgr\n`;
             if (boot === "uki-shim") o += `pacman -S --noconfirm shim-signed\ncp /usr/share/shim-signed/shimx64.efi /efi/EFI/arch/bootx64.efi\n`;
         } else if (boot === "systemd-boot") {
+            if (cmdOnly) o += `echo -e "\n\${COLOR_BLUE}:: Step 4: Installing systemd-boot\${COLOR_RESET}\n\${COLOR_FG}systemd-boot is a minimalist, fast bootloader for UEFI systems.\nWiki: https://wiki.archlinux.org/title/Systemd-boot\${COLOR_RESET}"\n`;
             o += `bootctl install --esp-path=/efi\n`;
         }
 
