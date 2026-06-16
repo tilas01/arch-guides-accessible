@@ -476,6 +476,63 @@ window.generateOutput = function(auto = false) {
             o += `echo -e "\${COLOR_BLUE}========================================================================\${COLOR_RESET}"\n`;
             o += `echo -e "\${COLOR_BLUE}             ARCH RUSTY SECURITY SUITE Ã¢â‚¬â€ AUTO-INSTALLER                 \${COLOR_RESET}"\n`;
             o += `echo -e "\${COLOR_BLUE}========================================================================\${COLOR_RESET}\n\n"\n`;
+            if (verbosity_level === 'progress' || verbosity_level === 'simple') {
+                o += `
+# Setup animated progress bar function
+run_with_progress() {
+    local cmd="$1"
+    local msg="$2"
+    local pid
+    eval "$cmd" >/dev/null 2>&1 &
+    pid=$!
+    
+    local delay=0.1
+    local width=20
+    local pos=0
+    local direction=1
+    
+    echo -e "\${COLOR_FG}${msg}..."
+    tput civis # hide cursor
+    while kill -0 $pid 2>/dev/null; do
+        # Build the bar
+        local bar="["
+        for ((i=0; i<width; i++)); do
+            if [ $i -eq $pos ]; then
+                bar+="="
+            elif [ $i -eq $((pos-1)) ] || [ $i -eq $((pos+1)) ]; then
+                bar+="-"
+            else
+                bar+=" "
+            fi
+        done
+        bar+="]"
+        
+        echo -ne "\\r\${COLOR_BLUE}${bar}\${COLOR_RESET}"
+        
+        # Bounce logic
+        if [ $pos -eq $((width-1)) ]; then
+            direction=-1
+        elif [ $pos -eq 0 ]; then
+            direction=1
+        fi
+        pos=$((pos+direction))
+        
+        sleep $delay
+    done
+    wait $pid
+    local exit_code=$?
+    tput cnorm # restore cursor
+    
+    if [ $exit_code -eq 0 ]; then
+        echo -e "\\r[====================] [\${COLOR_GREEN}DONE\${COLOR_RESET}]"
+    else
+        echo -e "\\r[                    ] [\${COLOR_RED}FAILED\${COLOR_RESET}]"
+        exit $exit_code
+    fi
+}
+`;
+            }
+
             
             if (configMode === 'preconfigured') {
                 o += `echo -e "\${COLOR_RED}[!] WALK-AWAY AUTOMATION: Collecting Credentials Upfront\${COLOR_RESET}"\n`;
@@ -592,7 +649,13 @@ window.generateOutput = function(auto = false) {
         if (kernelBackup !== "none") allKernels += " " + kernelBackup + " " + kernelBackup + "-headers";
 
         if (cmdOnly) o += `echo -e "\\n\${COLOR_BLUE}:: Step 2: Base System Installation (pacstrap)\${COLOR_RESET}\\n\${COLOR_FG}Downloading and installing the base OS, kernel (${kernelMain}), drivers, and essential tools.\\nWiki: https://wiki.archlinux.org/title/Installation_guide#Install_essential_packages\${COLOR_RESET}"\n`;
-        o += `pacstrap -K /mnt base ${allKernels} ${cpuPkg} ${gpuPkg} ${vmPkg} linux-firmware neovim ${adminTools} git ${fsPkg}\n`;
+        if (verbosity_level === 'progress') {
+            o += `run_with_progress "pacstrap -K /mnt base ${allKernels} ${cpuPkg} ${gpuPkg} ${vmPkg} linux-firmware neovim ${adminTools} git ${fsPkg}" "Installing Base System"\n`;
+        } else if (verbosity_level === 'simple') {
+            o += `pacstrap -K /mnt base ${allKernels} ${cpuPkg} ${gpuPkg} ${vmPkg} linux-firmware neovim ${adminTools} git ${fsPkg} >/dev/null 2>&1\n`;
+        } else {
+            o += `pacstrap -K /mnt base ${allKernels} ${cpuPkg} ${gpuPkg} ${vmPkg} linux-firmware neovim ${adminTools} git ${fsPkg}\n`;
+        }
         o += `genfstab -U /mnt >> /mnt/etc/fstab\n`;
           
           if (isoVerify === 'yes') {

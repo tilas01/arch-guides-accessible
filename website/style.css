@@ -472,3 +472,15 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(16px);
 }
+
+.btn-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+.btn-container .btn {
+    flex: 1 1 200px;
+    max-width: 300px;
+}

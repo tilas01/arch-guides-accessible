@@ -1356,13 +1356,23 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                         </div>
                     </div>
 
-                    <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Quiet: hides non-critical output. Normal: standard output. Debug/Verbose: prints every executed command (set -x).">
+                    <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Select how much output the installer prints to the terminal. High verbosity will slow down installation due to rapid terminal I/O.">
                         <label>Script Verbosity Level (Advanced):</label>
                         <select id="verbosity_level">
-                            <option value="normal" selected>Normal</option>
-                            <option value="quiet">Quiet</option>
-                            <option value="debug">Debug / Verbose</option>
+                            <option value="progress">Progress Bar Only (No Output)</option>
+                            <option value="simple">Simple (Headers Only)</option>
+                            <option value="medium" selected>Medium (Headers + Pacman Output)</option>
+                            <option value="high">High / Verbose (set -x)</option>
                         </select>
+                        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent-orange);">⚠️ Note: High verbosity generates massive terminal output and will slightly slow down your installation.</p>
+                    </div>
+                    
+                    <div class="form-group form-step" id="advanced-tty-theme" style="display:block;" data-title="TTY Tokyo Night Theme" data-desc="Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw Arch TTY (Console) outside of any GUI.">
+                        <label class="custom-checkbox">
+                            <input type="checkbox" id="tty-theme" checked>
+                            <span class="checkmark"></span>
+                            Apply Tokyo Night Theme to TTY Shell (No GUI)
+                        </label>
                     </div>
 
                     <div id="generate-error-box" class="alert error" style="display:none; margin-bottom: 1rem; border: 1px solid var(--accent-red); padding: 1rem; cursor: pointer;">
@@ -1371,7 +1381,8 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                         <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
                     </div>
                     <div style="display:flex; justify-content:center; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap; position:sticky; bottom:0; padding:1rem; background:var(--bg-darker); border-top:1px solid var(--accent-cyan); z-index:100; border-radius:8px; width:100%;">
-                        <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="flex:1; min-width:200px; max-width:350px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
+                        <div class="btn-container">
+                    <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="flex:1; min-width:200px; max-width:350px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
                         
                         <div style="display:flex; align-items:center; gap:8px; justify-content:center; flex:1; min-width:200px; max-width:350px;" class="nav-tooltip" data-title="Apply Selection Changes Live" data-desc="Automatically regenerates the guide when you change a setting and routes you to the live editor output page.">
                             <span style="font-size:0.9rem; color:var(--accent-cyan); font-weight:bold;">Apply Selection Changes Live:</span>
