@@ -307,6 +307,14 @@
             <li><strong>Markdown Guide:</strong> Passwords are ALWAYS censored (displayed as <code>*******</code>) because Markdown files are static text and should never contain plaintext secrets.</li>
             <li><strong>Bash Script:</strong> The script will always use secure, echoing-disabled <code>read -s -p</code> prompts to ask you for passwords live in the terminal during execution.</li>
         </ul>
+    
+        <h3 id="advanced-config-libre-otp">Libre-OTP Configuration</h3>
+        <p>Libre-OTP allows you to integrate Time-Based One-Time Passwords (TOTP) natively into Linux Pluggable Authentication Modules (PAM). This enforces 2FA physically onto your machine.</p>
+        <ul>
+            <li><strong>OTP Mode:</strong> Choose which operations require an OTP code. Selecting <code>Boot/Login only</code> will ask for an OTP immediately after LUKS decryption but before giving you a shell. Selecting <code>All</code> will prompt for OTP on every <code>sudo</code>, <code>su</code>, SSH login, and boot sequence.</li>
+            <li><strong>Bypass Uses:</strong> Set the number of times you can bypass the OTP prompt using a fallback recovery code (e.g., in case you lose your phone). Maximum allowed is 10.</li>
+        </ul>
+
     </section>
 
 <footer style="text-align: center; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color); color: #8b949e;">
