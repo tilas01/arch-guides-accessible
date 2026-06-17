@@ -484,3 +484,17 @@ input:checked + .slider:before {
     flex: 1 1 200px;
     max-width: 300px;
 }
+
+
+/* ─── Checkbox Grid ─── */
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
