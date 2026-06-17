@@ -316,7 +316,7 @@
                     <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Libre-only users will see compatibility notes. All apps are 100% open source unless noted.">
                         <label>Post-Install Apps:</label>
                         <p style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;">⚠️ <strong>Proprietary / Non-Libre Warning:</strong> Apps highlighted with <span style="color:var(--accent-red);font-weight:bold;">[!]</span> (e.g., Firefox firmware blobs, Signal Electron build, Chromium, Flatpak) contain proprietary code or conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
-                        <div class="app-grid" id="post_apps_container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:0.6rem;">
+                        <div class="app-grid-container" id="post_apps_container">
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">📦 AUR</div>
                             <label class="app-card" title="Rofi
 --
@@ -1217,7 +1217,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                 Enable all Arch Security Suite Apps by <a href="https://github.com/tilas01" target="_blank" style="color:var(--bg-darker); text-decoration:underline;">tilas01</a>
                             </button>
                         </div>
-                        <div class="checkbox-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:0.6rem;">
+                        <div class="app-grid-container">
                             
                             <label class="app-card" title="Libre-OTP Authenticator">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('libre-otp')" value="libre-otp" data-requires-config="true" data-configured="false" class="tilas-sec-app">

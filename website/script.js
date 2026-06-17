@@ -378,7 +378,17 @@ window.generateOutput = function(auto = false) {
     });
 
     if (fw === "bios" && boot !== "grub") errors.push(`<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">Legacy BIOS requires GRUB. UKI/systemd-boot are UEFI only.</span></li>`);
+    
     if (fw === "bios" && part.includes("luks2")) errors.push(`<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">GRUB has limited LUKS2 support on BIOS. Use LUKS1.</span></li>`);
+
+    // Enforce Required App Configuration
+    document.querySelectorAll('input[name="post_apps"]:checked').forEach(cb => {
+        if (cb.dataset.requiresConfig === "true" && cb.dataset.configured === "false") {
+            const appName = cb.parentElement.querySelector('a')?.innerText || cb.value;
+            errors.push(`<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">[!] Configuration Required:</span> You must click the ⚙️ gear icon to configure <strong>${appName}</strong> before generating!</li>`);
+        }
+    });
+
 
     const errorBox = document.getElementById("generate-error-box");
     const errorList = document.getElementById("error-list");
@@ -2226,7 +2236,8 @@ function openAppConfigModal(appId) {
         `;
     } else {
         // Fallback for apps without specific config logic yet
-        title.innerHTML = `⚙️ ${appId} Configuration`;
+        const capId = appId.charAt(0).toUpperCase() + appId.slice(1);
+        title.innerHTML = `⚙️ ${capId} Configuration`;
         desc.innerText = `Advanced configuration for ${appId} is not yet implemented. This app will be installed with default settings.`;
         contentArea.innerHTML = `<p style="color:var(--accent-green);">Marking as configured...</p>`;
     }
