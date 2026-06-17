@@ -216,7 +216,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="⚙️ Bootloader Choice" data-desc="UKI Custom uses your own keys in UEFI. UKI Shim uses Microsoft trust chain. systemd-boot is minimal. GRUB is legacy.">
+                    <div class="form-group form-step" data-title="⚙️ Bootloader Choice" data-desc="UKI Custom uses your own keys in UEFI. UKI Shim uses Microsoft trust chain. systemd-boot is minimal. GRUB is legacy." oncontextmenu="window.open('wiki.html#bootloader', '_blank'); return false;">
                         <label>Bootloader & Secure Boot:
                         <select id="bootloader">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -304,7 +304,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Desktop Environment" data-desc="Select your primary Desktop Environment or Window Manager. DuskyOS replaces all default WM configs.">
+                    <div class="form-group form-step" data-title="Desktop Environment" data-desc="Select your primary Desktop Environment or Window Manager. DuskyOS replaces all default WM configs." oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;">
                         <label>Desktop Environment (DE/WM):</label>
                         <select id="desktop_env">
                             <option value="none" selected>None (CLI Only)</option>
@@ -1002,7 +1002,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Desktop Environment" data-desc="GNOME is full-featured. KDE is customizable. DWM is minimal and keyboard-driven. Dusky OS is a pre-configured Hyprland setup by dusklinux. TTY Only means no GUI.">
+                    <div class="form-group form-step" data-title="Desktop Environment" data-desc="GNOME is full-featured. KDE is customizable. DWM is minimal and keyboard-driven. Dusky OS is a pre-configured Hyprland setup by dusklinux. TTY Only means no GUI." oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;">
                         <label>Desktop Environment:</label>
                         <select id="desktop">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -1356,7 +1356,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                         </div>
                     </div>
 
-                    <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Select how much output the installer prints to the terminal. High verbosity will slow down installation due to rapid terminal I/O.">
+                    <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Select how much output the installer prints to the terminal. High verbosity will slow down installation due to rapid terminal I/O." oncontextmenu="window.open('wiki.html#verbosity', '_blank'); return false;">
                         <label>Script Verbosity Level (Advanced):</label>
                         <select id="verbosity_level">
                             <option value="progress">Progress Bar Only (No Output)</option>
@@ -1367,7 +1367,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                         <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent-orange);">⚠️ Note: High verbosity generates massive terminal output and will slightly slow down your installation.</p>
                     </div>
                     
-                    <div class="form-group form-step" id="advanced-tty-theme" style="display:block;" data-title="TTY Tokyo Night Theme" data-desc="Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw Arch TTY (Console) outside of any GUI.">
+                    <div class="form-group form-step" id="advanced-tty-theme" style="display:block;" data-title="TTY Tokyo Night Theme" data-desc="Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw Arch TTY (Console) outside of any GUI." oncontextmenu="window.open('wiki.html#tty-theme', '_blank'); return false;">
                         <label class="custom-checkbox">
                             <input type="checkbox" id="tty-theme" checked>
                             <span class="checkmark"></span>
