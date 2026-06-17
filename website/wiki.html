@@ -72,15 +72,7 @@
         <p style="font-size: 0.9rem; color: #8b949e;">Developed by <strong><a href="https://github.com/tilas01" target="_blank">tilas01</a></strong></p>
     </header>
 
-    <div class="section" id="libre-otp">
-        <h2 id="arss" style="color:var(--accent-purple); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 2rem;">Arch Rusty Security Suite (ARSS)</h2>
-        <div style="background:var(--bg-color); border:1px solid var(--accent-purple); border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; text-align:center;">
-            <p style="color:var(--fg-color); font-size:1.1rem; margin-bottom:1.5rem;">The official memory-safe, Rust-based kernel and userspace security suite. Includes Anti-Ducky, ARSS Firewall (eBPF), Scarecrow, and more.</p>
-            <a href="docs/arch-security-suite.html" class="btn" style="background:var(--accent-purple); color:var(--bg-dark); padding:0.8rem 1.5rem; font-weight:bold; font-size:1.1rem; text-decoration:none; border-radius:6px; display:inline-block;">📖 View the ARSS Official Manual</a>
-        </div>
-        </div>
-
-        <div class="section" id="generator-steps">
+    
         <h2><span class="icon">⚙️</span> Generator Configuration Steps</h2>
         <p>This section explains every dropdown option available in the Arch Guides Dynamic generator.</p>
         
@@ -109,13 +101,13 @@
 
     <div class="section" id="memory-integrity">
         <h2><span class="icon">🧠</span> Memory Integrity Checker</h2>
-        <p>The Memory Integrity Checker is a core component of the ARSS Kernel Watcher. It constantly hashes and validates the live running kernel structures by analyzing <code>/proc/kcore</code> and <code>/proc/kallsyms</code>.</p>
+        <p>
         <p>If an advanced rootkit attempts to patch syscall tables in live memory or hide malicious kernel modules (Direct Kernel Object Manipulation - DKOM), the integrity checker will detect the checksum mismatch and alert you instantly.</p>
     </div>
 
     <div class="section" id="reproducible-builds">
         <h2><span class="icon">🔍</span> Build Integrity & Reproducible Builds</h2>
-        <p>In the ARSS Generator, every post-install application displays an <span style="cursor:help;"></span> information tooltip with its <strong>Build Integrity</strong>. Here is what those terms mean for your security and trust model:</p>
+        <p>In the Generator, every post-install application displays an <span style="cursor:help;"></span> information tooltip with its <strong>Build Integrity</strong>. Here is what those terms mean for your security and trust model:</p>
         
         <ul>
             <li><strong>100% Reproducible:</strong> The application's build process is perfectly deterministic. If you compile the exact same source code twice, the resulting binary will be bit-for-bit identical. This guarantees that the binary distributed in the repositories has not been tampered with or injected with a backdoor by the build server. You do not have to blindly trust the distributor; you can mathematically verify it.</li>
@@ -131,7 +123,7 @@
         
         <div style="margin-bottom:1.5rem; padding:1rem; border-left:4px solid var(--accent-green); background:rgba(46, 160, 67, 0.1);">
             <strong>✅ 100% Reproducible & GPG Signed</strong>
-            <p style="margin-top:0.5rem; font-size:0.95rem;">Every binary released in this repository (Arch Rusty Security Suite, Libre-OTP, Kernel Watcher, etc.) is strictly <strong>100% Reproducible</strong>. Our GitHub Actions CI environment compiles the releases deterministically. Furthermore, every release is <strong>GPG Signed</strong> by the author to guarantee supply-chain integrity.</p>
+            <p style="margin-top:0.5rem; font-size:0.95rem;">Every binary released in this repository is strictly <strong>100% Reproducible</strong>. Our GitHub Actions CI environment compiles the releases deterministically. Furthermore, every release is <strong>GPG Signed</strong> by the author to guarantee supply-chain integrity.</p>
         </div>
         
         <div style="background:var(--bg-lighter); padding:1rem; border-radius:8px; border:1px solid var(--border-color); margin-bottom:1.5rem;">
@@ -154,18 +146,18 @@
 
         <h4>Standalone Modules</h4>
         <ul>
-            <li><strong>Libre-OTP:</strong> <code>cargo install libre-otp --git https://github.com/tilas01/arch-guides-dynamic</code></li>
-            <li><strong>Input Guard:</strong> <code>cargo install anti-ducky --git https://github.com/tilas01/arch-guides-dynamic</code></li>
-            <li><strong>Anti-Evil Maid:</strong> <code>cargo install anti-evil-maid --git https://github.com/tilas01/arch-guides-dynamic</code></li>
-            <li><strong>Kernel Watcher:</strong> <code>cargo install kernel-watcher --git https://github.com/tilas01/arch-guides-dynamic</code></li>
-            <li><strong>Scarecrow:</strong> <code>cargo install scarecrow --git https://github.com/tilas01/arch-guides-dynamic</code></li>
+            
+            
+            
+            
+            
         </ul>
     </div>
 
 
     <div class="section" id="firewall">
         <h2><span class="icon">🛡️</span> UFW Firewall Profiles</h2>
-        <p>The ARSS Generator allows you to configure Uncomplicated Firewall (UFW) dynamically during installation.</p>
+        <p>The Generator allows you to configure Uncomplicated Firewall (UFW) dynamically during installation.</p>
         <ul>
             <li><strong>Strict:</strong> Drops all inbound connections. Highly recommended for laptops and portable devices.</li>
             <li><strong>Web Server:</strong> Allows only HTTP (80) and HTTPS (443). Drops all other inbound traffic.</li>
@@ -193,7 +185,7 @@
             <strong>⚠️ WARNING: Firmware Lockout Risk</strong><br>
             If you enroll a YubiKey, it will be <em>required</em> to log in, use SSH, or execute Sudo/Doas commands. If you lose your YubiKey and do not have a fallback, you will be permanently locked out of your system. It is highly recommended to enroll backup keys post-installation.
         </div>
-        <p>When the installation script runs, it will prompt you to plug in your YubiKey and touch the flashing contact point to enroll it. This hardware key can be used completely seamlessly alongside Libre-OTP to provide multi-factor, hardware-backed authentication.</p>
+        
     </div>
 
     <script>
@@ -204,9 +196,9 @@
                 <p>GitHub API rate limit exceeded or connection failed. You can directly install the tools via cargo:</p>
                 <ul>
                     <li><code>cargo install arch-rusty-security-suite --git https://github.com/tilas01/arch-guides-dynamic</code></li>
-                    <li><code>cargo install libre-otp --git https://github.com/tilas01/arch-guides-dynamic</code></li>
-                    <li><code>cargo install kernel-watcher --git https://github.com/tilas01/arch-guides-dynamic</code></li>
-                    <li><code>cargo install anti-ducky --git https://github.com/tilas01/arch-guides-dynamic</code></li>
+                    
+                    
+                    
                 </ul>
                 <p><a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" style="color:var(--accent-purple); font-weight:bold;">Or click here to manually view releases on GitHub.</a></p>
             </div>`;

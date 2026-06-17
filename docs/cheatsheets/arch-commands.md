@@ -35,5 +35,4 @@
 
 ## Security Suite Tools
 - **Verify ISO**: `arch-iso-verifier`
-- **Libre OTP Configuration**: `libre-otp-cli generate --username <user>`
 - **Check Input Guard Logs**: `journalctl -u input-guard -e`
