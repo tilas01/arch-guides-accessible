@@ -2161,8 +2161,11 @@ function openAppConfigModal(appId) {
     // Clear previous
     contentArea.innerHTML = '';
     
+
     // Map app IDs to their specific config UIs
+    if (appId === 'libre-otp') {
         title.innerHTML = '⚙️ Libre OTP Configuration';
+
         desc.innerText = 'Configure your Time-Based One Time Password settings for PAM (sudo, su, ssh).';
         contentArea.innerHTML = `
             <div style="margin-bottom:1rem;">

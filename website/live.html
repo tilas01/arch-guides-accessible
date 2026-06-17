@@ -14,6 +14,15 @@
 
     <div class="layout-container">
         <section id="output-section" style="width:100%;">
+
+            <div class="output-actions" style="background:var(--bg-lighter); padding:1rem; border-radius:8px; margin-bottom:2rem; border:1px solid var(--border-color);">
+                <div>
+                    <h3 style="margin-top:0; color:var(--accent-purple);">Upload File (.md / .sh)</h3>
+                    <p style="font-size:0.85rem; color:var(--fg-color);">Load an existing guide or script into the editor.</p>
+                </div>
+                <input type="file" id="file-uploader" accept=".md,.sh" style="background:var(--bg-darker); padding:0.5rem; border:1px solid var(--accent-blue); border-radius:4px; color:var(--fg-color);">
+            </div>
+
             <div class="output-actions">
                 <h3 class="output-title md-edit">Markdown Guide (.md)</h3>
                 <div style="display:flex; gap:8px;">
@@ -38,6 +47,20 @@
             <div class="alert info" style="margin-top:2rem;">
                 <strong>GPG Signature Check:</strong> The scripts above dynamically embed GPG integrity checks. Always verify signatures before executing remote scripts.
             </div>
+
+            <div class="alert info" style="margin-top:2rem;">
+                <h3 style="margin-top:0;">🛡️ Pre-Secure SSH Setup Guide</h3>
+                <p>Before executing the scripts on a remote machine, ensure your SSH connection is configured correctly:</p>
+                <ul style="margin-top:0.5rem; margin-bottom:0;">
+                    <li>1. Boot the target machine into the Arch ISO.</li>
+                    <li>2. Set a root password: <code>passwd</code></li>
+                    <li>3. Start the SSH daemon: <code>systemctl start sshd</code></li>
+                    <li>4. Find the target IP: <code>ip a</code></li>
+                    <li>5. Connect from this machine: <code>ssh root@&lt;target-ip&gt;</code></li>
+                    <li>6. Copy and execute the <strong>Install Script</strong> block above.</li>
+                </ul>
+            </div>
+
         </section>
     </div>
 
@@ -51,6 +74,28 @@
             document.getElementById('raw-md-code').textContent = md;
             document.getElementById('raw-script-code').textContent = sh;
             document.getElementById('raw-post-script-code').textContent = post_sh;
+        });
+
+
+        document.getElementById('file-uploader').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const content = evt.target.result;
+                if (file.name.endsWith('.md')) {
+                    document.getElementById('raw-md-code').textContent = content;
+                } else if (file.name.endsWith('.sh')) {
+                    // Check if it's a post-install script (heuristic)
+                    if (content.includes('post_install')) {
+                        document.getElementById('raw-post-script-code').textContent = content;
+                    } else {
+                        document.getElementById('raw-script-code').textContent = content;
+                    }
+                }
+                if (window.Prism) Prism.highlightAll();
+            };
+            reader.readAsText(file);
         });
 
         function downloadContent(id, filename) {
