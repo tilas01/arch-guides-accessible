@@ -64,6 +64,7 @@
         'Display Server':                  '?page=xorg-vs-wayland.md',
         'Output Format':                   '?page=architecture.md',
         '🛡️ Post-Quantum Libre-OTP':       '?page=libre-otp.md',
+        '🦀 Rust Security Apps':           '?page=tilas-security-tools.md',
     };
 
     // App right-click URLs (open repo instead of wiki)
