@@ -1398,7 +1398,13 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                 <section id="live-editor" style="display:none; margin-top:1.5rem; background:var(--bg-darker); border:1px solid var(--bg-lighter); border-radius:12px; padding:1.2rem;">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
         <div style="display:flex; align-items:center; gap:15px;">
-            <h3 style="color:var(--accent-cyan); margin:0; font-size:1.1rem;" class="nav-tooltip" data-title="Live Editor (Staging)" data-desc="Make manual edits before finalizing. Click Confirm & Save when ready.">📝 Live Editor (Staging)</h3>
+            
+              <label class="btn nav-tooltip" data-title="Upload Raw Script/Guide" data-desc="Upload a previously generated .sh or .md file to view and edit." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem; margin:0;">
+                  ðŸ“¤ Upload .sh / .md
+                  <input type="file" id="upload-source-input" accept=".sh,.md" style="display:none">
+              </label>
+
+              <h3 style="color:var(--accent-cyan); margin:0; font-size:1.1rem;" class="nav-tooltip" data-title="Live Editor (Staging)" data-desc="Make manual edits before finalizing. Click Confirm & Save when ready.">📝 Live Editor (Staging)</h3>
             <div style="display:flex; align-items:center; gap:8px;">
                 <span style="font-size:0.85rem; color:var(--accent-blue); font-weight:bold;">Raw Edit</span>
                 <label class="switch nav-tooltip" data-title="Toggle Editor Mode" data-desc="Switch between Raw Text Editor and Syntax Highlighted Preview">
