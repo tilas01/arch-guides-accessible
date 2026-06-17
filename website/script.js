@@ -997,6 +997,33 @@ run_with_progress() {
             o += `# Add system info greeting to shell\necho '${fetchCmd}' >> /etc/profile.d/greeting.sh\n`;
         }
 
+        
+        // Standalone Security Apps
+        const secApps = [
+            { id: 'libre-otp', name: 'Libre-OTP Authenticator', repo: 'libre-otp' },
+            { id: 'anti-ducky', name: 'Input Guard (Anti-Ducky)', repo: 'anti-ducky' },
+            { id: 'anti-evil-maid', name: 'Anti-Evil Maid', repo: 'anti-evil-maid' },
+            { id: 'kernel-watcher', name: 'Kernel Watcher (EDR)', repo: 'kernel-watcher' },
+            { id: 'scarecrow', name: 'ScareCrow (LKM)', repo: 'scarecrow' },
+            { id: 'kloak', name: 'Kloak (Keystroke Obfuscator)', repo: 'kloak' }
+        ];
+
+        secApps.forEach(app => {
+            if (post_apps.includes(app.id)) {
+                if (!cmdOnly) o += `\`\`\`\n\n### ${app.name} Setup\n\`\`\`bash\n`;
+                else o += `\n# Setup ${app.name}\n`;
+                o += `git clone https://github.com/tilas01/${app.repo}.git /opt/${app.repo}\n`;
+                o += `cd /opt/${app.repo}\n`;
+                if (app.id === 'kloak') {
+                    o += `make\nsudo make install\n`;
+                } else {
+                    o += `cargo build --release\nsudo cp target/release/${app.repo} /usr/local/bin/\n`;
+                }
+                o += `cd -\n`;
+                if (!cmdOnly) o += `\`\`\`\n\n`;
+            }
+        });
+
         // Dusky OS auto-setup
         if (post_apps.includes('dusky-setup')) {
             if (!cmdOnly) o += `\n### Dusky OS Auto-Setup\n> Watch the [YouTube guide](https://www.youtube.com/watch?v=JmgvSdEIK8c) and read the [dusky repo](https://github.com/dusklinux/dusky) cheatsheet before running.\n\n\`\`\`bash\n`;
@@ -2619,3 +2646,12 @@ document.querySelector('a[href="index.html"]')?.addEventListener('click', functi
         if (liveEditor) liveEditor.style.display = 'none';
     }
 });
+
+
+function enableAllSecurityApps() {
+    document.querySelectorAll('.tilas-sec-app').forEach(cb => {
+        cb.checked = true;
+        const evt = new Event('change');
+        cb.dispatchEvent(evt);
+    });
+}
