@@ -29,8 +29,6 @@ This section explains every dropdown selection in the Auto Script Generator so y
 ## Security & Network
 - **DNS Caching Service**: `systemd-resolved` (default), [unbound](https://nlnetlabs.nl/projects/unbound/about/) (validating caching), [dnscrypt-proxy](https://dnscrypt.info/) (encrypted).
 - **Multi-User Setup**: Set up multiple regular user accounts. Decide if `root` can login directly via SSH or if only `sudo`/`doas` is allowed.
-- **OTP Algorithm**: Customize your [Libre OTP](https://github.com/tilas01/arch-guides-dynamic/tree/main/security-tools/libre-otp) hash algorithm (SHA1, SHA256, SHA512).
-- **Keystroke Anonymisation**: Installs [Kloak](https://github.com/vmonaco/kloak) by vmonaco to obscure typing biometric metadata.
 
 ## Desktop Environments & Applications
 - **Desktop Environment**: [GNOME](https://www.gnome.org/), [KDE Plasma](https://kde.org/plasma-desktop/), [DWM](https://dwm.suckless.org/), or **[Dusky OS](https://github.com/dusklinux/dusky)** (Highly customized and blazing fast).

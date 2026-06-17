@@ -287,6 +287,5 @@ gnome-extensions       # Manage extensions
 | [mpv](https://mpv.io) | `pacman -S mpv` | Media player | ✅ |
 | [OBS Studio](https://obsproject.com) | `pacman -S obs-studio` | Streaming/recording | ✅ |
 | [Flatpak](https://flatpak.org) | `pacman -S flatpak` | Universal app format | ⚠️ may include proprietary |
-| [kloak](https://github.com/vmonaco/kloak) | build from source | Keystroke anonymizer | ✅ |
 
 > ✅ = Fully libre/open source | ⚠️ = Free to use but may include non-libre components

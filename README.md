@@ -103,10 +103,6 @@ Native Rust TOTP/OTP 2FA providing Two-Factor Authentication during Boot, Login,
 A native Rust daemon that monitors input speeds, sandboxes unknown USB HID devices, and blocks automated keystroke injection attacks.
 <br><br>
 
-### 🥷 Kloak
-Anonymizes keystroke timing to prevent biometric profiling (by vmonaco).
-<br><br>
-
 ### 🕵️ Anti-Evil Maid
 Generates generic kernel decoy entries to obfuscate your real encrypted boot target and checks boot integrity.
 <br><br>
@@ -115,46 +111,3 @@ Generates generic kernel decoy entries to obfuscate your real encrypted boot tar
 Real-time async file monitoring. Detects infostealers accessing browser/SSH data, and userland rootkits.
 <br><br>
 
-### 👻 ScareCrow
-Spoofs a fake Virtual Machine and analysis sandbox to trick advanced malware into self-terminating.
-<br><br>
-
-</div>
-
----
-
-## ⭐ Credits & Acknowledgements
-
-<h3 align="center">
-  <a href="https://github.com/tilas01">
-    <img src="https://github.com/tilas01.png?size=80" width="80" alt="tilas01" style="border-radius:50%">
-  </a>
-  <br>
-  <a href="https://github.com/tilas01">tilas01</a>
-  <br>
-  <sub>Main Author, Developer & Maintainer</sub>
-</h3>
-
-<p align="center">
-  Creator of Arch Guides, the Security Tools, and all project code.<br>
-  All AI-generated content has been manually curated, reviewed, and authored by tilas01.
-</p>
-
-This project integrates tools, configurations, and concepts from brilliant developers across the open-source community. If you use these tools, please check out their official pages!
-
-*   **[Max-Baz Arch Install Guide](https://github.com/maximbaz/dotfiles)** - Core inspiration for the modularity and security concepts of this project.
-*   **[Dusky OS / dusklinux](https://github.com/dusklinux/dusky)** - An incredible, fully riced, and blazing-fast Arch OS. Included as an auto-install option! Check out [Dusky's Demo Video on YouTube](https://www.youtube.com/watch?v=JmgvSdEIK8c).
-*   **[Kloak](https://github.com/vmonaco/kloak)** - Keystroke anonymization tool created by vmonaco.
-*   **Anti-RubberDucky Concepts** - Inspired by various open-source HID injection mitigation tools developed by the community. 
-*   **Tilas01 Security Tools** - Libre-OTP, Anti-Ducky, Kernel Watcher, Anti-Evil-Maid, and ScareCrow custom Rust implementations authored by tilas01 for this repository.
-
-*This repository is provided purely for educational and security research purposes.*
-
----
-
-## License & Copyright
-
-**Copyright (c) 2026 tilas01**
-
-This project is licensed under the **[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](LICENSE)**.
-By using, modifying, or distributing this software, you agree to the strict terms of this license, which mandates that you may not use it to make money, and any derivative works must also be released under the same license and provide explicit attribution.

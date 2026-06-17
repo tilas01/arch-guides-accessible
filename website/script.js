@@ -7,34 +7,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
 // ---- Full Suite Toggle Logic ----
-const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
-if (fullSuiteToggle) {
-    fullSuiteToggle.addEventListener('change', (e) => {
-        const arssTools = document.querySelectorAll('input[name="arss_tools"]');
-        if (cmdOnly) o += `echo -e "\n\${COLOR_BLUE}:: Installing Arch Rusty Security Suite (ARSS)\${COLOR_RESET}\n\${COLOR_FG}Compiling and installing memory-safe security tools written in Rust.\nWiki: https://github.com/tilas01/arch-guides-dynamic\${COLOR_RESET}"\n`;
-        arssTools.forEach(tool => {
-        if (tool === 'yubikey') {
-            scriptOutput += `
-echo -e "\\n\\e[1;34m:: Setting up Hardware Security Key (FIDO2/U2F)...\\e[0m"
-arch-chroot /mnt pacman -S --noconfirm pam-u2f libfido2
-echo -e "\\e[1;33mPlease plug in your YubiKey/FIDO2 token and touch it when it flashes to enroll.\\e[0m"
-arch-chroot /mnt su - ${uname} -c "mkdir -p ~/.config/Yubico && pamu2fcfg > ~/.config/Yubico/u2f_keys"
-# Add to system-auth (Required)
-arch-chroot /mnt sed -i '1i auth required pam_u2f.so cue' /etc/pam.d/system-auth
-`;
-        }
 
-            if (e.target.checked) {
-                tool.checked = true;
-                tool.disabled = true;
-                tool.parentElement.setAttribute('title', 'Included and managed automatically by the Full Security Suite.');
-                tool.parentElement.style.opacity = '0.7';
-            } else {
-                tool.disabled = false;
-                tool.parentElement.removeAttribute('title');
-                tool.parentElement.style.opacity = '1';
-            }
-        });
     });
 }
 
@@ -363,15 +336,12 @@ window.generateOutput = function(auto = false) {
     const post_apps = [];
     document.querySelectorAll('input[name="post_apps"]:checked').forEach(cb => post_apps.push(cb.value));
 
-    const arss_tools = [];
-    if (useCustomScripts) {
-        document.querySelectorAll('input[name="arss_tools"]:checked').forEach(cb => arss_tools.push(cb.value));
+    
     }
 
     const other_sec_tools = [];
     document.querySelectorAll('input[name="other_sec_tools"]:checked').forEach(cb => other_sec_tools.push(cb.value));
 
-    // ARSS sub-options
     const libreOtpMode = gv('libre_otp_mode','login');
     const otp_recovery = gv('otp_recovery','5');
     const otp_bypass = gv('otp_bypass','0');
@@ -459,7 +429,7 @@ window.generateOutput = function(auto = false) {
 
     // Default Profiles Check for Apps & Security
     const hasApps = document.querySelectorAll('input[name="post_apps"]:checked').length > 0;
-    const hasSec = document.querySelectorAll('input[name="arss_tools"]:checked').length > 0 || document.querySelectorAll('input[name="other_sec_tools"]:checked').length > 0;
+    
     
     if (!hasApps || !hasSec) {
         if (!confirm("You have not selected any Apps or Security Tools. Default minimal profiles will be automatically applied. Proceed?")) {
@@ -476,7 +446,6 @@ window.generateOutput = function(auto = false) {
         if (!hasSec) {
             const defSec = ['iso-verifier', 'input-guard'];
             defSec.forEach(val => {
-                const cb = document.querySelector(`input[name="arss_tools"][value="${val}"]`);
                 if (cb) cb.checked = true;
             });
         }
@@ -523,7 +492,7 @@ window.generateOutput = function(auto = false) {
             o += `> *Generated for your specific hardware. Review every command before running.*\n\n`;
             o += `## 1. Partitioning & Formatting (${part} + ${fs})\n\`\`\`bash\n`;
         } else {
-            o += `#!/bin/bash\n# Arch Rusty Security Suite by tilas01 — Generated Script\n# WARNING: Review ALL commands!\nset -e\n`;
+            o += `#!/bin/bash\n# Generated Script\n# WARNING: Review ALL commands!\nset -e\n`;
             if (verbosity_level === 'debug') o += `set -x\n`;
             if (verbosity_level === 'quiet') o += `exec >/dev/null\n`;
             o += `\n`;
@@ -686,7 +655,6 @@ run_with_progress() {
             o += `swapon /mnt/swapfile\n`;
         }
 
-        if (useCustomScripts && arss_tools.includes("iso-verifier")) {
             if (!cmdOnly) o += `\`\`\`\n\n## ISO Verification\n> *It is highly recommended to verify the Arch ISO integrity before installing.*\n\`\`\`bash\n`;
             o += `curl -sLO https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt\n`;
             o += `echo "Verifying ISO Hash..."\n`;
@@ -1043,7 +1011,6 @@ run_with_progress() {
         if (needsAUR) o += `userdel -r builder\nrm -f /etc/sudoers.d/builder\n`;
 
         // Security tools (now Arch Rusty Security Suite)
-        if (useCustomScripts && arss_tools.length > 0) {
             if (!cmdOnly) o += `\`\`\`\n\n## 7. Arch Rusty Security Suite by tilas01\n\`\`\`bash\n`;
             else o += `\n# 7. Arch Rusty Security Suite\n`;
             o += `# Download the latest release from GitHub\n`;
@@ -1054,15 +1021,12 @@ run_with_progress() {
             o += `chmod +x arch-rusty-security-suite-linux-x86_64\n`;
             o += `cp arch-rusty-security-suite-linux-x86_64 /usr/local/bin/arch-rusty-security-suite\n`;
 
-            if (arss_tools.includes("webhooks")) {
                 o += `\n# Configuring Webhooks\nmkdir -p /etc/arch-security/\ncat << 'WH' > /etc/arch-security/webhook.conf\nPROVIDER=${webhook_provider}\nURL=${webhook_url}\nWH\n`;
                 o += `arch-rusty-security-suite webhooks --install-service\n`;
             }
-            if (arss_tools.includes("libre-otp")) {
                 let otpOpts = `--setup --mode ${libreOtpMode} --hash ${otp_sha} --recovery-codes ${otp_recovery}`;
                 if (otp_bypass !== "0" && otp_bypass !== "") otpOpts += ` --bypass-uses ${otp_bypass}`;
                 if (otp_double === "yes") otpOpts += ` --double-otp`;
-                o += `\n# Configuring Libre OTP\narch-rusty-security-suite libre-otp ${otpOpts}\n`;
                 o += `\n# Injecting Libre OTP into PAM\n`;
                 if (libreOtpMode === "boot" || libreOtpMode === "both" || libreOtpMode === "all") {
                     o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/system-auth\n`;
@@ -1073,10 +1037,8 @@ run_with_progress() {
                     o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/sshd\n`;
                 }
             }
-            if (arss_tools.includes("panic-password")) {
                 o += `\n# Configuring Panic Password\narch-rusty-security-suite panic --setup\n`;
             }
-            if (arss_tools.includes("evil-maid")) {
                 if (cmdOnly) {
                     o += `\n# Configuring Anti-Evil Maid (Interactive)\n`;
                     o += `echo -e "\\n\\e[38;2;247;118;142m>> Anti-Evil Maid Configuration\\e[0m"\n`;
@@ -1096,37 +1058,19 @@ run_with_progress() {
                     o += `\n# Configuring Anti-Evil Maid\narch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} --decoy-count 1\n`;
                 }
                 
-                o += `cat << 'AEM_DAEMON' > /etc/systemd/system/arss-aem.service\n[Unit]\nDescription=ARSS Anti-Evil Maid Daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/arch-rusty-security-suite aem --daemon\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nAEM_DAEMON\n`;
-                o += `systemctl enable arss-aem.service\n`;
                 
                 // Add regular file system hash checks via cron
-                o += `cat << 'AEM_HASH' > /usr/local/bin/arss-fs-hash-check.sh\n#!/bin/bash\n`;
-                o += `arch-rusty-security-suite aem --fs-hash-check >> /var/log/arss-fs-hash.log 2>&1\nAEM_HASH\n`;
-                o += `chmod +x /usr/local/bin/arss-fs-hash-check.sh\n`;
-                o += `(crontab -l 2>/dev/null; echo "0 * * * * /usr/local/bin/arss-fs-hash-check.sh") | crontab -\n`;
             }
-            if (arss_tools.includes("anti-ducky")) {
-                o += `\n# Configuring Input Guard (Anti-Ducky)\narch-rusty-security-suite ducky --approve-current\n`;
+                
             }
-            if (arss_tools.includes("hardened-ssh")) {
                 o += `\n# Hardening SSH Server\narch-rusty-security-suite ssh --harden\n`;
             }
-            if (arss_tools.includes("kloak")) {
-                o += `\n# Installing Kloak (Keystroke Anonymisation)\npacman -S --noconfirm kloak\nsystemctl enable kloak\n`;
+                
             }
-            if (arss_tools.includes("kernel-watcher")) {
-                o += `\n# Configuring Kernel Watcher (Semi-EDR)\nkernel-watcher --setup\n`;
-                o += `cat << 'EOF' > /etc/systemd/system/arss-kernel-watcher.service\n[Unit]\nDescription=ARSS Kernel Watcher EDR Daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/kernel-watcher\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nEOF\n`;
-                o += `systemctl enable arss-kernel-watcher.service\n`;
             }
-            if (arss_tools.includes("scarecrow")) {
-                o += `\n# Configuring Libre-Cyber-ScareCrow (Sandbox Spoofing)\n`;
-                o += `cat << 'EOF' > /etc/systemd/system/arss-scarecrow.service\n[Unit]\nDescription=Libre-Cyber-ScareCrow Sandbox Spoofing\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/arch-rusty-security-suite scarecrow\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nEOF\n`;
-                o += `systemctl enable arss-scarecrow.service\n`;
             }
         }
 
-        // Other Security Tools (independent of ARSS)
         if (otherSecTools !== 'no') {
             if (!cmdOnly) o += `\`\`\`\n\n## 9. Other Security Hardening\n\`\`\`bash\n`;
             else o += `\n# 9. Other Security Tools\n`;
@@ -1403,9 +1347,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
     }
 
-    // Toggle sub-options for Libre-OTP and Doas
-    const libreOtpCb = document.getElementById('arss-libre-otp');
-    const libreOtpContainer = document.getElementById('arss-otp-options');
     if (libreOtpCb && libreOtpContainer) {
         libreOtpCb.addEventListener('change', () => {
             libreOtpContainer.style.display = libreOtpCb.checked ? 'block' : 'none';
@@ -1428,7 +1369,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateConfigButtons() {
         const doasChecked = document.querySelector('input[name="post_apps"][value="doas"]')?.checked;
         const snapperChecked = document.querySelector('input[name="post_apps"][value="snapper"]')?.checked;
-        const aemChecked = document.querySelector('input[name="arss_tools"][value="anti-evil-maid"]')?.checked;
         
         const btnDoas = document.querySelector('.btn-configure[data-app="doas"]');
         const btnSnapper = document.querySelector('.btn-configure[data-app="snapper"]');
@@ -1439,7 +1379,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnAem) btnAem.style.display = aemChecked ? 'inline-block' : 'none';
     }
 
-    document.querySelectorAll('input[name="post_apps"], input[name="arss_tools"]').forEach(cb => {
         cb.addEventListener('change', updateConfigButtons);
     });
     updateConfigButtons();
@@ -1538,13 +1477,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Full Suite Toggle Logic
-    const fullSuiteToggle = document.getElementById('arss-full-suite-toggle');
-    const arssToolsGrid = document.getElementById('arss-tools-grid');
-    const arssCheckboxes = document.querySelectorAll('input[name="arss_tools"]');
     
-    // Store previous states to restore them later
-    let previousArssStates = {};
-    arssCheckboxes.forEach(cb => { previousArssStates[cb.value] = cb.checked; });
 
     // Create the notice element
     const fullSuiteNotice = document.createElement('div');
@@ -1557,8 +1490,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fullSuiteNotice.style.marginTop = '0.5rem';
     fullSuiteNotice.innerHTML = '<strong>Ã°Å¸â€ºÂ¡Ã¯Â¸Â Full Suite Active:</strong> The unified <code>arch-rusty-security-suite</code> binary will be installed. All security modules are included automatically.<br><br><span style="font-size:0.85rem;opacity:0.8;" title="Untoggle \'Using Full Suite\' to select them individually."><em>(Hover for info: Security suite includes this module already. Untoggle to use them individually.)</em></span>';
     
-    if (arssToolsGrid) {
-        arssToolsGrid.parentNode.insertBefore(fullSuiteNotice, arssToolsGrid.nextSibling);
     }
     
     if (fullSuiteToggle) {
@@ -1567,23 +1498,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (isChecked) {
                 // Save current state before overriding
-                arssCheckboxes.forEach(cb => { previousArssStates[cb.value] = cb.checked; });
                 
                 // Hide grid, show notice, and UNCHECK them so their sub-options hide and don't block generation validation
-                if(arssToolsGrid) arssToolsGrid.style.display = 'none';
                 fullSuiteNotice.style.display = 'block';
                 
-                arssCheckboxes.forEach(cb => {
                     cb.checked = false;
                     cb.dispatchEvent(new Event('change'));
                 });
             } else {
                 // Show grid, hide notice, and restore previous states
-                if(arssToolsGrid) arssToolsGrid.style.display = 'grid';
                 fullSuiteNotice.style.display = 'none';
                 
-                arssCheckboxes.forEach(cb => {
-                    cb.checked = previousArssStates[cb.value] || false;
                     cb.dispatchEvent(new Event('change'));
                 });
             }
@@ -1859,7 +1784,6 @@ const wikiMap = {
     'DNS Caching':                  '?page=07-post-installation.md',
     'Display Server':               '?page=xorg-vs-wayland.md',
     'Ã°Å¸Â¦â‚¬ Arch Rusty Security Suite': '?page=security-suite.md',
-    'ARSS Ã¢â‚¬â€ Security Tools':        '?page=security-suite.md',
     'Anti-Evil Maid Decoys':        '?page=security-suite.md',
     'Other Security Tools':         '?page=security-suite.md',
 };
@@ -1883,10 +1807,8 @@ if (customScriptsSelect && customScriptsContainer) {
     });
 }
 const securityToolsSelect = document.getElementById('securitytools');
-const libreOtpModeContainer = document.getElementById('libre-otp-mode-container');
 if (securityToolsSelect && libreOtpModeContainer) {
     securityToolsSelect.addEventListener('change', () => {
-        libreOtpModeContainer.style.display = (securityToolsSelect.value === 'libre-otp' || securityToolsSelect.value === 'both') ? 'block' : 'none';
     });
 }
 
@@ -1919,8 +1841,6 @@ function validateConfigurations() {
     const desktop = document.getElementById('desktop')?.value || 'none';
     const displayServer = document.getElementById('display_server')?.value || 'auto';
 
-    // ARSS Full Suite Automation Lock
-    const suiteToggle = document.getElementById('arss-full-suite-toggle');
     if (suiteToggle) {
         const securityCbs = document.querySelectorAll('input[name="securitytools"]');
         securityCbs.forEach(cb => {
@@ -2231,7 +2151,6 @@ function openAppConfigModal(appId) {
         return;
     }
 
-    // Fallback to Phase 2 ARSS unified modal
     const modal = document.getElementById('app-config-modal');
     if (!modal) return;
     const title = document.getElementById('modal-title');
@@ -2243,7 +2162,6 @@ function openAppConfigModal(appId) {
     contentArea.innerHTML = '';
     
     // Map app IDs to their specific config UIs
-    if (appId === 'libre-otp') {
         title.innerHTML = '⚙️ Libre OTP Configuration';
         desc.innerText = 'Configure your Time-Based One Time Password settings for PAM (sudo, su, ssh).';
         contentArea.innerHTML = `
@@ -2339,7 +2257,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.toggleAppConfig = function(appId) {
     const configDiv = document.getElementById('config-' + appId);
     const containerDiv = document.getElementById('container-' + appId);
-    const cb = document.getElementById('arss-' + appId);
     if (!configDiv) return;
     
     // Automatically check the box when opening the config if it's not checked
@@ -2451,7 +2368,6 @@ window.confirmAndSaveLiveEditor = function() {
     }
     
     // Save to LocalStorage History
-    let history = JSON.parse(localStorage.getItem('arss_history') || '[]');
     const newEntry = {
         id: Date.now().toString(),
         timestamp: (() => {
@@ -2473,11 +2389,9 @@ window.confirmAndSaveLiveEditor = function() {
     }
     
     try {
-        localStorage.setItem('arss_history', JSON.stringify(history));
     } catch(e) {
         alert("Storage quota exceeded! Clearing oldest history items...");
         history = history.slice(0, 5);
-        localStorage.setItem('arss_history', JSON.stringify(history));
     }
     
     // Transition to Static Output
@@ -2576,7 +2490,6 @@ window.openHistoryModal = function() {
     const list = document.getElementById('history-list');
     modal.style.display = 'flex';
     
-    const history = JSON.parse(localStorage.getItem('arss_history') || '[]');
     if (history.length === 0) {
         list.innerHTML = '<p style="text-align:center; color:var(--fg-color); opacity:0.7;">No history available.</p>';
         return;
@@ -2599,7 +2512,6 @@ window.openHistoryModal = function() {
 
 window.clearHistory = function() {
     if (confirm("Are you sure you want to clear all generation history?")) {
-        localStorage.removeItem('arss_history');
         openHistoryModal(); // refresh
     }
 };

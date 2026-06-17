@@ -5,7 +5,6 @@ If the original repositories or YouTube tutorials ever go offline, this archive 
 
 ## Included Archives
 - **Dusky OS** (Creator: dusklinux)
-- **Kloak** (Creator: vmonaco)
 - **OpenDoas** (Creator: Duncaen)
 
 Run `backup_dependencies.sh` to fetch the latest clones of these repositories into this folder.

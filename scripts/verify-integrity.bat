@@ -1,5 +1,5 @@
 @echo off
-echo === Arch Rusty Security Suite Integrity Verifier ===
+echo === tilas01 Release Integrity Verifier ===
 if "%~1"=="" (
     echo Usage: verify-integrity.bat ^<binary-file^>
     exit /b 1

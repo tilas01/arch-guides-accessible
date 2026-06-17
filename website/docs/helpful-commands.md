@@ -577,7 +577,6 @@ systemctl enable dnsmasq
 
 ## Security Suite Commands
 
-> The **Arch Rusty Security Suite** by [tilas01](https://github.com/tilas01) provides advanced security tooling.
 
 ### Installation (from generator)
 
@@ -599,37 +598,7 @@ cp arch-rusty-security-suite-linux-x86_64 /usr/local/bin/arch-rusty-security-sui
 
 | Command | Description |
 |---------|-------------|
-| `arch-rusty-security-suite libre-otp --setup` | Setup OTP 2FA (Includes Double OTP & Bypass flags) |
-| `arch-rusty-security-suite ducky --approve-current` | Initialize Input Guard (anti-rubber-ducky sandbox) |
-| `arch-rusty-security-suite kernel-watcher --setup` | Setup Async EDR Daemon |
-| `arch-rusty-security-suite scarecrow` | Setup Decoy VM environment |
-| `arch-rusty-security-suite aem --setup` | Setup Anti-Evil Maid Boot Partition Hashing |
-| `arch-rusty-security-suite panic --setup` | Setup Emergency DoD 3-pass LUKS Wipe |
-| `arch-rusty-security-suite webhooks --install-service` | Setup Real-Time Webhook Alerts |
-| `arch-rusty-security-suite ssh --harden` | Harden SSH (Ed25519, ChaCha20-Poly1305, no password) |
-| `arch-rusty-security-suite verify-iso /dev/sr0` | Verify Arch ISO integrity |
 
-### Kloak — Keystroke Anonymization
-
-> Created by [vmonaco](https://github.com/vmonaco/kloak).
-
-```bash
-# Install
-git clone https://github.com/vmonaco/kloak.git /opt/kloak
-cd /opt/kloak && make && cp kloak /usr/local/bin/
-
-# Create service
-cat << 'SRV' > /etc/systemd/system/kloak.service
-[Unit]
-Description=Kloak Keystroke Anonymizer
-[Service]
-ExecStart=/usr/local/bin/kloak
-Restart=always
-[Install]
-WantedBy=multi-user.target
-SRV
-
-systemctl enable kloak.service
 ```
 
 ---
@@ -715,4 +684,4 @@ pacman -Ss '^linux$' '^linux-hardened$' '^linux-zen$' '^linux-lts$'
 ---
 
 *Part of the [Arch Guides Dynamic](https://github.com/tilas01/arch-guides-dynamic) wiki by [tilas01](https://github.com/tilas01).*
-*Dusky OS by [dusklinux](https://github.com/dusklinux/dusky). Kloak by [vmonaco](https://github.com/vmonaco/kloak).*
+*Dusky OS by [dusklinux](https://github.com/dusklinux/dusky). *

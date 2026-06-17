@@ -1,9 +1,9 @@
 #!/bin/bash
-# automated integrity verification script for Arch Rusty Security Suite
+# automated integrity verification script for tilas01 Release
 set -e
 
 echo "=================================================="
-echo "🛡️  Arch Rusty Security Suite Integrity Verifier"
+echo "🛡️  tilas01 Release Integrity Verifier"
 echo "=================================================="
 
 BINARY=$1
