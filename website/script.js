@@ -259,6 +259,67 @@ window.updatePreview = function() {
 // MAIN OUTPUT GENERATOR
 // ====================================================================
 window.generateOutput = function(auto = false) {
+
+    // --- SMART CONFIGURATION VALIDATION MATRIX ---
+    if (showWarnings) {
+        let hardErrors = [];
+        let smartWarnings = [];
+        
+        const fsType = gv('filesystem', 'ext4');
+        const swapType = gv('swap', 'none');
+        const hibernate = gv('hibernation', 'no') === 'yes';
+        const firewall = gv('firewall', 'none');
+        
+        // 1. Hibernation without Swap
+        if (hibernate && swapType === 'none') {
+            hardErrors.push("Hibernation requires a Swap file or partition. Please enable Swap.");
+        }
+        
+        // 2. BTRFS without btrfs-progs (Usually installed by base, but good to check conceptually)
+        // 3. Custom Firewall with Endlessh
+        let endlesshSelected = false;
+        document.querySelectorAll('input[type="checkbox"][data-requires-config="true"]').forEach(cb => {
+            if (cb.checked && cb.parentElement.innerText.includes('Endlessh')) endlesshSelected = true;
+        });
+        if (endlesshSelected && firewall !== 'none') {
+            smartWarnings.push("You selected a Custom Firewall profile AND Endlessh. Ensure your firewall allows port 2222 for your real SSH daemon, as Endlessh binds to 22.");
+        }
+        
+        // Display Hard Errors (Blocks Generation)
+        if (hardErrors.length > 0) {
+            const errDiv = document.createElement('div');
+            errDiv.className = 'alert error';
+            errDiv.innerHTML = '<strong>[BLOCKED] Invalid Configuration:</strong><ul>' + hardErrors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+            errDiv.style.marginBottom = '1.5rem';
+            
+            const form = document.querySelector('.generator-form');
+            form.insertBefore(errDiv, form.firstChild);
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Auto remove after 10 seconds
+            setTimeout(() => { if(errDiv.parentElement) errDiv.remove(); }, 10000);
+            return; // STOP GENERATION
+        }
+        
+        // Display Smart Warnings (Allows Generation, but warns)
+        if (smartWarnings.length > 0) {
+            const warnDiv = document.createElement('div');
+            warnDiv.className = 'alert info';
+            warnDiv.style.backgroundColor = 'rgba(122, 162, 247, 0.1)';
+            warnDiv.style.borderLeft = '4px solid var(--accent-blue)';
+            warnDiv.innerHTML = '<strong style="color:var(--accent-blue);">[INFO] Configuration Notice:</strong><ul>' + smartWarnings.map(w => `<li style="color:var(--fg-color);">${w}</li>`).join('') + '</ul>';
+            warnDiv.style.marginBottom = '1.5rem';
+            
+            const outSec = document.getElementById('output-section');
+            if (outSec) {
+                outSec.insertBefore(warnDiv, outSec.firstChild);
+                setTimeout(() => { if(warnDiv.parentElement) warnDiv.remove(); }, 15000);
+            }
+        }
+    }
+
     const gv = (id, def='') => { const e = document.getElementById(id); return e ? e.value : def; };
     const gi = (id, def=1) => { const e = document.getElementById(id); return e ? parseInt(e.value)||def : def; };
 
@@ -2616,3 +2677,30 @@ function deployOutput() {
     document.body.removeChild(el);
     alert("Deploy command copied to clipboard! Paste it into the target SSH terminal.");
 }
+
+
+document.getElementById('live-editor-nav')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    const liveEditor = document.getElementById('live-editor');
+    const outSec = document.getElementById('output-section');
+    const genForm = document.querySelector('.generator-form');
+    if (liveEditor) {
+        liveEditor.style.display = 'block';
+        if (outSec) outSec.style.display = 'none';
+        if (genForm) genForm.style.display = 'none';
+        liveEditor.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+
+// Also fix the generator button returning to form
+document.querySelector('a[href="index.html"]')?.addEventListener('click', function(e) {
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+        e.preventDefault();
+        const liveEditor = document.getElementById('live-editor');
+        const outSec = document.getElementById('output-section');
+        const genForm = document.querySelector('.generator-form');
+        if (genForm) genForm.style.display = 'block';
+        if (outSec) outSec.style.display = 'none';
+        if (liveEditor) liveEditor.style.display = 'none';
+    }
+});
