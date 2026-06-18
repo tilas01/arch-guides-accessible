@@ -111,3 +111,27 @@ Generates generic kernel decoy entries to obfuscate your real encrypted boot tar
 Real-time async file monitoring. Detects infostealers accessing browser/SSH data, and userland rootkits.
 <br><br>
 
+
+
+## 🔒 Integrity Verification (GPG & Hashes)
+
+All pre-compiled standalone security tools in this repository are cryptographically signed using GPG and hashed to ensure build integrity.
+
+The public GPG key (`tilas01.asc`) is committed to the root of this repository. The private key is strictly isolated and never exposed.
+
+**To verify the integrity of any downloaded binary:**
+
+1. Import the public key:
+   ```bash
+   gpg --import tilas01.asc
+   ```
+2. Verify the GPG signature against the binary:
+   ```bash
+   gpg --verify binary_name.sig binary_name
+   ```
+3. Verify the SHA-512 hash:
+   ```bash
+   sha512sum -c binary_name.sha512
+   ```
+
+If the signature says `Good signature from "tilas01"`, and the SHA512 hash matches `OK`, the binary is 100% authentic and untampered.

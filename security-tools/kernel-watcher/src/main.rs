@@ -1,7 +1,7 @@
 use clap::Parser;
-use std::process;
 use kernel_watcher::start_gui;
 use kernel_watcher::start_watcher;
+use std::process;
 
 /// Kernel Watcher (EDR) - Arch Security Suite Standalone
 #[derive(Parser, Debug)]
@@ -14,7 +14,7 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    
+
     if args.interactive {
         if let Err(e) = start_gui() {
             eprintln!("Failed to start Kernel Watcher (EDR) GUI: {}", e);

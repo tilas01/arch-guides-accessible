@@ -1,12 +1,12 @@
 #![allow(clippy::collapsible_if)]
 pub mod gui;
 pub mod process_monitor;
-#[cfg(target_os = "linux")]
-use aya::Bpf;
 use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
 };
+#[cfg(target_os = "linux")]
+use aya::Bpf;
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use rand_core::OsRng;
 use rpassword::prompt_password;
@@ -331,4 +331,3 @@ fn quarantine_file(path: &str) {
         println!("[AUTO-CLEANUP] Malicious artifact {} deleted", path);
     }
 }
-

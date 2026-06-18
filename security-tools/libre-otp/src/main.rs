@@ -1,7 +1,7 @@
 use clap::Parser;
-use std::process;
-use libre_otp::start_gui;
 use libre_otp::run;
+use libre_otp::start_gui;
+use std::process;
 
 /// Libre OTP Authenticator - Arch Security Suite Standalone
 #[derive(Parser, Debug)]
@@ -14,7 +14,7 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    
+
     if args.interactive {
         if let Err(e) = start_gui() {
             eprintln!("Failed to start Libre OTP Authenticator GUI: {}", e);
