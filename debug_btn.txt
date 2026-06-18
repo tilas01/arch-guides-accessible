@@ -1,0 +1,32 @@
+); border:1px solid var(--accent-red); padding:2rem; border-radius:12px; max-width:600px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <h2 style="color:var(--accent-red); margin-top:0;">⚠️ Legal & Security Waiver</h2>
+            <p style="color:var(--fg-color); opacity:0.9; text-align:left; line-height:1.6; font-size:0.95rem;">
+                By using the <strong>Arch Guides Dynamic Generator</strong> and the <strong>Arch Rusty Security Suite</strong>, you acknowledge:
+                <br><br>
+                🍪 <strong>Session-Only:</strong> We use no cookies. Generation history resets when the tab closes.<br>
+                💥 <strong>DoD Disk Wipes:</strong> Certain features (like Panic Password) permanently destroy data. There is no recovery.<br>
+                
+                ⚖️ <strong>Liability:</strong> The author (tilas01) is not responsible for data loss, system bricking, or targeted attacks failing to be mitigated.
+            </p>
+            <button id="accept-waiver-btn" class="btn" style="background:var(--accent-red); color:var(--bg-color); border:none; margin-top:1.5rem; width:100%;">I Understand and Accept the Risks</button>
+        </div>
+    </div>
+    
+    <header class="header">
+        <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository containing this website, all tilas01-authored scripts, Arch installation guides, ." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
+        <!-- Emoji header controls: absolute top-right, always visible -->
+        <div id="header-controls" class="js-only">
+            <button id="history-btn" type="button" class="tooltip-always"
+                data-title="🕓 Generation History"
+                data-desc="View and restore previous generations from this session. Session-only — no cookies, resets when tab closes."
+                onclick="toggleHistoryModal()">&#x1F553;</button>
+            <button id="toggle-tooltips-btn" type="button" class="tooltip-always"
+                data-title=" Tooltips: ON"
+                data-desc="Tooltips are ON. Hover any element for details. Tap to disable. This button always shows regardless of toggle.">&#x2139;️</button>
+        </div>
+        <h1>Arch Guides Wiki &amp; Generator</h1>
+        <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">⚙️ Generator</a>
+            <span class="nav-sep">|</span>
+            <a href="#live-editor" id="live-editor-nav" class="nav-link nav-tooltip" data-title="Live Editor" data-desc="Upload a previously generated .sh or .md file to view, edit and re-d
