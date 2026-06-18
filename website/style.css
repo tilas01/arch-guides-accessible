@@ -276,15 +276,7 @@ noscript .js-only { display: none !important; }
 .nav-link { font-size: 1.1rem; font-weight: bold; margin: 0 10px; }
 
 /* ─── Post-Install App Grid ─── */
-.app-grid-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    background: var(--bg-dark);
-    padding: 0.6rem;
-    border: 1px solid var(--accent-purple);
-    border-radius: 8px;
-}
+
 .app-category-header {
     color: var(--accent-cyan);
     font-size: 0.75rem;
@@ -501,15 +493,7 @@ input:checked + .slider:before {
 
 
 /* ─── Post-Install App Grid (Single Column List) ─── */
-.app-grid-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    background: var(--bg-dark);
-    padding: 0.6rem;
-    border: 1px solid var(--accent-purple);
-    border-radius: 8px;
-}
+
 
 .app-category-header {
     font-weight: bold;
@@ -589,16 +573,7 @@ input:checked + .slider:before {
     padding: 0.8rem;
     margin-top: 1rem;
 }
-.my-tools-box .app-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 10px;
-    border: 1px solid rgba(125,207,255,0.3);
-    border-radius: 6px;
-    margin-top: 0.5rem;
-    background: transparent;
-    padding: 0;
-}
+.my-tools-box 
 .my-tools-header {
     display: flex;
     align-items: center;
@@ -639,11 +614,7 @@ input:checked + .slider:before {
     padding: 0.8rem;
     margin-top: 1rem;
 }
-.other-sec-box .app-grid-container {
-    border: 1px solid rgba(255,158,100,0.3);
-    border-radius: 6px;
-    margin-top: 0.5rem;
-}
+.other-sec-box 
 .other-sec-header {
     display: flex;
     align-items: center;
@@ -687,4 +658,44 @@ input:checked + .slider:before {
     gap: 1.5rem;
     margin-top: 1.5rem;
     margin-bottom: 2rem;
+}
+
+
+.app-grid-container {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: (minmax(280px, 1fr))[auto-fill];
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 8px;
+    background: var(--bg-dark);
+    padding: 0.6rem;
+    border: 1px solid var(--accent-purple);
+    border-radius: 8px;
+}
+.app-card {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    padding: 0.6rem;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    -webkit-transition: -webkit-transform 0.2s, background 0.2s, border-color 0.2s;
+    transition: transform 0.2s, background 0.2s, border-color 0.2s;
+}
+.app-card:hover {
+    -webkit-transform: translateY(-2px);
+    -ms-transform: translateY(-2px);
+    transform: translateY(-2px);
+    background: var(--bg-lighter);
+    border-color: var(--accent-blue);
 }
