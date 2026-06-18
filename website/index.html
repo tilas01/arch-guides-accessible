@@ -991,22 +991,24 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent-orange);">⚠️ Note: High verbosity generates massive terminal output and will slightly slow down your installation.</p>
                     </div>
                     
-                    <div class="form-group form-step" id="advanced-tty-theme" style="display:block;" data-title="TTY Tokyo Night Theme" data-desc="Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw Arch TTY (Console) outside of any GUI." oncontextmenu="window.open('wiki.html#tty-theme', '_blank'); return false;">
-                        <label class="custom-checkbox">
-                            <input type="checkbox" id="tty-theme" checked>
-                            <span class="checkmark"></span>
-                            Apply Tokyo Night Theme to TTY Shell (No GUI)
-                        </label>
+                    <div class="form-group form-step" id="advanced-tty-theme" data-title="TTY Tokyo Night Theme" data-desc="Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw Arch TTY (Console) outside of any GUI." oncontextmenu="window.open('wiki.html#tty-theme', '_blank'); return false;">
+                        <label>Apply Tokyo Night Theme to TTY Shell:</label>
+                        <select id="tty-theme">
+                            <option value="yes" selected>Yes (Recommended)</option>
+                            <option value="no">No</option>
+                        </select>
                     </div>
 
                     
                     <div class="my-tools-box">
 <div class="form-group form-step" data-title="Standalone Security Tools" data-desc="Independent, custom-built security tools developed by tilas01. Enable them individually or click the green button to enable all recommended tools." oncontextmenu="window.open('https://github.com/tilas01', '_blank'); return false;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.8rem; flex-wrap:wrap; gap:10px;">
-                            <label style="margin:0;">🦀 Rust Security Apps:</label>
-                            <button type="button" class="btn nav-tooltip" data-title="Enable Recommended" data-desc="Enables all Arch Security Suite Apps. Highly recommended for maximum security." style="background:var(--accent-green); color:var(--bg-darker); width:auto; padding:0.3rem 0.8rem; font-size:0.85rem; border-radius:4px; font-weight:bold;" onclick="enableAllSecurityApps()">
-                                Enable all Arch Security Suite Apps by <a href="https://github.com/tilas01" target="_blank" style="color:var(--bg-darker); text-decoration:underline;">tilas01</a>
-                            </button>
+                        <div class="my-tools-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <h3 style="margin:0; color:var(--accent-cyan); font-size:1rem;">🦀 tilas01's Security Suite</h3>
+                            <label class="custom-checkbox tooltip-always" data-title="Suite Toggle" data-desc="Check to enable ALL tools. Once checked, individual selections are locked." style="cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:bold; color:var(--accent-green);">
+                                <input type="checkbox" id="suite-toggle" onchange="window.toggleSecuritySuite()">
+                                <span class="checkmark"></span>
+                                (Recommended) Use Full Suite
+                            </label>
                         </div>
                         <div class="app-grid-container">
                             
