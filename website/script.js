@@ -3025,3 +3025,24 @@ document.addEventListener('click', function(e) {
         if (m) m.style.display = 'none';
     }
 });
+
+
+window.checkTokyoNight = function() {
+    let scriptType = document.getElementById('script-type');
+    let tokyoContainer = document.getElementById('tokyo-night-container');
+    if (scriptType && tokyoContainer) {
+        if (scriptType.value === 'bash' || scriptType.value === 'zsh') {
+            tokyoContainer.style.display = 'flex';
+        } else {
+            tokyoContainer.style.display = 'none';
+            document.getElementById('tty-theme').checked = false;
+        }
+    }
+};
+document.addEventListener('DOMContentLoaded', () => {
+    let scriptType = document.getElementById('script-type');
+    if(scriptType) {
+        scriptType.addEventListener('change', window.checkTokyoNight);
+        window.checkTokyoNight();
+    }
+});
