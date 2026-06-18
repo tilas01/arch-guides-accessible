@@ -23,14 +23,14 @@ const MAX_ATTEMPTS: u32 = 3;
 // ── ANSI Escape Codes for TTY display modes ──────────────────────────────
 /// Discreet Mode: Password top-left in plain white, OTP bottom-left.
 /// Designed to be subtle — an attacker shoulder-surfing may not notice.
-const ANSI_SAVE_CURSOR:    &str = "\x1b[s";
+const ANSI_SAVE_CURSOR: &str = "\x1b[s";
 const ANSI_RESTORE_CURSOR: &str = "\x1b[u";
-const ANSI_TOP_LEFT:       &str = "\x1b[1;1H";  // row 1, col 1
-const ANSI_BOTTOM_LEFT:    &str = "\x1b[999;1H"; // far bottom, col 1
-const ANSI_WHITE:          &str = "\x1b[97m";    // bright white
-const ANSI_RED_BOLD:       &str = "\x1b[1;31m";  // bold red (Tokyo Night #f7768e)
-const ANSI_RESET:          &str = "\x1b[0m";
-const ANSI_CLEAR_LINE:     &str = "\x1b[2K";    // clear current line
+const ANSI_TOP_LEFT: &str = "\x1b[1;1H"; // row 1, col 1
+const ANSI_BOTTOM_LEFT: &str = "\x1b[999;1H"; // far bottom, col 1
+const ANSI_WHITE: &str = "\x1b[97m"; // bright white
+const ANSI_RED_BOLD: &str = "\x1b[1;31m"; // bold red (Tokyo Night #f7768e)
+const ANSI_RESET: &str = "\x1b[0m";
+const ANSI_CLEAR_LINE: &str = "\x1b[2K"; // clear current line
 
 /// Display configuration loaded from /etc/libre-otp/config.json
 #[derive(Serialize, Deserialize, Default)]
@@ -63,7 +63,7 @@ pub fn display_otp_on_tty(otp_code: &str, display_mode: &str) {
                 ANSI_BOTTOM_LEFT,
                 ANSI_CLEAR_LINE,
                 ANSI_WHITE,
-                otp_code,   // just the code, subtle
+                otp_code, // just the code, subtle
                 ANSI_RESET,
                 ANSI_RESTORE_CURSOR,
                 "",
@@ -423,9 +423,9 @@ pub fn run() {
 
     // Prompt for OTP input (password prompt so input is not echoed)
     let prompt = match display_mode.as_str() {
-        "discreet" => "OTP: ",       // minimal prompt for discreet mode
-        "visible"  => "\x1b[1;31m>> Enter OTP Code: \x1b[0m", // bold red
-        _          => "Enter OTP or Recovery Code: ",
+        "discreet" => "OTP: ", // minimal prompt for discreet mode
+        "visible" => "\x1b[1;31m>> Enter OTP Code: \x1b[0m", // bold red
+        _ => "Enter OTP or Recovery Code: ",
     };
     print!("{}", prompt);
     std::io::Write::flush(&mut std::io::stdout()).unwrap();
@@ -529,4 +529,3 @@ pub fn run() {
         std::process::exit(1);
     }
 }
-

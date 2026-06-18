@@ -9,3 +9,6 @@ eframe = "0.27.2"
 egui = "0.27.2"
 
 clap = { version = "4.5.4", features = ["derive"] }
+
+zeroize = { version = "1.8", features = ["zeroize_derive"] }
+rpassword = "7.2"

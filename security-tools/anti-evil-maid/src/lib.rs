@@ -218,4 +218,3 @@ fn run_fs_hash_check() {
     // A real implementation would check against a manifest.
     println!("File system hash check complete. See {}", log_file);
 }
-

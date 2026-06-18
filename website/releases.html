@@ -105,7 +105,23 @@
                     }
                 });
             </script>
-        </section>
+        
+    <div style="background:var(--bg-darker); border:1px solid var(--accent-orange); border-radius:12px; padding:2rem; margin-bottom:2.5rem; margin-top:2rem;">
+        <h3 style="color:var(--accent-orange); margin-top:0;">🔒 Integrity Verification (GPG & Hashes)</h3>
+        <p style="color:var(--fg-color); font-size:0.95rem;">All pre-compiled standalone security tools are cryptographically signed using GPG and hashed to ensure build integrity. The public GPG key (<code>tilas01.asc</code>) is available in the root of the repository.</p>
+        
+        <div style="background:var(--bg-color); border:1px solid var(--border-color); padding:1rem; border-radius:8px; margin-top:1rem;">
+            <p style="margin-top:0; font-weight:bold; color:var(--accent-cyan);">1. Import the public key:</p>
+            <pre style="background:var(--bg-darker); padding:0.5rem; border-radius:4px; color:var(--accent-green); overflow-x:auto;">gpg --import tilas01.asc</pre>
+            
+            <p style="font-weight:bold; color:var(--accent-cyan); margin-top:1rem;">2. Verify the GPG signature:</p>
+            <pre style="background:var(--bg-darker); padding:0.5rem; border-radius:4px; color:var(--accent-green); overflow-x:auto;">gpg --verify tool_name.sig tool_name</pre>
+            
+            <p style="font-weight:bold; color:var(--accent-cyan); margin-top:1rem;">3. Verify the SHA-512 hash:</p>
+            <pre style="background:var(--bg-darker); padding:0.5rem; border-radius:4px; color:var(--accent-green); overflow-x:auto;">sha512sum -c tool_name.sha512</pre>
+        </div>
+    </div>
+</section>
     </div>
 </body>
 </html>

@@ -45,3 +45,10 @@ The application can be run as a daemon or launched interactively via the GUI das
 ```bash
 ./target/release/anti-evil-maid --help
 ```
+
+
+## Cryptographic Memory Hygiene
+
+To prevent cold boot attacks, memory scraping, and privilege escalation vulnerabilities, this tool employs strict cryptographic memory hygiene. All sensitive data (passwords, PINs, cryptographic seeds, and TOTP secrets) are handled via the `zeroize` crate.
+
+As soon as a sensitive variable falls out of scope or is no longer immediately required for verification, its memory address is explicitly overwritten with zeroes. This guarantees that your secrets do not linger in RAM.

@@ -27,25 +27,45 @@ impl eframe::App for AntiDuckyGui {
             ui.heading(
                 egui::RichText::new("Anti-Ducky USB HID Monitor")
                     .color(egui::Color32::from_rgb(187, 154, 247))
-                    .size(24.0)
+                    .size(24.0),
             );
             ui.add_space(10.0);
 
             ui.horizontal(|ui| {
-                if ui.button(egui::RichText::new("Approve Sandboxed Device").color(egui::Color32::from_rgb(158, 206, 106))).clicked() {
-                    self.log_messages.push("Sent APPROVE signal to IPC socket.".to_string());
+                if ui
+                    .button(
+                        egui::RichText::new("Approve Sandboxed Device")
+                            .color(egui::Color32::from_rgb(158, 206, 106)),
+                    )
+                    .clicked()
+                {
+                    self.log_messages
+                        .push("Sent APPROVE signal to IPC socket.".to_string());
                 }
-                if ui.button(egui::RichText::new("Reject/Quarantine Device").color(egui::Color32::from_rgb(247, 118, 142))).clicked() {
-                    self.log_messages.push("Sent REJECT signal to IPC socket.".to_string());
+                if ui
+                    .button(
+                        egui::RichText::new("Reject/Quarantine Device")
+                            .color(egui::Color32::from_rgb(247, 118, 142)),
+                    )
+                    .clicked()
+                {
+                    self.log_messages
+                        .push("Sent REJECT signal to IPC socket.".to_string());
                 }
             });
 
             ui.add_space(20.0);
-            ui.label(egui::RichText::new("Daemon Logs:").color(egui::Color32::from_rgb(122, 162, 247)));
+            ui.label(
+                egui::RichText::new("Daemon Logs:").color(egui::Color32::from_rgb(122, 162, 247)),
+            );
 
             egui::ScrollArea::vertical().show(ui, |ui| {
                 for msg in &self.log_messages {
-                    ui.label(egui::RichText::new(msg).color(egui::Color32::from_rgb(192, 202, 245)).monospace());
+                    ui.label(
+                        egui::RichText::new(msg)
+                            .color(egui::Color32::from_rgb(192, 202, 245))
+                            .monospace(),
+                    );
                 }
             });
         });
