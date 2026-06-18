@@ -1,21 +1,27 @@
-use scarecrow::init_scarecrow;
-use scarecrow::gui::start_gui;
-use std::env;
+use clap::Parser;
+use std::process;
+use scarecrow::start_gui;
+use scarecrow::start_decoy;
+
+/// Scarecrow Decoy System - Arch Security Suite Standalone
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Launch the GUI Dashboard (Wayland/Xorg)
+    #[arg(short, long)]
+    interactive: bool,
+}
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = Args::parse();
     
-    if args.iter().any(|a| a == "-i" || a == "--interactive") {
+    if args.interactive {
         if let Err(e) = start_gui() {
-            eprintln!("Failed to start scarecrow GUI: {}", e);
+            eprintln!("Failed to start Scarecrow Decoy System GUI: {}", e);
+            process::exit(1);
         }
-    } else if args.iter().any(|a| a == "--help" || a == "-h") {
-        println!("Usage:");
-        println!("  scarecrow                     Run as daemon");
-        println!("  scarecrow -i, --interactive   Launch the GUI Dashboard (Wayland/Xorg)");
-        println!("  scarecrow -h, --help          Show this help message");
     } else {
-        println!("Starting standalone scarecrow daemon...");
-        init_scarecrow();
+        println!("Starting daemon mode for Scarecrow Decoy System. Use --interactive for GUI.");
+        start_decoy();
     }
 }

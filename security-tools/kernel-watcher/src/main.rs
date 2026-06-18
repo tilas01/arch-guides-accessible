@@ -1,21 +1,27 @@
+use clap::Parser;
+use std::process;
+use kernel_watcher::start_gui;
 use kernel_watcher::start_watcher;
-use kernel_watcher::gui::start_gui;
-use std::env;
+
+/// Kernel Watcher (EDR) - Arch Security Suite Standalone
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Launch the GUI Dashboard (Wayland/Xorg)
+    #[arg(short, long)]
+    interactive: bool,
+}
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = Args::parse();
     
-    if args.iter().any(|a| a == "-i" || a == "--interactive") {
+    if args.interactive {
         if let Err(e) = start_gui() {
-            eprintln!("Failed to start kernel-watcher GUI: {}", e);
+            eprintln!("Failed to start Kernel Watcher (EDR) GUI: {}", e);
+            process::exit(1);
         }
-    } else if args.iter().any(|a| a == "--help" || a == "-h") {
-        println!("Usage:");
-        println!("  kernel-watcher                     Run as daemon");
-        println!("  kernel-watcher -i, --interactive   Launch the GUI Dashboard (Wayland/Xorg)");
-        println!("  kernel-watcher -h, --help          Show this help message");
     } else {
-        println!("Starting standalone kernel-watcher daemon...");
+        println!("Starting daemon mode for Kernel Watcher (EDR). Use --interactive for GUI.");
         start_watcher();
     }
 }

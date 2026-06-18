@@ -1,14 +1,59 @@
-# Libre-OTP Authenticator
+<div align="center">
+  <img src="assets/icon.png" width="128" height="128" style="border-radius: 50%;">
+  <br>
+  <img src="assets/banner.png" width="800">
+</div>
 
-![Icon](img/icon.png)
+# Libre OTP Authenticator
 
-![Banner](img/banner.png)
+Native Rust OTP authenticator designed for PAM integration without proprietary backends. Supports SSH auth, boot, login, and YubiKey.
 
-A completely offline, dependency-free Rust implementation of TOTP. Seeds deterministic hardware hashes into your LUKS bootloader, generating a physical 6-digit code on boot matching your smartphone to verify system integrity.
+## Overview
+This standalone application provides comprehensive libre otp authenticator capabilities for Arch Linux, natively integrated with Wayland/Xorg via `egui` and providing strict CLI parity via `clap`.
 
+## Build Instructions
+Ensure you have the Rust toolchain installed:
+```bash
+# Install rustup
+pacman -S rustup
+rustup default stable
+```
 
-## ⚖️ Legal Disclaimer
+Clone the repository and build:
+```bash
+git clone https://github.com/tilas01/arch-guides-dynamic.git
+cd arch-guides-dynamic/security-tools/libre-otp
+cargo build --release
+```
 
-**USE AT YOUR OWN RISK.**
-This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
-The author (tilas01) is not responsible for any system lockouts, data loss, bricked installations, or damages resulting from the use of this tool. These are advanced security mechanisms that interact directly with the Linux kernel, PAM, and the bootloader. Ensure you have adequate backups, fallback recovery keys, and understand the tools before deploying them in a production environment.
+## Usage
+The application can be run as a daemon or launched interactively via the GUI dashboard.
+
+**Daemon Mode:**
+```bash
+./target/release/libre-otp
+```
+
+**Interactive Dashboard (GUI):**
+```bash
+./target/release/libre-otp --interactive
+# or
+./target/release/libre-otp -i
+```
+
+**Help Menu:**
+```bash
+./target/release/libre-otp --help
+```
+
+## Advanced Integration (PAM)
+Libre-OTP can be integrated directly into your PAM stack for SSH authentication, boot decryption, or local login.
+
+**SSH Integration:**
+Add the PAM module to `/etc/pam.d/sshd`:
+```text
+auth required pam_libre_otp.so
+```
+
+**YubiKey Hardware Key:**
+Libre-OTP fully supports YubiKey hardware tokens for HMAC-SHA1 Challenge-Response. Enable this via the GUI dashboard.

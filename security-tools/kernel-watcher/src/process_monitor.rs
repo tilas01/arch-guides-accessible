@@ -1,6 +1,6 @@
 use std::thread;
 use std::time::Duration;
-use sysinfo::{PidExt, ProcessExt, System, SystemExt};
+use sysinfo::{System, Process};
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
 use dialoguer::{Password, theme::ColorfulTheme};
@@ -12,9 +12,9 @@ pub fn start_process_monitor() {
     thread::spawn(|| {
         let mut sys = System::new_all();
         loop {
-            sys.refresh_processes();
+            sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
             for (pid, process) in sys.processes() {
-                let name = process.name().to_lowercase();
+                let name = process.name().to_string_lossy().to_lowercase();
                 for &suspicious in SUSPICIOUS_PROCESSES {
                     if name.contains(suspicious) {
                         // Found a suspicious process.

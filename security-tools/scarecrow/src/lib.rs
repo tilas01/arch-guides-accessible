@@ -108,3 +108,4 @@ fn monitor_network_connections() {
         thread::sleep(Duration::from_secs(5));
     }
 }
+pub use gui::start_gui;

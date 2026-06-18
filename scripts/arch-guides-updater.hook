@@ -1,0 +1,12 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = *
+
+[Action]
+Description = Checking for verified updates to Arch Guides Dynamic Security Tools...
+When = PostTransaction
+Exec = /usr/local/bin/arch-guides-updater.sh
+Depends = curl
+Depends = gnupg

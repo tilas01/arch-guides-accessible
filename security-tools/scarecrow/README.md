@@ -1,14 +1,47 @@
+<div align="center">
+  <img src="assets/icon.png" width="128" height="128" style="border-radius: 50%;">
+  <br>
+  <img src="assets/banner.png" width="800">
+</div>
+
 # Scarecrow Decoy System
 
-![Icon](img/icon.png)
+Duress and decoy system that triggers cryptographic wipes upon unauthorized access.
 
-![Banner](img/banner.png)
+## Overview
+This standalone application provides comprehensive scarecrow decoy system capabilities for Arch Linux, natively integrated with Wayland/Xorg via `egui` and providing strict CLI parity via `clap`.
 
-Creates a fully convincing, fake Windows/Linux environment when a Duress PIN is entered. Simultaneously triggers a background 20-pass DoD shred (`blkdiscard` + `shred`) of the physical LUKS header, permanently destroying all real data.
+## Build Instructions
+Ensure you have the Rust toolchain installed:
+```bash
+# Install rustup
+pacman -S rustup
+rustup default stable
+```
 
+Clone the repository and build:
+```bash
+git clone https://github.com/tilas01/arch-guides-dynamic.git
+cd arch-guides-dynamic/security-tools/scarecrow
+cargo build --release
+```
 
-## ⚖️ Legal Disclaimer
+## Usage
+The application can be run as a daemon or launched interactively via the GUI dashboard.
 
-**USE AT YOUR OWN RISK.**
-This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
-The author (tilas01) is not responsible for any system lockouts, data loss, bricked installations, or damages resulting from the use of this tool. These are advanced security mechanisms that interact directly with the Linux kernel, PAM, and the bootloader. Ensure you have adequate backups, fallback recovery keys, and understand the tools before deploying them in a production environment.
+**Daemon Mode:**
+```bash
+./target/release/scarecrow
+```
+
+**Interactive Dashboard (GUI):**
+```bash
+./target/release/scarecrow --interactive
+# or
+./target/release/scarecrow -i
+```
+
+**Help Menu:**
+```bash
+./target/release/scarecrow --help
+```

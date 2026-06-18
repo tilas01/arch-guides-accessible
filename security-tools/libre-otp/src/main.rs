@@ -1,24 +1,27 @@
+use clap::Parser;
+use std::process;
+use libre_otp::start_gui;
 use libre_otp::run;
-use libre_otp::gui::start_gui;
-use std::env;
 
-/// Post-Quantum Cryptographic MFA Implementation
-/// Zeroizes sensitive memory arrays post-use
-/// Stores configuration in root-protected /etc/libre-otp/
+/// Libre OTP Authenticator - Arch Security Suite Standalone
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Launch the GUI Dashboard (Wayland/Xorg)
+    #[arg(short, long)]
+    interactive: bool,
+}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = Args::parse();
     
-    if args.iter().any(|a| a == "-i" || a == "--interactive") {
+    if args.interactive {
         if let Err(e) = start_gui() {
-            eprintln!("Failed to start libre-otp GUI: {}", e);
+            eprintln!("Failed to start Libre OTP Authenticator GUI: {}", e);
+            process::exit(1);
         }
-    } else if args.iter().any(|a| a == "--help" || a == "-h") {
-        println!("Usage:");
-        println!("  libre-otp                     Run as daemon");
-        println!("  libre-otp -i, --interactive   Launch the GUI Dashboard (Wayland/Xorg)");
-        println!("  libre-otp -h, --help          Show this help message");
     } else {
-        println!("Starting standalone libre-otp daemon (Post-Quantum Mode)...");
+        println!("Starting daemon mode for Libre OTP Authenticator. Use --interactive for GUI.");
         run();
     }
 }

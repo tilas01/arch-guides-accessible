@@ -17,7 +17,75 @@ use totp_rs::{Algorithm, Secret, TOTP};
 use zeroize::Zeroize;
 
 const CONFIG_PATH: &str = "/etc/libre-otp/secret.json";
+const CONFIG_DISPLAY_PATH: &str = "/etc/libre-otp/config.json";
 const MAX_ATTEMPTS: u32 = 3;
+
+// ── ANSI Escape Codes for TTY display modes ──────────────────────────────
+/// Discreet Mode: Password top-left in plain white, OTP bottom-left.
+/// Designed to be subtle — an attacker shoulder-surfing may not notice.
+const ANSI_SAVE_CURSOR:    &str = "\x1b[s";
+const ANSI_RESTORE_CURSOR: &str = "\x1b[u";
+const ANSI_TOP_LEFT:       &str = "\x1b[1;1H";  // row 1, col 1
+const ANSI_BOTTOM_LEFT:    &str = "\x1b[999;1H"; // far bottom, col 1
+const ANSI_WHITE:          &str = "\x1b[97m";    // bright white
+const ANSI_RED_BOLD:       &str = "\x1b[1;31m";  // bold red (Tokyo Night #f7768e)
+const ANSI_RESET:          &str = "\x1b[0m";
+const ANSI_CLEAR_LINE:     &str = "\x1b[2K";    // clear current line
+
+/// Display configuration loaded from /etc/libre-otp/config.json
+#[derive(Serialize, Deserialize, Default)]
+pub struct DisplayConfig {
+    /// "discreet" = subtle white text; "visible" = bold red animated Tokyo Night
+    pub display: String,
+    /// "boot", "login", "ssh", or "both" / "all"
+    pub mode: String,
+}
+
+/// Loads display config from disk (non-fatal, returns Default on error).
+fn load_display_config() -> DisplayConfig {
+    let raw = fs::read_to_string(CONFIG_DISPLAY_PATH).unwrap_or_default();
+    serde_json::from_str(&raw).unwrap_or_default()
+}
+
+/// Writes the current OTP code to the TTY in the configured display mode.
+/// Discreet: plain white text at the bottom-left corner.
+/// Visible:  bold red text at the bottom-left with animated '...' prefix.
+pub fn display_otp_on_tty(otp_code: &str, display_mode: &str) {
+    let mut stdout = std::io::stdout();
+    // Save current cursor position so we can restore it after
+    print!("{}", ANSI_SAVE_CURSOR);
+
+    match display_mode {
+        "discreet" => {
+            // Move to the bottom-left corner, clear line, print OTP in white
+            print!(
+                "{}{}{}{}{}{}{}\n",
+                ANSI_BOTTOM_LEFT,
+                ANSI_CLEAR_LINE,
+                ANSI_WHITE,
+                otp_code,   // just the code, subtle
+                ANSI_RESET,
+                ANSI_RESTORE_CURSOR,
+                "",
+            );
+        }
+        "visible" => {
+            // Bold red at bottom-left with animated prefix
+            print!(
+                "{}{}{}...{} {}{}{}\n",
+                ANSI_BOTTOM_LEFT,
+                ANSI_CLEAR_LINE,
+                ANSI_RED_BOLD,
+                ANSI_WHITE,
+                otp_code,
+                ANSI_RESET,
+                ANSI_RESTORE_CURSOR,
+            );
+        }
+        _ => {} // no TTY manipulation
+    }
+    let _ = stdout.flush();
+}
 
 #[derive(Serialize, Deserialize)]
 struct OtpState {
@@ -30,6 +98,9 @@ struct OtpState {
     bypass_hash: Option<String>,
     bypass_uses_left: u32,
     enforcement_mode: String,
+    /// Display mode for PAM TTY prompts: "discreet" | "visible" | "none"
+    #[serde(default)]
+    display_mode: String,
 }
 
 /// Simple base32 encoder (RFC 4648)
@@ -328,10 +399,44 @@ pub fn run() {
 
     let totp = TOTP::new(algo, 6, 1, 30, state.secret_bytes.clone()).unwrap();
 
-    print!("Enter OTP or Recovery Code: ");
+    // ── Display the current OTP code on the TTY in the configured mode ──────
+    // Load display config from /etc/libre-otp/config.json (set at install time)
+    let disp_cfg = load_display_config();
+    let display_mode = if !state.display_mode.is_empty() {
+        state.display_mode.clone()
+    } else if !disp_cfg.display.is_empty() {
+        disp_cfg.display.clone()
+    } else {
+        "none".to_string()
+    };
+
+    // Get the current TOTP code to display on screen
+    let current_display_time = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let current_code = totp.generate(current_display_time);
+
+    // Show the code on TTY using selected display mode
+    // This lets the user verify the code matches their authenticator app
+    display_otp_on_tty(&current_code, &display_mode);
+
+    // Prompt for OTP input (password prompt so input is not echoed)
+    let prompt = match display_mode.as_str() {
+        "discreet" => "OTP: ",       // minimal prompt for discreet mode
+        "visible"  => "\x1b[1;31m>> Enter OTP Code: \x1b[0m", // bold red
+        _          => "Enter OTP or Recovery Code: ",
+    };
+    print!("{}", prompt);
     std::io::Write::flush(&mut std::io::stdout()).unwrap();
 
     let mut user_input = read_password().unwrap();
+
+    // Clear the displayed OTP code from the screen after input
+    if display_mode == "discreet" || display_mode == "visible" {
+        display_otp_on_tty("      ", "discreet"); // overwrite with spaces
+    }
+
     let current_time = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
