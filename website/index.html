@@ -1028,7 +1028,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
 
 
                     
-                    <div class="form-group form-step" data-title="Modular Firewall GUI" data-desc="Pre-configured default-deny firewall to block unwanted incoming connections. UFW+Gufw is highly recommended for best libre desktop functionality.">
+                    <div class="form-group form-step" data-title="Modular Firewall GUI" data-desc="Pre-configured default-deny firewall to block unwanted incoming connections. UFW+Gufw is highly recommended for best libre desktop functionality." oncontextmenu="window.open('wiki.html#firewall', '_blank'); return false;">
                         <label>Firewall Setup:</label>
                         <select id="firewall">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -1061,7 +1061,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
     </label>
 
 </div>
-<div class="form-group form-step" data-title="OTP Enforcement Mode" data-desc="Login Only: OTP at TTY/display manager. Boot: OTP in initramfs before kernel. Both: maximum coverage. SSH: if Hardened SSH also enabled.">
+<div class="form-group form-step" data-title="OTP Enforcement Mode" data-desc="Login Only: OTP at TTY/display manager. Boot: OTP in initramfs before kernel. Both: maximum coverage. SSH: if Hardened SSH also enabled." oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;">
                                 <label>OTP Mode:</label>
                                 <select id="libre_otp_mode">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -1070,7 +1070,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                     <option value="both">Both Boot &amp; Login</option>
                                 </select>
                             </div>
-                            <div class="form-group form-step" data-title="OTP Hash Algorithm" data-desc="SHA1 is universally compatible (Google Auth, Aegis). SHA256/SHA512 offer stronger hashing but fewer apps support them. Recommended: SHA1.">
+                            <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="OTP Hash Algorithm" data-desc="SHA1 is universally compatible (Google Auth, Aegis). SHA256/SHA512 offer stronger hashing but fewer apps support them. Recommended: SHA1.">
                                 <label>OTP Algorithm:</label>
                                 <select id="otp_sha">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -1079,7 +1079,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                     <option value="sha512">SHA512 (Maximum, e.g. 2FAS)</option>
                                 </select>
                             </div>
-                            <div class="form-group form-step" data-title="Double OTP Verification" data-desc="Require two consecutive valid OTP codes (must wait 30s) or two different authenticators. Extreme security mode.">
+                            <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Double OTP Verification" data-desc="Require two consecutive valid OTP codes (must wait 30s) or two different authenticators. Extreme security mode.">
                                 <label>Double OTP:</label>
                                 <select id="otp_double">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -1087,7 +1087,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                     <option value="yes">Yes (High Security)</option>
                                 </select>
                             </div>
-                            <div class="form-group form-step" data-title="Bypass Password" data-desc="Set a custom bypass password that can be used up to a specified number of times to bypass OTP entirely.">
+                            <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Bypass Password" data-desc="Set a custom bypass password that can be used up to a specified number of times to bypass OTP entirely.">
                                 <label>Bypass Uses:</label>
                                 <select id="otp_bypass">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -1098,7 +1098,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                     <option value="10">10 Uses</option>
                                 </select>
                             </div>
-                            <div class="form-group form-step" data-title="OTP Recovery Codes" data-desc="Generate backup recovery codes during setup. Each code is single-use. If a recovery code is used, an alert is sent via webhook.">
+                            <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="OTP Recovery Codes" data-desc="Generate backup recovery codes during setup. Each code is single-use. If a recovery code is used, an alert is sent via webhook.">
                                 <label>Recovery Codes:</label>
                                 <select id="otp_recovery">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
