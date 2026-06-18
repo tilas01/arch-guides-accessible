@@ -277,9 +277,9 @@ noscript .js-only { display: none !important; }
 
 /* ─── Post-Install App Grid ─── */
 .app-grid-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 4px;
     background: var(--bg-dark);
     padding: 0.6rem;
     border: 1px solid var(--accent-purple);
@@ -502,9 +502,9 @@ input:checked + .slider:before {
 
 /* ─── Post-Install App Grid (Single Column List) ─── */
 .app-grid-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 4px;
     background: var(--bg-dark);
     padding: 0.6rem;
     border: 1px solid var(--accent-purple);
@@ -528,7 +528,8 @@ input:checked + .slider:before {
     align-items: center;
     gap: 0.8rem;
     padding: 0.6rem 0.8rem;
-    border-bottom: 1px solid var(--bg-lighter);
+    border: 1px solid var(--bg-lighter);
+    border-radius: 4px;
     transition: background 0.2s;
     cursor: pointer;
     font-size: 0.9rem;
