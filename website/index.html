@@ -163,7 +163,7 @@
                     </div>
                     
                     
-<div class="form-group form-step" data-title="⚙️ Encryption Layering (Cyber Chef)" data-desc="Mix and match encryption protocols. Layer Post-Quantum Kyber on top of LUKS2 AES-GCM for maximum theoretical security, or stick to standard LUKS1 for legacy bootloaders.">
+<div class="form-group form-step" data-title="⚙️ Encryption Layering (Cyber Chef)" oncontextmenu="window.open('wiki.html#layer-encryption', '_blank'); return false;" data-desc="Mix and match encryption protocols. Layer Post-Quantum Kyber on top of LUKS2 AES-GCM for maximum theoretical security, or stick to standard LUKS1 for legacy bootloaders.">
     <label>⚙️ Encryption Layers:</label>
     <div style="background:var(--bg-darker); border:1px solid var(--border-color); border-radius:8px; padding:1rem; margin-top:0.5rem;">
         <p style="font-size:0.85rem; color:var(--fg-color); margin-top:0; margin-bottom:1rem;">Select your base layer and optional post-quantum overlays. Stacked from bottom to top.</p>
@@ -318,44 +318,30 @@
                         <p style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;">⚠️ <strong>Proprietary / Non-Libre Warning:</strong> Apps highlighted with <span style="color:var(--accent-red);font-weight:bold;">[!]</span> (e.g., Firefox firmware blobs, Signal Electron build, Chromium, Flatpak) contain proprietary code or conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                         <div class="app-grid-container" id="post_apps_container">
                             <div class="app-category-header nav-tooltip" style="grid-column: 1 / -1; margin-top: 0.5rem; cursor: help;" data-title="Arch User Repository (AUR)" data-desc="The AUR contains community-maintained packages. You cannot install external apps (like Librewolf, Tor Browser) via pacman without an AUR helper like paru. Right-click to read the Wiki." oncontextmenu="window.open('wiki.html#aur', '_blank'); return false;">📦 AUR <span style="font-size: 0.8em; color: var(--accent-red);">(Requires AUR Helper)</span></div>
-                            <label class="app-item" title="Rofi
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="rofi">
+                                <span class="app-icon">🔍</span> <a href="https://github.com/davatorium/rofi" target="_blank">Rofi</a> <span title="Rofi
 --
 Window switcher, application launcher and dmenu replacement
 
 Build Integrity: Reproducible
-Source: 📁 Arch Extra">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('rofi')" value="rofi" data-requires-config="true" data-configured="false">
-                                <span class="app-icon">🔍</span> <a href="https://github.com/davatorium/rofi" target="_blank">Rofi</a> <span class="app-desc">Launcher</span>
-                                <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('rofi')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Launcher</span>
+                                
                             </label>
-                            <label class="app-item" title="paru
---
-Rust-based AUR helper — build & install AUR packages
-
-Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
-Source: 📁 AUR
-Website: https://github.com/Morganamilo/paru">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('paru')" value="paru" checked data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="paru" checked>
                                 <span class="app-icon">🦀</span> <a href="https://github.com/Morganamilo/paru" target="_blank">paru</a> <span title="paru
 --
 Rust-based AUR helper — build & install AUR packages
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
-Website: https://github.com/Morganamilo/paru" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">AUR Helper</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('paru')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://github.com/Morganamilo/paru" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">AUR Helper</span>
+                             
 </label>
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🌐 Browsers</div>
-                            <label class="app-item" title="Firefox [PROPRIETARY]
---
-Open source web browser by Mozilla. Contains proprietary firmware blobs.
-
-WARNING: Contains closed-source telemetry and firmware blobs.
-
-Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
-Source: 📁 Arch Extra
-Website: https://mozilla.org/firefox/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('firefox')" value="firefox" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="firefox">
                                 <span class="app-icon">🦊</span> <a href="https://mozilla.org/firefox/" target="_blank">Firefox</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Firefox [PROPRIETARY]
 --
 Open source web browser by Mozilla. Contains proprietary firmware blobs.
@@ -364,53 +350,33 @@ WARNING: Contains closed-source telemetry and firmware blobs.
 
 Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
-Website: https://mozilla.org/firefox/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('firefox')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://mozilla.org/firefox/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Browser</span>
+                             
 </label>
-                            <label class="app-item" title="LibreWolf
---
-Privacy-hardened Firefox fork — no telemetry
-
-Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
-Source: 📁 AUR
-Website: https://librewolf.net/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('librewolf')" value="librewolf" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="librewolf">
                                 <span class="app-icon">🐺</span> <a href="https://librewolf.net/" target="_blank">LibreWolf</a> <span title="LibreWolf
 --
 Privacy-hardened Firefox fork — no telemetry
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
-Website: https://librewolf.net/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Privacy</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('librewolf')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://librewolf.net/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Privacy</span>
+                             
 </label>
-                            <label class="app-item" title="Tor Browser
---
-Anonymous web browsing via Tor network
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR
-Website: https://torproject.org/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('tor-browser')" value="tor-browser" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="tor-browser">
                                 <span class="app-icon">🧅</span> <a href="https://torproject.org/" target="_blank">Tor Browser</a> <span title="Tor Browser
 --
 Anonymous web browsing via Tor network
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 AUR
-Website: https://torproject.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Anon</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('tor-browser')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://torproject.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Anon</span>
+                             
 </label>
-                            <label class="app-item" title="Chromium [PROPRIETARY]
---
-Open source browser engine. Google integration can compromise privacy.
-
-WARNING: Google integration modules contain non-libre code.
-
-Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
-Source: 📁 Arch Extra
-Website: https://www.chromium.org/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('chromium')" value="chromium" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="chromium">
                                 <span class="app-icon">🔵</span> <a href="https://www.chromium.org/" target="_blank">Chromium</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Chromium [PROPRIETARY]
 --
 Open source browser engine. Google integration can compromise privacy.
@@ -419,37 +385,23 @@ WARNING: Google integration modules contain non-libre code.
 
 Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
-Website: https://www.chromium.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('chromium')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://www.chromium.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Browser</span>
+                             
 </label>
-                            <label class="app-item" title="Ungoogled Chromium
---
-Chromium without Google integration
-
-Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
-Source: 📁 AUR
-Website: https://github.com/ungoogled-software/ungoogled-chromium">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('ungoogled-chromium')" value="ungoogled-chromium" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="ungoogled-chromium">
                                 <span class="app-icon">🌐</span> <a href="https://github.com/ungoogled-software/ungoogled-chromium" target="_blank">Ungoogled Chromium</a> <span title="Ungoogled Chromium
 --
 Chromium without Google integration
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
-Website: https://github.com/ungoogled-software/ungoogled-chromium" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('ungoogled-chromium')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://github.com/ungoogled-software/ungoogled-chromium" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Browser</span>
+                             
 </label>
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🔒 Security</div>
-                            <label class="app-item" title="Signal [PROPRIETARY]
---
-End-to-end encrypted messaging app. Uses proprietary Electron blobs.
-
-WARNING: The Electron build system relies on closed-source precompiled binaries.
-
-Build Integrity: Non-Reproducible (Requires trusting the developer or CI system)
-Source: 📁 AUR
-Website: https://signal.org/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('signal')" value="signal" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="signal">
                                 <span class="app-icon">💬</span> <a href="https://signal.org/" target="_blank">Signal</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Signal [PROPRIETARY]
 --
 End-to-end encrypted messaging app. Uses proprietary Electron blobs.
@@ -458,69 +410,44 @@ WARNING: The Electron build system relies on closed-source precompiled binaries.
 
 Build Integrity: Non-Reproducible (Requires trusting the developer or CI system)
 Source: 📁 AUR
-Website: https://signal.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">E2E Msg</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('signal')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://signal.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">E2E Msg</span>
+                             
 </label>
-                            <label class="app-item" title="KeePassXC
---
-Offline password manager with TOTP support
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://keepassxc.org/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('keepassxc')" value="keepassxc" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="keepassxc">
                                 <span class="app-icon">🔑</span> <a href="https://keepassxc.org/" target="_blank">KeePassXC</a> <span title="KeePassXC
 --
 Offline password manager with TOTP support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://keepassxc.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Passwords</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('keepassxc')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://keepassxc.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Passwords</span>
+                             
 </label>
-                            <label class="app-item" title="ClamAV
---
-Open source antivirus engine
-
-Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
-Source: 📁 Arch Extra
-Website: https://www.clamav.net/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('clamav')" value="clamav" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="clamav">
                                 <span class="app-icon">🛡️</span> <a href="https://www.clamav.net/" target="_blank">ClamAV</a> <span title="ClamAV
 --
 Open source antivirus engine
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
-Website: https://www.clamav.net/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Antivirus</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('clamav')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://www.clamav.net/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Antivirus</span>
+                             
 </label>
-                            <label class="app-item" title="Firejail
---
-SUID sandbox for restricting app access
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://firejail.wordpress.com/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('firejail')" value="firejail" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="firejail">
                                 <span class="app-icon">🏰</span> <a href="https://firejail.wordpress.com/" target="_blank">Firejail</a> <span title="Firejail
 --
 SUID sandbox for restricting app access
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://firejail.wordpress.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Sandbox</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('firejail')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://firejail.wordpress.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Sandbox</span>
+                             
 </label>
-                            <label class="app-item" title="Doas
---
-⭐ RECOMMENDED
-OpenDoas privilege escalation (sudo alternative)
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('doas')" value="doas" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="doas">
                                 <span class="app-icon">⚙️</span> <a href="https://github.com/Duncaen/OpenDoas" target="_blank" style="font-weight:bold; color:var(--accent-yellow);">Doas ⭐</a> <span title="Doas
 --
 ⭐ RECOMMENDED
@@ -528,100 +455,65 @@ OpenDoas privilege escalation (sudo alternative)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Privilege</span> <button type="button" class="btn-configure" data-app="doas" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('doas')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://github.com/Duncaen/OpenDoas" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Privilege</span> <button type="button" class="btn-configure" data-app="doas" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
+                             
 </label>
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">💻 Dev / Terminal</div>
-                            <label class="app-item" title="Neovim
---
-Hyperextensible terminal text editor
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://neovim.io/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('neovim')" value="neovim" checked data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="neovim" checked>
                                 <span class="app-icon">📝</span> <a href="https://neovim.io/" target="_blank">Neovim</a> <span title="Neovim
 --
 Hyperextensible terminal text editor
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://neovim.io/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Editor</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('neovim')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://neovim.io/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Editor</span>
+                             
 </label>
-                            <label class="app-item" title="Alacritty
---
-GPU-accelerated terminal emulator written in Rust
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://alacritty.org/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('alacritty')" value="alacritty" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="alacritty">
                                 <span class="app-icon">⬛</span> <a href="https://alacritty.org/" target="_blank">Alacritty</a> <span title="Alacritty
 --
 GPU-accelerated terminal emulator written in Rust
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://alacritty.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Terminal</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('alacritty')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://alacritty.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Terminal</span>
+                             
 </label>
-                            <label class="app-item" title="kitty
---
-Fast GPU-based terminal with image support
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://sw.kovidgoyal.net/kitty/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('kitty')" value="kitty" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="kitty">
                                 <span class="app-icon">🐱</span> <a href="https://sw.kovidgoyal.net/kitty/" target="_blank">kitty</a> <span title="kitty
 --
 Fast GPU-based terminal with image support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://sw.kovidgoyal.net/kitty/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Terminal</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('kitty')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://sw.kovidgoyal.net/kitty/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Terminal</span>
+                             
 </label>
-                            <label class="app-item" title="Zsh
---
-Feature-rich shell with autocomplete and themes
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('zsh')" value="zsh" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="zsh">
                                 <span class="app-icon">🐚</span> Zsh <span title="Zsh
 --
 Feature-rich shell with autocomplete and themes
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Shell</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('zsh')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Shell</span>
+                             
 </label>
-                            <label class="app-item" title="VSCodium
---
-Telemetry-free VS Code
-
-Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
-Source: 📁 AUR
-Website: https://vscodium.com/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('vscodium')" value="vscodium" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="vscodium">
                                 <span class="app-icon">📘</span> <a href="https://vscodium.com/" target="_blank">VSCodium</a> <span title="VSCodium
 --
 Telemetry-free VS Code
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 AUR
-Website: https://vscodium.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">IDE</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('vscodium')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://vscodium.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">IDE</span>
+                             
 </label>
-                            <label class="app-item" title="Git
---
-Version control system
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://git-scm.com/">
+                            <label class="app-card">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('git')" value="git" checked data-requires-config="true" data-configured="false">
                                 <span class="app-icon">🔀</span> <a href="https://git-scm.com/" target="_blank">Git</a> <span title="Git
 --
@@ -629,202 +521,131 @@ Version control system
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://git-scm.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">VCS</span>
+Website: https://git-scm.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">VCS</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('git')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
-                            <label class="app-item" title="tmux
---
-Terminal multiplexer — split panes and sessions
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('tmux')" value="tmux" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="tmux">
                                 <span class="app-icon">🪟</span> tmux <span title="tmux
 --
 Terminal multiplexer — split panes and sessions
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Multiplex</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('tmux')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Multiplex</span>
+                             
 </label>
-                            <label class="app-item" title="htop
---
-Interactive process viewer — shows CPU, RAM, processes in real-time
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/htop-dev/htop">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('htop')" value="htop" checked data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="htop" checked>
                                 <span class="app-icon">📊</span> <a href="https://github.com/htop-dev/htop" target="_blank">htop</a> <span title="htop
 --
 Interactive process viewer — shows CPU, RAM, processes in real-time
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/htop-dev/htop" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Monitor</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('htop')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://github.com/htop-dev/htop" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Monitor</span>
+                             
 </label>
-                            <label class="app-item" title="pfetch
---
-Minimal system information display tool written in POSIX shell
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/dylanaraps/pfetch">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('pfetch')" value="pfetch" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="pfetch">
                                 <span class="app-icon">🖥️</span> <a href="https://github.com/dylanaraps/pfetch" target="_blank">pfetch</a> <span title="pfetch
 --
 Minimal system information display tool written in POSIX shell
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/dylanaraps/pfetch" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Sysinfo</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('pfetch')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://github.com/dylanaraps/pfetch" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Sysinfo</span>
+                             
 </label>
-                            <label class="app-item" title="fastfetch
---
-Fast system info tool written in C — like neofetch but actively maintained
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/fastfetch-cli/fastfetch">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('fastfetch')" value="fastfetch" checked data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="fastfetch" checked>
                                 <span class="app-icon">⚡</span> <a href="https://github.com/fastfetch-cli/fastfetch" target="_blank">fastfetch</a> <span title="fastfetch
 --
 Fast system info tool written in C — like neofetch but actively maintained
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/fastfetch-cli/fastfetch" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Sysinfo</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('fastfetch')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://github.com/fastfetch-cli/fastfetch" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Sysinfo</span>
+                             
 </label>
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🎬 Media / Files</div>
-                            <label class="app-item" title="Thunar
---
-Lightweight GTK file manager (Xfce)
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('thunar')" value="thunar" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="thunar">
                                 <span class="app-icon">📁</span> Thunar <span title="Thunar
 --
 Lightweight GTK file manager (Xfce)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Files</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('thunar')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Files</span>
+                             
 </label>
-                            <label class="app-item" title="Nautilus
---
-GNOME's default file manager
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('nautilus')" value="nautilus" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="nautilus">
                                 <span class="app-icon">📂</span> Nautilus <span title="Nautilus
 --
 GNOME's default file manager
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Files</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('nautilus')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Source: 📁 Arch Extra" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Files</span>
+                             
 </label>
-                            <label class="app-item" title="mpv
---
-Minimal, scriptable media player
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://mpv.io/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('mpv')" value="mpv" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="mpv">
                                 <span class="app-icon">▶️</span> <a href="https://mpv.io/" target="_blank">mpv</a> <span title="mpv
 --
 Minimal, scriptable media player
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://mpv.io/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Player</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('mpv')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://mpv.io/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Player</span>
+                             
 </label>
-                            <label class="app-item" title="VLC
---
-Universal media player
-
-Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
-Source: 📁 Arch Extra
-Website: https://www.videolan.org/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('vlc')" value="vlc" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="vlc">
                                 <span class="app-icon">🔶</span> <a href="https://www.videolan.org/" target="_blank">VLC</a> <span title="VLC
 --
 Universal media player
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
-Website: https://www.videolan.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Player</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('vlc')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://www.videolan.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Player</span>
+                             
 </label>
-                            <label class="app-item" title="OBS Studio
---
-Screen recording and streaming
-
-Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
-Source: 📁 Arch Extra
-Website: https://obsproject.com/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('obs')" value="obs" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="obs">
                                 <span class="app-icon">🎥</span> <a href="https://obsproject.com/" target="_blank">OBS Studio</a> <span title="OBS Studio
 --
 Screen recording and streaming
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
-Website: https://obsproject.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Record</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('obs')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://obsproject.com/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Record</span>
+                             
 </label>
-                            <label class="app-item" title="GIMP
---
-Open source image editor
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://gimp.org/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('gimp')" value="gimp" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="gimp">
                                 <span class="app-icon">🎨</span> <a href="https://gimp.org/" target="_blank">GIMP</a> <span title="GIMP
 --
 Open source image editor
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://gimp.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Images</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('gimp')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://gimp.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Images</span>
+                             
 </label>
-                            <label class="app-item" title="LibreOffice
---
-Full office suite — Libre alternative to Microsoft Office
-
-Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
-Source: 📁 Arch Extra
-Website: https://www.libreoffice.org/">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('libreoffice')" value="libreoffice" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="libreoffice">
                                 <span class="app-icon">📄</span> <a href="https://www.libreoffice.org/" target="_blank">LibreOffice</a> <span title="LibreOffice
 --
 Full office suite — Libre alternative to Microsoft Office
 
 Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
 Source: 📁 Arch Extra
-Website: https://www.libreoffice.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Office</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('libreoffice')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://www.libreoffice.org/" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Office</span>
+                             
 </label>
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🔧 System</div>
-                            <label class="app-item" title="Flatpak [PROPRIETARY]
---
-Sandboxed app distribution via Flathub
-
-WARNING: Flatpak itself is open-source, but Flathub distributes proprietary binaries like Discord and Spotify.
-
-Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
-Source: 📁 Arch Extra
-Website: ">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('flatpak')" value="flatpak" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="flatpak">
                                 <span class="app-icon">📦</span> Flatpak <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Flatpak [PROPRIETARY]
 --
 Sandboxed app distribution via Flathub
@@ -833,111 +654,72 @@ WARNING: Flatpak itself is open-source, but Flathub distributes proprietary bina
 
 Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
 Source: 📁 Arch Extra
-Website: " style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Apps</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('flatpak')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: " style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Apps</span>
+                             
 </label>
-                            <label class="app-item" title="unattended-upgrades
---
-Automatic security and system updates via cron
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR">
+                            <label class="app-card">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('unattended-upgrades')" value="unattended-upgrades" data-requires-config="true" data-configured="false">
                                 <span class="app-icon">🤖</span> unattended-upgrades <span title="unattended-upgrades
 --
 Automatic security and system updates via cron
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Auto-Update</span>
+Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Auto-Update</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('unattended-upgrades')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
-                            <label class="app-item" title="Timeshift
---
-System snapshot and restore (works with BTRFS)
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR">
+                            <label class="app-card">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('timeshift')" value="timeshift" data-requires-config="true" data-configured="false">
                                 <span class="app-icon">⏪</span> Timeshift <span title="Timeshift
 --
 System snapshot and restore (works with BTRFS)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Backup</span>
+Source: 📁 AUR" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Backup</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('timeshift')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
-                            <label class="app-item" title="NetworkManager
---
-Network connection manager with GUI support
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('networkmanager')" value="networkmanager" checked data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="networkmanager" checked>
                                 <span class="app-icon">📡</span> NetworkManager <span title="NetworkManager
 --
 Network connection manager with GUI support
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Network</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('networkmanager')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Network</span>
+                             
 </label>
-                            <label class="app-item" title="Bluetooth (bluez + bluez-utils)
---
-Bluetooth stack
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('bluetooth')" value="bluetooth" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="bluetooth">
                                 <span class="app-icon">🔵</span> Bluetooth <span title="Bluetooth (bluez + bluez-utils)
 --
 Bluetooth stack
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">bluez</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('bluetooth')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Source: 📁 Arch Core" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">bluez</span>
+                             
 </label>
-                            <label class="app-item" title="PipeWire
---
-Modern audio/video server replacing PulseAudio and JACK — zero-latency audio graph
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://gitlab.freedesktop.org/pipewire/pipewire">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('pipewire')" value="pipewire" checked data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="pipewire" checked>
                                 <span class="app-icon">🔊</span> <a href="https://gitlab.freedesktop.org/pipewire/pipewire" target="_blank">PipeWire</a> <span title="PipeWire
 --
 Modern audio/video server replacing PulseAudio and JACK — zero-latency audio graph
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://gitlab.freedesktop.org/pipewire/pipewire" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Audio</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('pipewire')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://gitlab.freedesktop.org/pipewire/pipewire" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Audio</span>
+                             
 </label>
-                            <label class="app-item" title="OpenSSH Server
---
-Hardened SSH daemon — auto-generates Ed25519 keys, disables root login, password auth disabled, key-auth only with strict sshd_config
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Core
-Website: https://github.com/openssh/openssh-portable">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('openssh')" value="openssh" checked data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="openssh" checked>
                                 <span class="app-icon">🔐</span> <a href="https://github.com/openssh/openssh-portable" target="_blank">OpenSSH</a> <span title="OpenSSH Server
 --
 Hardened SSH daemon — auto-generates Ed25519 keys, disables root login, password auth disabled, key-auth only with strict sshd_config
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Core
-Website: https://github.com/openssh/openssh-portable" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">SSH Server</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('openssh')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://github.com/openssh/openssh-portable" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">SSH Server</span>
+                             
 </label>
-                            <label class="app-item" title="Snapper
---
-⭐ RECOMMENDED
-BTRFS/LVM snapshot manager — automated filesystem restore points before and after every pacman transaction
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 Arch Extra
-Website: https://github.com/openSUSE/snapper">
+                            <label class="app-card">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('snapper')" value="snapper" data-requires-config="true" data-configured="false">
                                 <span class="app-icon">📸</span> <a href="https://github.com/openSUSE/snapper" target="_blank" style="font-weight:bold; color:var(--accent-yellow);">Snapper ⭐</a> <span title="Snapper
 --
@@ -946,26 +728,20 @@ BTRFS/LVM snapshot manager — automated filesystem restore points before and af
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/openSUSE/snapper" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Snapshots</span> <button type="button" class="btn-configure" data-app="snapper" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
+Website: https://github.com/openSUSE/snapper" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Snapshots</span> <button type="button" class="btn-configure" data-app="snapper" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('snapper')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🎨 Dusky OS</div>
-                            <label class="app-item" title="Dusky OS auto-setup
---
-Automated Hyprland desktop setup by dusklinux — installs dotfiles, themes, and full Wayland environment. Includes cheatsheet. Watch YouTube guide before running.
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 GitHub / dusklinux
-Website: https://github.com/dusklinux/dusky">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('dusky-setup')" value="dusky-setup" data-requires-config="true" data-configured="false">
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="dusky-setup">
                                 <span class="app-icon">🌙</span> <a href="https://github.com/dusklinux/dusky" target="_blank">Dusky Setup</a> <span title="Dusky OS auto-setup
 --
 Automated Hyprland desktop setup by dusklinux — installs dotfiles, themes, and full Wayland environment. Includes cheatsheet. Watch YouTube guide before running.
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 GitHub / dusklinux
-Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Auto-desktop</span>
-                             <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('dusky-setup')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
+Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3rem;">ℹ️</span> <span class="app-desc">Auto-desktop</span>
+                             
 </label>
                         </div>
                         <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre users: Firefox firmware blobs, Flatpak proprietary apps, Signal Electron build, and Chromium may conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
@@ -1053,9 +829,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                     
 
     <!-- Notification Webhooks -->
-    <label class="app-item" title="Notification Webhooks
---
-Real-time push notifications for security events via ntfy, bark, discord, etc.">
+    <label class="app-card">
         
         <span class="app-icon">📱</span> Notifications <span class="app-desc">Webhooks</span>
     </label>
@@ -1123,7 +897,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                             <button type="button" class="other-sec-enable-btn" onclick="enableAllOtherSec()">✅ Enable All</button>
                         </div>
                         <div class="app-grid-container" id="other-security-grid">
-                            <label class="app-item other-sec-tool nav-tooltip" data-title="AppArmor — MAC Policies" data-desc="Mandatory Access Control. Restricts what programs can access at kernel level. Define per-application security profiles.">
+                            <label class="app-card other-sec-tool nav-tooltip" data-title="AppArmor — MAC Policies" data-desc="Mandatory Access Control. Restricts what programs can access at kernel level. Define per-application security profiles.">
                                 <input type="checkbox" name="other_sec_tools" value="apparmor" style="accent-color:var(--accent-blue); width:18px; height:18px;">
                                 <span style="font-size:1.3rem;">🏰</span>
                                 <div>
@@ -1131,7 +905,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                     <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">MAC policies</div>
                                 </div>
                             </label>
-                            <label class="app-item other-sec-tool nav-tooltip" data-title="USBGuard — USB Whitelisting" data-desc="Only approved USB devices can connect. Generates a policy of currently connected devices, blocks everything else.">
+                            <label class="app-card other-sec-tool nav-tooltip" data-title="USBGuard — USB Whitelisting" data-desc="Only approved USB devices can connect. Generates a policy of currently connected devices, blocks everything else.">
                                 <input type="checkbox" name="other_sec_tools" value="usbguard" style="accent-color:var(--accent-blue); width:18px; height:18px;">
                                 <span style="font-size:1.3rem;">🔌</span>
                                 <div>
@@ -1139,7 +913,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                     <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">USB device whitelisting</div>
                                 </div>
                             </label>
-                            <label class="app-item other-sec-tool nav-tooltip" data-title="auditd — Syscall Logging" data-desc="Kernel-level syscall logging. Monitors file access, privilege escalation, and suspicious operations. Essential for security auditing.">
+                            <label class="app-card other-sec-tool nav-tooltip" data-title="auditd — Syscall Logging" data-desc="Kernel-level syscall logging. Monitors file access, privilege escalation, and suspicious operations. Essential for security auditing.">
                                 <input type="checkbox" name="other_sec_tools" value="auditd" style="accent-color:var(--accent-blue); width:18px; height:18px;">
                                 <span style="font-size:1.3rem;">📝</span>
                                 <div>
@@ -1147,7 +921,7 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                     <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">Syscall logging</div>
                                 </div>
                             </label>
-                            <label class="app-item other-sec-tool nav-tooltip" data-title="fail2ban — SSH Protection" data-desc="Bans IP addresses after repeated failed login attempts. Protects SSH (and other services) from brute-force attacks.">
+                            <label class="app-card other-sec-tool nav-tooltip" data-title="fail2ban — SSH Protection" data-desc="Bans IP addresses after repeated failed login attempts. Protects SSH (and other services) from brute-force attacks.">
                                 <input type="checkbox" name="other_sec_tools" value="fail2ban" style="accent-color:var(--accent-blue); width:18px; height:18px;">
                                 <span style="font-size:1.3rem;">🚫</span>
                                 <div>
@@ -1236,29 +1010,29 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                         </div>
                         <div class="app-grid-container">
                             
-                            <label class="app-item tilas-tool" title="Libre-OTP Authenticator">
+                            <label class="app-card tilas-tool" title="Libre-OTP Authenticator">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('libre-otp')" value="libre-otp" data-requires-config="true" data-configured="false" class="tilas-sec-app">
                                 <span class="app-icon">🔑</span> <a href="https://github.com/tilas01/libre-otp" target="_blank">Libre-OTP</a> <span class="app-desc">PAM TOTP</span>
                                 <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('libre-otp')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
                             </label>
                             
-                            <label class="app-item tilas-tool" title="Input Guard (Anti-Ducky)">
+                            <label class="app-card tilas-tool" title="Input Guard (Anti-Ducky)">
                                 <input type="checkbox" name="post_apps" value="anti-ducky" class="tilas-sec-app">
                                 <span class="app-icon">🦆</span> <a href="https://github.com/tilas01/anti-ducky" target="_blank">Anti-Ducky</a> <span class="app-desc">USB Blocker</span>
                             </label>
                             
-                            <label class="app-item tilas-tool" title="Anti-Evil Maid">
+                            <label class="app-card tilas-tool" title="Anti-Evil Maid">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('evil-maid')" value="anti-evil-maid" data-requires-config="true" data-configured="false" class="tilas-sec-app">
                                 <span class="app-icon">🛡️</span> <a href="https://github.com/tilas01/anti-evil-maid" target="_blank">Anti-Evil Maid</a> <span class="app-desc">Boot Integrity</span>
                                 <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('evil-maid')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
                             </label>
                             
-                            <label class="app-item tilas-tool" title="Kernel Watcher (EDR)">
+                            <label class="app-card tilas-tool" title="Kernel Watcher (EDR)">
                                 <input type="checkbox" name="post_apps" value="kernel-watcher" class="tilas-sec-app">
                                 <span class="app-icon">👀</span> <a href="https://github.com/tilas01/kernel-watcher" target="_blank">Kernel Watcher</a> <span class="app-desc">eBPF EDR</span>
                             </label>
                             
-                            <label class="app-item tilas-tool" title="ScareCrow (LKM)">
+                            <label class="app-card tilas-tool" title="ScareCrow (LKM)">
                                 <input type="checkbox" name="post_apps" value="scarecrow" class="tilas-sec-app">
                                 <span class="app-icon">🎃</span> <a href="https://github.com/tilas01/scarecrow" target="_blank">Scarecrow</a> <span class="app-desc">Decoy LKM</span>
                             </label>
