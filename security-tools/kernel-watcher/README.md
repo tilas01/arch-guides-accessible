@@ -1,14 +1,47 @@
-# Kernel Watcher (SIGSTOP)
+<div align="center">
+  <img src="assets/icon.png" width="128" height="128" style="border-radius: 50%;">
+  <br>
+  <img src="assets/banner.png" width="800">
+</div>
 
-![Icon](img/icon.png)
+# Kernel Watcher (EDR)
 
-![Banner](img/banner.png)
+eBPF-based EDR for real-time kernel integrity monitoring.
 
-Rust-based eBPF/Process monitor that actively hunts for unauthorized screen recorders (OBS, WayVNC) and suspends them via SIGSTOP until an interactive Libre-OTP or Tamper Password authorization is provided.
+## Overview
+This standalone application provides comprehensive kernel watcher (edr) capabilities for Arch Linux, natively integrated with Wayland/Xorg via `egui` and providing strict CLI parity via `clap`.
 
+## Build Instructions
+Ensure you have the Rust toolchain installed:
+```bash
+# Install rustup
+pacman -S rustup
+rustup default stable
+```
 
-## ⚖️ Legal Disclaimer
+Clone the repository and build:
+```bash
+git clone https://github.com/tilas01/arch-guides-dynamic.git
+cd arch-guides-dynamic/security-tools/kernel-watcher
+cargo build --release
+```
 
-**USE AT YOUR OWN RISK.**
-This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
-The author (tilas01) is not responsible for any system lockouts, data loss, bricked installations, or damages resulting from the use of this tool. These are advanced security mechanisms that interact directly with the Linux kernel, PAM, and the bootloader. Ensure you have adequate backups, fallback recovery keys, and understand the tools before deploying them in a production environment.
+## Usage
+The application can be run as a daemon or launched interactively via the GUI dashboard.
+
+**Daemon Mode:**
+```bash
+./target/release/kernel-watcher
+```
+
+**Interactive Dashboard (GUI):**
+```bash
+./target/release/kernel-watcher --interactive
+# or
+./target/release/kernel-watcher -i
+```
+
+**Help Menu:**
+```bash
+./target/release/kernel-watcher --help
+```

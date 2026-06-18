@@ -20,8 +20,10 @@ sha2 = "0.10"
 eframe = "0.27.2"
 egui = "0.27.2"
 sysinfo = "0.39.3"
-nix = "0.31.3"
+nix = { version = "0.31.3", features = ["signal", "process"] }
 dialoguer = "0.12.0"
 [target.'cfg(target_os = "linux")'.dependencies]
 aya = "0.12.0"
 aya-log = "0.2.0"
+
+clap = { version = "4.5.4", features = ["derive"] }

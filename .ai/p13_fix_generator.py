@@ -1,43 +1,51 @@
-import re
+import codecs
 
-js_path = 'website/script.js'
-with open(js_path, 'r', encoding='utf-8') as f:
+with codecs.open('website/script.js', 'r', 'utf-8', errors='ignore') as f:
     js = f.read()
 
-target = "// Dusky OS auto-setup"
-injection = """
-        // Standalone Security Apps
-        const secApps = [
-            { id: 'libre-otp', name: 'Libre-OTP Authenticator', repo: 'libre-otp' },
-            { id: 'anti-ducky', name: 'Input Guard (Anti-Ducky)', repo: 'anti-ducky' },
-            { id: 'anti-evil-maid', name: 'Anti-Evil Maid', repo: 'anti-evil-maid' },
-            { id: 'kernel-watcher', name: 'Kernel Watcher (EDR)', repo: 'kernel-watcher' },
-            { id: 'scarecrow', name: 'ScareCrow (LKM)', repo: 'scarecrow' },
-            { id: 'kloak', name: 'Kloak (Keystroke Obfuscator)', repo: 'kloak' }
-        ];
+# First, modify saveAppConfig to actually save the values to DOM dataset
+save_target = """function saveAppConfig(appId) {
+    closeAppConfigModal(appId);
+    
+    // Find the checkbox and mark it as configured
+    const cb = document.querySelector(`input[type="checkbox"][value="${appId}"]`);"""
 
-        secApps.forEach(app => {
-            if (post_apps.includes(app.id)) {
-                if (!cmdOnly) o += `\\`\\`\\`\\n\\n### ${app.name} Setup\\n\\`\\`\\`bash\\n`;
-                else o += `\\n# Setup ${app.name}\\n`;
-                o += `git clone https://github.com/tilas01/${app.repo}.git /opt/${app.repo}\\n`;
-                o += `cd /opt/${app.repo}\\n`;
-                if (app.id === 'kloak') {
-                    o += `make\\nsudo make install\\n`;
-                } else {
-                    o += `cargo build --release\\nsudo cp target/release/${app.repo} /usr/local/bin/\\n`;
-                }
-                o += `cd -\\n`;
-                if (!cmdOnly) o += `\\`\\`\\`\\n\\n`;
-            }
-        });
+save_replacement = """function saveAppConfig(appId) {
+    closeAppConfigModal(appId);
+    
+    // Find the checkbox and mark it as configured
+    const cb = document.querySelector(`input[type="checkbox"][value="${appId}"]`);
+    
+    // Save Libre-OTP config to dataset if applicable
+    if (appId === 'libre-otp') {
+        const mode = document.getElementById('modal_otp_mode')?.value || 'both';
+        const bypass = document.getElementById('modal_otp_bypass')?.value || '0';
+        const display = document.getElementById('modal_otp_display')?.value || 'discreet';
+        cb.dataset.otpMode = mode;
+        cb.dataset.otpBypass = bypass;
+        cb.dataset.otpDisplay = display;
+    }
+"""
 
-        // Dusky OS auto-setup"""
+js = js.replace(save_target, save_replacement)
 
-if target in js and "Standalone Security Apps" not in js:
-    js = js.replace(target, injection)
-    with open(js_path, 'w', encoding='utf-8') as f:
-        f.write(js)
-    print("Injected generator logic successfully.")
-else:
-    print("Failed to inject generator logic or already exists.")
+# Now, find generateScript and inject the logic for libre-otp and the auto-updater
+# We need to find `function generateScript`
+gen_idx = js.find('function generateScript')
+if gen_idx != -1:
+    print("Found generateScript!")
+    
+    # Let's just find where it loops over post_apps: `if(cb.value === 'libre-otp')` or similar
+    # It usually looks like this:
+    # postApps.forEach(app => {
+    #     script += `echo "Installing ${app}..."\n`;
+    # });
+    
+    # We can just append the logic at the end of generateScript, right before `return script;` or setting the output.
+    # Wait, the user already has a generateScript. Let's see what it contains.
+    
+    with codecs.open('.ai/p13_gen_check.txt', 'w', 'utf-8') as f:
+        f.write(js[gen_idx:gen_idx+2000])
+
+with codecs.open('website/script.js', 'w', 'utf-8') as f:
+    f.write(js)

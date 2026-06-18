@@ -1,14 +1,47 @@
-# Anti-Evil Maid Integrator
+<div align="center">
+  <img src="assets/icon.png" width="128" height="128" style="border-radius: 50%;">
+  <br>
+  <img src="assets/banner.png" width="800">
+</div>
 
-![Icon](img/icon.png)
+# Anti-Evil Maid Boot Integrity
 
-![Banner](img/banner.png)
+Detects bootloader and kernel tampering to prevent Evil Maid attacks.
 
-Automated toolkit that records TPM PCRs, EFI variables, and the `boot` partition structure to detect Evil Maid / physical tampering attacks on next boot. Integrates with Libre-OTP for verifiable boot screens.
+## Overview
+This standalone application provides comprehensive anti-evil maid boot integrity capabilities for Arch Linux, natively integrated with Wayland/Xorg via `egui` and providing strict CLI parity via `clap`.
 
+## Build Instructions
+Ensure you have the Rust toolchain installed:
+```bash
+# Install rustup
+pacman -S rustup
+rustup default stable
+```
 
-## ⚖️ Legal Disclaimer
+Clone the repository and build:
+```bash
+git clone https://github.com/tilas01/arch-guides-dynamic.git
+cd arch-guides-dynamic/security-tools/anti-evil-maid
+cargo build --release
+```
 
-**USE AT YOUR OWN RISK.**
-This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
-The author (tilas01) is not responsible for any system lockouts, data loss, bricked installations, or damages resulting from the use of this tool. These are advanced security mechanisms that interact directly with the Linux kernel, PAM, and the bootloader. Ensure you have adequate backups, fallback recovery keys, and understand the tools before deploying them in a production environment.
+## Usage
+The application can be run as a daemon or launched interactively via the GUI dashboard.
+
+**Daemon Mode:**
+```bash
+./target/release/anti-evil-maid
+```
+
+**Interactive Dashboard (GUI):**
+```bash
+./target/release/anti-evil-maid --interactive
+# or
+./target/release/anti-evil-maid -i
+```
+
+**Help Menu:**
+```bash
+./target/release/anti-evil-maid --help
+```

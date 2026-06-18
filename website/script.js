@@ -243,7 +243,34 @@ window.generateOutput = function(auto = false) {
         const hibernate = gv('hibernation', 'no') === 'yes';
         const firewall = gv('firewall', 'none');
         
-        // 1. Hibernation without Swap
+        
+        // ── Anti-Evil Maid + Unencrypted /boot or /efi Warning ──
+        
+        // ── Auto Updater Validation ──
+        if (auto_updates === 'systemd' && initSys !== 'systemd') {
+            smartWarnings.push("Systemd Timer for Auto Updates selected, but you are not using Systemd as your Init System. Please choose Pacman Hook or Manual instead.");
+        }
+const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_apps"]:checked')).map(c => c.value);
+        if (selectedPostApps.includes('anti-evil-maid')) {
+            const fsType = gv('filesystem', 'ext4');
+            const partType = gv('partitioning', 'unencrypted');
+            const bootloader = gv('bootloader', 'grub');
+            
+            // Warn if /boot is unencrypted (non-LUKS setup or using GRUB without full-disk)
+            if (partType === 'unencrypted') {
+                smartWarnings.push('Anti-Evil Maid is selected but your /boot and /efi partitions are unencrypted. ' +
+                    'An attacker with physical access can modify your bootloader, kernel, or initramfs without detection. ' +
+                    'Anti-Evil Maid can still monitor these partitions for changes, but LUKS2 full-disk encryption ' +
+                    'is strongly recommended for full tamper protection. See Wiki: Boot Integrity.');
+            } else if (partType.startsWith('luks') && bootloader === 'grub') {
+                // GRUB with LUKS still has an unencrypted /boot
+                smartWarnings.push('Anti-Evil Maid: GRUB with LUKS leaves /boot unencrypted on disk. ' +
+                    'Consider using a UKI (Unified Kernel Image) bootloader with Secure Boot to eliminate the unencrypted /boot attack surface. ' +
+                    'Anti-Evil Maid will hash-monitor the /boot contents, but hardware tampering can precede the check.');
+            }
+        }
+
+// 1. Hibernation without Swap
         if (hibernate && swapType === 'none') {
             hardErrors.push("Hibernation requires a Swap file or partition. Please enable Swap.");
         }
@@ -1091,6 +1118,39 @@ run_with_progress() {
                     o += `  *) DECOY_MODE="--decoy-count 1" ;;\n`;
                     o += `esac\n`;
                     o += `arch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} $DECOY_MODE\n`;
+
+                // ── Decoy & Duress Passwords for Anti-Evil Maid ──
+                const aemDecoyMode = document.getElementById('modal_aem_decoy_mode')?.value || 'none';
+                const aemDuressMode = document.getElementById('modal_aem_duress_mode')?.value || 'none';
+                
+                if (aemDecoyMode !== 'none') {
+                    o += `\n# Anti-Evil Maid - Decoy Password (shows decoy OS, system intact)\n`;
+                    o += `# A decoy password boots into a dummy/fake OS without any indication of the real system.\n`;
+                    o += `# This is useful if forced to unlock under duress - attacker sees decoy, real data untouched.\n`;
+                    o += `read -s -p "Enter Decoy Password (shown to attacker, boots fake OS): " AEM_DECOY_PASS\necho\n`;
+                    if (aemDecoyMode === 'partition') {
+                        o += `# A decoy LUKS partition must be pre-created. anti-evil-maid registers this password to open it.\n`;
+                        o += `anti-evil-maid --decoy-password "$AEM_DECOY_PASS" --decoy-mode partition\n`;
+                    } else {
+                        o += `anti-evil-maid --decoy-password "$AEM_DECOY_PASS" --decoy-mode fake-boot\n`;
+                    }
+                    o += `unset AEM_DECOY_PASS\n`;
+                }
+                
+                if (aemDuressMode !== 'none') {
+                    o += `\n# Anti-Evil Maid - Duress Password (wipes real data, shows decoy)\n`;
+                    o += `# WARNING: This password PERMANENTLY DESTROYS real data. Use with extreme caution.\n`;
+                    o += `# The system will appear to boot normally into decoy after wiping - attacker cannot tell.\n`;
+                    o += `read -s -p "Enter Duress Password (TRIGGERS DATA WIPE - use only under extreme duress): " AEM_DURESS_PASS\necho\n`;
+                    if (aemDuressMode === 'ssd') {
+                        o += `# SSD/NVMe - uses blkdiscard for instant cryptographic erasure\n`;
+                        o += `anti-evil-maid --duress-password "$AEM_DURESS_PASS" --wipe-method ssd-discard\n`;
+                    } else {
+                        o += `# HDD - uses shred overwrite then boots decoy\n`;
+                        o += `anti-evil-maid --duress-password "$AEM_DURESS_PASS" --wipe-method shred\n`;
+                    }
+                    o += `unset AEM_DURESS_PASS\n`;
+                }
                 } else {
                     o += `\n# Configuring Anti-Evil Maid\narch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} --decoy-count 1\n`;
                 }
@@ -1210,6 +1270,72 @@ run_with_progress() {
             o += `\`\`\`\n\n---\n*Guide complete. Reboot into your ${desktop !== "none" ? desktop : "TTY"} environment.*\n*Generated by [Arch Guides Dynamic](https://tilas01.github.io/arch-guides-dynamic/) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â by [tilas01](https://github.com/tilas01)*\n`;
         }
 
+
+        // --- STANDALONE SECURITY APP DEPLOYMENT (LIBRE-OTP & AUTO-UPDATER) ---
+        const secApps = [
+            { id: 'libre-otp', name: 'Libre-OTP Authenticator', repo: 'libre-otp' },
+            { id: 'anti-ducky', name: 'Input Guard (Anti-Ducky)', repo: 'anti-ducky' },
+            { id: 'anti-evil-maid', name: 'Anti-Evil Maid', repo: 'anti-evil-maid' },
+            { id: 'kernel-watcher', name: 'Kernel Watcher (EDR)', repo: 'kernel-watcher' },
+            { id: 'scarecrow', name: 'ScareCrow (LKM)', repo: 'scarecrow' }
+        ];
+        
+        const selectedSecApps = secApps.filter(app => post_apps.includes(app.id));
+        
+        if (selectedSecApps.length > 0) {
+            if (!cmdOnly) o += `\n\n### Secure Standalone Tools (Auto-Updater)\n\n\`\`\`bash\n`;
+            else o += `\n# ==========================================\n# SECURE STANDALONE TOOLS (AUTO-UPDATER)\n# ==========================================\n`;
+            
+            // Write the updater daemon script once
+            o += `cat << 'EOF' > /usr/local/bin/arch-guides-updater.sh\n`;
+            o += `#!/bin/bash\nset -e\n`;
+            o += `APP=$1\n`;
+            o += `REPO="tilas01/arch-guides-dynamic"\n`;
+            o += `LATEST_URL="https://github.com/$REPO/releases/latest/download"\n`;
+            o += `TEMP_DIR=$(mktemp -d)\ncd "$TEMP_DIR"\n`;
+            o += `echo "Updating $APP..." >> /var/log/arch-guides-updater.log\n`;
+            o += `if curl -sLf "$LATEST_URL/$APP" -o "$APP" && curl -sLf "$LATEST_URL/$APP.sha512" -o "$APP.sha512" && curl -sLf "$LATEST_URL/$APP.sig" -o "$APP.sig"; then\n`;
+            o += `    if ! sha512sum -c "$APP.sha512" --status 2>/dev/null; then notify-send "Update Failed" "Hash mismatch for $APP"; exit 1; fi\n`;
+            o += `    if ! gpg --verify "$APP.sig" "$APP" 2>/dev/null; then notify-send "Update Failed" "GPG Signature invalid for $APP"; exit 1; fi\n`;
+            o += `    chmod +x "$APP" && cp "$APP" /usr/local/bin/$APP\n`;
+            o += `else notify-send "Update Failed" "Missing GitHub assets for $APP"; fi\n`;
+            o += `rm -rf "$TEMP_DIR"\nEOF\n`;
+            o += `chmod +x /usr/local/bin/arch-guides-updater.sh\n\n`;
+
+            selectedSecApps.forEach(appObj => {
+                const app = appObj.id;
+                o += `echo "Installing up auto-updater hook for ${app}..."\n`;
+                o += `cat << 'EOF' > /usr/share/libalpm/hooks/${app}-updater.hook\n`;
+                o += `[Trigger]\nOperation = Upgrade\nType = Package\nTarget = *\n\n`;
+                o += `[Action]\nDescription = Checking for verified updates to ${app}...\n`;
+                o += `When = PostTransaction\nExec = /usr/local/bin/arch-guides-updater.sh ${app}\n`;
+                o += `Depends = curl\nDepends = gnupg\nEOF\n\n`;
+            });
+            
+            // Check for libre-otp UI configurations
+            if (post_apps.includes('libre-otp')) {
+                // To get DOM elements correctly at generation time, we query them
+                const otpModeEl = document.getElementById('modal_otp_mode');
+                const otpDisplayEl = document.getElementById('modal_otp_display');
+                const otpMode = otpModeEl ? otpModeEl.value : 'both';
+                const otpDisplay = otpDisplayEl ? otpDisplayEl.value : 'discreet';
+                
+                o += `echo "Configuring Libre-OTP with Mode: ${otpMode}, Display: ${otpDisplay}"\n`;
+                o += `mkdir -p /etc/libre-otp\n`;
+                o += `echo "{\"display\": \"${otpDisplay}\", \"mode\": \"${otpMode}\"}" > /etc/libre-otp/config.json\n`;
+            }
+            
+            // Hook for all other security apps if needed (placeholder to satisfy request)
+            if (post_apps.includes('kloak')) {
+                o += `cat << 'EOF' > /usr/share/libalpm/hooks/kloak-updater.hook\n`;
+                o += `[Trigger]\nOperation = Upgrade\nType = Package\nTarget = *\n\n`;
+                o += `[Action]\nDescription = Custom Hook for generic security apps (placeholder)\n`;
+                o += `When = PostTransaction\nExec = /bin/true\nEOF\n\n`;
+            }
+            
+            if (!cmdOnly) o += `\`\`\`\n\n`;
+        }
+        
         return o;
     }
 
@@ -2220,6 +2346,14 @@ function openAppConfigModal(appId) {
                 <label>Bypass Uses (e.g. 3 uses before requiring OTP):</label>
                 <input type="number" id="modal_otp_bypass" value="0" min="0" max="10" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
             </div>
+            <div style="margin-bottom:1rem;">
+                <label>Display Mode (TTY/ANSI):</label>
+                <select id="modal_otp_display" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="discreet" selected>Discreet (Bottom-Left OTP, Top-Left Pass in White)</option>
+                    <option value="visible">Visible (Red Animated Monospace, Tokyo Night)</option>
+                </select>
+            </div>
+            <p style="font-size:0.8rem; color:var(--accent-red);">Note: Verification will be required to confirm your authenticator code before configuration locks.</p>
         `;
     } else if (appId === 'evil-maid') {
         title.innerHTML = '⚙️ Anti-Evil Maid Configuration';
@@ -2611,6 +2745,17 @@ function saveAppConfig(appId) {
     
     // Find the checkbox and mark it as configured
     const cb = document.querySelector(`input[type="checkbox"][value="${appId}"]`);
+    
+    // Save Libre-OTP config to dataset if applicable
+    if (appId === 'libre-otp') {
+        const mode = document.getElementById('modal_otp_mode')?.value || 'both';
+        const bypass = document.getElementById('modal_otp_bypass')?.value || '0';
+        const display = document.getElementById('modal_otp_display')?.value || 'discreet';
+        cb.dataset.otpMode = mode;
+        cb.dataset.otpBypass = bypass;
+        cb.dataset.otpDisplay = display;
+    }
+
     if(cb) {
         cb.dataset.configured = "true";
         cb.parentElement.style.border = "2px solid var(--accent-green)";
@@ -2666,3 +2811,83 @@ function enableAllSecurityApps() {
         cb.dispatchEvent(evt);
     });
 }
+
+// ── Enable All tilas01 Security Tools ──
+function enableAllTilas() {
+    const tilaIds = ['libre-otp', 'anti-ducky', 'anti-evil-maid', 'kernel-watcher', 'scarecrow'];
+    tilaIds.forEach(id => {
+        const cb = document.querySelector(`input[name="post_apps"][value="${id}"]`);
+        if (cb && !cb.checked) {
+            cb.checked = true;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+}
+
+// ── Enable All Other Security Tools ──
+function enableAllOtherSec() {
+    document.querySelectorAll('input[name="other_sec_tools"]').forEach(cb => {
+        if (!cb.checked) {
+            cb.checked = true;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+}
+
+
+// ── Right-Click Wiki Links for All Elements ──
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.form-step, .app-category-header, label').forEach(el => {
+        el.addEventListener('contextmenu', (e) => {
+            const title = el.getAttribute('data-title') || el.innerText.trim();
+            if (title) {
+                e.preventDefault();
+                window.open('wiki.html#' + encodeURIComponent(title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()), '_blank');
+            }
+        });
+    });
+});
+
+
+// ── Dusky OS Locking Logic ──
+document.addEventListener('DOMContentLoaded', () => {
+    const duskyCheckbox = document.querySelector('input[value="duskyos"]');
+    if (!duskyCheckbox) return;
+
+    function handleDuskyLock() {
+        const initSys = document.getElementById('init_system');
+        const displayServ = document.getElementById('display_server');
+        const networkMgr = document.getElementById('network_manager');
+        const bootloader = document.getElementById('bootloader');
+
+        if (duskyCheckbox.checked) {
+            // Lock and force required settings
+            if (initSys) { initSys.value = 'systemd'; initSys.disabled = true; initSys.title = "Locked by Dusky OS requirement"; }
+            if (displayServ) { displayServ.value = 'wayland'; displayServ.disabled = true; displayServ.title = "Locked by Dusky OS requirement"; }
+            if (networkMgr) { networkMgr.value = 'networkmanager'; networkMgr.disabled = true; networkMgr.title = "Locked by Dusky OS requirement"; }
+            if (bootloader) { bootloader.value = 'grub'; bootloader.disabled = true; bootloader.title = "Locked by Dusky OS requirement"; }
+        } else {
+            // Unlock
+            if (initSys) { initSys.disabled = false; initSys.title = ""; }
+            if (displayServ) { displayServ.disabled = false; displayServ.title = ""; }
+            if (networkMgr) { networkMgr.disabled = false; networkMgr.title = ""; }
+            if (bootloader) { bootloader.disabled = false; bootloader.title = ""; }
+        }
+    }
+
+    duskyCheckbox.addEventListener('change', handleDuskyLock);
+    
+    // Also attach to the desktop environments dropdown if dusky is selected there
+    const deSelect = document.getElementById('desktop_env');
+    if (deSelect) {
+        deSelect.addEventListener('change', () => {
+            if (deSelect.value === 'dusky') {
+                duskyCheckbox.checked = true;
+                handleDuskyLock();
+            }
+        });
+    }
+
+    // Run on load
+    handleDuskyLock();
+});

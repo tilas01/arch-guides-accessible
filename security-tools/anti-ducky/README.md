@@ -1,14 +1,47 @@
-# Anti-Ducky USB Blocker
+<div align="center">
+  <img src="assets/icon.png" width="128" height="128" style="border-radius: 50%;">
+  <br>
+  <img src="assets/banner.png" width="800">
+</div>
 
-![Icon](img/icon.png)
+# Anti-Ducky USB HID Monitor
 
-![Banner](img/banner.png)
+Intelligent USB HID Input Manager - detects, sandboxes, and alerts on RubberDucky/BadUSB payloads.
 
-A Rust-based background daemon that enforces a strict USB whitelist upon screen lock, preventing Rubber Ducky / BadUSB keystroke injection attacks. Supports dynamic udev rules and quorum-based emergency unlocks.
+## Overview
+This standalone application provides comprehensive anti-ducky usb hid monitor capabilities for Arch Linux, natively integrated with Wayland/Xorg via `egui` and providing strict CLI parity via `clap`.
 
+## Build Instructions
+Ensure you have the Rust toolchain installed:
+```bash
+# Install rustup
+pacman -S rustup
+rustup default stable
+```
 
-## ⚖️ Legal Disclaimer
+Clone the repository and build:
+```bash
+git clone https://github.com/tilas01/arch-guides-dynamic.git
+cd arch-guides-dynamic/security-tools/anti-ducky
+cargo build --release
+```
 
-**USE AT YOUR OWN RISK.**
-This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
-The author (tilas01) is not responsible for any system lockouts, data loss, bricked installations, or damages resulting from the use of this tool. These are advanced security mechanisms that interact directly with the Linux kernel, PAM, and the bootloader. Ensure you have adequate backups, fallback recovery keys, and understand the tools before deploying them in a production environment.
+## Usage
+The application can be run as a daemon or launched interactively via the GUI dashboard.
+
+**Daemon Mode:**
+```bash
+./target/release/anti-ducky
+```
+
+**Interactive Dashboard (GUI):**
+```bash
+./target/release/anti-ducky --interactive
+# or
+./target/release/anti-ducky -i
+```
+
+**Help Menu:**
+```bash
+./target/release/anti-ducky --help
+```

@@ -1,0 +1,93 @@
+name: Release Security Tools
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tool: [libre-otp, anti-ducky, anti-evil-maid, kernel-watcher, scarecrow]
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Release
+        run: cargo build --release
+        working-directory: security-tools/${{ matrix.tool }}
+
+      - name: Generate Hashes
+        run: |
+          cd security-tools/${{ matrix.tool }}/target/release
+          sha512sum ${{ matrix.tool }} > ${{ matrix.tool }}.sha512
+          sha256sum ${{ matrix.tool }} > ${{ matrix.tool }}.sha256
+
+      - name: Generate GPG Signatures
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          cd security-tools/${{ matrix.tool }}/target/release
+          if [ -n "$GPG_PRIVATE_KEY" ]; then
+            echo "$GPG_PRIVATE_KEY" | gpg --import --batch
+            echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback -u tilas01 --detach-sign -a ${{ matrix.tool }}
+            mv ${{ matrix.tool }}.asc ${{ matrix.tool }}.sig
+            
+            # Create a .asc copy for verify-integrity.sh
+            cp ${{ matrix.tool }}.sig ${{ matrix.tool }}.asc
+          else
+            echo "Warning: GPG_PRIVATE_KEY not set. Generating empty dummy signatures for testing."
+            echo "DUMMY SIG" > ${{ matrix.tool }}.sig
+            echo "DUMMY SIG" > ${{ matrix.tool }}.asc
+          fi
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.tool }}-release
+          path: |
+            security-tools/${{ matrix.tool }}/target/release/${{ matrix.tool }}
+            security-tools/${{ matrix.tool }}/target/release/${{ matrix.tool }}.sha512
+            security-tools/${{ matrix.tool }}/target/release/${{ matrix.tool }}.sha256
+            security-tools/${{ matrix.tool }}/target/release/${{ matrix.tool }}.sig
+            security-tools/${{ matrix.tool }}/target/release/${{ matrix.tool }}.asc
+
+  create-release:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: release_assets
+      
+      - name: Prepare Assets
+        run: |
+          mkdir -p final_release
+          find release_assets -type f -exec cp {} final_release/ \;
+          ls -la final_release/
+
+      - name: Generate Tag
+        id: tag
+        run: |
+          echo "tag=v$(date +'%Y.%m.%d-%H%M')-${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: "Security Tools Release (${{ github.ref_name }})"
+          files: final_release/*
+          draft: false
+          prerelease: ${{ github.ref_name == 'dev' }}
