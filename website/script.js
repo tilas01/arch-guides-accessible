@@ -2368,6 +2368,63 @@ function openAppConfigModal(appId) {
                 </select>
             </div>
         `;
+} else if (appId === 'git') {
+        title.innerHTML = '⚙️ Git Configuration';
+        desc.innerText = 'Configure your global Git username and email.';
+        contentArea.innerHTML = `
+            <div style="margin-bottom:1rem;">
+                <label>Global Username:</label>
+                <input type="text" id="modal_git_user" placeholder="John Doe" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label>Global Email:</label>
+                <input type="email" id="modal_git_email" placeholder="john@example.com" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+            </div>
+        `;
+    } else if (appId === 'timeshift') {
+        title.innerHTML = '⚙️ Timeshift Configuration';
+        desc.innerText = 'Configure automated system snapshots.';
+        contentArea.innerHTML = `
+            <div style="margin-bottom:1rem;">
+                <label>Snapshot Mode:</label>
+                <select id="modal_timeshift_mode" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="rsync">RSYNC (Works on any filesystem)</option>
+                    <option value="btrfs">BTRFS (Requires BTRFS root)</option>
+                </select>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label>Schedule:</label>
+                <select id="modal_timeshift_schedule" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="daily">Daily (Keep 5)</option>
+                    <option value="weekly">Weekly (Keep 3)</option>
+                    <option value="boot">On Boot (Keep 3)</option>
+                </select>
+            </div>
+        `;
+    } else if (appId === 'snapper') {
+        title.innerHTML = '⚙️ Snapper Configuration';
+        desc.innerText = 'Advanced BTRFS snapshot configuration.';
+        contentArea.innerHTML = `
+            <div style="margin-bottom:1rem;">
+                <label>Timeline Config:</label>
+                <select id="modal_snapper_timeline" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="enabled">Enabled (Hourly snapshots)</option>
+                    <option value="disabled">Disabled (Manual only)</option>
+                </select>
+            </div>
+        `;
+    } else if (appId === 'unattended-upgrades') {
+        title.innerHTML = '⚙️ Unattended Upgrades';
+        desc.innerText = 'Configure automatic background updates.';
+        contentArea.innerHTML = `
+            <div style="margin-bottom:1rem;">
+                <label>Automatic Reboot:</label>
+                <select id="modal_upgrade_reboot" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="false">No (Manual reboot only)</option>
+                    <option value="true">Yes (Automatically reboot at 02:00 if required)</option>
+                </select>
+            </div>
+        `;
     } else {
         // Fallback for apps without specific config logic yet
         const capId = appId.charAt(0).toUpperCase() + appId.slice(1);
@@ -2718,7 +2775,7 @@ window.downloadAllOutput = function() {
 
 // Phase 4: Right-Click Teleport to Wiki
 document.addEventListener('contextmenu', function(e) {
-    let target = e.target.closest('.app-item, .app-card, .form-step label');
+    let target = e.target.closest('.app-card, .app-card, .form-step label');
     if (target) {
         e.preventDefault();
         let input = target.querySelector('input, select');
@@ -2746,6 +2803,19 @@ function saveAppConfig(appId) {
     // Find the checkbox and mark it as configured
     const cb = document.querySelector(`input[type="checkbox"][value="${appId}"]`);
     
+    // Save config variables to dataset
+    if (appId === 'git') {
+        cb.dataset.gitUser = document.getElementById('modal_git_user')?.value || '';
+        cb.dataset.gitEmail = document.getElementById('modal_git_email')?.value || '';
+    } else if (appId === 'timeshift') {
+        cb.dataset.timeshiftMode = document.getElementById('modal_timeshift_mode')?.value || 'rsync';
+        cb.dataset.timeshiftSchedule = document.getElementById('modal_timeshift_schedule')?.value || 'daily';
+    } else if (appId === 'snapper') {
+        cb.dataset.snapperTimeline = document.getElementById('modal_snapper_timeline')?.value || 'enabled';
+    } else if (appId === 'unattended-upgrades') {
+        cb.dataset.upgradeReboot = document.getElementById('modal_upgrade_reboot')?.value || 'false';
+    }
+
     // Save Libre-OTP config to dataset if applicable
     if (appId === 'libre-otp') {
         const mode = document.getElementById('modal_otp_mode')?.value || 'both';
