@@ -1014,29 +1014,49 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                             
                             <label class="app-card tilas-tool" title="Libre-OTP Authenticator">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('libre-otp')" value="libre-otp" data-requires-config="true" data-configured="false" class="tilas-sec-app">
-                                <span class="app-icon">🔑</span> <a href="https://github.com/tilas01/libre-otp" target="_blank">Libre-OTP</a> <span class="app-desc">PAM TOTP</span>
+                                <span style="font-size:1.3rem;">🔑</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;"><a href="https://github.com/tilas01/libre-otp" target="_blank" style="color:inherit; text-decoration:none;">Libre-OTP</a></strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">PAM TOTP</div>
+                                </div>
                                 <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('libre-otp')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
                             </label>
                             
                             <label class="app-card tilas-tool" title="Input Guard (Anti-Ducky)">
                                 <input type="checkbox" name="post_apps" value="anti-ducky" class="tilas-sec-app">
-                                <span class="app-icon">🦆</span> <a href="https://github.com/tilas01/anti-ducky" target="_blank">Anti-Ducky</a> <span class="app-desc">USB Blocker</span>
+                                <span style="font-size:1.3rem;">🦆</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;"><a href="https://github.com/tilas01/anti-ducky" target="_blank" style="color:inherit; text-decoration:none;">Anti-Ducky</a></strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">USB Blocker</div>
+                                </div>
                             </label>
                             
                             <label class="app-card tilas-tool" title="Anti-Evil Maid">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('evil-maid')" value="anti-evil-maid" data-requires-config="true" data-configured="false" class="tilas-sec-app">
-                                <span class="app-icon">🛡️</span> <a href="https://github.com/tilas01/anti-evil-maid" target="_blank">Anti-Evil Maid</a> <span class="app-desc">Boot Integrity</span>
+                                <span style="font-size:1.3rem;">🛡️</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;"><a href="https://github.com/tilas01/anti-evil-maid" target="_blank" style="color:inherit; text-decoration:none;">Anti-Evil Maid</a></strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">Boot Integrity</div>
+                                </div>
                                 <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('evil-maid')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
                             </label>
                             
                             <label class="app-card tilas-tool" title="Kernel Watcher (EDR)">
                                 <input type="checkbox" name="post_apps" value="kernel-watcher" class="tilas-sec-app">
-                                <span class="app-icon">👀</span> <a href="https://github.com/tilas01/kernel-watcher" target="_blank">Kernel Watcher</a> <span class="app-desc">eBPF EDR</span>
+                                <span style="font-size:1.3rem;">👀</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;"><a href="https://github.com/tilas01/kernel-watcher" target="_blank" style="color:inherit; text-decoration:none;">Kernel Watcher</a></strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">eBPF EDR</div>
+                                </div>
                             </label>
                             
                             <label class="app-card tilas-tool" title="ScareCrow (LKM)">
                                 <input type="checkbox" name="post_apps" value="scarecrow" class="tilas-sec-app">
-                                <span class="app-icon">🎃</span> <a href="https://github.com/tilas01/scarecrow" target="_blank">Scarecrow</a> <span class="app-desc">Decoy LKM</span>
+                                <span style="font-size:1.3rem;">🎃</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;"><a href="https://github.com/tilas01/scarecrow" target="_blank" style="color:inherit; text-decoration:none;">Scarecrow</a></strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">Decoy LKM</div>
+                                </div>
                             </label>
 
                         </div>
@@ -1049,7 +1069,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
                         <ul id="error-list" style="margin-top: 0.5rem; margin-bottom: 0;"></ul>
                         <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap; position:sticky; bottom:0; padding:1rem; background:var(--bg-darker); border-top:1px solid var(--accent-cyan); z-index:100; border-radius:8px; width:100%;">
+                    <div style="display:flex; justify-content:center; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap; position:static; padding:1rem; background:var(--bg-darker); border-top:1px solid var(--accent-cyan); z-index:100; border-radius:8px; width:100%;">
                         <div class="btn-container">
                     <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="flex:1; min-width:200px; max-width:350px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
                         
@@ -1228,7 +1248,7 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
     </div>
 </div>
 
-<div id="sticky-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-darker); border-top: 2px solid var(--accent-blue); padding: 1rem; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.5);">
+<div id="sticky-footer" style="position: static; left: 0; width: 100%; background: var(--bg-darker); border-top: 2px solid var(--accent-blue); padding: 1rem; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.5);">
     <div id="smart-analysis-bar" style="color: var(--accent-red); font-weight: bold; margin-bottom: 0.5rem; display: none;"></div>
     <button type="button" class="btn-generate" onclick="generateScript()" style="width: 80%; max-width: 600px; padding: 1rem; font-size: 1.2rem; background: var(--accent-blue); color: #0d1117; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🚀 Generate Arch Setup Script</button>
 </div>
