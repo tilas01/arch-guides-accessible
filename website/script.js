@@ -2457,6 +2457,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById('close-modal-btn');
     const modal = document.getElementById('app-config-modal');
     if (closeBtn && modal) {
+        // Use addEventListener to ensure it's bound regardless of other script overrides
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modal.style.display = 'none';
+        });
+        // Keep the old assignment just in case
         closeBtn.onclick = (e) => {
             e.preventDefault();
             modal.style.display = 'none';
@@ -2992,4 +2998,30 @@ document.addEventListener('DOMContentLoaded', () => {
     secTools.forEach(cb => {
         cb.parentElement.setAttribute('data-original-title', cb.parentElement.title);
     });
+});
+
+window.toggleSecuritySuite = function() {
+    const suiteToggle = document.getElementById('suite-toggle');
+    const securityCbs = document.querySelectorAll('.tilas-sec-app');
+    securityCbs.forEach(cb => {
+        if (suiteToggle.checked) {
+            cb.checked = true;
+            cb.disabled = true;
+            cb.parentElement.style.opacity = '0.6';
+            cb.parentElement.setAttribute('data-desc', 'Locked: Full Suite enabled.');
+            cb.parentElement.classList.add('tooltip-always');
+        } else {
+            cb.disabled = false;
+            cb.parentElement.style.opacity = '1';
+            cb.parentElement.removeAttribute('data-desc');
+        }
+    });
+};
+
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'close-modal-btn') {
+        e.preventDefault();
+        const m = document.getElementById('app-config-modal');
+        if (m) m.style.display = 'none';
+    }
 });
