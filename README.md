@@ -1,5 +1,5 @@
 <!-- Author: tilas01 | Main Developer & Maintainer -->
-**🚨 NOTE: DO NOT USE THIS BRANCH. IT IS SOLELY FOR DEVELOPMENT AND TESTING. USE THE `MAIN` BRANCH FOR STABLE RELEASES. 🚨**
+# Arch Linux Dynamic Guides & Tools
 
 <p align="center">
   <img src="img/banner.png" width="100%" alt="Arch Guides Banner">
