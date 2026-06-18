@@ -1,0 +1,40 @@
+other_sec_tools" value="apparmor" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                <span style="font-size:1.3rem;">🏰</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;">AppArmor</strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">MAC policies</div>
+                                </div>
+                            </label>
+                            <label class="app-card other-sec-tool nav-tooltip" data-title="USBGuard — USB Whitelisting" data-desc="Only approved USB devices can connect. Generates a policy of currently connected devices, blocks everything else.">
+                                <input type="checkbox" name="other_sec_tools" value="usbguard" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                <span style="font-size:1.3rem;">🔌</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;">USBGuard</strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">USB device whitelisting</div>
+                                </div>
+                            </label>
+                            <label class="app-card other-sec-tool nav-tooltip" data-title="auditd — Syscall Logging" data-desc="Kernel-level syscall logging. Monitors file access, privilege escalation, and suspicious operations. Essential for security auditing.">
+                                <input type="checkbox" name="other_sec_tools" value="auditd" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                <span style="font-size:1.3rem;">📝</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;">auditd</strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">Syscall logging</div>
+                                </div>
+                            </label>
+                            <label class="app-card other-sec-tool nav-tooltip" data-title="fail2ban — SSH Protection" data-desc="Bans IP addresses after repeated failed login attempts. Protects SSH (and other services) from brute-force attacks.">
+                                <input type="checkbox" name="other_sec_tools" value="fail2ban" style="accent-color:var(--accent-blue); width:18px; height:18px;">
+                                <span style="font-size:1.3rem;">🚫</span>
+                                <div>
+                                    <strong style="font-size:0.85rem;">fail2ban</strong>
+                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">SSH brute-force protection</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Arch ISO Setup Utilities" data-desc="Start SSH on Arch ISO so you can run this script remotely.">
+                        <label>Arch ISO Pre-Install:</label>
+                        <select id="iso_setup">
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                                    <option value="none" >None (Local)</option>
+              

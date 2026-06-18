@@ -18,6 +18,11 @@ udev = "0.9.3"
 dialoguer = "0.12.0"
 
 clap = { version = "4.5.4", features = ["derive"] }
+chacha20poly1305 = "0.10.1"
+rand = "0.10.1"
+aead = "0.6.1"
+pqcrypto-kyber = "0.8.1"
+pqcrypto-traits = "0.3.5"
 
 [[bin]]
 name = "anti-evil-maid"

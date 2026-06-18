@@ -1,0 +1,200 @@
+                            <option value="32G">32GB</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Desktop Environment" data-desc="Select your primary Desktop Environment or Window Manager. DuskyOS replaces all default WM configs." oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;">
+                        <label>Desktop Environment (DE/WM):</label>
+                        <select id="desktop_env">
+                            <option value="none" selected>None (CLI Only)</option>
+                            <option value="duskyos">DuskyOS (Custom Tiling WM)</option>
+                            <option value="gnome">GNOME</option>
+                            <option value="kde_minimal">KDE Plasma (Minimal)</option>
+                            <option value="kde_full">KDE Plasma (Full)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-step" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Libre-only users will see compatibility notes. All apps are 100% open source unless noted.">
+                        <label>Post-Install Apps:</label>
+                        <p style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;"> <strong>Proprietary / Non-Libre Warning:</strong> Apps highlighted with <span style="color:var(--accent-red);font-weight:bold;">[!]</span> (e.g., Firefox firmware blobs, Signal Electron build, Chromium, Flatpak) contain proprietary code or conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
+                        <div class="app-grid-container" id="post_apps_container">
+                            <div class="app-category-header nav-tooltip" style="grid-column: 1 / -1; margin-top: 0.5rem; cursor: help;" data-title="Arch User Repository (AUR)" data-desc="The AUR contains community-maintained packages. You cannot install external apps (like Librewolf, Tor Browser) via pacman without an AUR helper like paru. Right-click to read the Wiki." oncontextmenu="window.open('wiki.html#aur', '_blank'); return false;"> AUR <span style="font-size: 0.8em; color: var(--accent-red);">(Requires AUR Helper)</span></div>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="rofi">
+                                <span class="app-icon"></span> <a href="https://github.com/davatorium/rofi" target="_blank">Rofi</a> <span title="Rofi
+--
+Window switcher, application launcher and dmenu replacement
+
+Build Integrity: Reproducible
+Source:  Arch Extra" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Launcher</span>
+                                
+                            </label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="paru" checked>
+                                <span class="app-icon"></span> <a href="https://github.com/Morganamilo/paru" target="_blank">paru</a> <span title="paru
+--
+Rust-based AUR helper  build & install AUR packages
+
+Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
+Source:  AUR
+Website: https://github.com/Morganamilo/paru" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">AUR Helper</span>
+                             
+</label>
+                            <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;"> Browsers</div>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="firefox">
+                                <span class="app-icon"></span> <a href="https://mozilla.org/firefox/" target="_blank">Firefox</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Firefox [PROPRIETARY]
+--
+Open source web browser by Mozilla. Contains proprietary firmware blobs.
+
+WARNING: Contains closed-source telemetry and firmware blobs.
+
+Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
+Source:  Arch Extra
+Website: https://mozilla.org/firefox/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="librewolf">
+                                <span class="app-icon"></span> <a href="https://librewolf.net/" target="_blank">LibreWolf</a> <span title="LibreWolf
+--
+Privacy-hardened Firefox fork  no telemetry
+
+Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
+Source:  AUR
+Website: https://librewolf.net/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Privacy</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="tor-browser">
+                                <span class="app-icon"></span> <a href="https://torproject.org/" target="_blank">Tor Browser</a> <span title="Tor Browser
+--
+Anonymous web browsing via Tor network
+
+Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
+Source:  AUR
+Website: https://torproject.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Anon</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="chromium">
+                                <span class="app-icon"></span> <a href="https://www.chromium.org/" target="_blank">Chromium</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Chromium [PROPRIETARY]
+--
+Open source browser engine. Google integration can compromise privacy.
+
+WARNING: Google integration modules contain non-libre code.
+
+Build Integrity: Proprietary / Closed Source (Requires trusting the distributor)
+Source:  Arch Extra
+Website: https://www.chromium.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="ungoogled-chromium">
+                                <span class="app-icon"></span> <a href="https://github.com/ungoogled-software/ungoogled-chromium" target="_blank">Ungoogled Chromium</a> <span title="Ungoogled Chromium
+--
+Chromium without Google integration
+
+Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
+Source:  AUR
+Website: https://github.com/ungoogled-software/ungoogled-chromium" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Browser</span>
+                             
+</label>
+                            <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;"> Security</div>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="signal">
+                                <span class="app-icon"></span> <a href="https://signal.org/" target="_blank">Signal</a> <span title="Proprietary / Non-Libre software" style="color:var(--accent-red); margin-left:0.3rem; font-weight:bold; cursor:help;">[!]</span> <span title="Signal [PROPRIETARY]
+--
+End-to-end encrypted messaging app. Uses proprietary Electron blobs.
+
+WARNING: The Electron build system relies on closed-source precompiled binaries.
+
+Build Integrity: Non-Reproducible (Requires trusting the developer or CI system)
+Source:  AUR
+Website: https://signal.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">E2E Msg</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="keepassxc">
+                                <span class="app-icon"></span> <a href="https://keepassxc.org/" target="_blank">KeePassXC</a> <span title="KeePassXC
+--
+Offline password manager with TOTP support
+
+Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
+Source:  Arch Extra
+Website: https://keepassxc.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Passwords</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="clamav">
+                                <span class="app-icon"></span> <a href="https://www.clamav.net/" target="_blank">ClamAV</a> <span title="ClamAV
+--
+Open source antivirus engine
+
+Build Integrity: Mostly Reproducible (Safe & verifiable, minor CI metadata differences)
+Source:  Arch Extra
+Website: https://www.clamav.net/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Antivirus</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="firejail">
+                                <span class="app-icon"></span> <a href="https://firejail.wordpress.com/" target="_blank">Firejail</a> <span title="Firejail
+--
+SUID sandbox for restricting app access
+
+Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
+Source:  Arch Extra
+Website: https://firejail.wordpress.com/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Sandbox</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="doas">
+                                <span class="app-icon"></span> <a href="https://github.com/Duncaen/OpenDoas" target="_blank" style="font-weight:bold; color:var(--accent-yellow);">Doas </a> <span title="Doas
+--
+ RECOMMENDED
+OpenDoas privilege escalation (sudo alternative)
+
+Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
+Source:  Arch Extra
+Website: https://github.com/Duncaen/OpenDoas" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Privilege</span> <button type="button" class="btn-configure" data-app="doas" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;"> Config</button>
+                             
+</label>
+                            <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;"> Dev / Terminal</div>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="neovim" checked>
+                                <span class="app-icon"></span> <a href="https://neovim.io/" target="_blank">Neovim</a> <span title="Neovim
+--
+Hyperextensible terminal text editor
+
+Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
+Source:  Arch Extra
+Website: https://neovim.io/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Editor</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="alacritty">
+                                <span class="app-icon"></span> <a href="https://alacritty.org/" target="_blank">Alacritty</a> <span title="Alacritty
+--
+GPU-accelerated terminal emulator written in Rust
+
+Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
+Source:  Arch Extra
+Website: https://alacritty.org/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Terminal</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="kitty">
+                                <span class="app-icon"></span> <a href="https://sw.kovidgoyal.net/kitty/" target="_blank">kitty</a> <span title="kitty
+--
+Fast GPU-based terminal with image support
+
+Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
+Source:  Arch Extra
+Website: https://sw.kovidgoyal.net/kitty/" style="cursor:help; margin-left:0.3rem;"></span> <span class="app-desc">Terminal</span>
+                             
+</label>
+                            <label class="app-card">
+                                <input type="checkbox" name="post_apps" value="zsh">
+                                <span class="app-icon"></span> Zsh <span title="Zsh
+--
+Feature-rich shell with autocomplete and themes
+
