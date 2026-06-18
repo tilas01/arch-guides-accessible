@@ -2891,3 +2891,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run on load
     handleDuskyLock();
 });
+
+
+// ── Use All Security Tools Logic ──
+document.addEventListener('DOMContentLoaded', () => {
+    const useAllCheckbox = document.getElementById('use-all-sec-tools');
+    if (!useAllCheckbox) return;
+
+    useAllCheckbox.addEventListener('change', () => {
+        // Find all security tool checkboxes
+        // They have names 'my_sec_tools' and 'other_sec_tools'
+        const secTools = document.querySelectorAll('input[name="my_sec_tools"], input[name="other_sec_tools"]');
+        
+        secTools.forEach(cb => {
+            if (useAllCheckbox.checked) {
+                cb.checked = true;
+                cb.disabled = true;
+                cb.parentElement.style.opacity = '0.7';
+                cb.parentElement.title = "Locked by 'Use All Security Tools'";
+            } else {
+                cb.disabled = false;
+                cb.parentElement.style.opacity = '1';
+                cb.parentElement.title = cb.parentElement.getAttribute('data-original-title') || "";
+            }
+        });
+    });
+
+    // Store original titles for restoration
+    const secTools = document.querySelectorAll('input[name="my_sec_tools"], input[name="other_sec_tools"]');
+    secTools.forEach(cb => {
+        cb.parentElement.setAttribute('data-original-title', cb.parentElement.title);
+    });
+});

@@ -283,6 +283,7 @@ pub fn run() {
             bypass_hash,
             bypass_uses_left: bypass_uses,
             enforcement_mode,
+            display_mode: "none".to_string(),
         };
 
         save_state(&state);

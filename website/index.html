@@ -1027,7 +1027,18 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
     
 
 
-                    <div class="form-group form-step" data-title="⚙️ DNS Caching" data-desc="Local DNS resolver for faster lookups. systemd-resolved is built-in. unbound is secure and recursive. dnscrypt-proxy encrypts DNS queries.">
+                    
+                    <div class="form-group form-step" data-title="Modular Firewall GUI" data-desc="Pre-configured default-deny firewall to block unwanted incoming connections. UFW+Gufw is highly recommended for best libre desktop functionality.">
+                        <label>Firewall Setup:</label>
+                        <select id="firewall">
+                                    <option value="" disabled selected hidden>No Selection Provided</option>
+                            <option value="ufw">UFW + Gufw (GUI) ⭐ Recommended</option>
+                            <option value="firewalld">Firewalld + firewall-config (GUI)</option>
+                            <option value="iptables">iptables (CLI Expert)</option>
+                            <option value="none">None (Not Recommended)</option>
+                        </select>
+                    </div>
+<div class="form-group form-step" data-title="⚙️ DNS Caching" data-desc="Local DNS resolver for faster lookups. systemd-resolved is built-in. unbound is secure and recursive. dnscrypt-proxy encrypts DNS queries.">
                         <label>DNS Caching:
                         <select id="dns">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -1064,8 +1075,8 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
                                 <select id="otp_sha">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="sha1" >SHA1 (Max compatibility)</option>
-                                    <option value="sha256">SHA256 (More secure)</option>
-                                    <option value="sha512">SHA512 (Maximum)</option>
+                                    <option value="sha256">SHA256 (More secure, e.g. 2FAS)</option>
+                                    <option value="sha512">SHA512 (Maximum, e.g. 2FAS)</option>
                                 </select>
                             </div>
                             <div class="form-group form-step" data-title="Double OTP Verification" data-desc="Require two consecutive valid OTP codes (must wait 30s) or two different authenticators. Extreme security mode.">
@@ -1440,6 +1451,12 @@ Real-time push notifications for security events via ntfy, bark, discord, etc.">
         <button id="save-modal-btn" class="btn" style="margin-top:1.5rem; width:100%;">Save Configuration</button>
     </div>
 </div>
+
+<div id="sticky-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-darker); border-top: 2px solid var(--accent-blue); padding: 1rem; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.5);">
+    <div id="smart-analysis-bar" style="color: var(--accent-red); font-weight: bold; margin-bottom: 0.5rem; display: none;"></div>
+    <button type="button" class="btn-generate" onclick="generateScript()" style="width: 80%; max-width: 600px; padding: 1rem; font-size: 1.2rem; background: var(--accent-blue); color: #0d1117; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🚀 Generate Arch Setup Script</button>
+</div>
+
 </body>
 </html>
 

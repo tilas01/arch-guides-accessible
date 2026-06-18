@@ -102,11 +102,27 @@ fn monitor_network_connections() {
     }
 }
 
-pub fn handle_duress_login() {
+pub fn handle_duress_login(require_confirmation: bool) {
     println!("Enter Decoy/Duress Password:");
     if let Ok(mut password) = rpassword::read_password() {
         if password == "duress123" {
-            // Example static hash check would go here
+            // Stealth Confirmation Logic
+            if require_confirmation {
+                println!("Confirm password:");
+                if let Ok(mut confirm) = rpassword::read_password() {
+                    if confirm != password {
+                        println!("Passwords do not match. Aborting.");
+                        confirm.zeroize();
+                        password.zeroize();
+                        return;
+                    }
+                    confirm.zeroize();
+                } else {
+                    password.zeroize();
+                    return;
+                }
+            }
+            
             println!("Duress password detected! Wiping system (Simulation)...");
             // Perform simulated wipe
             let _ = Command::new("shred")
