@@ -121,7 +121,7 @@
                 </div>
                 
                 <form id="install-form">
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                         <label>Firmware Interface:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="firmware">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -130,7 +130,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="File System Features" data-desc="BTRFS supports instant snapshots and compression. Ext4 is traditional and stable.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="File System Features" data-desc="BTRFS supports instant snapshots and compression. Ext4 is traditional and stable.">
                         <label>File System:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="filesystem">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -140,7 +140,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Run lsblk to find the correct device.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="Target Installation Disk" data-desc="Target Disk where Arch will be installed. Run lsblk to find the correct device.">
                         <label>Target Disk (e.g. /dev/sda, /dev/nvme0n1):</label>
                         <input type="text" id="target-disk" value="/dev/sda" required>
                         <div style="font-size:0.75rem; color:var(--accent-red); margin-top:0.4rem;">
@@ -193,7 +193,7 @@
 </div>
 
                     
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="⚙️ Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="⚙️ Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
                         <label>Init System:
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="init_system">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -213,7 +213,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="⚙️ Main Kernel" data-desc="Hardened has security patches. Zen is for gaming. Standard is balanced. LTS is stable.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="⚙️ Main Kernel" data-desc="Hardened has security patches. Zen is for gaming. Standard is balanced. LTS is stable.">
                         <label>Main Kernel:
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="kernel-main">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -224,7 +224,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Backup Kernel" data-desc="Fallback kernel in case your main kernel fails to boot after an update.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="Backup Kernel" data-desc="Fallback kernel in case your main kernel fails to boot after an update.">
                         <label>Backup Kernel:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="kernel-backup">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -235,7 +235,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="CPU Architecture" data-desc="Select your CPU brand for correct microcode.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="CPU Architecture" data-desc="Select your CPU brand for correct microcode.">
                         <label>CPU Brand:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="cpu_brand">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -245,7 +245,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="GPU Hardware" data-desc="Select your GPU. Nvidia requires proprietary or nouveau drivers.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="GPU Hardware" data-desc="Select your GPU. Nvidia requires proprietary or nouveau drivers.">
                         <label>GPU Brand:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="gpu_brand">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -256,7 +256,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Virtual Machine Guest Setup" data-desc="If in a VM, select hypervisor for Guest Additions.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="Virtual Machine Guest Setup" data-desc="If in a VM, select hypervisor for Guest Additions.">
                         <label>VM Guest Setup:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="vm_guest">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -267,7 +267,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Software Type & Graphics Drivers" data-desc="Libre is purely open source (doas, pfetch). Proprietary includes closed source drivers (nvidia, sudo).">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="Software Type & Graphics Drivers" data-desc="Libre is purely open source (doas, pfetch). Proprietary includes closed source drivers (nvidia, sudo).">
                         <label>Software Type:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="software_type">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -278,7 +278,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Swap File Size" data-desc="Swap acts as overflow RAM. Needed for hibernation.">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="Swap File Size" data-desc="Swap acts as overflow RAM. Needed for hibernation.">
                         <label>Swap Size:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="swap_size">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -301,11 +301,11 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. ">
+                    <div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. ">
                         <label>Post-Install Apps:</label>
                         <p style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;">⚠️ <strong>Proprietary / Non-Libre Warning:</strong> Apps highlighted with <span style="color:var(--accent-red);font-weight:bold;">[!]</span> (e.g., Firefox firmware blobs, Signal Electron build, Chromium, Flatpak) contain proprietary code or conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                         <div class="app-grid-container" id="post_apps_container">
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="rofi">
                                 <span class="app-icon">🔍</span> <a href="https://github.com/davatorium/rofi" target="_blank">Rofi</a> <span class="info-tooltip-icon" title="Rofi
 --
@@ -315,7 +315,7 @@ Build Integrity: Reproducible
 Source: 📁 Arch Extra">ℹ️</span> <span class="app-desc">Launcher</span>
                                 
                             </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="paru" checked>
                                 <span class="app-icon">🦀</span> <a href="https://github.com/Morganamilo/paru" target="_blank">paru</a> <span class="info-tooltip-icon" title="paru
 --
@@ -326,7 +326,7 @@ Source: 📁 AUR
 Website: https://github.com/Morganamilo/paru">ℹ️</span> <span class="app-desc">AUR Helper</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="firefox">
                                 <span class="app-icon">🦊</span> <a href="https://mozilla.org/firefox/" target="_blank">Firefox</a> <span class="prop-warn" title="Proprietary Software Warning">[!]</span> <span class="info-tooltip-icon" title="Firefox [PROPRIETARY]
 --
@@ -339,7 +339,7 @@ Source: 📁 Arch Extra
 Website: https://mozilla.org/firefox/">ℹ️</span> <span class="app-desc">Browser</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="librewolf">
                                 <span class="app-icon">🐺</span> <a href="https://librewolf.net/" target="_blank">LibreWolf</a> <span class="info-tooltip-icon" title="LibreWolf
 --
@@ -350,7 +350,7 @@ Source: 📁 AUR
 Website: https://librewolf.net/">ℹ️</span> <span class="app-desc">Privacy</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="tor-browser">
                                 <span class="app-icon">🧅</span> <a href="https://torproject.org/" target="_blank">Tor Browser</a> <span class="info-tooltip-icon" title="Tor Browser
 --
@@ -361,7 +361,7 @@ Source: 📁 AUR
 Website: https://torproject.org/">ℹ️</span> <span class="app-desc">Anon</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="chromium">
                                 <span class="app-icon">🔵</span> <a href="https://www.chromium.org/" target="_blank">Chromium</a> <span class="prop-warn" title="Proprietary Software Warning">[!]</span> <span class="info-tooltip-icon" title="Chromium [PROPRIETARY]
 --
@@ -374,7 +374,7 @@ Source: 📁 Arch Extra
 Website: https://www.chromium.org/">ℹ️</span> <span class="app-desc">Browser</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="ungoogled-chromium">
                                 <span class="app-icon">🌐</span> <a href="https://github.com/ungoogled-software/ungoogled-chromium" target="_blank">Ungoogled Chromium</a> <span class="info-tooltip-icon" title="Ungoogled Chromium
 --
@@ -385,7 +385,7 @@ Source: 📁 AUR
 Website: https://github.com/ungoogled-software/ungoogled-chromium">ℹ️</span> <span class="app-desc">Browser</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="signal">
                                 <span class="app-icon">💬</span> <a href="https://signal.org/" target="_blank">Signal</a> <span class="prop-warn" title="Proprietary Software Warning">[!]</span> <span class="info-tooltip-icon" title="Signal [PROPRIETARY]
 --
@@ -398,7 +398,7 @@ Source: 📁 AUR
 Website: https://signal.org/">ℹ️</span> <span class="app-desc">E2E Msg</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="keepassxc">
                                 <span class="app-icon">🔑</span> <a href="https://keepassxc.org/" target="_blank">KeePassXC</a> <span class="info-tooltip-icon" title="KeePassXC
 --
@@ -409,7 +409,7 @@ Source: 📁 Arch Extra
 Website: https://keepassxc.org/">ℹ️</span> <span class="app-desc">Passwords</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="clamav">
                                 <span class="app-icon">🛡️</span> <a href="https://www.clamav.net/" target="_blank">ClamAV</a> <span class="info-tooltip-icon" title="ClamAV
 --
@@ -420,7 +420,7 @@ Source: 📁 Arch Extra
 Website: https://www.clamav.net/">ℹ️</span> <span class="app-desc">Antivirus</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="firejail">
                                 <span class="app-icon">🏰</span> <a href="https://firejail.wordpress.com/" target="_blank">Firejail</a> <span class="info-tooltip-icon" title="Firejail
 --
@@ -431,7 +431,7 @@ Source: 📁 Arch Extra
 Website: https://firejail.wordpress.com/">ℹ️</span> <span class="app-desc">Sandbox</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="doas">
                                 <span class="app-icon">⚙️</span> <a href="https://github.com/Duncaen/OpenDoas" target="_blank" style="font-weight:bold; color:var(--accent-yellow);">Doas ⭐</a> <span class="info-tooltip-icon" title="Doas
 --
@@ -443,7 +443,7 @@ Source: 📁 Arch Extra
 Website: https://github.com/Duncaen/OpenDoas">ℹ️</span> <span class="app-desc">Privilege</span> <button type="button" class="btn-configure" data-app="doas" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="neovim" checked>
                                 <span class="app-icon">📝</span> <a href="https://neovim.io/" target="_blank">Neovim</a> <span class="info-tooltip-icon" title="Neovim
 --
@@ -454,7 +454,7 @@ Source: 📁 Arch Extra
 Website: https://neovim.io/">ℹ️</span> <span class="app-desc">Editor</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="alacritty">
                                 <span class="app-icon">⬛</span> <a href="https://alacritty.org/" target="_blank">Alacritty</a> <span class="info-tooltip-icon" title="Alacritty
 --
@@ -465,7 +465,7 @@ Source: 📁 Arch Extra
 Website: https://alacritty.org/">ℹ️</span> <span class="app-desc">Terminal</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="kitty">
                                 <span class="app-icon">🐱</span> <a href="https://sw.kovidgoyal.net/kitty/" target="_blank">kitty</a> <span class="info-tooltip-icon" title="kitty
 --
@@ -476,7 +476,7 @@ Source: 📁 Arch Extra
 Website: https://sw.kovidgoyal.net/kitty/">ℹ️</span> <span class="app-desc">Terminal</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="zsh">
                                 <span class="app-icon">🐚</span> Zsh <span class="info-tooltip-icon" title="Zsh
 --
@@ -486,7 +486,7 @@ Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identic
 Source: 📁 Arch Extra">ℹ️</span> <span class="app-desc">Shell</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="vscodium">
                                 <span class="app-icon">📘</span> <a href="https://vscodium.com/" target="_blank">VSCodium</a> <span class="info-tooltip-icon" title="VSCodium
 --
@@ -497,7 +497,7 @@ Source: 📁 AUR
 Website: https://vscodium.com/">ℹ️</span> <span class="app-desc">IDE</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('git')" value="git" checked data-requires-config="true" data-configured="false">
                                 <span class="app-icon">🔀</span> <a href="https://git-scm.com/" target="_blank">Git</a> <span class="info-tooltip-icon" title="Git
 --
@@ -508,7 +508,7 @@ Source: 📁 Arch Extra
 Website: https://git-scm.com/">ℹ️</span> <span class="app-desc">VCS</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('git')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="tmux">
                                 <span class="app-icon">🪟</span> tmux <span class="info-tooltip-icon" title="tmux
 --
@@ -518,7 +518,7 @@ Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identic
 Source: 📁 Arch Extra">ℹ️</span> <span class="app-desc">Multiplex</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="htop" checked>
                                 <span class="app-icon">📊</span> <a href="https://github.com/htop-dev/htop" target="_blank">htop</a> <span class="info-tooltip-icon" title="htop
 --
@@ -529,7 +529,7 @@ Source: 📁 Arch Extra
 Website: https://github.com/htop-dev/htop">ℹ️</span> <span class="app-desc">Monitor</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="pfetch">
                                 <span class="app-icon">🖥️</span> <a href="https://github.com/dylanaraps/pfetch" target="_blank">pfetch</a> <span class="info-tooltip-icon" title="pfetch
 --
@@ -540,7 +540,7 @@ Source: 📁 Arch Extra
 Website: https://github.com/dylanaraps/pfetch">ℹ️</span> <span class="app-desc">Sysinfo</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="fastfetch" checked>
                                 <span class="app-icon">⚡</span> <a href="https://github.com/fastfetch-cli/fastfetch" target="_blank">fastfetch</a> <span class="info-tooltip-icon" title="fastfetch
 --
@@ -551,7 +551,7 @@ Source: 📁 Arch Extra
 Website: https://github.com/fastfetch-cli/fastfetch">ℹ️</span> <span class="app-desc">Sysinfo</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="thunar">
                                 <span class="app-icon">📁</span> Thunar <span class="info-tooltip-icon" title="Thunar
 --
@@ -561,7 +561,7 @@ Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identic
 Source: 📁 Arch Extra">ℹ️</span> <span class="app-desc">Files</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="nautilus">
                                 <span class="app-icon">📂</span> Nautilus <span class="info-tooltip-icon" title="Nautilus
 --
@@ -571,7 +571,7 @@ Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identic
 Source: 📁 Arch Extra">ℹ️</span> <span class="app-desc">Files</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="mpv">
                                 <span class="app-icon">▶️</span> <a href="https://mpv.io/" target="_blank">mpv</a> <span class="info-tooltip-icon" title="mpv
 --
@@ -582,7 +582,7 @@ Source: 📁 Arch Extra
 Website: https://mpv.io/">ℹ️</span> <span class="app-desc">Player</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="vlc">
                                 <span class="app-icon">🔶</span> <a href="https://www.videolan.org/" target="_blank">VLC</a> <span class="info-tooltip-icon" title="VLC
 --
@@ -593,7 +593,7 @@ Source: 📁 Arch Extra
 Website: https://www.videolan.org/">ℹ️</span> <span class="app-desc">Player</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="obs">
                                 <span class="app-icon">🎥</span> <a href="https://obsproject.com/" target="_blank">OBS Studio</a> <span class="info-tooltip-icon" title="OBS Studio
 --
@@ -604,7 +604,7 @@ Source: 📁 Arch Extra
 Website: https://obsproject.com/">ℹ️</span> <span class="app-desc">Record</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="gimp">
                                 <span class="app-icon">🎨</span> <a href="https://gimp.org/" target="_blank">GIMP</a> <span class="info-tooltip-icon" title="GIMP
 --
@@ -615,7 +615,7 @@ Source: 📁 Arch Extra
 Website: https://gimp.org/">ℹ️</span> <span class="app-desc">Images</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="libreoffice">
                                 <span class="app-icon">📄</span> <a href="https://www.libreoffice.org/" target="_blank">LibreOffice</a> <span class="info-tooltip-icon" title="LibreOffice
 --
@@ -626,7 +626,7 @@ Source: 📁 Arch Extra
 Website: https://www.libreoffice.org/">ℹ️</span> <span class="app-desc">Office</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="flatpak">
                                 <span class="app-icon">📦</span> Flatpak <span class="prop-warn" title="Proprietary Software Warning">[!]</span> <span class="info-tooltip-icon" title="Flatpak [PROPRIETARY]
 --
@@ -639,7 +639,7 @@ Source: 📁 Arch Extra
 Website: ">ℹ️</span> <span class="app-desc">Apps</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('unattended-upgrades')" value="unattended-upgrades" data-requires-config="true" data-configured="false">
                                 <span class="app-icon">🤖</span> unattended-upgrades <span class="info-tooltip-icon" title="unattended-upgrades
 --
@@ -649,7 +649,7 @@ Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identic
 Source: 📁 AUR">ℹ️</span> <span class="app-desc">Auto-Update</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('unattended-upgrades')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('timeshift')" value="timeshift" data-requires-config="true" data-configured="false">
                                 <span class="app-icon">⏪</span> Timeshift <span class="info-tooltip-icon" title="Timeshift
 --
@@ -659,7 +659,7 @@ Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identic
 Source: 📁 AUR">ℹ️</span> <span class="app-desc">Backup</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('timeshift')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="networkmanager" checked>
                                 <span class="app-icon">📡</span> NetworkManager <span class="info-tooltip-icon" title="NetworkManager
 --
@@ -669,7 +669,7 @@ Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identic
 Source: 📁 Arch Core">ℹ️</span> <span class="app-desc">Network</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="bluetooth">
                                 <span class="app-icon">🔵</span> Bluetooth <span class="info-tooltip-icon" title="Bluetooth (bluez + bluez-utils)
 --
@@ -679,7 +679,7 @@ Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identic
 Source: 📁 Arch Core">ℹ️</span> <span class="app-desc">bluez</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="pipewire" checked>
                                 <span class="app-icon">🔊</span> <a href="https://gitlab.freedesktop.org/pipewire/pipewire" target="_blank">PipeWire</a> <span class="info-tooltip-icon" title="PipeWire
 --
@@ -690,7 +690,7 @@ Source: 📁 Arch Extra
 Website: https://gitlab.freedesktop.org/pipewire/pipewire">ℹ️</span> <span class="app-desc">Audio</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="openssh" checked>
                                 <span class="app-icon">🔐</span> <a href="https://github.com/openssh/openssh-portable" target="_blank">OpenSSH</a> <span class="info-tooltip-icon" title="OpenSSH Server
 --
@@ -701,7 +701,7 @@ Source: 📁 Arch Core
 Website: https://github.com/openssh/openssh-portable">ℹ️</span> <span class="app-desc">SSH Server</span>
                              
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('snapper')" value="snapper" data-requires-config="true" data-configured="false">
                                 <span class="app-icon">📸</span> <a href="https://github.com/openSUSE/snapper" target="_blank" style="font-weight:bold; color:var(--accent-yellow);">Snapper ⭐</a> <span class="info-tooltip-icon" title="Snapper
 --
@@ -713,7 +713,7 @@ Source: 📁 Arch Extra
 Website: https://github.com/openSUSE/snapper">ℹ️</span> <span class="app-desc">Snapshots</span> <button type="button" class="btn-configure" data-app="snapper" style="display:none; background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('snapper')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
 </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
                                 <input type="checkbox" name="post_apps" value="dusky-setup">
                                 <span class="app-icon">🌙</span> <a href="https://github.com/dusklinux/dusky" target="_blank">Dusky Setup</a> <span class="info-tooltip-icon" title="Dusky OS auto-setup
 --
@@ -730,7 +730,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
 --
 Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw Arch TTY (Console) outside of any GUI. Applies to LUKS and OTP boot prompts.">ℹ️</span> <span class="app-desc">Boot Theme</span>
                             </label>
-<label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+<label class="app-card" oncontextmenu="openWiki(event);">
         
         <span class="app-icon">📱</span> Notifications <span class="app-desc">Webhooks</span>
     </label>
@@ -767,7 +767,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                             <option value="none">None (Not Recommended)</option>
                         </select>
                     </div>
-<div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="⚙️ DNS Caching" data-desc="Local DNS resolver for faster lookups. systemd-resolved is built-in. unbound is secure and recursive. dnscrypt-proxy encrypts DNS queries.">
+<div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="⚙️ DNS Caching" data-desc="Local DNS resolver for faster lookups. systemd-resolved is built-in. unbound is secure and recursive. dnscrypt-proxy encrypts DNS queries.">
                         <label>DNS Caching:
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="dns">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -782,13 +782,13 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                     
 
     <!-- Notification Webhooks -->
-    <label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
+    <label class="app-card" oncontextmenu="openWiki(event);">
         
         <span class="app-icon">📱</span> Notifications <span class="app-desc">Webhooks</span>
     </label>
 
 </div>
-<div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="OTP Enforcement Mode" data-desc="Login Only: OTP at TTY/display manager. Boot: OTP in initramfs before kernel. Both: maximum coverage. SSH: if Hardened SSH also enabled." oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;">
+<div class="form-group form-step" oncontextmenu="openWiki(event);" data-title="OTP Enforcement Mode" data-desc="Login Only: OTP at TTY/display manager. Boot: OTP in initramfs before kernel. Both: maximum coverage. SSH: if Hardened SSH also enabled." oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;">
                                 <label>OTP Mode:</label>
                                 <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="libre_otp_mode">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
