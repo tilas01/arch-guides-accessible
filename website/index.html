@@ -135,7 +135,7 @@
                 <form id="install-form">
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                         <label>Firmware Interface:</label>
-                        <select id="firmware">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="firmware">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="uefi" >UEFI (Modern, Recommended)</option>
                             <option value="bios">Legacy BIOS</option>
@@ -144,7 +144,7 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="File System Features" data-desc="BTRFS supports instant snapshots and compression. Ext4 is traditional and stable.">
                         <label>File System:</label>
-                        <select id="filesystem">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="filesystem">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="btrfs" >BTRFS (Snapshots & Snapper)</option>
                             <option value="ext4">Ext4 (Standard/Stable)</option>
@@ -171,7 +171,7 @@
         <!-- Base Layer -->
         <div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
             <strong style="color:var(--accent-purple);">Layer 1: Base Disk Encryption</strong>
-            <select id="partitioning" style="margin-top:0.5rem; width:100%;">
+            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="partitioning" style="margin-top:0.5rem; width:100%;">
                 <option value="" disabled selected hidden>No Selection Provided</option>
                 <option value="unencrypted">Unencrypted (No Security)</option>
                 <option value="luks1">LUKS1 (Legacy GRUB Compatible)</option>
@@ -183,7 +183,7 @@
         <!-- Cipher Layer -->
         <div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
             <strong style="color:var(--accent-blue);">Layer 2: Cipher Algorithm</strong>
-            <select id="encryption_cipher" style="margin-top:0.5rem; width:100%;">
+            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="encryption_cipher" style="margin-top:0.5rem; width:100%;">
                 <option value="aes-xts-plain64" selected>AES-256-XTS (Standard)</option>
                 <option value="aes-gcm-random">AES-256-GCM (Authenticated)</option>
                 <option value="serpent-xts-plain64">Serpent-256-XTS (High Margin of Security)</option>
@@ -193,7 +193,7 @@
         <!-- Post-Quantum Overlay -->
         <div>
             <strong style="color:var(--accent-cyan);">Layer 3: Post-Quantum Overlay</strong>
-            <select id="encryption_pq" style="margin-top:0.5rem; width:100%;">
+            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="encryption_pq" style="margin-top:0.5rem; width:100%;">
                 <option value="none" selected>None (Standard Classical Security)</option>
                 <option value="kyber1024">Kyber-1024 Hybrid (Experimental NIST PQ)</option>
             </select>
@@ -207,7 +207,7 @@
                     
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="⚙️ Init System" data-desc="systemd is faster and modern. busybox is traditional and modular.">
                         <label>Init System:
-                        <select id="init_system">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="init_system">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="systemd" >systemd (Modern, sd-encrypt)</option>
                             <option value="busybox">busybox/udev (Traditional)</option>
@@ -216,7 +216,7 @@
 
                     <div class="form-group form-step" data-title="⚙️ Bootloader Choice" data-desc="UKI Custom uses your own keys in UEFI. UKI Shim uses Microsoft trust chain. systemd-boot is minimal. GRUB is legacy." oncontextmenu="window.open('wiki.html#bootloader', '_blank'); return false;">
                         <label>Bootloader & Secure Boot:
-                        <select id="bootloader">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="bootloader">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="uki-custom" >UKI + Custom Keys (Fortress)</option>
                             <option value="uki-shim">UKI + Shim (Microsoft Trust)</option>
@@ -227,7 +227,7 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="⚙️ Main Kernel" data-desc="Hardened has security patches. Zen is for gaming. Standard is balanced. LTS is stable.">
                         <label>Main Kernel:
-                        <select id="kernel-main">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="kernel-main">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="linux-hardened" >linux-hardened (Max Security)</option>
                             <option value="linux">linux (Standard)</option>
@@ -238,7 +238,7 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Backup Kernel" data-desc="Fallback kernel in case your main kernel fails to boot after an update.">
                         <label>Backup Kernel:</label>
-                        <select id="kernel-backup">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="kernel-backup">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="linux-zen" >linux-zen (Fallback)</option>
                             <option value="linux-lts">linux-lts (Stable Fallback)</option>
@@ -249,7 +249,7 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="CPU Architecture" data-desc="Select your CPU brand for correct microcode.">
                         <label>CPU Brand:</label>
-                        <select id="cpu_brand">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="cpu_brand">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="amd" >AMD</option>
                             <option value="intel">Intel</option>
@@ -259,7 +259,7 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="GPU Hardware" data-desc="Select your GPU. Nvidia requires proprietary or nouveau drivers.">
                         <label>GPU Brand:</label>
-                        <select id="gpu_brand">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="gpu_brand">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="amd" >AMD Radeon</option>
                             <option value="intel">Intel Graphics</option>
@@ -270,7 +270,7 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Virtual Machine Guest Setup" data-desc="If in a VM, select hypervisor for Guest Additions.">
                         <label>VM Guest Setup:</label>
-                        <select id="vm_guest">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="vm_guest">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="none" >None (Bare Metal)</option>
                             <option value="vbox">VirtualBox</option>
@@ -281,7 +281,7 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Software Type & Graphics Drivers" data-desc="Libre is purely open source (doas, pfetch). Proprietary includes closed source drivers (nvidia, sudo).">
                         <label>Software Type:</label>
-                        <select id="software_type">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="software_type">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="libre" >Fully Libre (100% Open Source)</option>
                             <option value="opensource">Open Source + Firmware</option>
@@ -292,7 +292,7 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Swap File Size" data-desc="Swap acts as overflow RAM. Needed for hibernation.">
                         <label>Swap Size:</label>
-                        <select id="swap_size">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="swap_size">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="0">0GB (No Swap)</option>
                             <option value="4G">4GB</option>
@@ -304,7 +304,7 @@
 
                     <div class="form-group form-step" data-title="Desktop Environment" data-desc="Select your primary Desktop Environment or Window Manager. DuskyOS replaces all default WM configs." oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;">
                         <label>Desktop Environment (DE/WM):</label>
-                        <select id="desktop_env">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="desktop_env">
                             <option value="none" selected>None (CLI Only)</option>
                             <option value="duskyos">DuskyOS (Custom Tiling WM)</option>
                             <option value="gnome">GNOME</option>
@@ -759,7 +759,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Automatic System Updates" data-desc="Daily cron job to auto-update pacman packages with logging.">
                         <label>Auto Updates:</label>
-                        <select id="auto_updates">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="auto_updates">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="no" >No (Manual)</option>
                                     <option value="pacman">Yes (Pacman Hook)</option>
@@ -771,7 +771,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                         <label>Regular Users:</label>
                         <input type="number" id="user_count" min="1" max="5" value="1" style="margin-bottom:0.5rem;">
                         <label>Root SSH Access:</label>
-                        <select id="root_ssh">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="root_ssh">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="no" >No (sudo/doas only)</option>
                             <option value="yes">Yes (Allow root SSH)</option>
@@ -780,7 +780,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
     
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="System Cleanup" data-desc="Auto-clean build deps, cache, and temp files after install.">
                         <label>Post-Install Cleanup:</label>
-                        <select id="cleanup">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="cleanup">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="yes" >Yes</option>
                             <option value="no">No</option>
@@ -789,7 +789,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 
                     <div class="form-group form-step" data-title="Desktop Environment" data-desc="GNOME is full-featured. KDE is customizable. DWM is minimal and keyboard-driven. Dusky OS is a pre-configured Hyprland setup by dusklinux. TTY Only means no GUI." oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;">
                         <label>Desktop Environment:</label>
-                        <select id="desktop">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="desktop">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="none" >None (TTY Only)</option>
                             <option value="gnome">GNOME</option>
@@ -802,7 +802,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                     <div class="form-step" data-title="Display Server" data-desc="Wayland is modern and secure. Xorg is legacy but required for DWM/Dusky.">
                         <div class="form-group" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
                             <label>Display Server:</label>
-                            <select id="display_server">
+                            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="display_server">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="auto">Auto (Depends on DE)</option>
                                 <option value="wayland">Wayland (Modern)</option>
@@ -816,7 +816,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                     
                     <div class="form-group form-step" data-title="Modular Firewall GUI" data-desc="Pre-configured default-deny firewall to block unwanted incoming connections. UFW+Gufw is highly recommended for best libre desktop functionality." oncontextmenu="window.open('wiki.html#firewall', '_blank'); return false;">
                         <label>Firewall Setup:</label>
-                        <select id="firewall">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="firewall">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                             <option value="ufw">UFW + Gufw (GUI) ⭐ Recommended</option>
                             <option value="firewalld">Firewalld + firewall-config (GUI)</option>
@@ -826,7 +826,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                     </div>
 <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="⚙️ DNS Caching" data-desc="Local DNS resolver for faster lookups. systemd-resolved is built-in. unbound is secure and recursive. dnscrypt-proxy encrypts DNS queries.">
                         <label>DNS Caching:
-                        <select id="dns">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="dns">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="systemd-resolved" >systemd-resolved</option>
                             <option value="unbound">unbound</option>
@@ -847,7 +847,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 </div>
 <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="OTP Enforcement Mode" data-desc="Login Only: OTP at TTY/display manager. Boot: OTP in initramfs before kernel. Both: maximum coverage. SSH: if Hardened SSH also enabled." oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;">
                                 <label>OTP Mode:</label>
-                                <select id="libre_otp_mode">
+                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="libre_otp_mode">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="login" >Login Only</option>
                                     <option value="boot">Boot Only</option>
@@ -856,7 +856,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                             </div>
                             <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="OTP Hash Algorithm" data-desc="SHA1 is universally compatible (Google Auth, Aegis). SHA256/SHA512 offer stronger hashing but fewer apps support them. Recommended: SHA1.">
                                 <label>OTP Algorithm:</label>
-                                <select id="otp_sha">
+                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="otp_sha">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="sha1" >SHA1 (Max compatibility)</option>
                                     <option value="sha256">SHA256 (More secure, e.g. 2FAS)</option>
@@ -865,7 +865,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                             </div>
                             <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Double OTP Verification" data-desc="Require two consecutive valid OTP codes (must wait 30s) or two different authenticators. Extreme security mode.">
                                 <label>Double OTP:</label>
-                                <select id="otp_double">
+                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="otp_double">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="no" >No (Standard)</option>
                                     <option value="yes">Yes (High Security)</option>
@@ -873,7 +873,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                             </div>
                             <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Bypass Password" data-desc="Set a custom bypass password that can be used up to a specified number of times to bypass OTP entirely.">
                                 <label>Bypass Uses:</label>
-                                <select id="otp_bypass">
+                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="otp_bypass">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="0" >None (Recommended)</option>
                                     <option value="1">1 Use</option>
@@ -884,7 +884,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
                             </div>
                             <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="OTP Recovery Codes" data-desc="Generate backup recovery codes during setup. Each code is single-use. If a recovery code is used, an alert is sent via webhook.">
                                 <label>Recovery Codes:</label>
-                                <select id="otp_recovery">
+                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="otp_recovery">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="5" >5 codes (Recommended)</option>
                                     <option value="10">10 codes</option>
@@ -944,7 +944,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Arch ISO Setup Utilities" data-desc="Start SSH on Arch ISO so you can run this script remotely.">
                         <label>Arch ISO Pre-Install:</label>
-                        <select id="iso_setup">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="iso_setup">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="none" >None (Local)</option>
                             <option value="ssh">Start SSHd</option>
@@ -954,7 +954,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Live ISO Verifier" data-desc="Automatically checks the integrity of your booted Arch ISO (supports Ventoy/Rufus) using official GPG signatures before pacstrap begins.">
                         <label>Verify Live ISO Integrity:</label>
-                        <select id="iso_verify">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="iso_verify">
                             <option value="yes" selected>Yes, automatically verify my boot media</option>
                             <option value="no">No, skip verification</option>
                         </select>
@@ -962,7 +962,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
     
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Output Format" data-desc="Markdown tutorial, executable Bash script, or both.">
                         <label>Output Format:</label>
-                        <select id="outputformat">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="outputformat">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="both" >Both (Guide + Script)</option>
                             <option value="markdown">Markdown Guide</option>
@@ -975,7 +975,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Post-Install Execution" data-desc="Choose how post-install scripts are handled. Auto-Run executes everything seamlessly. Split creates a separate post-install.sh file.">
                         <label>Post-Install Execution:</label>
-                        <select id="script-style">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="script-style">
                             <option value="unified" selected>Auto-Run Post-Install (Recommended)</option>
                             <option value="split">Split Scripts (Manual Post-Install)</option>
                         </select>
@@ -992,7 +992,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 
                     <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Select how much output the installer prints to the terminal. High verbosity will slow down installation due to rapid terminal I/O." oncontextmenu="window.open('wiki.html#verbosity', '_blank'); return false;">
                         <label>Script Verbosity Level (Advanced):</label>
-                        <select id="verbosity_level">
+                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="verbosity_level">
                             <option value="progress">Progress Bar Only (No Output)</option>
                             <option value="simple">Simple (Headers Only)</option>
                             <option value="medium" selected>Medium (Headers + Pacman Output)</option>

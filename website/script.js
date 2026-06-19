@@ -3019,26 +3019,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 window.auditConfiguration = function() {
-    let errors = [];
+    let warnings = [];
     
     // 1. Strictly Libre vs Proprietary
     let swType = document.querySelector('input[name="sw_type"]:checked');
     if (swType && swType.value === 'libre') {
-        // Find if any proprietary app is selected
         let hasProprietary = false;
         let selectedApps = document.querySelectorAll('.app-card input[type="checkbox"]:checked');
         selectedApps.forEach(app => {
             if (app.parentElement.innerHTML.includes('[!]')) {
                 hasProprietary = true;
                 app.parentElement.style.border = '2px solid red';
+                warnings.push("You are installing an app (" + app.id + ") that contains proprietary blobs despite selecting 'Strictly Libre'.");
             } else {
                 app.parentElement.style.border = '1px solid var(--border-color)';
             }
         });
-        if (hasProprietary) {
-            errors.push('You selected "Strictly Libre" but checked proprietary apps (marked with [!]). Please uncheck them or switch to Proprietary software type.');
+    }
+
+    // 2. Bootloader Encryption Warnings
+    let encType = document.querySelector('input[name="encryption"]:checked');
+    let bootloader = document.querySelector('input[name="bootloader"]:checked');
+    if (encType && encType.value !== 'none' && bootloader) {
+        if (bootloader.value === 'systemd-boot' || bootloader.value === 'uki') {
+            warnings.push("Bootloader Warning: You selected " + bootloader.value + " with encryption. Your /boot partition (EFI) will remain unencrypted. Only GRUB can fully encrypt /boot natively.");
         }
     }
     
-    return errors;
+    return warnings;
+};
+
+
+let configIsDirty = false;
+let currentModalId = null;
+
+window.openConfigModal = function(event, modalId) {
+    if(event) { event.preventDefault(); event.stopPropagation(); }
+    let modal = document.getElementById(modalId);
+    if(modal) {
+        modal.style.display = 'flex';
+        currentModalId = modalId;
+        configIsDirty = false; // Reset dirtiness
+        
+        // Track changes
+        let inputs = modal.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.onchange = () => { configIsDirty = true; };
+            input.oninput = () => { configIsDirty = true; };
+        });
+    }
+};
+
+window.saveConfigModal = function() {
+    let modal = document.getElementById(currentModalId);
+    if(modal) {
+        modal.style.display = 'none';
+        configIsDirty = false;
+        currentModalId = null;
+    }
+};
+
+window.closeConfigModal = function(modalId) {
+    let modal = document.getElementById(modalId || currentModalId);
+    if(modal) {
+        if(configIsDirty) {
+            if(!confirm("You have unsaved changes. Are you sure you want to discard them?")) {
+                return;
+            }
+        }
+        modal.style.display = 'none';
+        configIsDirty = false;
+        currentModalId = null;
+    }
 };
