@@ -804,7 +804,7 @@ input:checked + .slider:before {
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem;
-    bpx solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.05);
     border-radius: 6px;
     background: var(--bg-lighter);
     transition: background 0.15s, border-color 0.15s;
