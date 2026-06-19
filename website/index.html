@@ -35,52 +35,7 @@
 
     <!-- First Visit Waiver Modal (handled by legal.js) -->
     <!-- REMOVED duplicate inline modal — legal.js manages all waiver/welcome logic -->
-    <div id="waiver-modal" style="display:none;">
-            <!-- Welcome Header -->
-            <div style="text-align:center; margin-bottom:1.5rem;">
-                <div style="font-size:2.2rem; margin-bottom:0.5rem;">🦀🛡️</div>
-                <h2 style="color:var(--accent-cyan); margin:0; font-size:1.5rem; letter-spacing:0.5px;">Welcome to Arch Guides Dynamic</h2>
-                <p style="color:#8b949e; font-size:0.85rem; margin:0.4rem 0 0;">by <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple);">tilas01</a> &nbsp;·&nbsp; Secure. Libre. Modular.</p>
-            </div>
-
-            <div style="border-top:1px solid var(--border-color); padding-top:1.25rem; margin-bottom:1.25rem;">
-                <h3 style="color:var(--accent-red); margin-top:0; font-size:1rem;">⚠️ Legal Disclaimer &amp; Waiver</h3>
-                <p style="color:var(--fg-color); line-height:1.75; font-size:0.87rem; margin:0;">
-                    By clicking <strong>"I Agree"</strong>, you acknowledge and accept that all content, tools, scripts, binaries, documentation, and source code provided on this website and within the GitHub repository <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" style="color:var(--accent-blue);">tilas01/arch-guides-dynamic</a> — including but not limited to the Arch Guides Dynamic Generator, the Arch Rusty Security Suite (ARSS), Anti-Evil-Maid, Anti-Ducky, Kernel Watcher, LibreOTP, and Scarecrow — are provided strictly <strong>"AS IS"</strong>, without warranty of any kind, express or implied. The author (<strong>tilas01</strong>) expressly disclaims all liability for any direct, indirect, incidental, consequential, or punitive damages of any nature, including but not limited to: data loss or corruption; system damage, bricking, or unbootable states; security breaches or exploits that are not mitigated; loss of files due to DoD-grade disk wipe features (such as Panic Password, Anti-Evil-Maid triggers, or secure erase routines); conflicts arising from proprietary software, firmware blobs, or third-party packages; and any harm arising from following generated installation scripts or guides. This software is intended for advanced Linux users who understand the risks involved. You assume <strong>full and sole responsibility</strong> for all actions taken using these tools on your systems. No cookies, session tracking, or personally identifiable information is collected by this site. Generation history is stored exclusively in your local browser session memory and is permanently deleted when the tab is closed. Your use of this website and any associated resources constitutes your binding agreement to these terms in full.
-                </p>
-            </div>
-
-            <!-- Two Action Buttons -->
-            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1.5rem;">
-                <button id="accept-waiver-btn" class="btn" style="background:var(--accent-red); color:var(--bg-color); border:none; width:100%; padding:0.85rem; font-size:1rem; font-weight:bold; border-radius:8px; cursor:pointer; letter-spacing:0.5px;">
-                    ✅ I Agree
-                </button>
-                <button id="accept-waiver-persist-btn" class="btn" style="background:var(--bg-darker); color:var(--accent-red); border:1px solid var(--accent-red); width:100%; padding:0.85rem; font-size:0.9rem; font-weight:bold; border-radius:8px; cursor:pointer; letter-spacing:0.3px;">
-                    ✅ I Agree &amp; Don't Show Again
-                </button>
-            </div>
-            <p style="color:#8b949e; font-size:0.75rem; text-align:center; margin:1rem 0 0;">"Don't Show Again" stores a flag in your browser's <code>localStorage</code>. No personal data is saved.</p>
-        </div>
-    </div>
-    <script>
-        // Waiver logic — runs immediately before DOM is ready
-        (function() {
-            var dismissed = localStorage.getItem('waiver_dismissed');
-            if (!dismissed) {
-                document.addEventListener('DOMContentLoaded', function() {
-                    var modal = document.getElementById('waiver-modal');
-                    if (modal) modal.style.display = 'flex';
-                    document.getElementById('accept-waiver-btn').addEventListener('click', function() {
-                        modal.style.display = 'none';
-                    });
-                    document.getElementById('accept-waiver-persist-btn').addEventListener('click', function() {
-                        localStorage.setItem('waiver_dismissed', '1');
-                        modal.style.display = 'none';
-                    });
-                });
-            }
-        })();
-    </script>
+    <!-- First Visit Waiver Modal (handled entirely by legal.js) -->
     
     <header class="header">
         <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository containing this website, all tilas01-authored scripts, Arch installation guides, ." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
@@ -346,7 +301,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. Libre-only users will see compatibility notes. All apps are 100% open source unless noted.">
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Post-Install Apps & Scripts" data-desc="Select applications to install. <button type="button" class="btn" style="background:var(--accent-purple); color:var(--bg-dark); font-size:0.8rem; padding:0.3rem 0.8rem; margin-left: auto; float: right;" onclick="toggleAllPostApps()">✅ Enable All</button>">
                         <label>Post-Install Apps:</label>
                         <p style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;">⚠️ <strong>Proprietary / Non-Libre Warning:</strong> Apps highlighted with <span style="color:var(--accent-red);font-weight:bold;">[!]</span> (e.g., Firefox firmware blobs, Signal Electron build, Chromium, Flatpak) contain proprietary code or conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                         <div class="app-grid-container" id="post_apps_container">
@@ -927,151 +882,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         
 
                     <!-- ─── Other Security Tools (checkboxes) ─── -->
-                    <div class="other-sec-box">
-<div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;"
-                         data-title="Other Security Tools"
-                         data-desc="Additional hardening tools AppArmor adds mandatory access control, USBGuard whitelists USB devices, auditd logs syscalls, fail2ban protects SSH. Select any combination.">
-                        <div class="other-sec-header">
-                            <span class="other-sec-title">🔒 Other Security Tools</span>
-                            <button type="button" class="other-sec-enable-btn" onclick="enableAllOtherSec()">✅ Enable All</button>
-                        </div>
-                        <div class="app-grid-container" id="other-security-grid">
-                            <label class="app-card other-sec-tool nav-tooltip" data-title="AppArmor — MAC Policies" data-desc="Mandatory Access Control. Restricts what programs can access at kernel level. Define per-application security profiles.">
-                                <input type="checkbox" name="other_sec_tools" value="apparmor" style="accent-color:var(--accent-blue); width:18px; height:18px;">
-                                <span style="font-size:1.3rem;">🏰</span>
-                                <div>
-                                    <strong style="font-size:0.85rem;">AppArmor</strong>
-                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">MAC policies</div>
-                                </div>
-                            </label>
-                            <label class="app-card other-sec-tool nav-tooltip" data-title="USBGuard — USB Whitelisting" data-desc="Only approved USB devices can connect. Generates a policy of currently connected devices, blocks everything else.">
-                                <input type="checkbox" name="other_sec_tools" value="usbguard" style="accent-color:var(--accent-blue); width:18px; height:18px;">
-                                <span style="font-size:1.3rem;">🔌</span>
-                                <div>
-                                    <strong style="font-size:0.85rem;">USBGuard</strong>
-                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">USB device whitelisting</div>
-                                </div>
-                            </label>
-                            <label class="app-card other-sec-tool nav-tooltip" data-title="auditd — Syscall Logging" data-desc="Kernel-level syscall logging. Monitors file access, privilege escalation, and suspicious operations. Essential for security auditing.">
-                                <input type="checkbox" name="other_sec_tools" value="auditd" style="accent-color:var(--accent-blue); width:18px; height:18px;">
-                                <span style="font-size:1.3rem;">📝</span>
-                                <div>
-                                    <strong style="font-size:0.85rem;">auditd</strong>
-                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">Syscall logging</div>
-                                </div>
-                            </label>
-                            <label class="app-card other-sec-tool nav-tooltip" data-title="fail2ban — SSH Protection" data-desc="Bans IP addresses after repeated failed login attempts. Protects SSH (and other services) from brute-force attacks.">
-                                <input type="checkbox" name="other_sec_tools" value="fail2ban" style="accent-color:var(--accent-blue); width:18px; height:18px;">
-                                <span style="font-size:1.3rem;">🚫</span>
-                                <div>
-                                    <strong style="font-size:0.85rem;">fail2ban</strong>
-                                    <div style="font-size:0.72rem; color:var(--fg-color); opacity:0.8;">SSH brute-force protection</div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Arch ISO Setup Utilities" data-desc="Start SSH on Arch ISO so you can run this script remotely.">
-                        <label>Arch ISO Pre-Install:</label>
-                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="iso_setup">
-                                    <option value="" disabled selected hidden>No Selection Provided</option>
-                                    <option value="none" >None (Local)</option>
-                            <option value="ssh">Start SSHd</option>
-                            <option value="ssh_curl">SSHd + curl</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Live ISO Verifier" data-desc="Automatically checks the integrity of your booted Arch ISO (supports Ventoy/Rufus) using official GPG signatures before pacstrap begins.">
-                        <label>Verify Live ISO Integrity:</label>
-                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="iso_verify">
-                            <option value="yes" selected>Yes, automatically verify my boot media</option>
-                            <option value="no">No, skip verification</option>
-                        </select>
-                    </div>
-    
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Output Format" data-desc="Markdown tutorial, executable Bash script, or both.">
-                        <label>Output Format:</label>
-                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="outputformat">
-                                    <option value="" disabled selected hidden>No Selection Provided</option>
-                                    <option value="both" >Both (Guide + Script)</option>
-                            <option value="markdown">Markdown Guide</option>
-                            <option value="script">Bash Script</option>
-                        </select>
-                    </div>
-
                     
-
-
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Post-Install Execution" data-desc="Choose how post-install scripts are handled. Auto-Run executes everything seamlessly. Split creates a separate post-install.sh file.">
-                        <label>Post-Install Execution:</label>
-                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="script-style">
-                            <option value="unified" selected>Auto-Run Post-Install (Recommended)</option>
-                            <option value="split">Split Scripts (Manual Post-Install)</option>
-                        </select>
-                    </div>
-
-                    <div id="sc-preview-section" class="form-group form-step" data-title="Selection Config Preview" data-desc="Live preview of your uploaded generator settings as a JSON object." style="display:none; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--bg-lighter);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="const el=document.getElementById('sc-preview-container'); el.style.display=el.style.display==='none'?'block':'none';">
-                            <label style="margin:0; cursor:pointer; color:var(--accent-purple);">📄 Uploaded Selection Config (.sc) Preview (Click to toggle)</label>
-                        </div>
-                        <div id="sc-preview-container" style="display:none; margin-top:0.8rem;">
-                            <pre id="sc-preview-json" style="background:var(--bg-color); padding:0.8rem; border-radius:8px; border:1px solid var(--bg-lighter); font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-cyan); overflow-x:auto; white-space:pre-wrap; max-height:200px; overflow-y:auto;"></pre>
-                        </div>
-                    </div>
-
-                    <div class="form-group form-step" id="advanced-verbosity-group" style="display:block;" data-title="Script Verbosity Level" data-desc="Select how much output the installer prints to the terminal. High verbosity will slow down installation due to rapid terminal I/O." oncontextmenu="window.open('wiki.html#verbosity', '_blank'); return false;">
-                        <label>Script Verbosity Level (Advanced):</label>
-                        <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="verbosity_level">
-                            <option value="progress">Progress Bar Only (No Output)</option>
-                            <option value="simple">Simple (Headers Only)</option>
-                            <option value="medium" selected>Medium (Headers + Pacman Output)</option>
-                            <option value="high">High / Verbose (set -x)</option>
-                        </select>
-                        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent-orange);">⚠️ Note: High verbosity generates massive terminal output and will slightly slow down your installation.</p>
-                    </div>
-                    
-                    
-
-                    
-                    <div class="my-tools-box">
-<div class="form-group form-step" data-title="Standalone Security Tools" data-desc="Independent, custom-built security tools developed by tilas01. Enable them individually or click the green button to enable all recommended tools." oncontextmenu="window.open('https://github.com/tilas01', '_blank'); return false;">
-                        <div class="my-tools-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                            <h3 style="margin:0; color:var(--accent-cyan); font-size:1rem;">🦀 tilas01's Security Suite</h3>
-                            <button type="button" class="btn nav-tooltip" data-title="Enable Recommended" data-desc="Enables all Arch Security Suite Apps. Highly recommended for maximum security." style="background:var(--accent-green); color:var(--bg-darker); width:auto; padding:0.3rem 0.8rem; font-size:0.85rem; border-radius:4px; font-weight:bold;" onclick="enableAllMyTools()">
-                                Enable all Arch Security Suite Apps by <a href="https://github.com/tilas01" target="_blank" style="color:var(--bg-darker); text-decoration:underline;">tilas01</a>
-                            </button>
-                        </div>
-                        <div class="app-grid-container">
-                            
-                            <label class="app-card tilas-tool" title="Libre-OTP Authenticator">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('libre-otp')" value="libre-otp" data-requires-config="true" data-configured="false" class="tilas-sec-app">
-                                <span class="app-icon">🔑</span> <a href="https://github.com/tilas01/libre-otp" target="_blank">Libre-OTP</a> <span class="app-desc">PAM TOTP</span>
-                                <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('libre-otp')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
-                            </label>
-                            
-                            <label class="app-card tilas-tool" title="Input Guard (Anti-Ducky)">
-                                <input type="checkbox" name="post_apps" value="anti-ducky" class="tilas-sec-app">
-                                <span class="app-icon">🦆</span> <a href="https://github.com/tilas01/anti-ducky" target="_blank">Anti-Ducky</a> <span class="app-desc">USB Blocker</span>
-                            </label>
-                            
-                            <label class="app-card tilas-tool" title="Anti-Evil Maid">
-                                <input type="checkbox" name="post_apps" onchange="if(this.checked) openAppConfigModal('evil-maid')" value="anti-evil-maid" data-requires-config="true" data-configured="false" class="tilas-sec-app">
-                                <span class="app-icon">🛡️</span> <a href="https://github.com/tilas01/anti-evil-maid" target="_blank">Anti-Evil Maid</a> <span class="app-desc">Boot Integrity</span>
-                                <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('evil-maid')" style="cursor:pointer; margin-left:auto; display:none;">⚙️</span>
-                            </label>
-                            
-                            <label class="app-card tilas-tool" title="Kernel Watcher (EDR)">
-                                <input type="checkbox" name="post_apps" value="kernel-watcher" class="tilas-sec-app">
-                                <span class="app-icon">👀</span> <a href="https://github.com/tilas01/kernel-watcher" target="_blank">Kernel Watcher</a> <span class="app-desc">eBPF EDR</span>
-                            </label>
-                            
-                            <label class="app-card tilas-tool" title="ScareCrow (LKM)">
-                                <input type="checkbox" name="post_apps" value="scarecrow" class="tilas-sec-app">
-                                <span class="app-icon">🎃</span> <a href="https://github.com/tilas01/scarecrow" target="_blank">Scarecrow</a> <span class="app-desc">Decoy LKM</span>
-                            </label>
-
-                        </div>
-                    </div>
 
 </div>
 </div>
