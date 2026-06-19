@@ -1042,12 +1042,56 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 
 
 <script>
+let myToolsLocked = false;
 function enableAllMyTools() {
-    document.querySelectorAll('.my-tools-box input[type="checkbox"]').forEach(cb => cb.checked = true);
+    myToolsLocked = !myToolsLocked;
+    const btn = document.querySelector('.my-tools-enable-btn');
+    const cbs = document.querySelectorAll('.my-tools-box input[type="checkbox"]');
+    if (myToolsLocked) {
+        btn.style.background = 'var(--accent-green)';
+        btn.innerHTML = '🔒 All Locked (Enabled)';
+        cbs.forEach(cb => { cb.checked = true; cb.disabled = true; });
+    } else {
+        btn.style.background = 'var(--accent-cyan)';
+        btn.innerHTML = '✅ Enable All';
+        cbs.forEach(cb => { cb.disabled = false; });
+    }
 }
+
+let otherSecLocked = false;
 function enableAllOtherSec() {
-    document.querySelectorAll('.other-sec-box input[type="checkbox"]').forEach(cb => cb.checked = true);
+    otherSecLocked = !otherSecLocked;
+    const btn = document.querySelector('.other-sec-enable-btn');
+    const cbs = document.querySelectorAll('.other-sec-box input[type="checkbox"]');
+    if (otherSecLocked) {
+        btn.style.background = 'var(--accent-green)';
+        btn.innerHTML = '🔒 All Locked (Enabled)';
+        cbs.forEach(cb => { cb.checked = true; cb.disabled = true; });
+    } else {
+        btn.style.background = 'var(--accent-purple)';
+        btn.innerHTML = '✅ Enable All';
+        cbs.forEach(cb => { cb.disabled = false; });
+    }
 }
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.app-card').forEach(card => {
+        card.addEventListener('contextmenu', function(e) {
+            if (this.dataset.app) {
+                e.preventDefault();
+                window.open('wiki.html#' + this.dataset.app, '_blank');
+            }
+        });
+        
+        // Also add a title to hint the user
+        if (!this.title) {
+            this.title = "Right-Click to view Wiki Documentation";
+        }
+    });
+});
 </script>
 
 </body>
