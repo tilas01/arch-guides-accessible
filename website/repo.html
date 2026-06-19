@@ -54,8 +54,18 @@
                 renderTree(data);
                 document.getElementById('api-status').textContent = 'Live tracking main branch';
             } catch (e) {
-                document.getElementById('api-status').textContent = 'API Exhausted. Opening GitHub...';
-                setTimeout(() => window.location.href = `https://github.com/${owner}/${repo}`, 2000);
+                document.getElementById('api-status').textContent = 'GitHub API Limit Reached.';
+                const treeDiv = document.getElementById('tree-view');
+                const updateTime = new Date().toLocaleString();
+                treeDiv.innerHTML = `
+                    <div style="background:var(--bg-lighter); padding:2rem; border-radius:8px; text-align:center; border:1px solid var(--accent-red);">
+                        <div style="font-size:3rem; margin-bottom:1rem;">🐙</div>
+                        <h2 style="color:var(--accent-red); margin-bottom:0.5rem;">GitHub API Limit Reached</h2>
+                        <p style="color:var(--fg-color); margin-bottom:1rem;">You have exhausted the unauthenticated GitHub API rate limit (60 requests/hr).</p>
+                        <p style="color:#8b949e; font-size:0.85rem; margin-bottom:1.5rem;">Last checked: ${updateTime}</p>
+                        <a href="https://github.com/${owner}/${repo}" target="_blank" style="display:inline-block; background:var(--accent-purple); color:var(--bg-darker); padding:0.8rem 1.5rem; border-radius:6px; font-weight:bold; text-decoration:none;">View Source on GitHub ↗</a>
+                    </div>
+                `;
             }
         }
 
