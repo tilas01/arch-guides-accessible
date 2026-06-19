@@ -763,27 +763,32 @@ input:checked + .slider:before {
 
 
 /* ─── Application Grids (Restored to Original Multi-Column) ─── */
-.app-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 0.8rem;
-    background: var(--bg-dark);
-    padding: 1.2rem;
-    border: 1px solid var(--accent-purple);
-    border-radius: 8px;
+\.app-grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 0;
     width: 100%;
     box-sizing: border-box;
 }
 
 /* Specific border colors for security boxes for parity */
-.my-tools-box .app-grid-container {
-    border-color: var(--accent-cyan);
-    background: rgba(125,207,255,0.05);
+.my-tools-box \.app-grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.other-sec-box .app-grid-container {
-    border-color: var(--accent-orange);
-    background: rgba(255,158,100,0.05);
+.other-sec-box \.app-grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Category Headers span all columns */
@@ -799,20 +804,21 @@ input:checked + .slider:before {
 
 /* ─── App Card Layout (Compact & Neat) ─── */
 
-.app-card {
+\.app-card {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem;
+    gap: 0.8rem;
+    padding: 0.8rem;
     border: 1px solid rgba(255,255,255,0.05);
     border-radius: 6px;
     background: var(--bg-lighter);
     transition: background 0.15s, border-color 0.15s;
     cursor: pointer;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     width: 100%;
     box-sizing: border-box;
     text-align: left;
+    flex-wrap: wrap;
 }
 
 
@@ -907,3 +913,15 @@ input:checked + .slider:before {
     text-overflow: ellipsis;
 }
 
+
+.smart-helper {
+    width: 100%;
+    font-size: 0.8rem;
+    color: var(--accent-blue);
+    background: rgba(122, 162, 247, 0.1);
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    margin-top: 0.4rem;
+    border-left: 2px solid var(--accent-blue);
+    display: block;
+}
