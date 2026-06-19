@@ -1,6 +1,69 @@
-// ======================================// Arch Guides Dynamic - Main Script
+
+// ─── Save to sessionStorage & wire Live Editor teleport ─────────────────────
+window.saveToliveEditor = function(scriptContent, markdownContent) {
+    if (scriptContent) sessionStorage.setItem('generated_script', scriptContent);
+    if (markdownContent) sessionStorage.setItem('generated_markdown', markdownContent);
+};
+
+// Called from generate button — adds "Open in Live Editor" button to output
+window.injectLiveEditorLink = function() {
+    let outputSection = document.getElementById('output-section');
+    if (!outputSection) return;
+    // Remove old link if exists
+    let old = document.getElementById('live-editor-link-btn');
+    if (old) old.remove();
+
+    let btn = document.createElement('a');
+    btn.id = 'live-editor-link-btn';
+    btn.href = 'live.html';
+    btn.textContent = '📝 Open in Full Live Editor';
+    btn.style.cssText = 'display:inline-block; margin-top:1rem; background:var(--accent-cyan); color:var(--bg-darker); padding:0.6rem 1.2rem; border-radius:8px; font-weight:bold; text-decoration:none; font-size:0.9rem; transition:filter 0.2s;';
+    btn.onmouseenter = () => btn.style.filter = 'brightness(1.1)';
+    btn.onmouseleave = () => btn.style.filter = '';
+    outputSection.insertAdjacentElement('afterbegin', btn);
+};
+
+
+// ─── Security Suite Toggle Functions ────────────────────────────────────────
+
+// tilas01 My Tools — toggle all on, allow individual toggle after
+let myToolsEnabled = false;
+window.enableAllMyTools = function() {
+    myToolsEnabled = !myToolsEnabled;
+    const btn = document.getElementById('my-tools-enable-btn');
+    const checkboxes = document.querySelectorAll('#my-tools-grid .tilas-sec-app');
+    checkboxes.forEach(cb => {
+        cb.checked = myToolsEnabled;
+        cb.dispatchEvent(new Event('change'));
+    });
+    if (btn) {
+        btn.textContent = myToolsEnabled ? '✅ Enabled (Click to Disable All)' : '✅ Enable All (Recommended)';
+        btn.style.background = myToolsEnabled
+            ? 'linear-gradient(135deg, var(--accent-green), var(--accent-cyan))'
+            : 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))';
+    }
+};
+
+// Other Security Tools — toggle all on, allow individual toggle after
+let otherSecEnabled = false;
+window.enableAllOtherSec = function() {
+    otherSecEnabled = !otherSecEnabled;
+    const btn = document.querySelector('.other-sec-enable-btn');
+    const checkboxes = document.querySelectorAll('#other-security-grid input[type="checkbox"]');
+    checkboxes.forEach(cb => { cb.checked = otherSecEnabled; });
+    if (btn) {
+        btn.textContent = otherSecEnabled ? '✅ Enabled (Click to Disable All)' : '✅ Enable All';
+        btn.style.background = otherSecEnabled
+            ? 'linear-gradient(135deg, var(--accent-green), var(--accent-orange))'
+            : 'linear-gradient(135deg, var(--accent-orange), var(--accent-red))';
+    }
+};
+
+// =============================================
+// Arch Guides Dynamic - Main Script
 // Arch Rusty Security Suite by tilas01
-// ======================================
+// =============================================
+
 // ---- Form Initialization & "No Selection" Injection ----
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -226,8 +289,10 @@ window.updatePreview = function() {
     }
 };
 
-// =============================================================// MAIN OUTPUT GENERATOR
-// =============================================================window.generateOutput = function(auto = false) {
+// ====================================================================
+// MAIN OUTPUT GENERATOR
+// ====================================================================
+window.generateOutput = function(auto = false) {
 
     // --- SMART CONFIGURATION VALIDATION MATRIX ---
     if (showWarnings) {
@@ -1739,8 +1804,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// =============================================================// UI EVENT HANDLERS
-// =============================================================
+// ====================================================================
+// UI EVENT HANDLERS
+// ====================================================================
+
 function injectNoSelectionProvided() {
     document.querySelectorAll('.generator-form select').forEach(select => {
         // Remove existing if any to avoid duplicates
@@ -2297,8 +2364,10 @@ document.querySelectorAll('input[name="post_apps"]').forEach(checkbox => {
 
 
 
-// ===================================// APP CONFIGURER OVERLAY LOGIC
-// ===================================function openAppConfigModal(appId) {
+// ==========================================
+// APP CONFIGURER OVERLAY LOGIC
+// ==========================================
+function openAppConfigModal(appId) {
     // Check for Phase 4 dedicated modals
     const dedicatedModal = document.getElementById('modal-' + appId);
     if (dedicatedModal) {
@@ -2480,8 +2549,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// =============================================================// NEW UI TOGGLES (App Configs & Live Editor)
-// =============================================================
+// ====================================================================
+// NEW UI TOGGLES (App Configs & Live Editor)
+// ====================================================================
+
 window.toggleAppConfig = function(appId) {
     const configDiv = document.getElementById('config-' + appId);
     const containerDiv = document.getElementById('container-' + appId);
@@ -2519,8 +2590,10 @@ window.toggleLiveEditorMode = function() {
     }
 };
 
-// =============================================================// NEW SPA WORKFLOW: History & Modals & File Uploads
-// =============================================================
+// ====================================================================
+// NEW SPA WORKFLOW: History & Modals & File Uploads
+// ====================================================================
+
 // Clear Generator Form
 window.clearFormSelections = function() {
     document.querySelectorAll('.generator-form select').forEach(sel => {
@@ -2999,25 +3072,6 @@ document.addEventListener('click', function(e) {
 });
 
 
-window.checkTokyoNight = function() {
-    let scriptType = document.getElementById('script-type');
-    let tokyoContainer = document.getElementById('tokyo-night-container');
-    if (scriptType && tokyoContainer) {
-        if (scriptType.value === 'bash' || scriptType.value === 'zsh') {
-            tokyoContainer.style.display = 'flex';
-        } else {
-            tokyoContainer.style.display = 'none';
-            document.getElementById('tty-theme').checked = false;
-        }
-    }
-};
-document.addEventListener('DOMContentLoaded', () => {
-    let scriptType = document.getElementById('script-type');
-    if(scriptType) {
-        scriptType.addEventListener('change', window.checkTokyoNight);
-        window.checkTokyoNight();
-    }
-});
 window.auditConfiguration = function() {
     let warnings = [];
     
