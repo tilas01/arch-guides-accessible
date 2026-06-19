@@ -43,7 +43,7 @@ if ! command -v gpg &> /dev/null; then
 else
     # Fetch tilas01 public key (mock keyserver / github direct)
     echo "Downloading tilas01 public key..."
-    curl -sL https://github.com/tilas01.gpg | gpg --import 2>/dev/null || true
+    curl -sL https://github.com/tilas01.keys | gpg --import 2>/dev/null || true
 
     if gpg --verify "${BINARY}.asc" "$BINARY" 2>&1 | grep -q "Good signature"; then
         echo "✅ GPG Signature Verification: SUCCESS"
