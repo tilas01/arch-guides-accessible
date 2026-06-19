@@ -480,7 +480,7 @@ input:checked + .slider:before {
 
 /* ─── Checkbox Grid ─── */
 .checkbox-grid {
-    display: grid;
+    
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 12px;
     margin-top: 10px;
@@ -653,7 +653,7 @@ input:checked + .slider:before {
 
 /* ─── Side-by-Side Security Tools ─── */
 .security-tools-wrapper {
-    display: grid;
+    
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-top: 1.5rem;
@@ -662,21 +662,15 @@ input:checked + .slider:before {
 
 
 .app-grid-container {
-    display: -webkit-box;
-    display: -ms-flexbox;
     display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-    display: -ms-grid;
-    display: grid;
-    -ms-grid-columns: (minmax(280px, 1fr))[auto-fill];
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 8px;
+    flex-direction: column;
+    gap: 0;
     background: var(--bg-dark);
     padding: 0.6rem;
     border: 1px solid var(--accent-purple);
     border-radius: 8px;
 }
+
 .app-card {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -699,3 +693,4 @@ input:checked + .slider:before {
     background: var(--bg-lighter);
     border-color: var(--accent-blue);
 }
+

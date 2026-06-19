@@ -1,8 +1,6 @@
-// =============================================
-// Arch Guides Dynamic - Main Script
+// ======================================// Arch Guides Dynamic - Main Script
 // Arch Rusty Security Suite by tilas01
-// =============================================
-
+// ======================================
 // ---- Form Initialization & "No Selection" Injection ----
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -228,10 +226,8 @@ window.updatePreview = function() {
     }
 };
 
-// ====================================================================
-// MAIN OUTPUT GENERATOR
-// ====================================================================
-window.generateOutput = function(auto = false) {
+// =============================================================// MAIN OUTPUT GENERATOR
+// =============================================================window.generateOutput = function(auto = false) {
 
     // --- SMART CONFIGURATION VALIDATION MATRIX ---
     if (showWarnings) {
@@ -1743,10 +1739,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ====================================================================
-// UI EVENT HANDLERS
-// ====================================================================
-
+// =============================================================// UI EVENT HANDLERS
+// =============================================================
 function injectNoSelectionProvided() {
     document.querySelectorAll('.generator-form select').forEach(select => {
         // Remove existing if any to avoid duplicates
@@ -2303,10 +2297,8 @@ document.querySelectorAll('input[name="post_apps"]').forEach(checkbox => {
 
 
 
-// ==========================================
-// APP CONFIGURER OVERLAY LOGIC
-// ==========================================
-function openAppConfigModal(appId) {
+// ===================================// APP CONFIGURER OVERLAY LOGIC
+// ===================================function openAppConfigModal(appId) {
     // Check for Phase 4 dedicated modals
     const dedicatedModal = document.getElementById('modal-' + appId);
     if (dedicatedModal) {
@@ -2488,10 +2480,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ====================================================================
-// NEW UI TOGGLES (App Configs & Live Editor)
-// ====================================================================
-
+// =============================================================// NEW UI TOGGLES (App Configs & Live Editor)
+// =============================================================
 window.toggleAppConfig = function(appId) {
     const configDiv = document.getElementById('config-' + appId);
     const containerDiv = document.getElementById('container-' + appId);
@@ -2529,10 +2519,8 @@ window.toggleLiveEditorMode = function() {
     }
 };
 
-// ====================================================================
-// NEW SPA WORKFLOW: History & Modals & File Uploads
-// ====================================================================
-
+// =============================================================// NEW SPA WORKFLOW: History & Modals & File Uploads
+// =============================================================
 // Clear Generator Form
 window.clearFormSelections = function() {
     document.querySelectorAll('.generator-form select').forEach(sel => {
@@ -3000,23 +2988,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-window.toggleSecuritySuite = function() {
-    const suiteToggle = document.getElementById('suite-toggle');
-    const securityCbs = document.querySelectorAll('.tilas-sec-app');
-    securityCbs.forEach(cb => {
-        if (suiteToggle.checked) {
-            cb.checked = true;
-            cb.disabled = true;
-            cb.parentElement.style.opacity = '0.6';
-            cb.parentElement.setAttribute('data-desc', 'Locked: Full Suite enabled.');
-            cb.parentElement.classList.add('tooltip-always');
-        } else {
-            cb.disabled = false;
-            cb.parentElement.style.opacity = '1';
-            cb.parentElement.removeAttribute('data-desc');
-        }
-    });
-};
+
 
 document.addEventListener('click', function(e) {
     if (e.target && e.target.id === 'close-modal-btn') {
@@ -3046,3 +3018,27 @@ document.addEventListener('DOMContentLoaded', () => {
         window.checkTokyoNight();
     }
 });
+window.auditConfiguration = function() {
+    let errors = [];
+    
+    // 1. Strictly Libre vs Proprietary
+    let swType = document.querySelector('input[name="sw_type"]:checked');
+    if (swType && swType.value === 'libre') {
+        // Find if any proprietary app is selected
+        let hasProprietary = false;
+        let selectedApps = document.querySelectorAll('.app-card input[type="checkbox"]:checked');
+        selectedApps.forEach(app => {
+            if (app.parentElement.innerHTML.includes('[!]')) {
+                hasProprietary = true;
+                app.parentElement.style.border = '2px solid red';
+            } else {
+                app.parentElement.style.border = '1px solid var(--border-color)';
+            }
+        });
+        if (hasProprietary) {
+            errors.push('You selected "Strictly Libre" but checked proprietary apps (marked with [!]). Please uncheck them or switch to Proprietary software type.');
+        }
+    }
+    
+    return errors;
+};
