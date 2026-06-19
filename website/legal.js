@@ -14,10 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function makeOverlay() {
     const ov = document.createElement('div');
     Object.assign(ov.style, {
-      position: 'fixed', inset: '0', background: 'rgba(13,17,23,0.92)',
+      position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh', background: 'rgba(13,17,23,0.92)',
       zIndex: '10000', display: 'flex', justifyContent: 'center',
-      alignItems: 'center', padding: '1rem', overflowY: 'auto',
-      backdropFilter: 'blur(6px)',
+      alignItems: 'flex-start', paddingTop: '4vh', paddingBottom: '4vh', overflowY: 'auto',
+      backdropFilter: 'blur(6px)', boxSizing: 'border-box'
     });
     return ov;
   }
