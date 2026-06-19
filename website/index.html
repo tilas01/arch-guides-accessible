@@ -1004,11 +1004,9 @@ Website: https://github.com/dusklinux/dusky" style="cursor:help; margin-left:0.3
 <div class="form-group form-step" data-title="Standalone Security Tools" data-desc="Independent, custom-built security tools developed by tilas01. Enable them individually or click the green button to enable all recommended tools." oncontextmenu="window.open('https://github.com/tilas01', '_blank'); return false;">
                         <div class="my-tools-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                             <h3 style="margin:0; color:var(--accent-cyan); font-size:1rem;">🦀 tilas01's Security Suite</h3>
-                            <label class="custom-checkbox tooltip-always" data-title="Suite Toggle" data-desc="Check to enable ALL tools. Once checked, individual selections are locked." style="cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:bold; color:var(--accent-green);">
-                                <input type="checkbox" id="suite-toggle" onchange="window.toggleSecuritySuite()">
-                                <span class="checkmark"></span>
-                                (Recommended) Use Full Suite
-                            </label>
+                            <button type="button" class="btn nav-tooltip" data-title="Enable Recommended" data-desc="Enables all Arch Security Suite Apps. Highly recommended for maximum security." style="background:var(--accent-green); color:var(--bg-darker); width:auto; padding:0.3rem 0.8rem; font-size:0.85rem; border-radius:4px; font-weight:bold;" onclick="enableAllSecurityApps()">
+                                Enable all Arch Security Suite Apps by <a href="https://github.com/tilas01" target="_blank" style="color:var(--bg-darker); text-decoration:underline;">tilas01</a>
+                            </button>
                         </div>
                         <div class="app-grid-container">
                             
