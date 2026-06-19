@@ -111,7 +111,7 @@ input, select {
     padding: 0.6rem;
     background-color: var(--bg-color);
     color: var(--fg-color);
-    border: 1px solid var(--accent-purple);
+    
     border-radius: 6px;
     font-family: var(--font-mono);
     font-size: 0.9rem;
@@ -177,7 +177,7 @@ input:focus, select:focus {
     border: 1px solid var(--accent-blue);
 }
 .output-box.preview-md {
-    border: 1px solid var(--accent-purple);
+    
     color: var(--fg-color);
 }
 .output-box.oneliner {
@@ -224,7 +224,7 @@ input:focus, select:focus {
     padding: 1rem;
     border-radius: 8px;
     overflow-x: auto;
-    border: 1px solid var(--accent-purple);
+    
     white-space: pre-wrap;
     word-wrap: break-word;
 }
@@ -392,7 +392,7 @@ noscript .js-only { display: none !important; }
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1px solid var(--accent-purple);
+    
 }
 .credit-card .credit-info { display: flex; flex-direction: column; }
 .credit-card .credit-name { color: var(--heading-color); font-weight: bold; font-size: 0.95rem; }
@@ -409,7 +409,7 @@ noscript .js-only { display: none !important; }
     min-width: 250px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
     z-index: 1;
-    border: 1px solid var(--accent-purple);
+    
     border-radius: 5px;
 }
 .dropdown-content a {
@@ -763,32 +763,38 @@ input:checked + .slider:before {
 
 
 /* ─── Application Grids (Restored to Original Multi-Column) ─── */
-\.app-grid-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+\\.app-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 0.8rem;
     padding: 1rem 0;
     width: 100%;
     box-sizing: border-box;
+    border: none;
+    background: transparent;
 }
 
 /* Specific border colors for security boxes for parity */
-.my-tools-box \.app-grid-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+.my-tools-box \\.app-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 0.8rem;
     padding: 1rem 0;
     width: 100%;
     box-sizing: border-box;
+    border: none;
+    background: transparent;
 }
 
-.other-sec-box \.app-grid-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+.other-sec-box \\.app-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 0.8rem;
     padding: 1rem 0;
     width: 100%;
     box-sizing: border-box;
+    border: none;
+    background: transparent;
 }
 
 /* Category Headers span all columns */
@@ -804,7 +810,7 @@ input:checked + .slider:before {
 
 /* ─── App Card Layout (Compact & Neat) ─── */
 
-\.app-card {
+\\.app-card {
     display: flex;
     align-items: center;
     gap: 0.8rem;
@@ -818,7 +824,6 @@ input:checked + .slider:before {
     width: 100%;
     box-sizing: border-box;
     text-align: left;
-    flex-wrap: wrap;
 }
 
 
