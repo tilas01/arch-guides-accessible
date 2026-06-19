@@ -338,6 +338,38 @@ pub fn run() {
         return;
     }
 
+    if args.iter().any(|a| a == "--verify-tamper") {
+        let state = load_state();
+        let algo = match state.algorithm.as_str() {
+            "SHA256" => Algorithm::SHA256,
+            "SHA512" => Algorithm::SHA512,
+            _ => Algorithm::SHA1,
+        };
+        let totp = TOTP::new(algo, 6, 1, 30, state.secret_bytes.clone()).unwrap();
+        let current_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+        let current_code = totp.generate(current_time);
+        
+        let disp_cfg = load_display_config();
+        let display_mode = if !state.display_mode.is_empty() { state.display_mode.clone() } else if !disp_cfg.display.is_empty() { disp_cfg.display.clone() } else { "visible".to_string() };
+        
+        display_otp_on_tty(&current_code, &display_mode);
+        
+        println!("\n\x1b[1;36m[Anti-Evil-Maid Verification]\x1b[0m");
+        println!("Please verify the code displayed at the bottom of the screen matches your authenticator app.");
+        println!("If it matches, your boot environment is trusted.");
+        print!("Press ENTER to acknowledge and proceed... ");
+        std::io::Write::flush(&mut std::io::stdout()).unwrap();
+        
+        let mut _dummy = String::new();
+        std::io::stdin().read_line(&mut _dummy).unwrap();
+        
+        // Overwrite the code with spaces before exiting
+        if display_mode == "discreet" || display_mode == "visible" {
+            display_otp_on_tty("      ", "discreet");
+        }
+        std::process::exit(0);
+    }
+
     let double_check = args.iter().any(|a| a == "--double-check");
 
     // Verify OTP
