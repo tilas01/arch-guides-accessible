@@ -1,3 +1,64 @@
+
+// ─── Save to sessionStorage & wire Live Editor teleport ─────────────────────
+window.saveToliveEditor = function(scriptContent, markdownContent) {
+    if (scriptContent) sessionStorage.setItem('generated_script', scriptContent);
+    if (markdownContent) sessionStorage.setItem('generated_markdown', markdownContent);
+};
+
+// Called from generate button — adds "Open in Live Editor" button to output
+window.injectLiveEditorLink = function() {
+    let outputSection = document.getElementById('output-section');
+    if (!outputSection) return;
+    // Remove old link if exists
+    let old = document.getElementById('live-editor-link-btn');
+    if (old) old.remove();
+
+    let btn = document.createElement('a');
+    btn.id = 'live-editor-link-btn';
+    btn.href = 'live.html';
+    btn.textContent = '📝 Open in Full Live Editor';
+    btn.style.cssText = 'display:inline-block; margin-top:1rem; background:var(--accent-cyan); color:var(--bg-darker); padding:0.6rem 1.2rem; border-radius:8px; font-weight:bold; text-decoration:none; font-size:0.9rem; transition:filter 0.2s;';
+    btn.onmouseenter = () => btn.style.filter = 'brightness(1.1)';
+    btn.onmouseleave = () => btn.style.filter = '';
+    outputSection.insertAdjacentElement('afterbegin', btn);
+};
+
+
+// ─── Security Suite Toggle Functions ────────────────────────────────────────
+
+// tilas01 My Tools — toggle all on, allow individual toggle after
+let myToolsEnabled = false;
+window.enableAllMyTools = function() {
+    myToolsEnabled = !myToolsEnabled;
+    const btn = document.getElementById('my-tools-enable-btn');
+    const checkboxes = document.querySelectorAll('#my-tools-grid .tilas-sec-app');
+    checkboxes.forEach(cb => {
+        cb.checked = myToolsEnabled;
+        cb.dispatchEvent(new Event('change'));
+    });
+    if (btn) {
+        btn.textContent = myToolsEnabled ? '✅ Enabled (Click to Disable All)' : '✅ Enable All (Recommended)';
+        btn.style.background = myToolsEnabled
+            ? 'linear-gradient(135deg, var(--accent-green), var(--accent-cyan))'
+            : 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))';
+    }
+};
+
+// Other Security Tools — toggle all on, allow individual toggle after
+let otherSecEnabled = false;
+window.enableAllOtherSec = function() {
+    otherSecEnabled = !otherSecEnabled;
+    const btn = document.querySelector('.other-sec-enable-btn');
+    const checkboxes = document.querySelectorAll('#other-security-grid input[type="checkbox"]');
+    checkboxes.forEach(cb => { cb.checked = otherSecEnabled; });
+    if (btn) {
+        btn.textContent = otherSecEnabled ? '✅ Enabled (Click to Disable All)' : '✅ Enable All';
+        btn.style.background = otherSecEnabled
+            ? 'linear-gradient(135deg, var(--accent-green), var(--accent-orange))'
+            : 'linear-gradient(135deg, var(--accent-orange), var(--accent-red))';
+    }
+};
+
 // =============================================
 // Arch Guides Dynamic - Main Script
 // Arch Rusty Security Suite by tilas01

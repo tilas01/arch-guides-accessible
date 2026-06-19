@@ -566,13 +566,7 @@ input:checked + .slider:before {
 }
 
 /* ─── My Tools (tilas01) Special Box ─── */
-.my-tools-box {
-    border: 2px solid var(--accent-cyan);
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(125,207,255,0.06) 0%, rgba(122,162,247,0.04) 100%);
-    padding: 0.8rem;
-    margin-top: 1rem;
-}
+
 .my-tools-box 
 .my-tools-header {
     display: flex;
@@ -607,13 +601,7 @@ input:checked + .slider:before {
 .app-item.tilas-tool input:checked ~ span.app-icon { color: var(--accent-cyan); }
 
 /* ─── Other Security Tools Special Box ─── */
-.other-sec-box {
-    border: 2px solid var(--accent-orange);
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(255,158,100,0.06) 0%, rgba(247,118,142,0.04) 100%);
-    padding: 0.8rem;
-    margin-top: 1rem;
-}
+
 .other-sec-box 
 .other-sec-header {
     display: flex;
@@ -652,21 +640,224 @@ input:checked + .slider:before {
 .gear-config-btn { transition: opacity 0.2s; font-size: 0.9rem; }
 
 /* ─── Side-by-Side Security Tools ─── */
-.security-tools-wrapper {
-    
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-    margin-bottom: 2rem;
-}
 
 
+/* ─── App Grid Container (Post-Install Apps) ─── */
 .app-grid-container {
     display: flex;
     flex-direction: column;
     gap: 0;
     background: var(--bg-dark);
-    padding: 0.6rem;
+    padding: 0.4rem;
     border: 1px solid var(--accent-purple);
     border-radius: 8px;
+}
+
+/* ─── App Card Row (one per line, left-to-right) ─── */
+.app-card {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+    cursor: pointer;
+    font-size: 0.88rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+.app-card:last-child { border-bottom: none; }
+.app-card:hover { background: rgba(255,255,255,0.04); }
+
+/* Checkbox */
+.app-card input[type="checkbox"] {
+    flex-shrink: 0;
+    margin: 0;
+    cursor: pointer;
+    transform: scale(1.1);
+    accent-color: var(--accent-purple);
+}
+
+/* Emoji icon column */
+.app-card .app-icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+    width: 22px;
+    text-align: center;
+}
+
+/* App name link */
+.app-card a {
+    font-weight: 600;
+    color: var(--fg-color);
+    text-decoration: none;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+.app-card a:hover { color: var(--accent-cyan); }
+
+/* Proprietary warning badge */
+.app-card [title*="Proprietary"] {
+    color: var(--accent-red);
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-left: 2px;
+}
+
+/* Info tooltip icon */
+.app-card span[title][style*="cursor:help"],
+.app-card [style*="cursor:help"] {
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+/* Short description tag */
+.app-desc {
+    color: #8b949e;
+    font-size: 0.78rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Category header */
+.app-category-header {
+    color: var(--accent-cyan);
+    font-size: 0.72rem;
+    font-weight: bold;
+    padding: 0.3rem 0.2rem 0.1rem;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(125,207,255,0.12);
+    margin-top: 0.2rem;
+}
+.app-category-header:first-child { margin-top: 0; }
+
+/* ─── Gear config button ─── */
+.gear-config-btn { 
+    display: none; 
+    flex-shrink: 0;
+    margin-left: 0.3rem;
+    cursor: pointer; 
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    font-size: 0.85rem;
+}
+.app-card input[type="checkbox"]:checked ~ .gear-config-btn { display: inline-flex !important; }
+.app-card:hover .gear-config-btn { display: inline-flex !important; opacity: 0.6; }
+
+/* ─── tilas01 My Security Tools Box ─── */
+.my-tools-box {
+    border: 2px solid var(--accent-cyan);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(125,207,255,0.07) 0%, rgba(122,162,247,0.04) 100%);
+    padding: 0.9rem;
+    margin-top: 1.2rem;
+}
+.my-tools-box .app-grid-container {
+    border: 1px solid rgba(125,207,255,0.25);
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    background: var(--bg-dark);
+}
+.my-tools-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+.my-tools-title {
+    color: var(--accent-cyan);
+    font-weight: bold;
+    font-size: 0.92rem;
+    letter-spacing: 0.4px;
+}
+.my-tools-enable-btn {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    border: none;
+    border-radius: 6px;
+    color: var(--bg-darker);
+    font-weight: bold;
+    font-size: 0.78rem;
+    padding: 0.28rem 0.75rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.my-tools-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
+.app-card.tilas-tool {
+    border-left: 3px solid var(--accent-cyan) !important;
+}
+
+/* ─── Other Security Tools Box ─── */
+.other-sec-box {
+    border: 2px solid var(--accent-orange);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(255,158,100,0.07) 0%, rgba(247,118,142,0.04) 100%);
+    padding: 0.9rem;
+    margin-top: 1.2rem;
+}
+.other-sec-box .app-grid-container {
+    border: 1px solid rgba(255,158,100,0.25);
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    background: var(--bg-dark);
+}
+.other-sec-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+.other-sec-title {
+    color: var(--accent-orange);
+    font-weight: bold;
+    font-size: 0.92rem;
+    letter-spacing: 0.4px;
+}
+.other-sec-enable-btn {
+    background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
+    border: none;
+    border-radius: 6px;
+    color: var(--bg-darker);
+    font-weight: bold;
+    font-size: 0.78rem;
+    padding: 0.28rem 0.75rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.other-sec-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
+.app-card.other-sec-tool {
+    border-left: 3px solid var(--accent-orange) !important;
+}
+
+/* ─── Other security tool card layout (bigger cards) ─── */
+.other-sec-box .app-card,
+.my-tools-box .app-card {
+    padding: 0.55rem 0.7rem;
+    gap: 0.65rem;
+}
+.other-sec-box .app-card strong,
+.my-tools-box .app-card strong {
+    font-size: 0.88rem;
+    color: var(--heading-color);
+    min-width: 90px;
+}
+.other-sec-box .app-card div,
+.my-tools-box .app-card div {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.other-sec-box .app-card div div,
+.my-tools-box .app-card div div {
+    font-size: 0.73rem;
+    color: var(--fg-color);
+    opacity: 0.75;
 }

@@ -2,111 +2,571 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Arch Guides | Live Output</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Editor — Arch Guides Dynamic</title>
+    <meta name="description" content="Live script editor for Arch Guides Dynamic. Edit, preview, and download your generated install scripts and markdown guides.">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    <style>
+        :root {
+            --editor-bg: #0d1117;
+            --editor-border: #30363d;
+            --editor-line: #8b949e;
+        }
+        body { font-family: 'Inter', var(--font-mono), sans-serif; }
+
+        .editor-page-header {
+            background: var(--bg-darker);
+            border-bottom: 1px solid var(--border-color, #30363d);
+            padding: 1.2rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .editor-page-header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-cyan);
+        }
+        .editor-page-header p { margin: 0; color: #8b949e; font-size: 0.85rem; }
+
+        .editor-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        @media (max-width: 900px) {
+            .editor-layout { grid-template-columns: 1fr; }
+        }
+
+        .editor-panel {
+            background: var(--bg-color);
+            border: 1px solid var(--editor-border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .editor-panel-header {
+            background: var(--bg-darker);
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--editor-border);
+            gap: 0.5rem;
+        }
+        .editor-panel-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .lang-badge {
+            font-size: 0.72rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+        .badge-bash { background: rgba(158, 206, 106, 0.2); color: var(--accent-green); }
+        .badge-md { background: rgba(122, 162, 247, 0.2); color: var(--accent-blue); }
+
+        .editor-textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 450px;
+            background: var(--editor-bg);
+            color: #e6edf3;
+            border: none;
+            outline: none;
+            resize: vertical;
+            padding: 1.2rem;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.83rem;
+            line-height: 1.7;
+            tab-size: 4;
+            white-space: pre;
+            overflow: auto;
+        }
+        .editor-textarea:focus {
+            outline: none;
+            box-shadow: inset 0 0 0 1px var(--accent-purple);
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn-editor {
+            padding: 0.35rem 0.9rem;
+            border-radius: 6px;
+            border: 1px solid var(--editor-border);
+            background: var(--bg-lighter, #24283b);
+            color: var(--fg-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .btn-editor:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+        .btn-editor.primary { background: var(--accent-green); color: var(--bg-darker); border-color: var(--accent-green); }
+        .btn-editor.primary:hover { filter: brightness(1.1); }
+        .btn-editor.danger { border-color: var(--accent-red); color: var(--accent-red); }
+        .btn-editor.danger:hover { background: rgba(247,118,142,0.1); }
+
+        /* Confirm Download Bar */
+        .confirm-bar {
+            display: none;
+            background: linear-gradient(135deg, rgba(125,207,255,0.08), rgba(187,154,247,0.08));
+            border: 1px solid var(--accent-purple);
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            margin: 0 2rem 2rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .confirm-bar.visible { display: flex; }
+        .confirm-bar-text { font-size: 0.9rem; color: var(--fg-color); }
+        .confirm-bar-text strong { color: var(--accent-cyan); }
+        .confirm-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+        /* Load from generator section */
+        .load-section {
+            background: var(--bg-darker);
+            border: 1px dashed var(--accent-purple);
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin: 0 2rem 2rem;
+            text-align: center;
+        }
+        .load-section p { color: #8b949e; font-size: 0.88rem; margin: 0.5rem 0 1rem; }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2px dashed var(--editor-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            margin-top: 1rem;
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--accent-purple);
+            background: rgba(187,154,247,0.05);
+        }
+        .upload-zone p { color: #8b949e; font-size: 0.85rem; margin: 0.5rem 0 0; }
+
+        /* Line numbers indicator */
+        .line-count { color: #8b949e; font-size: 0.75rem; }
+    </style>
 </head>
 <body>
-    <header style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--bg-lighter);">
-        <a href="index.html" class="btn" style="width:auto; background:var(--bg-lighter); color:var(--accent-blue); padding:0.5rem 1rem;">&larr; Back to Generator</a>
-        <h2 style="color:var(--accent-purple); margin:0;">Live Output Editor</h2>
-    </header>
 
-    <div class="layout-container">
-        <section id="output-section" style="width:100%;">
+<!-- Header -->
+<div class="editor-page-header">
+    <div>
+        <h1>📝 Live Editor</h1>
+        <p>Edit, preview, and download your generated Arch Linux install script &amp; markdown guide</p>
+    </div>
+    <nav style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+        <a href="index.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">⚙️ Generator</a>
+        <a href="wiki.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">📖 Wiki</a>
+        <a href="releases.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">📦 Releases</a>
+    </nav>
+</div>
 
-            <div class="output-actions" style="background:var(--bg-lighter); padding:1rem; border-radius:8px; margin-bottom:2rem; border:1px solid var(--border-color);">
-                <div>
-                    <h3 style="margin-top:0; color:var(--accent-purple);">Upload File (.md / .sh)</h3>
-                    <p style="font-size:0.85rem; color:var(--fg-color);">Load an existing guide or script into the editor.</p>
-                </div>
-                <input type="file" id="file-uploader" accept=".md,.sh" style="background:var(--bg-darker); padding:0.5rem; border:1px solid var(--accent-blue); border-radius:4px; color:var(--fg-color);">
+<!-- Load from Generator / Upload -->
+<div class="load-section" id="load-section">
+    <h3 style="margin:0 0 0.5rem; color:var(--accent-cyan);">Load Generated Output</h3>
+    <p>Paste from the generator or upload a previously saved <code>.sh</code> / <code>.md</code> file to edit it here.</p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <button class="btn-editor primary" onclick="loadFromGenerator()">📥 Load from Generator (this session)</button>
+        <label class="btn-editor" style="cursor:pointer;">
+            📂 Upload .sh or .md File
+            <input type="file" accept=".sh,.md,.txt" style="display:none;" id="upload-file-input" onchange="handleFileUpload(event)">
+        </label>
+        <button class="btn-editor" onclick="loadExample()">💡 Load Example Script</button>
+    </div>
+    <div class="upload-zone" id="drop-zone" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+        <div style="font-size:2rem;">⬇️</div>
+        <strong style="color:var(--fg-color);">Drop a .sh or .md file here</strong>
+        <p>Or use the buttons above. Files are read locally — nothing is sent to any server.</p>
+    </div>
+</div>
+
+<!-- Confirm Download Bar -->
+<div class="confirm-bar" id="confirm-bar">
+    <div class="confirm-bar-text">
+        <strong>✅ Edits ready!</strong> Confirm and download your static outputs below.
+    </div>
+    <div class="confirm-actions">
+        <button class="btn-editor primary" onclick="downloadScript()">⬇️ Download Script (.sh)</button>
+        <button class="btn-editor" style="border-color:var(--accent-blue); color:var(--accent-blue);" onclick="downloadMarkdown()">⬇️ Download Guide (.md)</button>
+        <button class="btn-editor" onclick="downloadBoth()">⬇️ Download Both</button>
+        <button class="btn-editor danger" onclick="clearEditors()">🗑️ Clear</button>
+    </div>
+</div>
+
+<!-- Main Editor Grid -->
+<div class="editor-layout" id="editor-layout">
+
+    <!-- Bash Script Panel -->
+    <div class="editor-panel">
+        <div class="editor-panel-header">
+            <div class="editor-panel-title">
+                <span>🖥️ Bash Script</span>
+                <span class="lang-badge badge-bash">BASH</span>
+                <span class="line-count" id="sh-line-count">0 lines</span>
             </div>
-
-            <div class="output-actions">
-                <h3 class="output-title md-edit">Markdown Guide (.md)</h3>
-                <div style="display:flex; gap:8px;">
-                    <button class="btn" style="width:auto; padding:0.4rem 1rem;" onclick="downloadContent('raw-md-code', 'arch_guide.md')">Download .md</button>
-                    <button class="btn" style="width:auto; padding:0.4rem 1rem; background:var(--accent-green); color:#1a1b26;" onclick="window.Prism && Prism.highlightAll()">Highlight Syntax</button>
-                </div>
+            <div class="editor-actions">
+                <button class="btn-editor" onclick="copyToClipboard('script-editor')">📋 Copy</button>
+                <button class="btn-editor" onclick="formatScript()">✨ Format</button>
+                <button class="btn-editor primary" onclick="downloadScript()">⬇️ .sh</button>
             </div>
-            <pre class="output-box editor-md" id="raw-md-code" contenteditable="true" spellcheck="false" style="min-height: 200px;">Loading...</pre>
-
-            <div class="output-actions" style="margin-top:2rem;">
-                <h3 class="output-title sh-edit">Install Script (.sh)</h3>
-                <button class="btn" style="width:auto; padding:0.4rem 1rem;" onclick="downloadContent('raw-script-code', 'install.sh')">Download install.sh</button>
-            </div>
-            <pre class="output-box editor-sh" id="raw-script-code" contenteditable="true" spellcheck="false" style="min-height: 100px;">Loading...</pre>
-
-            <div class="output-actions" style="margin-top:2rem;">
-                <h3 class="output-title ssh-cmd">Post-Install Script (.sh)</h3>
-                <button class="btn" style="width:auto; padding:0.4rem 1rem;" onclick="downloadContent('raw-post-script-code', 'post_install.sh')">Download post_install.sh</button>
-            </div>
-            <pre class="output-box oneliner" id="raw-post-script-code" contenteditable="true" spellcheck="false" style="min-height: 100px;">Loading...</pre>
-
-            <div class="alert info" style="margin-top:2rem;">
-                <strong>GPG Signature Check:</strong> The scripts above dynamically embed GPG integrity checks. Always verify signatures before executing remote scripts.
-            </div>
-
-            <div class="alert info" style="margin-top:2rem;">
-                <h3 style="margin-top:0;">🛡️ Pre-Secure SSH Setup Guide</h3>
-                <p>Before executing the scripts on a remote machine, ensure your SSH connection is configured correctly:</p>
-                <ul style="margin-top:0.5rem; margin-bottom:0;">
-                    <li>1. Boot the target machine into the Arch ISO.</li>
-                    <li>2. Set a root password: <code>passwd</code></li>
-                    <li>3. Start the SSH daemon: <code>systemctl start sshd</code></li>
-                    <li>4. Find the target IP: <code>ip a</code></li>
-                    <li>5. Connect from this machine: <code>ssh root@&lt;target-ip&gt;</code></li>
-                    <li>6. Copy and execute the <strong>Install Script</strong> block above.</li>
-                </ul>
-            </div>
-
-        </section>
+        </div>
+        <textarea id="script-editor" class="editor-textarea"
+            placeholder="# Your generated install script will appear here...
+# Paste, type, or load from the generator above.
+#
+# All edits are local — nothing is sent to any server."
+            oninput="updateLineCount('script-editor','sh-line-count'); showConfirmBar();"
+            spellcheck="false"
+        ></textarea>
     </div>
 
-    <script src="script.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const md = sessionStorage.getItem('live_md') || 'No guide generated yet. Return to generator.';
-            const sh = sessionStorage.getItem('live_sh') || '# No install script generated yet.';
-            const post_sh = sessionStorage.getItem('live_post_sh') || '# No post-install script generated yet.';
-            
-            document.getElementById('raw-md-code').textContent = md;
-            document.getElementById('raw-script-code').textContent = sh;
-            document.getElementById('raw-post-script-code').textContent = post_sh;
-        });
+    <!-- Markdown Guide Panel -->
+    <div class="editor-panel">
+        <div class="editor-panel-header">
+            <div class="editor-panel-title">
+                <span>📖 Markdown Guide</span>
+                <span class="lang-badge badge-md">MARKDOWN</span>
+                <span class="line-count" id="md-line-count">0 lines</span>
+            </div>
+            <div class="editor-actions">
+                <button class="btn-editor" onclick="copyToClipboard('markdown-editor')">📋 Copy</button>
+                <button class="btn-editor" id="preview-toggle-btn" onclick="toggleMarkdownPreview()">👁️ Preview</button>
+                <button class="btn-editor primary" onclick="downloadMarkdown()">⬇️ .md</button>
+            </div>
+        </div>
+        <textarea id="markdown-editor" class="editor-textarea"
+            placeholder="# Your generated Markdown guide will appear here...
 
+## Introduction
+Paste, type, or load from the generator above.
 
-        document.getElementById('file-uploader').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const content = evt.target.result;
-                if (file.name.endsWith('.md')) {
-                    document.getElementById('raw-md-code').textContent = content;
-                } else if (file.name.endsWith('.sh')) {
-                    // Check if it's a post-install script (heuristic)
-                    if (content.includes('post_install')) {
-                        document.getElementById('raw-post-script-code').textContent = content;
-                    } else {
-                        document.getElementById('raw-script-code').textContent = content;
-                    }
-                }
-                if (window.Prism) Prism.highlightAll();
-            };
-            reader.readAsText(file);
-        });
+All edits are local — nothing is sent to any server."
+            oninput="updateLineCount('markdown-editor','md-line-count'); showConfirmBar();"
+            spellcheck="false"
+        ></textarea>
+        <!-- Preview pane (hidden by default) -->
+        <div id="markdown-preview"
+            style="display:none; padding:1.5rem; overflow:auto; flex:1; min-height:450px; background:var(--editor-bg); color:#e6edf3; font-family:'Inter',sans-serif; line-height:1.7; font-size:0.88rem;">
+        </div>
+    </div>
 
-        function downloadContent(id, filename) {
-            const content = document.getElementById(id).innerText;
-            const blob = new Blob([content], { type: 'text/plain' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(a.href);
+</div>
+
+<!-- Footer -->
+<footer style="text-align:center; padding:2rem; color:#8b949e; font-size:0.8rem; border-top:1px solid var(--editor-border); margin-top:1rem;">
+    <p>🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+    <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple);">tilas01</a>
+    &nbsp;·&nbsp; All files processed locally. No data leaves your browser.
+    &nbsp;·&nbsp; <a href="index.html" style="color:var(--accent-blue);">Back to Generator</a></p>
+</footer>
+
+<script>
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
+function updateLineCount(editorId, counterId) {
+    const el = document.getElementById(editorId);
+    const counter = document.getElementById(counterId);
+    if (el && counter) {
+        const lines = el.value.split('\n').length;
+        counter.textContent = lines + ' line' + (lines === 1 ? '' : 's');
+    }
+}
+
+function showConfirmBar() {
+    const bar = document.getElementById('confirm-bar');
+    const sh = document.getElementById('script-editor').value.trim();
+    const md = document.getElementById('markdown-editor').value.trim();
+    if (sh || md) {
+        bar.classList.add('visible');
+    }
+}
+
+function copyToClipboard(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value).then(() => {
+        const btn = document.querySelector(`button[onclick="copyToClipboard('${id}')"]`);
+        if (btn) { btn.textContent = '✅ Copied!'; setTimeout(() => btn.textContent = '📋 Copy', 1500); }
+    });
+}
+
+// ─── Download Functions ───────────────────────────────────────────────────────
+
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+
+function downloadScript() {
+    const content = document.getElementById('script-editor').value;
+    if (!content.trim()) { alert('Script editor is empty!'); return; }
+    const filename = getFilenameFromContent(content, 'arch-install', '.sh');
+    downloadFile(content, filename, 'text/x-sh');
+}
+
+function downloadMarkdown() {
+    const content = document.getElementById('markdown-editor').value;
+    if (!content.trim()) { alert('Markdown editor is empty!'); return; }
+    const filename = getFilenameFromContent(content, 'arch-guide', '.md');
+    downloadFile(content, filename, 'text/markdown');
+}
+
+function downloadBoth() {
+    downloadScript();
+    setTimeout(downloadMarkdown, 300);
+}
+
+function getFilenameFromContent(content, fallback, ext) {
+    // Try to extract hostname or title from content
+    const titleMatch = content.match(/^#\s+(.+)$/m) || content.match(/hostname[=\s:]+["']?([a-z0-9-]+)/i);
+    if (titleMatch) {
+        return titleMatch[1].toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40) + ext;
+    }
+    return fallback + '-' + new Date().toISOString().slice(0,10) + ext;
+}
+
+// ─── Load Functions ───────────────────────────────────────────────────────────
+
+function loadFromGenerator() {
+    // Check sessionStorage for generated content from the generator page
+    const script = sessionStorage.getItem('generated_script');
+    const markdown = sessionStorage.getItem('generated_markdown');
+    if (!script && !markdown) {
+        if (confirm('No generated content found in this session.\n\nGo to the Generator to create one first?')) {
+            window.location.href = 'index.html#generate';
         }
-    </script>
+        return;
+    }
+    if (script) {
+        document.getElementById('script-editor').value = script;
+        updateLineCount('script-editor', 'sh-line-count');
+    }
+    if (markdown) {
+        document.getElementById('markdown-editor').value = markdown;
+        updateLineCount('markdown-editor', 'md-line-count');
+    }
+    showConfirmBar();
+    document.getElementById('load-section').style.display = 'none';
+    // Smooth scroll to editors
+    document.getElementById('editor-layout').scrollIntoView({ behavior: 'smooth' });
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    readFile(file);
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    document.getElementById('drop-zone').classList.remove('drag-over');
+    const file = event.dataTransfer.files[0];
+    if (file) readFile(file);
+}
+
+function readFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const content = e.target.result;
+        if (file.name.endsWith('.sh') || file.name.endsWith('.bash')) {
+            document.getElementById('script-editor').value = content;
+            updateLineCount('script-editor', 'sh-line-count');
+        } else {
+            document.getElementById('markdown-editor').value = content;
+            updateLineCount('markdown-editor', 'md-line-count');
+        }
+        showConfirmBar();
+        document.getElementById('load-section').style.display = 'none';
+        document.getElementById('editor-layout').scrollIntoView({ behavior: 'smooth' });
+    };
+    reader.readAsText(file);
+}
+
+function loadExample() {
+    const exampleScript = `#!/bin/bash
+# ─────────────────────────────────────────────────────────
+#  Arch Linux Install Script — Generated by Arch Guides Dynamic
+#  by tilas01 · https://github.com/tilas01/arch-guides-dynamic
+# ─────────────────────────────────────────────────────────
+# Generated: ${new Date().toISOString().slice(0,10)}
+# Profile:   Example / Minimal
+# ─────────────────────────────────────────────────────────
+
+set -euo pipefail
+
+echo "=== Arch Linux Install Script ==="
+echo "Edit this example to match your setup!"
+
+# Set locale
+echo "Setting locale..."
+ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+hwclock --systohc
+
+# Install base packages
+echo "Installing base packages..."
+pacstrap /mnt base linux linux-firmware
+
+echo "Done! Customize this script using the generator."
+`;
+    const exampleMarkdown = `# Arch Linux Installation Guide
+
+> Generated by [Arch Guides Dynamic](https://tilas01.github.io/arch-guides-dynamic/) — by tilas01
+
+## Prerequisites
+
+- A bootable Arch ISO USB drive
+- Internet connection
+- 20+ GB disk space
+
+## Step 1: Boot the ISO
+
+Boot from your USB and connect to the internet:
+
+\`\`\`bash
+iwctl device list
+iwctl station wlan0 connect "YourSSID"
+\`\`\`
+
+## Step 2: Partition Disk
+
+\`\`\`bash
+fdisk /dev/nvme0n1
+\`\`\`
+
+## Step 3: Install Base System
+
+\`\`\`bash
+pacstrap /mnt base linux linux-firmware
+\`\`\`
+
+Edit this guide using the generator to match your exact setup.
+`;
+    document.getElementById('script-editor').value = exampleScript;
+    document.getElementById('markdown-editor').value = exampleMarkdown;
+    updateLineCount('script-editor', 'sh-line-count');
+    updateLineCount('markdown-editor', 'md-line-count');
+    showConfirmBar();
+    document.getElementById('load-section').style.display = 'none';
+    document.getElementById('editor-layout').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── Markdown Preview ─────────────────────────────────────────────────────────
+
+let previewMode = false;
+function toggleMarkdownPreview() {
+    previewMode = !previewMode;
+    const ta = document.getElementById('markdown-editor');
+    const preview = document.getElementById('markdown-preview');
+    const btn = document.getElementById('preview-toggle-btn');
+
+    if (previewMode) {
+        const content = ta.value;
+        // Simple markdown to HTML (basic parser)
+        let html = content
+            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/`([^`]+)`/g, '<code style="background:#1c2128; padding:0.15em 0.4em; border-radius:3px; color:#79c0ff;">$1</code>')
+            .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre style="background:#1c2128; padding:1rem; border-radius:6px; overflow-x:auto; border:1px solid #30363d; margin:1rem 0;"><code>$2</code></pre>')
+            .replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid #bb9af7; padding-left:1rem; color:#8b949e; margin:0.5rem 0;">$1</blockquote>')
+            .replace(/^- (.+)$/gm, '<li>$1</li>')
+            .replace(/\n\n/g, '<br><br>');
+
+        preview.innerHTML = html;
+        ta.style.display = 'none';
+        preview.style.display = 'block';
+        btn.textContent = '✏️ Edit';
+    } else {
+        ta.style.display = 'block';
+        preview.style.display = 'none';
+        btn.textContent = '👁️ Preview';
+    }
+}
+
+// ─── Format Script ────────────────────────────────────────────────────────────
+
+function formatScript() {
+    const el = document.getElementById('script-editor');
+    // Basic: normalize line endings, trim trailing whitespace per line
+    el.value = el.value
+        .replace(/\r\n/g, '\n')
+        .split('\n')
+        .map(l => l.trimEnd())
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n');
+    updateLineCount('script-editor', 'sh-line-count');
+}
+
+function clearEditors() {
+    if (!confirm('Clear both editors? This cannot be undone.')) return;
+    document.getElementById('script-editor').value = '';
+    document.getElementById('markdown-editor').value = '';
+    document.getElementById('sh-line-count').textContent = '0 lines';
+    document.getElementById('md-line-count').textContent = '0 lines';
+    document.getElementById('confirm-bar').classList.remove('visible');
+    document.getElementById('load-section').style.display = '';
+}
+
+// ─── On Load: Check sessionStorage for content piped from generator ──────────
+
+document.addEventListener('DOMContentLoaded', () => {
+    const script = sessionStorage.getItem('generated_script');
+    const markdown = sessionStorage.getItem('generated_markdown');
+
+    if (script || markdown) {
+        // Auto-load silently
+        if (script) {
+            document.getElementById('script-editor').value = script;
+            updateLineCount('script-editor', 'sh-line-count');
+        }
+        if (markdown) {
+            document.getElementById('markdown-editor').value = markdown;
+            updateLineCount('markdown-editor', 'md-line-count');
+        }
+        showConfirmBar();
+        document.getElementById('load-section').style.display = 'none';
+    }
+});
+</script>
 </body>
 </html>
