@@ -16,3 +16,8 @@ A highly specialized Linux Kernel Module (LKM) that creates deceptive hooks and 
 
 ### Kloak
 Kloak (created by vmonaco) is a keystroke anonymizer that adds random delays to keyboard events. This defeats keystroke biometric profiling, where advanced trackers identify you based on the unique timing patterns of your typing.
+
+## 📦 Downloads & Releases
+
+All compiled Rust binaries and releases for these security tools can be found on our central releases page. 
+[**View Releases**](/releases.html)
