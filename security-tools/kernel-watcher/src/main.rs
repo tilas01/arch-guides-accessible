@@ -1,5 +1,5 @@
 use clap::Parser;
-use kernel_watcher::start_gui;
+use kernel_watcher::gui::start_gui;
 use kernel_watcher::start_watcher;
 use std::process;
 
