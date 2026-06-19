@@ -2,7 +2,7 @@ name: Deploy Website to GitHub Pages
 
 on:
   workflow_run:
-    workflows: ["Security Tools CI & Release"]
+    workflows: ["Release Security Tools"]
     types:
       - completed
     branches: ["main"]
