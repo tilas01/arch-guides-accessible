@@ -116,5 +116,37 @@
 
         document.addEventListener('DOMContentLoaded', () => fetchTree());
     </script>
+
+    <div class="repo-stats-card" style="background: var(--bg-lighter); padding: 1.5rem; border-radius: 8px; margin-top: 2rem; border: 1px solid var(--accent-blue);">
+        <h2 style="color: var(--accent-blue); margin-top: 0;">📦 GitHub Repository</h2>
+        <p>The Arch Guides Dynamic project is fully open-source.</p>
+        <div id="github-stats" style="display: flex; gap: 1.5rem; margin: 1.5rem 0; font-size: 1.1rem;">
+            <div class="stat"><span id="gh-stars">⭐ Loading...</span> Stars</div>
+            <div class="stat"><span id="gh-forks">🍴 Loading...</span> Forks</div>
+            <div class="stat"><span id="gh-issues">🐛 Loading...</span> Issues</div>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" class="btn" style="background: var(--accent-blue); color: var(--bg-dark); text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold;">🔗 View on GitHub</a>
+            <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="btn" style="background: var(--accent-green); color: var(--bg-dark); text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold;">⬇️ Latest Releases</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('https://api.github.com/repos/tilas01/arch-guides-dynamic')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('gh-stars').innerHTML = '⭐ ' + data.stargazers_count;
+                    document.getElementById('gh-forks').innerHTML = '🍴 ' + data.forks_count;
+                    document.getElementById('gh-issues').innerHTML = '🐛 ' + data.open_issues_count;
+                })
+                .catch(err => {
+                    document.getElementById('gh-stars').innerHTML = '⭐ N/A';
+                    document.getElementById('gh-forks').innerHTML = '🍴 N/A';
+                    document.getElementById('gh-issues').innerHTML = '🐛 N/A';
+                });
+        });
+    </script>
+
 </body>
 </html>
