@@ -763,7 +763,7 @@ input:checked + .slider:before {
 
 
 /* ─── Application Grids (Restored to Original Multi-Column) ─── */
-\\.app-grid-container {
+.app-grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
     gap: 0.8rem;
@@ -775,7 +775,7 @@ input:checked + .slider:before {
 }
 
 /* Specific border colors for security boxes for parity */
-.my-tools-box \\.app-grid-container {
+.my-tools-box .app-grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
     gap: 0.8rem;
@@ -786,7 +786,7 @@ input:checked + .slider:before {
     background: transparent;
 }
 
-.other-sec-box \\.app-grid-container {
+.other-sec-box .app-grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
     gap: 0.8rem;
@@ -810,7 +810,7 @@ input:checked + .slider:before {
 
 /* ─── App Card Layout (Compact & Neat) ─── */
 
-\\\\\.app-card {
+.app-card {
     display: flex;
     flex-direction: row;
     align-items: flex-start; /* Align to top instead of center */
@@ -825,15 +825,6 @@ input:checked + .slider:before {
     text-align: left;
     justify-content: flex-start;
 }
-.app-card input[type="checkbox"] { margin: 0; margin-top: 0.2rem; } /* Align tick with text */
-.app-card .app-icon { margin: 0; margin-top: 0.1rem; font-size: 1.1rem; }
-.app-card .config-btn { margin-left: 0.2rem; margin-top: -0.1rem; }
-
-.app-card input[type="checkbox"] { margin: 0; }
-.app-card .app-icon { margin: 0; font-size: 1.1rem; }
-.app-card .config-btn { margin-left: 0.2rem; } /* Tight gap between text and gear */
-
-
 
 .app-card:hover { 
     background: rgba(255,255,255,0.08); 
@@ -842,85 +833,80 @@ input:checked + .slider:before {
 
 /* Flex Ordering to ensure Checkbox -> Emoji -> Warn -> Gear -> Name -> Desc */
 .app-card input[type="checkbox"] {
-    
+    order: 1;
+    flex-shrink: 0;
     margin: 0;
+    margin-top: 0.25rem;
     cursor: pointer;
     transform: scale(1.1);
     accent-color: var(--accent-purple);
-    
 }
 
 .app-card .app-icon {
-    
-    
+    order: 2;
+    flex-shrink: 0;
     font-size: 1.1rem;
+    margin-top: 0.1rem;
+    width: 22px;
     text-align: center;
 }
 
 .app-card .prop-warn {
-    
+    order: 3;
     color: var(--accent-red);
     font-weight: 900;
     font-size: 0.85rem;
+    margin-right: 0.2rem;
     cursor: help;
-    
+    flex-shrink: 0;
 }
 
-
 .gear-config-btn { 
+    order: 4;
     display: none; 
+    flex-shrink: 0;
+    margin-right: 0.3rem;
+    margin-top: 0.1rem;
     cursor: pointer; 
     opacity: 0.7;
     transition: opacity 0.2s;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
+    font-size: 0.95rem;
 }
 
-.app-card input[type="checkbox"]:checked ~ 
-.gear-config-btn { 
-    display: none; 
-    cursor: pointer; 
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
+.app-card input[type="checkbox"]:checked ~ .gear-config-btn { 
+    display: inline-flex !important; 
 }
-
-.app-card:hover 
-.gear-config-btn { 
-    display: none; 
-    cursor: pointer; 
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
+.app-card:hover .gear-config-btn { 
+    display: inline-flex !important; 
+    opacity: 0.6; 
 }
-
 
 .app-card a {
-    
+    order: 5;
     font-weight: 600;
     color: var(--fg-color);
     text-decoration: none;
+    min-width: 120px;
+    flex-shrink: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    
 }
 .app-card a:hover { color: var(--accent-cyan); }
 
 .app-card .info-tooltip-icon {
-    
-    
+    order: 6;
+    flex-shrink: 0;
     opacity: 0.6;
     cursor: help;
 }
 
-
 .app-desc {
+    order: 7;
     color: #8b949e;
     font-size: 0.78rem;
     margin-left: auto;
+    flex-shrink: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

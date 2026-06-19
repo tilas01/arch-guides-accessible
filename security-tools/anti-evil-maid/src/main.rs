@@ -1,5 +1,5 @@
 use anti_evil_maid::gui::start_gui;
-use anti_evil_maid::run;
+use anti_evil_maid::start_monitor;
 use clap::Parser;
 use std::process;
 
@@ -24,6 +24,6 @@ fn main() {
         println!(
             "Starting daemon mode for Anti-Evil Maid Boot Integrity. Use --interactive for GUI."
         );
-        run(false, None, None, true, None, false);
+        start_monitor();
     }
 }

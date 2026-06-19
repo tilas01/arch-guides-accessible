@@ -3268,7 +3268,7 @@ function lockAllOtherSec(btn) {
 // Advanced Setup Toggle Logic
 function toggleAdvancedSetup() {
     const isAdvanced = document.getElementById('advanced-setup-toggle').checked;
-    const configBtns = document.querySelectorAll('.config-btn');
+    const configBtns = document.querySelectorAll('.gear-config-btn');
     
     configBtns.forEach(btn => {
         btn.style.display = isAdvanced ? 'inline-flex' : 'none';
