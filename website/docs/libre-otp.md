@@ -6,6 +6,7 @@
 When enabled, Libre-OTP integrates into the Arch Linux boot process using a custom `initcpio` hook and a Tokyo Night stylized Plymouth boot prompt.
 - The prompt is completely unbranded to serve as a decoy.
 - **Duress/Decoy Shutdown:** If a duress password is entered by mistake, the system will instantly power off instead of dropping into an emergency shell or a decoy OS.
+- **Boot Tamper Verification:** Supports `--verify-tamper` mode where the computer displays a TOTP code on the screen. If it matches the code on your phone, you have cryptographic proof that the boot environment has not been tampered with (Anti-Evil-Maid).
 
 ## System Login (PAM)
 Libre-OTP integrates seamlessly into `/etc/pam.d/system-auth`. This enforces an OTP challenge upon any local TTY login or graphical Display Manager login (GDM/SDDM/LightDM).
