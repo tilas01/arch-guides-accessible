@@ -33,21 +33,54 @@
     </div>
 </noscript>
 
-    <!-- First Visit Waiver Modal -->
-    <div id="waiver-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
-        <div style="background:var(--bg-color); border:1px solid var(--accent-red); padding:2rem; border-radius:12px; max-width:600px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-            <h2 style="color:var(--accent-red); margin-top:0;">⚠️ Legal & Security Waiver</h2>
-            <p style="color:var(--fg-color); opacity:0.9; text-align:left; line-height:1.6; font-size:0.95rem;">
-                By using the <strong>Arch Guides Dynamic Generator</strong> and the <strong>Arch Rusty Security Suite</strong>, you acknowledge:
-                <br><br>
-                🍪 <strong>Session-Only:</strong> We use no cookies. Generation history resets when the tab closes.<br>
-                💥 <strong>DoD Disk Wipes:</strong> Certain features (like Panic Password) permanently destroy data. There is no recovery.<br>
-                
-                ⚖️ <strong>Liability:</strong> The author (tilas01) is not responsible for data loss, system bricking, or targeted attacks failing to be mitigated.
-            </p>
-            <button id="accept-waiver-btn" class="btn" style="background:var(--accent-red); color:var(--bg-color); border:none; margin-top:1.5rem; width:100%;">I Understand and Accept the Risks</button>
+    <!-- First Visit Waiver Modal (handled by legal.js) -->
+    <!-- REMOVED duplicate inline modal — legal.js manages all waiver/welcome logic -->
+    <div id="waiver-modal" style="display:none;">
+            <!-- Welcome Header -->
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <div style="font-size:2.2rem; margin-bottom:0.5rem;">🦀🛡️</div>
+                <h2 style="color:var(--accent-cyan); margin:0; font-size:1.5rem; letter-spacing:0.5px;">Welcome to Arch Guides Dynamic</h2>
+                <p style="color:#8b949e; font-size:0.85rem; margin:0.4rem 0 0;">by <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple);">tilas01</a> &nbsp;·&nbsp; Secure. Libre. Modular.</p>
+            </div>
+
+            <div style="border-top:1px solid var(--border-color); padding-top:1.25rem; margin-bottom:1.25rem;">
+                <h3 style="color:var(--accent-red); margin-top:0; font-size:1rem;">⚠️ Legal Disclaimer &amp; Waiver</h3>
+                <p style="color:var(--fg-color); line-height:1.75; font-size:0.87rem; margin:0;">
+                    By clicking <strong>"I Agree"</strong>, you acknowledge and accept that all content, tools, scripts, binaries, documentation, and source code provided on this website and within the GitHub repository <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" style="color:var(--accent-blue);">tilas01/arch-guides-dynamic</a> — including but not limited to the Arch Guides Dynamic Generator, the Arch Rusty Security Suite (ARSS), Anti-Evil-Maid, Anti-Ducky, Kernel Watcher, LibreOTP, and Scarecrow — are provided strictly <strong>"AS IS"</strong>, without warranty of any kind, express or implied. The author (<strong>tilas01</strong>) expressly disclaims all liability for any direct, indirect, incidental, consequential, or punitive damages of any nature, including but not limited to: data loss or corruption; system damage, bricking, or unbootable states; security breaches or exploits that are not mitigated; loss of files due to DoD-grade disk wipe features (such as Panic Password, Anti-Evil-Maid triggers, or secure erase routines); conflicts arising from proprietary software, firmware blobs, or third-party packages; and any harm arising from following generated installation scripts or guides. This software is intended for advanced Linux users who understand the risks involved. You assume <strong>full and sole responsibility</strong> for all actions taken using these tools on your systems. No cookies, session tracking, or personally identifiable information is collected by this site. Generation history is stored exclusively in your local browser session memory and is permanently deleted when the tab is closed. Your use of this website and any associated resources constitutes your binding agreement to these terms in full.
+                </p>
+            </div>
+
+            <!-- Two Action Buttons -->
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1.5rem;">
+                <button id="accept-waiver-btn" class="btn" style="background:var(--accent-red); color:var(--bg-color); border:none; width:100%; padding:0.85rem; font-size:1rem; font-weight:bold; border-radius:8px; cursor:pointer; letter-spacing:0.5px;">
+                    ✅ I Agree
+                </button>
+                <button id="accept-waiver-persist-btn" class="btn" style="background:var(--bg-darker); color:var(--accent-red); border:1px solid var(--accent-red); width:100%; padding:0.85rem; font-size:0.9rem; font-weight:bold; border-radius:8px; cursor:pointer; letter-spacing:0.3px;">
+                    ✅ I Agree &amp; Don't Show Again
+                </button>
+            </div>
+            <p style="color:#8b949e; font-size:0.75rem; text-align:center; margin:1rem 0 0;">"Don't Show Again" stores a flag in your browser's <code>localStorage</code>. No personal data is saved.</p>
         </div>
     </div>
+    <script>
+        // Waiver logic — runs immediately before DOM is ready
+        (function() {
+            var dismissed = localStorage.getItem('waiver_dismissed');
+            if (!dismissed) {
+                document.addEventListener('DOMContentLoaded', function() {
+                    var modal = document.getElementById('waiver-modal');
+                    if (modal) modal.style.display = 'flex';
+                    document.getElementById('accept-waiver-btn').addEventListener('click', function() {
+                        modal.style.display = 'none';
+                    });
+                    document.getElementById('accept-waiver-persist-btn').addEventListener('click', function() {
+                        localStorage.setItem('waiver_dismissed', '1');
+                        modal.style.display = 'none';
+                    });
+                });
+            }
+        })();
+    </script>
     
     <header class="header">
         <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository containing this website, all tilas01-authored scripts, Arch installation guides, ." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
@@ -66,7 +99,7 @@
         <nav class="main-nav">
             <a href="index.html" class="nav-link nav-tooltip" data-title="Generator" data-desc="Dynamic interactive setup generator. Select your options and generate a custom Arch Linux install script and guide.">⚙️ Generator</a>
             <span class="nav-sep">|</span>
-            <a href="#live-editor" id="live-editor-nav" class="nav-link nav-tooltip" data-title="Live Editor" data-desc="Upload a previously generated .sh or .md file to view, edit and re-download it. Files are read locally — nothing is sent to any server. If the file has no valid config header it will be shown as read-only text.">📝 Live Editor</a>
+            <a href="live.html" id="live-editor-nav" class="nav-link nav-tooltip" data-title="Live Editor" data-desc="Full standalone Live Editor — edit your generated script and markdown guide side by side and download static outputs. Opens as its own page." target="_blank">📝 Live Editor</a>
                 <a href="#" class="nav-link nav-tooltip" data-title="Generation History" data-desc="View past generated configurations, install scripts, and markdown guides cached in your browser." onclick="openHistoryModal(); return false;">🕰️ History</a>
             <span class="nav-sep">|</span>
             <a href="wiki.html" class="nav-link nav-tooltip" data-title="Wiki / Documentation" data-desc="Full Arch Linux documentation with same parity as the generator. Every generator option is explained so you can manually configure your system.">📖 Wiki</a>

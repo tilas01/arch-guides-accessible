@@ -1,242 +1,149 @@
-// legal.js — Two-step onboarding: Liability Waiver first, then Welcome notice.
-// Uses sessionStorage only. No cookies are used on this site.
+// legal.js — Onboarding: Welcome + Comprehensive Legal Disclaimer
+// Uses localStorage only. No cookies. No tracking.
 'use strict';
 document.addEventListener('DOMContentLoaded', () => {
-  const LEGAL_KEY  = 'legal_accepted';
+  const LEGAL_KEY   = 'legal_accepted';
   const WELCOME_KEY = 'welcome_seen';
 
   const legalDone   = localStorage.getItem(LEGAL_KEY) === 'true';
   const welcomeDone = localStorage.getItem(WELCOME_KEY) === 'true';
 
-  const isMobile =
-    window.innerWidth <= 768 ||
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0;
+  if (legalDone && welcomeDone) return;
 
-  const tooltipHint = isMobile
-    ? 'Tap any labelled element for a tooltip. Tap elsewhere to dismiss. Toggle with the ℹ️ button near the banner.'
-    : 'Hover any labelled element for a tooltip. Toggle tooltips on/off with the ℹ️ button near the banner.';
-
-  // ─── Shared overlay factory ────────────────────────────────────────────────
+  // ─── Overlay & modal factory ────────────────────────────────────────────────
   function makeOverlay() {
     const ov = document.createElement('div');
     Object.assign(ov.style, {
-      position: 'fixed', inset: '0', background: 'rgba(26,27,38,0.96)',
+      position: 'fixed', inset: '0', background: 'rgba(13,17,23,0.92)',
       zIndex: '10000', display: 'flex', justifyContent: 'center',
       alignItems: 'center', padding: '1rem', overflowY: 'auto',
+      backdropFilter: 'blur(6px)',
     });
     return ov;
   }
 
-  function makeModal(borderColor) {
+  function makeModal() {
     const m = document.createElement('div');
     Object.assign(m.style, {
       background: 'var(--bg-color,#1a1b26)',
-      border: `2px solid ${borderColor}`,
-      padding: '1.6rem',
-      maxWidth: '600px', width: '100%',
+      border: '1px solid var(--accent-red,#f7768e)',
+      padding: '2.5rem',
+      maxWidth: '660px', width: '92%',
       borderRadius: '14px',
       textAlign: 'left',
-      boxShadow: `0 0 32px ${borderColor}33`,
+      boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
       maxHeight: '90vh', overflowY: 'auto',
-      fontFamily: "'JetBrains Mono','Fira Code',Consolas,monospace",
+      fontFamily: "'Inter','Fira Code',Consolas,sans-serif",
       color: 'var(--fg-color,#a9b1d6)',
       fontSize: '0.9rem', lineHeight: '1.6',
     });
     return m;
   }
 
-  // ─── STEP 1: Liability & Legal Waiver ─────────────────────────────────────
-  function showLegal(onAccept) {
+  // ─── Main waiver modal ───────────────────────────────────────────────────────
+  function showWaiver() {
     const overlay = makeOverlay();
-    const modal   = makeModal('var(--accent-red,#f7768e)');
+    const modal   = makeModal();
 
     modal.innerHTML = `
-      <h2 style="color:var(--accent-red,#f7768e);margin:0 0 1rem 0;font-size:1.3rem;text-align:center;">
-        ⚠️ Legal Disclaimer &amp; Liability Waiver
-      </h2>
-
-      <div style="background:var(--bg-lighter,#24283b);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:0.83rem;line-height:1.6;">
-        <ol style="padding-left:1.2rem;margin:0;">
-          <li style="margin-bottom:0.6rem;">
-            <strong style="color:var(--heading-color,#c0caf5);">No Warranty.</strong>
-            All content in <em>tilas01/arch-guides-dynamic</em> — this website, all scripts,
-            guides, security tools, and related repository contents — is provided
-            <strong>"AS IS"</strong> without warranty of any kind. Use at your own risk.
-          </li>
-          <li style="margin-bottom:0.6rem;">
-            <strong style="color:var(--heading-color,#c0caf5);">AI-Assisted Content.</strong>
-            This project was developed with AI assistance. All output has been reviewed by
-            tilas01, but you <strong>MUST review all generated scripts</strong> before
-            executing them. Always test in a VM first.
-          </li>
-          <li style="margin-bottom:0.6rem;">
-            <strong style="color:var(--heading-color,#c0caf5);">Full Liability Waiver.</strong>
-            By continuing you waive all liability claims against the authors for any
-            damage, data loss, or issues arising from use of this website, repository,
-            scripts, or tools.
-          </li>
-          <li>
-            <strong style="color:var(--accent-cyan,#7dcfff);">🍪 Local Storage Used.</strong>
-            This site uses your browser's <code>localStorage</code> to persistently save your "Don't show again" preference and your Generation History locally on your device. We do not use tracking cookies or send data to servers.
-          </li>
-        </ol>
-      </div>
-
-      <div style="margin-bottom:1.2rem;">
-        <label style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;margin-bottom:0.7rem;">
-          <input type="checkbox" id="legal-cb" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent-green,#9ece6a);">
-          I have read and accept the disclaimer &amp; liability waiver above.
-        </label>
-        <label style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;color:var(--accent-cyan,#7dcfff);font-size:0.82rem;">
-          <input type="checkbox" id="legal-skip" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--accent-cyan,#7dcfff);">
-          Don't show me this disclaimer again (Saves locally via browser storage)
-        </label>
-      </div>
-
-      <button id="legal-btn" disabled style="width:100%;padding:0.7rem;border:none;border-radius:8px;
-        font-family:'JetBrains Mono',monospace;font-size:0.95rem;font-weight:600;
-        background:var(--bg-lighter,#24283b);color:#555;cursor:not-allowed;transition:all 0.2s;">
-        Accept &amp; Continue →
-      </button>
-    `;
-
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    document.body.style.overflow = 'hidden';
-
-    const cb  = modal.querySelector('#legal-cb');
-    const skip = modal.querySelector('#legal-skip');
-    const btn  = modal.querySelector('#legal-btn');
-
-    cb.addEventListener('change', () => {
-      btn.disabled = !cb.checked;
-      btn.style.background  = cb.checked ? 'var(--accent-green,#9ece6a)' : 'var(--bg-lighter,#24283b)';
-      btn.style.color       = cb.checked ? '#1a1b26' : '#555';
-      btn.style.cursor      = cb.checked ? 'pointer' : 'not-allowed';
-    });
-
-    btn.addEventListener('click', () => {
-      if (!cb.checked) return;
-      if (skip.checked) localStorage.setItem(LEGAL_KEY, 'true');
-      overlay.remove();
-      document.body.style.overflow = '';
-      onAccept();
-    });
-  }
-
-  // ─── STEP 3: Combined Desktop Overlay ──────────────────────────────────────
-  function showCombined() {
-    const overlay = makeOverlay();
-    const modal   = makeModal('var(--accent-purple,#bb9af7)');
-
-    modal.innerHTML = `
-      <h2 style="color:var(--accent-purple,#bb9af7);margin:0 0 1rem 0;font-size:1.3rem;text-align:center;">
-        👋 Welcome to Arch Guides
-      </h2>
-
-      <div style="background:var(--bg-lighter,#24283b);border-radius:8px;padding:1rem;margin-bottom:1rem;">
-        <p style="margin:0;font-size:0.88rem;">
-          Arch Guides is an interactive, dynamically customisable Arch Linux installation
-          guide generator. Use the <strong style="color:var(--accent-cyan,#7dcfff);">Generator</strong>
-          to create a custom install script and guide, follow the
-          <strong style="color:var(--accent-cyan,#7dcfff);">Wiki</strong> to configure
-          manually, or <strong style="color:var(--accent-cyan,#7dcfff);">Upload</strong>
-          a previous config to restore it.
+      <!-- Welcome Header -->
+      <div style="text-align:center; margin-bottom:1.75rem;">
+        <div style="font-size:2.4rem; margin-bottom:0.6rem;">🦀🛡️</div>
+        <h2 style="color:var(--accent-cyan,#7dcfff); margin:0; font-size:1.55rem; letter-spacing:0.5px; font-weight:800;">
+          Welcome to Arch Guides Dynamic
+        </h2>
+        <p style="color:#8b949e; font-size:0.82rem; margin:0.5rem 0 0;">
+          by <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple,#bb9af7); text-decoration:none;">tilas01</a>
+          &nbsp;·&nbsp; Secure. Libre. Modular. Open Source.
         </p>
       </div>
 
-      <div style="background:var(--bg-lighter,#24283b);border-radius:8px;padding:1rem;margin-bottom:1rem;">
-        <h3 style="color:var(--accent-cyan,#7dcfff);margin:0 0 0.5rem 0;font-size:0.95rem;">ℹ️ Tooltips</h3>
-        <p style="margin:0;font-size:0.83rem;">${tooltipHint}</p>
+      <!-- Blurb -->
+      <div style="background:var(--bg-lighter,#24283b); border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.5rem; font-size:0.85rem; line-height:1.65;">
+        <p style="margin:0;">
+          Arch Guides Dynamic is an interactive, fully customisable Arch Linux installation guide generator.
+          Use the <strong style="color:var(--accent-cyan,#7dcfff);">Generator</strong> to create a personalised install script and markdown guide,
+          follow the <strong style="color:var(--accent-cyan,#7dcfff);">Wiki</strong> for manual configuration,
+          or download the <strong style="color:var(--accent-purple,#bb9af7);">Arch Rusty Security Suite</strong> binaries to harden your system.
+          Hover (or tap) any labelled element for a detailed tooltip.
+        </p>
       </div>
 
-      <h3 style="color:var(--accent-red,#f7768e);margin:1.5rem 0 1rem 0;font-size:1.1rem;text-align:center;">
-        ⚖️ Legal Disclaimer, AI Notice &amp; Liability Waiver
-      </h3>
-
-      <div style="background:var(--bg-lighter,#24283b);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:0.83rem;line-height:1.6;">
-        <ol style="padding-left:1.2rem;margin:0;">
-          <li style="margin-bottom:0.6rem;">
-            <strong style="color:var(--heading-color,#c0caf5);">No Warranty.</strong>
-            All content in <em>tilas01/arch-guides-dynamic</em> — including every section of this website, all files, code, scripts, security tools, and releases in the repository — is provided
-            <strong>"AS IS"</strong> without warranty of any kind. Use at your own risk.
-          </li>
-          <li style="margin-bottom:0.6rem;">
-            <strong style="color:var(--heading-color,#c0caf5);">⚖️ AI-Assisted Content.</strong>
-            This project was developed with AI assistance. All output has been reviewed by
-            tilas01, but you <strong>MUST review all generated scripts</strong> before
-            executing them. Always test in a VM first.
-          </li>
-          <li style="margin-bottom:0.6rem;">
-            <strong style="color:var(--heading-color,#c0caf5);">Full Liability Waiver.</strong>
-            By continuing, you waive all liability claims against the authors for any
-            damage, data loss, or issues arising from use of any part of this website, repository,
-            scripts, or tools.
-          </li>
-          <li>
-            <strong style="color:var(--accent-cyan,#7dcfff);">🍪 Local Storage Used.</strong>
-            This site uses your browser's <code>localStorage</code> to persistently save your "Don't ask me again" preference and Generation History locally. We do not use tracking cookies.
-          </li>
-        </ol>
+      <!-- Legal Disclaimer -->
+      <div style="border-top:1px solid var(--border-color,#2d2d3f); padding-top:1.25rem; margin-bottom:1.5rem;">
+        <h3 style="color:var(--accent-red,#f7768e); margin-top:0; font-size:1rem;">⚠️ Legal Disclaimer &amp; Liability Waiver</h3>
+        <p style="color:var(--fg-color,#a9b1d6); line-height:1.75; font-size:0.83rem; margin:0;">
+          By clicking <strong>"I Agree"</strong>, you acknowledge and accept that all content, tools, scripts, binaries,
+          documentation, and source code provided on this website and within the GitHub repository
+          <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank"
+             style="color:var(--accent-blue,#7aa2f7);">tilas01/arch-guides-dynamic</a> —
+          including but not limited to the Arch Guides Dynamic Generator, the Arch Rusty Security Suite (ARSS),
+          Anti-Evil-Maid, Anti-Ducky, Kernel Watcher, LibreOTP, and Scarecrow —
+          are provided strictly <strong>"AS IS"</strong>, without warranty of any kind, express or implied.
+          The author (<strong>tilas01</strong>) expressly disclaims all liability for any direct, indirect,
+          incidental, consequential, or punitive damages of any nature, including but not limited to:
+          data loss or corruption; system damage, bricking, or unbootable states;
+          security breaches or exploits that are not mitigated;
+          loss of files due to DoD-grade disk wipe features (such as Panic Password, Anti-Evil-Maid triggers,
+          or secure erase routines); conflicts arising from proprietary software, firmware blobs, or third-party
+          packages; and any harm arising from following generated installation scripts or guides.
+          This software is intended for advanced Linux users who understand the risks involved.
+          You assume <strong>full and sole responsibility</strong> for all actions taken using these tools on your systems.
+          This project was developed with AI assistance and has been reviewed by tilas01 — you
+          <strong>must</strong> review all generated scripts before executing them.
+          No cookies, session tracking, or personally identifiable information is collected by this site.
+          Generation history is stored exclusively in your local browser session memory and is permanently
+          deleted when the tab is closed. Your use of this website and any associated resources
+          constitutes your binding agreement to these terms in full.
+        </p>
       </div>
 
-      <div style="margin-bottom:1.2rem;">
-        <label style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;margin-bottom:0.7rem;">
-          <input type="checkbox" id="combined-cb" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent-green,#9ece6a);">
-          I have read and accept all liability, waivers, and conditions above.
-        </label>
-        <label style="cursor:pointer;display:flex;align-items:flex-start;gap:8px;color:var(--accent-cyan,#7dcfff);font-size:0.82rem;">
-          <input type="checkbox" id="combined-skip" style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--accent-cyan,#7dcfff);">
-          Don't ask me again (Saves locally via browser storage)
-        </label>
+      <!-- Two Action Buttons -->
+      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        <button id="legal-agree-btn" class="btn" style="
+          background:var(--accent-red,#f7768e); color:#0d1117;
+          border:none; width:100%; padding:0.85rem;
+          font-size:1rem; font-weight:700; border-radius:8px;
+          cursor:pointer; letter-spacing:0.5px; transition:filter 0.2s;">
+          ✅ I Agree
+        </button>
+        <button id="legal-agree-persist-btn" class="btn" style="
+          background:var(--bg-darker,#16161e); color:var(--accent-red,#f7768e);
+          border:1px solid var(--accent-red,#f7768e); width:100%; padding:0.85rem;
+          font-size:0.9rem; font-weight:700; border-radius:8px;
+          cursor:pointer; letter-spacing:0.3px; transition:filter 0.2s;">
+          ✅ I Agree &amp; Don't Show Again
+        </button>
       </div>
-
-      <button id="combined-btn" disabled style="width:100%;padding:0.7rem;border:none;border-radius:8px;
-        font-family:'JetBrains Mono',monospace;font-size:0.95rem;font-weight:600;
-        background:var(--bg-lighter,#24283b);color:#555;cursor:not-allowed;transition:all 0.2s;">
-        Accept &amp; Continue →
-      </button>
+      <p style="color:#8b949e; font-size:0.72rem; text-align:center; margin:1rem 0 0;">
+        "Don't Show Again" stores a flag in your browser's <code>localStorage</code>. No personal data is saved.
+      </p>
     `;
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    const cb  = modal.querySelector('#combined-cb');
-    const skip = modal.querySelector('#combined-skip');
-    const btn  = modal.querySelector('#combined-btn');
-
-    cb.addEventListener('change', () => {
-      btn.disabled = !cb.checked;
-      btn.style.background  = cb.checked ? 'var(--accent-green,#9ece6a)' : 'var(--bg-lighter,#24283b)';
-      btn.style.color       = cb.checked ? '#1a1b26' : '#555';
-      btn.style.cursor      = cb.checked ? 'pointer' : 'not-allowed';
-    });
-
-    btn.addEventListener('click', () => {
-      if (!cb.checked) return;
-      if (skip.checked) {
-        localStorage.setItem(LEGAL_KEY, 'true');
-        localStorage.setItem(WELCOME_KEY, 'true');
-      }
+    modal.querySelector('#legal-agree-btn').addEventListener('click', () => {
       overlay.remove();
       document.body.style.overflow = '';
     });
+
+    modal.querySelector('#legal-agree-persist-btn').addEventListener('click', () => {
+      localStorage.setItem(LEGAL_KEY, 'true');
+      localStorage.setItem(WELCOME_KEY, 'true');
+      overlay.remove();
+      document.body.style.overflow = '';
+    });
+
+    // Hover effect
+    [modal.querySelector('#legal-agree-btn'), modal.querySelector('#legal-agree-persist-btn')]
+      .forEach(btn => {
+        btn.addEventListener('mouseenter', () => btn.style.filter = 'brightness(1.12)');
+        btn.addEventListener('mouseleave', () => btn.style.filter = '');
+      });
   }
 
-  // ─── Entry point ───────────────────────────────────────────────────────────
-  if (isMobile) {
-    if (!legalDone) {
-      // Show legal first; on accept show welcome (unless already seen)
-      showLegal(() => { if (!welcomeDone) showWelcome(); });
-    } else if (!welcomeDone) {
-      showWelcome();
-    }
-  } else {
-    // Desktop: combined view
-    if (!legalDone || !welcomeDone) {
-      showCombined();
-    }
-  }
+  // Show if not dismissed
+  showWaiver();
 });
