@@ -3,179 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arch Security Tools Releases</title>
+    <title>Arch Guides Dynamic - Releases</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .asset-btn { display:inline-block; padding:0.5rem 1rem; border-radius:6px; background:var(--accent-purple); color:var(--bg-darker); text-decoration:none; font-weight:bold; transition:all 0.2s; font-size:0.9rem; margin-top:0.5rem; }
+        .asset-btn:hover { transform:translateY(-2px); filter:brightness(1.1); }
+    </style>
 </head>
 <body>
-    <header style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
-        <a href="index.html" class="btn" style="width:auto; background:var(--bg-lighter); color:var(--accent-blue); padding:0.5rem 1rem;">&larr; Back to Generator</a>
-        <h2 style="color:var(--accent-purple); margin:0;">Arch Security Tools Releases</h2>
+    <header style="position:static; text-align:center; padding:2rem 1rem; border-bottom:1px solid var(--border-color); background:var(--bg-darker);">
+        <h1 style="margin:0; font-size:2.5rem;"><span style="color:var(--accent-purple);">📦 Release</span> Archive</h1>
+        <p style="color:#8b949e; margin-top:1rem;">Verified Binaries & Source Code for Arch Security Tools</p>
+        <div style="margin-top:1.5rem;">
+            <a href="index.html" class="btn" style="background:var(--bg-color); color:var(--fg-color); border:1px solid var(--border-color);">⬅️ Back to Generator</a>
+            <a href="wiki.html" class="btn" style="background:var(--bg-color); color:var(--fg-color); border:1px solid var(--border-color); margin-left:10px;">📖 Read the Wiki</a>
+        </div>
     </header>
 
-    <div class="layout-container">
-        <section style="width:100%; max-width:900px; margin: 0 auto;">
-            <div class="section" id="downloads">
-        <h2><span class="icon">📦</span> Arch Security Tools Releases</h2>
-        <p>All tools can be compiled directly via Cargo. Ensure you have the Rust toolchain installed (<code>pacman -S rust</code>).</p>
+    <main class="container" style="max-width:900px; padding:2rem;">
         
-        <div style="margin-bottom:1.5rem; padding:1rem; border-left:4px solid var(--accent-green); background:rgba(46, 160, 67, 0.1);">
-            <strong>✅ 100% Reproducible & GPG Signed</strong>
-            <p style="margin-top:0.5rem; font-size:0.95rem;">Every binary released in this repository is strictly <strong>100% Reproducible</strong>. Our GitHub Actions CI environment compiles the releases deterministically. Furthermore, every release is <strong>GPG Signed</strong> by the author to guarantee supply-chain integrity.</p>
-        </div>
-        
-        <div style="background:var(--bg-lighter); padding:1rem; border-radius:8px; border:1px solid var(--border-color); margin-bottom:1.5rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                <h3 style="margin:0;"><span class="icon">🚀</span> Live Release History</h3>
+        <div style="background:var(--bg-color); border:1px solid var(--border-color); border-radius:12px; padding:2rem; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+            
+            <div style="text-align:center; margin-bottom:2rem;">
+                <button class="btn" style="background:var(--accent-purple); color:white; font-size:1.1rem; padding:0.8rem 1.5rem; font-weight:bold;" onclick="window.fetchReleases(); this.style.display='none';">
+                    🔄 Fetch Live Assets & Releases (Uses GitHub API)
+                </button>
+            </div>
+            
+            <div id="release-container" style="display:flex; flex-direction:column; gap:1.5rem;">
+                <!-- Fallback Static Info -->
+                <div class="alert" style="width:100%; border:1px solid var(--accent-blue); background:rgba(122, 162, 247, 0.1);">
+                    <h3 style="margin-top:0; color:var(--accent-blue);">ℹ️ Static Release Mode</h3>
+                    <p style="color:var(--fg-color);">To conserve GitHub API rate limits (60 req/hr), live assets are not preloaded. Click the button above to dynamically fetch them.</p>
+                </div>
                 
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:1rem; margin-top:1rem;">
+                    <h2 style="color:var(--accent-green); margin:0;">Arch Guides Dynamic - Latest Stable</h2>
+                    <span style="background:var(--accent-cyan); color:var(--bg-darker); padding:0.3rem 0.8rem; border-radius:20px; font-weight:bold; font-size:0.9rem;">v1.0.0</span>
+                </div>
+                
+                <div style="color:var(--fg-color); font-size:0.95rem; line-height:1.6;">
+                    <h3>Official Public Release (v1.0.0)</h3>
+                    <ul>
+                        <li>Post-Quantum Cryptographic LUKS2 integration explicitly supported.</li>
+                        <li>Libre-OTP integrated for full PAM and boot authentication.</li>
+                        <li>Modular Rust Security Apps compiled securely.</li>
+                        <li>Dynamic Smart Logic with proprietary software enforcement blocking.</li>
+                    </ul>
+                </div>
+                
+                <h3 style="color:var(--accent-purple); border-top:1px solid var(--border-color); padding-top:1.5rem; margin-top:1rem;">Downloads & Assets</h3>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <a href="https://github.com/tilas01/arch-guides-dynamic/archive/refs/heads/main.zip" class="asset-btn" target="_blank">📦 Download Source Code (.zip)</a>
+                    <a href="https://github.com/tilas01/arch-guides-dynamic/releases" class="asset-btn" target="_blank" style="background:var(--bg-color);">🔗 View Releases on GitHub</a>
+                </div>
             </div>
-            <div id="live-releases-container">
-                <p style="color:#8b949e;"><em>Fetching live releases from GitHub...</em></p>
-            </div>
-            <div style="margin-top:1rem; text-align:center;">
-                <a id="github-releases-btn" href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="button" style="display:inline-block; padding:0.5rem 1rem; background:var(--accent-purple); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">View All Releases on GitHub</a>
-            </div>
-        </div>
 
-        <h3>Compile via Cargo</h3>
-        <h4>Full Security Suite</h4>
-        <code>cargo install arch-rusty-security-suite --git https://github.com/tilas01/arch-guides-dynamic</code>
-        <p>Installs the unified binary containing all modules.</p>
-
-        <h4>Standalone Modules</h4>
-        <ul>
-            
-            
-            
-            
-            
-        </ul>
-    </div>
-
-
-    <div class="section" id="firewall">
-        <h2><span class="icon">🛡️</span> UFW Firewall Profiles</h2>
-        <p>The Generator allows you to configure Uncomplicated Firewall (UFW) dynamically during installation.</p>
-        <ul>
-            <li><strong>Strict:</strong> Drops all inbound connections. Highly recommended for laptops and portable devices.</li>
-            <li><strong>Web Server:</strong> Allows only HTTP (80) and HTTPS (443). Drops all other inbound traffic.</li>
-            <li><strong>SSH Only:</strong> Allows port 22 (and 2222 if Endlessh is used). Recommended for remote headless servers.</li>
-        </ul>
-        <p>You can always modify these rules post-installation using <code>sudo ufw allow/deny &lt;port&gt;</code>.</p>
-    </div>
-
-    <div class="section" id="fail2ban">
-        <h2><span class="icon">🚫</span> Fail2ban Intrusion Prevention</h2>
-        <p>Fail2ban monitors system logs (like <code>/var/log/auth.log</code>) for automated attacks and brute-force attempts. When it detects multiple failed login attempts from a single IP address, it automatically updates firewall rules to ban that IP.</p>
-        <p>Our default configuration protects the SSH daemon by banning an IP for 1 hour after 3 failed password attempts.</p>
-    </div>
-
-    <div class="section" id="endlessh">
-        <h2><span class="icon">⏳</span> Endlessh (SSH Tarpit)</h2>
-        <p>Endlessh is an SSH tarpit that slowly sends an endless, random SSH banner to clients. This ties up automated SSH scanners and botnets for hours or even weeks, preventing them from attacking other hosts.</p>
-        <p>When you enable Endlessh in the generator, it binds to the default SSH port (22), and automatically moves your real SSH daemon to port <strong>2222</strong>. You must connect to your server using <code>ssh -p 2222 user@host</code>.</p>
-    </div>
-
-    <div class="section" id="yubikey">
-        <h2><span class="icon">🔑</span> Hardware Security Key (FIDO2 / U2F)</h2>
-        <p>The generator supports integrating physical FIDO2/U2F tokens (like YubiKeys) directly into the Linux PAM stack via <code>pam_u2f</code>.</p>
-        <div class="alert">
-            <strong>⚠️ WARNING: Firmware Lockout Risk</strong><br>
-            If you enroll a YubiKey, it will be <em>required</em> to log in, use SSH, or execute Sudo/Doas commands. If you lose your YubiKey and do not have a fallback, you will be permanently locked out of your system. It is highly recommended to enroll backup keys post-installation.
-        </div>
-        
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const container = document.getElementById('live-releases-container');
-            const fallbackHTML = `<div style="padding:1rem; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-lighter);">
-                <h4 style="color:var(--accent-cyan); margin-top:0;">Offline / Direct Fallback Downloads</h4>
-                <p>GitHub API rate limit exceeded or connection failed. You can directly install the tools via cargo:</p>
-                <ul>
-                    <li><code>cargo install arch-rusty-security-suite --git https://github.com/tilas01/arch-guides-dynamic</code></li>
+            <script>
+                window.fetchReleases = async function() {
+                    const container = document.getElementById('release-container');
                     
+                    const cacheKey = 'gh_releases_cache';
+                    const cached = sessionStorage.getItem(cacheKey);
                     
-                    
-                </ul>
-                <p><a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" style="color:var(--accent-purple); font-weight:bold;">Or click here to manually view releases on GitHub.</a></p>
-            </div>`;
+                    const renderReleases = (data) => {
+                        let htmlContent = '<h2 style="color:var(--accent-green); border-bottom:1px solid var(--border-color); padding-bottom:1rem;">Live GitHub Releases</h2><ul style="list-style:none; padding:0; margin:0;">';
+                        data.slice(0, 5).forEach(release => {
+                            const date = new Date(release.published_at).toLocaleDateString();
+                            let assetLinks = '';
+                            
+                            if (release.assets && release.assets.length > 0) {
+                                assetLinks = '<div style="margin-top:0.5rem; display:flex; flex-wrap:wrap; gap:0.5rem;">';
+                                release.assets.forEach(asset => {
+                                    assetLinks += `<a href="${asset.browser_download_url}" style="background:var(--bg-darker); padding:0.2rem 0.5rem; border-radius:4px; font-size:0.8rem; border:1px solid var(--border-color); color:var(--accent-blue); text-decoration:none;">⬇️ ${asset.name}</a>`;
+                                });
+                                assetLinks += '</div>';
+                            }
 
-            function renderWikiReleases(data) {
-                if (data.length === 0) {
-                    container.innerHTML = '<p style="color:#8b949e;">No releases published yet.</p>';
-                    return;
-                }
-
-                let htmlContent = '<ul style="list-style:none; padding:0; margin:0;">';
-                data.slice(0, 5).forEach(release => {
-                    const date = new Date(release.published_at).toLocaleDateString();
-                    let assetLinks = '';
-                    
-                    if (release.assets && release.assets.length > 0) {
-                        assetLinks = '<div style="margin-top:0.5rem; display:flex; flex-wrap:wrap; gap:0.5rem;">';
-                        release.assets.forEach(asset => {
-                            assetLinks += `<a href="${asset.browser_download_url}" style="background:var(--bg-darker); padding:0.2rem 0.5rem; border-radius:4px; font-size:0.8rem; border:1px solid var(--border-color); color:var(--accent-blue); text-decoration:none;">⬇️ ${asset.name}</a>`;
+                            htmlContent += `
+                                <li style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
+                                    <h3 style="margin:0 0 0.5rem 0; color:var(--accent-green);">
+                                        <a href="${release.html_url}" target="_blank" style="color:inherit; text-decoration:none;">${release.name || release.tag_name}</a>
+                                    </h3>
+                                    <div style="font-size:0.85rem; color:#8b949e; margin-bottom:0.5rem;">🕒 Published: ${date}</div>
+                                    <div style="font-size:0.9rem; line-height:1.4;">${release.body ? release.body.substring(0, 200) + '...' : 'No description'}</div>
+                                    ${assetLinks}
+                                </li>
+                            `;
                         });
-                        assetLinks += '</div>';
+                        htmlContent += '</ul>';
+                        container.innerHTML = htmlContent;
+                    };
+
+                    if (cached) {
+                        try {
+                            renderReleases(JSON.parse(cached));
+                            return;
+                        } catch(e) {}
                     }
 
-                    htmlContent += `
-                        <li style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
-                            <h3 style="margin:0 0 0.5rem 0; color:var(--accent-green);">
-                                <a href="${release.html_url}" target="_blank" style="color:inherit; text-decoration:none;">${release.name || release.tag_name}</a>
-                            </h3>
-                            <div style="font-size:0.85rem; color:#8b949e; margin-bottom:0.5rem;">🕒 Published: ${date}</div>
-                            <div style="font-size:0.9rem; line-height:1.4;">${release.body ? release.body.substring(0, 200) + '...' : 'No description'}</div>
-                            ${assetLinks}
-                        </li>
-                    `;
-                });
-                htmlContent += '</ul>';
-                container.innerHTML = htmlContent;
-            }
-
-            const cacheKey = 'gh_releases_cache';
-            const cached = sessionStorage.getItem(cacheKey);
-            if (cached) {
-                try {
-                    renderWikiReleases(JSON.parse(cached));
-                    return;
-                } catch(e) {}
-            }
-
-            try {
-                const response = await fetch('https://api.github.com/repos/tilas01/arch-guides-dynamic/releases');
-                
-                if (!response.ok) {
-                    container.innerHTML = fallbackHTML;
-                    return;
-                }
-                const data = await response.json();
-                sessionStorage.setItem(cacheKey, JSON.stringify(data));
-                renderWikiReleases(data);
-            } catch (error) {
-                container.innerHTML = fallbackHTML;
-                console.error("Failed to load releases:", error);
-            }
-        });
-    </script>
-        
-    <div style="background:var(--bg-darker); border:1px solid var(--accent-orange); border-radius:12px; padding:2rem; margin-bottom:2.5rem; margin-top:2rem;">
-        <h3 style="color:var(--accent-orange); margin-top:0;">🔒 Integrity Verification (GPG & Hashes)</h3>
-        <p style="color:var(--fg-color); font-size:0.95rem;">All pre-compiled standalone security tools are cryptographically signed using GPG and hashed to ensure build integrity. The public GPG key (<code>tilas01.asc</code>) is available in the root of the repository.</p>
-        
-        <div style="background:var(--bg-color); border:1px solid var(--border-color); padding:1rem; border-radius:8px; margin-top:1rem;">
-            <p style="margin-top:0; font-weight:bold; color:var(--accent-cyan);">1. Import the public key:</p>
-            <pre style="background:var(--bg-darker); padding:0.5rem; border-radius:4px; color:var(--accent-green); overflow-x:auto;">gpg --import tilas01.asc</pre>
-            
-            <p style="font-weight:bold; color:var(--accent-cyan); margin-top:1rem;">2. Verify the GPG signature:</p>
-            <pre style="background:var(--bg-darker); padding:0.5rem; border-radius:4px; color:var(--accent-green); overflow-x:auto;">gpg --verify tool_name.sig tool_name</pre>
-            
-            <p style="font-weight:bold; color:var(--accent-cyan); margin-top:1rem;">3. Verify the SHA-512 hash:</p>
-            <pre style="background:var(--bg-darker); padding:0.5rem; border-radius:4px; color:var(--accent-green); overflow-x:auto;">sha512sum -c tool_name.sha512</pre>
+                    try {
+                        container.innerHTML = '<p style="color:var(--accent-cyan);">Fetching live releases from GitHub API...</p>';
+                        const response = await fetch('https://api.github.com/repos/tilas01/arch-guides-dynamic/releases');
+                        
+                        if (!response.ok) {
+                            throw new Error('API Rate Limited or Not Found');
+                        }
+                        const data = await response.json();
+                        if (data && data.length > 0) {
+                            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                            renderReleases(data);
+                        } else {
+                            throw new Error('No releases found.');
+                        }
+                    } catch (error) {
+                        const limitMessage = error.message.includes('API Rate Limited') 
+                            ? 'GitHub API Rate Limit Exceeded (60 requests/hr).' 
+                            : 'Unable to fetch the latest releases dynamically.';
+                            
+                        container.innerHTML = `
+                            <div class="alert error" style="width:100%; border:1px solid var(--accent-red); background:rgba(247, 118, 142, 0.1);">
+                                <h3 style="margin-top:0; color:var(--accent-red);">⚠️ ${limitMessage}</h3>
+                                <p style="color:var(--fg-color);">Falling back to static mode. Visit the <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" style="color:var(--accent-blue);">GitHub repository directly</a> to view downloads.</p>
+                            </div>
+                        `;
+                        console.error("Failed to load releases:", error);
+                    }
+                };
+            </script>
         </div>
-    </div>
-</section>
-    </div>
+        
+        <div style="background:var(--bg-darker); border:1px solid var(--accent-orange); border-radius:12px; padding:2rem; margin-bottom:2.5rem; margin-top:2rem;">
+            <h3 style="color:var(--accent-orange); margin-top:0;">🔒 Integrity Verification (GPG & Hashes)</h3>
+            <p>We mandate strict verification of all downloaded binaries before execution.</p>
+            <ol style="line-height:1.6; margin-bottom:1.5rem;">
+                <li>Ensure you have both the `.sha256` hash and `.asc` signature files next to the binary.</li>
+                <li>Download the official integrity verifier script.</li>
+                <li>Run it directly against your target binary.</li>
+            </ol>
+            <pre style="background:var(--bg-color); padding:1rem; border-radius:6px; overflow-x:auto; border:1px solid var(--border-color);"><code style="color:var(--accent-green);">wget https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/verify-integrity.sh
+chmod +x verify-integrity.sh
+./verify-integrity.sh arch-rusty-security-suite-linux-x86_64</code></pre>
+            <div class="alert" style="background:rgba(255,158,100,0.1); border-color:var(--accent-orange); margin-top:1.5rem;">
+                <strong>Key Details:</strong> The verifier natively pulls `https://github.com/tilas01.keys` to authenticate signatures.
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Arch Guides Dynamic. Built with strictly libre principles.</p>
+    </footer>
 </body>
 </html>
