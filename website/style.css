@@ -810,20 +810,25 @@ input:checked + .slider:before {
 
 /* ─── App Card Layout (Compact & Neat) ─── */
 
-\\\.app-card {
+\\\\.app-card {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem; /* Tight gap */
     padding: 0.4rem 0;
     border: none;
     background: transparent;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     width: 100%;
     box-sizing: border-box;
     text-align: left;
+    justify-content: flex-start; /* Pack to the left */
 }
+.app-card input[type="checkbox"] { margin: 0; }
+.app-card .app-icon { margin: 0; font-size: 1.1rem; }
+.app-card .config-btn { margin-left: 0.2rem; } /* Tight gap between text and gear */
+
 
 
 .app-card:hover { 
