@@ -3263,3 +3263,30 @@ function lockAllOtherSec(btn) {
 // Modify updateOutput to include disabled inputs if they are checked
 // Since native form serialization skips disabled inputs, we must ensure our script generator logic picks them up.
 // Actually, our JS generator uses `document.querySelectorAll('input[name="post_apps"]:checked')` which DOES select disabled inputs!
+
+
+// Advanced Setup Toggle Logic
+function toggleAdvancedSetup() {
+    const isAdvanced = document.getElementById('advanced-setup-toggle').checked;
+    const configBtns = document.querySelectorAll('.config-btn');
+    
+    configBtns.forEach(btn => {
+        btn.style.display = isAdvanced ? 'inline-flex' : 'none';
+    });
+    
+    // Clear custom app configs if disabled so they fall back to default
+    if (!isAdvanced) {
+        appConfigs = {};
+    }
+    
+    updateOutput();
+}
+
+// Popup Blocker Detection for Wiki
+function openWiki(e) {
+    if (e) e.preventDefault();
+    const newWin = window.open('wiki.html', '_blank');
+    if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
+        alert("⚠️ Your browser blocked the pop-up! Please allow pop-ups for this site to view the Wiki, or manually click the Wiki link at the top of the page.");
+    }
+}

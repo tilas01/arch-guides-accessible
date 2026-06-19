@@ -810,11 +810,11 @@ input:checked + .slider:before {
 
 /* ─── App Card Layout (Compact & Neat) ─── */
 
-\\\\.app-card {
+\\\\\.app-card {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    gap: 0.5rem; /* Tight gap */
+    align-items: flex-start; /* Align to top instead of center */
+    gap: 0.5rem;
     padding: 0.4rem 0;
     border: none;
     background: transparent;
@@ -823,8 +823,12 @@ input:checked + .slider:before {
     width: 100%;
     box-sizing: border-box;
     text-align: left;
-    justify-content: flex-start; /* Pack to the left */
+    justify-content: flex-start;
 }
+.app-card input[type="checkbox"] { margin: 0; margin-top: 0.2rem; } /* Align tick with text */
+.app-card .app-icon { margin: 0; margin-top: 0.1rem; font-size: 1.1rem; }
+.app-card .config-btn { margin-left: 0.2rem; margin-top: -0.1rem; }
+
 .app-card input[type="checkbox"] { margin: 0; }
 .app-card .app-icon { margin: 0; font-size: 1.1rem; }
 .app-card .config-btn { margin-left: 0.2rem; } /* Tight gap between text and gear */
