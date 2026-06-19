@@ -1,4 +1,72 @@
 
+// ─── Modal Configuration State ───
+let currentConfigAppId = null;
+let currentConfigSaved = false;
+
+// Override close modal button to act as Discard
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('close-modal-btn');
+    const saveBtn = document.getElementById('save-modal-btn');
+    const modal = document.getElementById('app-config-modal');
+    
+    if (closeBtn) {
+        // Remove old listeners by cloning
+        const newCloseBtn = closeBtn.cloneNode(true);
+        newCloseBtn.innerHTML = '❌ Discard';
+        newCloseBtn.style.fontSize = '0.9rem';
+        newCloseBtn.style.padding = '0.4rem 0.8rem';
+        newCloseBtn.style.background = 'var(--bg-lighter)';
+        newCloseBtn.style.border = '1px solid var(--accent-red)';
+        newCloseBtn.style.color = 'var(--accent-red)';
+        newCloseBtn.style.borderRadius = '6px';
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        
+        newCloseBtn.addEventListener('click', () => {
+            currentConfigSaved = false;
+            closeAppConfigModal();
+        });
+    }
+    
+    if (saveBtn) {
+        const newSaveBtn = saveBtn.cloneNode(true);
+        newSaveBtn.innerHTML = '✅ Save Configuration';
+        newSaveBtn.style.background = 'var(--accent-green)';
+        newSaveBtn.style.color = 'var(--bg-darker)';
+        newSaveBtn.style.fontWeight = 'bold';
+        saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+        
+        newSaveBtn.addEventListener('click', () => {
+            currentConfigSaved = true;
+            // The existing saveAppConfig logic will be called, but we also need to close it
+            saveAppConfig(); 
+            closeAppConfigModal();
+        });
+    }
+});
+
+// Update the closeAppConfigModal function
+window.closeAppConfigModal = function() {
+    const modal = document.getElementById('app-config-modal');
+    if (modal) modal.style.display = 'none';
+    
+    // If not saved, uncheck the app!
+    if (!currentConfigSaved && currentConfigAppId) {
+        const cb = document.querySelector(`input[value="${currentConfigAppId}"]`);
+        if (cb && cb.checked) {
+            cb.checked = false;
+            // Mark as unconfigured
+            cb.setAttribute('data-configured', 'false');
+            alert(`Configuration for ${currentConfigAppId} discarded. App disabled.`);
+        }
+    } else if (currentConfigSaved && currentConfigAppId) {
+        const cb = document.querySelector(`input[value="${currentConfigAppId}"]`);
+        if (cb) cb.setAttribute('data-configured', 'true');
+    }
+    
+    currentConfigAppId = null;
+};
+
+
 // ─── Save to sessionStorage & wire Live Editor teleport ─────────────────────
 window.saveToliveEditor = function(scriptContent, markdownContent) {
     if (scriptContent) sessionStorage.setItem('generated_script', scriptContent);
@@ -2368,6 +2436,9 @@ document.querySelectorAll('input[name="post_apps"]').forEach(checkbox => {
 // APP CONFIGURER OVERLAY LOGIC
 // ==========================================
 function openAppConfigModal(appId) {
+    currentConfigAppId = appId;
+    currentConfigSaved = false;
+
     // Check for Phase 4 dedicated modals
     const dedicatedModal = document.getElementById('modal-' + appId);
     if (dedicatedModal) {
