@@ -75,7 +75,7 @@
     <!-- History Modal -->
     <div id="history-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10000; background:var(--bg-darker); border:2px solid var(--accent-purple); border-radius:16px; padding:1.5rem; max-width:500px; width:90%; max-height:70vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.8);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-            <h3 style="color:var(--accent-purple); margin:0;">🕓 Generation History</h3>
+            <h3 style="color:var(--accent-blue); margin:0;">🕓 Generation History</h3>
             <button class="btn" style="width:auto; padding:0.3rem 0.8rem; font-size:0.85rem; background:var(--accent-red);" onclick="toggleHistoryModal()">✕ Close</button>
         </div>
         <div id="history-panel"></div>
@@ -158,7 +158,7 @@
         
         <!-- Base Layer -->
         <div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
-            <strong style="color:var(--accent-purple);">Layer 1: Base Disk Encryption</strong>
+            <strong style="color:var(--accent-blue);">Layer 1: Base Disk Encryption</strong>
             <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="partitioning" style="margin-top:0.5rem; width:100%;">
                 <option value="" disabled selected hidden>No Selection Provided</option>
                 <option value="unencrypted">Unencrypted (No Security)</option>
@@ -744,7 +744,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
     
     
         <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:1rem; margin-top:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem;">
-            <h3 class="other-sec-header nav-tooltip" style="margin:0; color:var(--accent-purple); font-size:1.1rem; cursor:help;" data-title="Other Security Tools" data-desc="Various open-source security tools.">🔒 Other Security Tools</h3>
+            <h3 class="other-sec-header nav-tooltip" style="margin:0; color:var(--accent-blue); font-size:1.1rem; cursor:help;" data-title="Other Security Tools" data-desc="Various open-source security tools.">🔒 Other Security Tools</h3>
             <button type="button" class="btn other-sec-enable-btn" style="background:var(--accent-purple); color:var(--bg-dark); font-size:0.8rem; padding:0.4rem 1rem;" onclick="enableAllOtherSec()">✅ Enable All</button>
         </div>
         
@@ -896,7 +896,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 <!-- Static Markdown Guide -->
     <div style="margin-bottom:2.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-darker); padding:1rem; border-top-left-radius:8px; border-top-right-radius:8px; border:1px solid var(--border-color); border-bottom:none;">
-            <h3 style="color:var(--accent-purple); margin:0;">📄 Markdown Guide (.md)</h3>
+            <h3 style="color:var(--accent-blue); margin:0;">📄 Markdown Guide (.md)</h3>
             <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-md', 'arch_guide.md')">Download</button>
         </div>
         <pre id="static-md" style="width:100%; max-height:500px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:2rem; border:1px solid var(--border-color); border-bottom-left-radius:8px; border-bottom-right-radius:8px; overflow-y:auto; overflow-x:auto;"><code class="language-markdown"></code></pre>
@@ -925,7 +925,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
 <div id="history-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999999; justify-content:center; align-items:center;">
     <div style="background:var(--bg-darker); border:1px solid var(--accent-purple); border-radius:12px; width:90%; max-width:600px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
         <div style="padding:1.5rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0; color:var(--accent-purple);">🕰️ Generation History</h3>
+            <h3 style="margin:0; color:var(--accent-blue);">🕰️ Generation History</h3>
             <button onclick="document.getElementById('history-modal').style.display='none'" style="background:transparent; border:none; color:var(--accent-red); font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
         <div id="history-list" style="padding:1.5rem; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:1rem;">
