@@ -734,6 +734,23 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
         
         <span class="app-icon">📱</span> Notifications <span class="app-desc">Webhooks</span>
     </label>
+
+        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:1rem; margin-top:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem;">
+            <h3 class="my-tools-header nav-tooltip" style="margin:0; color:var(--accent-cyan); font-size:1.2rem; cursor:help;" data-title="tilas01's Security Suite" data-desc="Advanced security tools developed by tilas01.">🦀 tilas01's Security Suite</h3>
+            <button type="button" class="btn my-tools-enable-btn" style="background:var(--accent-cyan); color:var(--bg-dark); font-size:0.8rem; padding:0.4rem 1rem;" onclick="enableAllMyTools()">✅ Enable All</button>
+        </div>
+        
+        
+    
+    
+        <div style="grid-column: 1 / -1; display:flex; align-items:center; gap:1rem; margin-top:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem;">
+            <h3 class="other-sec-header nav-tooltip" style="margin:0; color:var(--accent-purple); font-size:1.1rem; cursor:help;" data-title="Other Security Tools" data-desc="Various open-source security tools.">🔒 Other Security Tools</h3>
+            <button type="button" class="btn other-sec-enable-btn" style="background:var(--accent-purple); color:var(--bg-dark); font-size:0.8rem; padding:0.4rem 1rem;" onclick="enableAllOtherSec()">✅ Enable All</button>
+        </div>
+        
+        
+    
+    
 </div>
                     </div>
     
@@ -876,99 +893,7 @@ Injects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw 
             </div>
         </div>
 
-<div class="form-group form-step my-tools-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-        <h3 class="my-tools-header nav-tooltip" style="margin:0; color:var(--accent-cyan); font-size:1.2rem; cursor:help;" data-title="tilas01's Security Suite" data-desc="Advanced security tools developed by tilas01.">🦀 tilas01's Security Suite</h3>
-        <button type="button" class="btn my-tools-enable-btn" style="background:var(--accent-cyan); color:var(--bg-dark); font-size:0.8rem; padding:0.4rem 1rem;" onclick="enableAllMyTools()">✅ Enable All</button>
-    </div>
-    <div class="app-grid-container">
-        
-    </div>
-</div>
-
-
-<div class="form-group form-step other-sec-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-        <h3 class="other-sec-header nav-tooltip" style="margin:0; color:var(--accent-purple); font-size:1.1rem; cursor:help;" data-title="Other Security Tools" data-desc="Various open-source security tools.">🔒 Other Security Tools</h3>
-        <button type="button" class="btn other-sec-enable-btn" style="background:var(--accent-purple); color:var(--bg-dark); font-size:0.8rem; padding:0.4rem 1rem;" onclick="enableAllOtherSec()">✅ Enable All</button>
-    </div>
-    <div class="app-grid-container">
-        
-    </div>
-</div>
-
-
-        
-        <button class="btn nav-tooltip" data-title="Confirm & Save" data-desc="Finalizes your edits, pushes them to History, and moves to the Static Output view." style="background:var(--accent-green); color:var(--bg-darker); font-weight:bold; padding:0.5rem 1.2rem;" onclick="confirmAndSaveLiveEditor()">
-            ✅ Confirm & Save
-        </button>
-    </div>
-    
-    <div id="live-editor-content" style="display:flex; flex-direction:column; gap:1.5rem;">
-        <!-- Markdown Guide -->
-        <div>
-            <h4 style="color:var(--accent-purple); margin-bottom:0.5rem;">Markdown Guide (.md)</h4>
-            <textarea id="live-editor-textarea-md" class="raw-edit-mode" style="width:100%; min-height:200px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; resize:vertical;"></textarea>
-            <pre id="live-editor-preview-md" class="syntax-preview-mode" style="display:none; width:100%; min-height:200px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; overflow-x:auto;"><code class="language-markdown"></code></pre>
-        </div>
-        
-        <!-- Install Script -->
-        <div>
-            <h4 style="color:var(--accent-cyan); margin-bottom:0.5rem;" id="title-install-sh">Install Script (.sh)</h4>
-            <textarea id="live-editor-textarea-sh" class="raw-edit-mode" style="width:100%; min-height:200px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; resize:vertical;"></textarea>
-            <pre id="live-editor-preview-sh" class="syntax-preview-mode" style="display:none; width:100%; min-height:200px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; overflow-x:auto;"><code class="language-bash"></code></pre>
-        </div>
-
-        <!-- Post Install Script -->
-        <div id="live-editor-post-sh-container">
-            <h4 style="color:var(--accent-blue); margin-bottom:0.5rem;">Post-Install Script (.sh)</h4>
-            <textarea id="live-editor-textarea-post" class="raw-edit-mode" style="width:100%; min-height:150px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; resize:vertical;"></textarea>
-            <pre id="live-editor-preview-post" class="syntax-preview-mode" style="display:none; width:100%; min-height:150px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:1rem; border:1px solid var(--border-color); border-radius:8px; overflow-x:auto;"><code class="language-bash"></code></pre>
-        </div>
-    </div>
-</section>
-            </section>
-
-            </section>
-        </div>
-
-
-        <!-- ── OUTPUT PAGE (shown instead of generator) ── -->
-        <section id="output-section" style="display:none; margin-top:2rem;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem;">
-        <h2 style="color:var(--accent-green); margin:0;">✅ Finalized Output</h2>
-        <div style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; align-items:center; width:100%;">
-            <button class="btn nav-tooltip" data-title="Download All" data-desc="Downloads a .zip containing the MD guide, SH scripts, and your .sc configuration." style="flex:1; min-width:150px; max-width:250px; background:var(--accent-purple); color:var(--bg-darker); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="downloadAllOutput()">
-                📦 Download All
-            </button>
-            <button class="btn nav-tooltip" data-title="Deploy Configuration" data-desc="Right-click or click this button to instantly execute the deployment." style="flex:1; min-width:150px; max-width:250px; background:var(--accent-green); color:var(--bg-darker); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="deployOutput()" oncontextmenu="deployOutput(); return false;">
-                🚀 Deploy
-            </button>
-            <button class="btn nav-tooltip" data-title="Back to Generator" data-desc="Return to the main configuration menu." style="flex:1; min-width:150px; max-width:250px; background:var(--bg-lighter); color:var(--accent-blue); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="location.reload()">
-                🔄 Start Over
-            </button>
-        </div>
-    </div>
-
-    <!-- SSH Deployment Instructions -->
-    <div style="background:var(--bg-darker); border:1px solid var(--accent-orange); border-radius:8px; padding:1.5rem; margin-bottom:2.5rem;">
-        <h3 style="color:var(--accent-orange); margin-top:0; margin-bottom:1rem;">🚀 Remote SSH Deployment</h3>
-        
-        <div style="margin-bottom:1.5rem;">
-            <p style="color:var(--fg-color); margin-top:0; font-size:0.9rem;"><strong>Step 1:</strong> On the target Arch machine (Live ISO), start the SSH service and set a temporary root password:</p>
-            <pre style="background:var(--bg-color); color:var(--fg-color); padding:0.8rem; border-radius:6px; border:1px solid var(--border-color); font-family:var(--font-mono); font-size:0.85rem; overflow-x:auto;">systemctl start sshd && passwd</pre>
-        </div>
-
-        <div>
-            <p style="color:var(--fg-color); margin-top:0; font-size:0.9rem;"><strong>Step 2:</strong> On your local machine, run the following one-liner(s) to transfer and execute the script. Replace <code>&lt;TARGET-IP&gt;</code> with the IP address of the target machine (use <code>ip a</code> to find it):</p>
-            <div id="ssh-commands-container" style="display:flex; flex-direction:column; gap:0.8rem;">
-                <!-- Dynamically injected by JS -->
-            </div>
-        </div>
-    </div>
-
-    
-    <!-- Static Markdown Guide -->
+<!-- Static Markdown Guide -->
     <div style="margin-bottom:2.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-darker); padding:1rem; border-top-left-radius:8px; border-top-right-radius:8px; border:1px solid var(--border-color); border-bottom:none;">
             <h3 style="color:var(--accent-purple); margin:0;">📄 Markdown Guide (.md)</h3>
