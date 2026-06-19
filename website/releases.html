@@ -14,6 +14,11 @@
 
     <div class="layout-container">
         <section style="width:100%; max-width:900px; margin: 0 auto;">
+            <div style="text-align:center; margin-bottom:2rem;">
+                <button class="btn" style="background:var(--accent-purple); color:white; font-size:1.1rem; padding:0.8rem 1.5rem; font-weight:bold;" onclick="window.fetchReleases(); this.style.display='none';">
+                    🔄 Fetch Live Assets & Releases (Uses GitHub API)
+                </button>
+            </div>
             <div id="release-container" style="background:var(--bg-darker); border:1px solid var(--border-color); border-radius:12px; padding:2rem; min-height: 400px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                 <div class="spinner" id="loading-spinner" style="border: 4px solid var(--bg-lighter); border-top: 4px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
                 <p id="loading-text" style="color:var(--accent-cyan); margin-top:1rem; font-family:var(--font-mono);">Fetching latest releases from GitHub API...</p>
@@ -45,7 +50,7 @@
             </style>
 
             <script>
-                document.addEventListener('DOMContentLoaded', async () => {
+                window.fetchReleases = async function() {
                     const container = document.getElementById('release-container');
                     try {
                         const response = await fetch('https://api.github.com/repos/tilas01/arch_guides_all_versions/releases/latest');
@@ -68,7 +73,7 @@
                             .replace(/`([^`]+)`/g, '<code>$1</code>')
                             .replace(/\n/g, '<br>');
 
-                        container.style.display = 'block';
+                        container.style.display = 'flex';
                         
                         const limitMessage = e.message.includes('API Rate Limited') 
                             ? 'GitHub API Rate Limit Exceeded (60 requests/hr for unauthenticated users).' 
