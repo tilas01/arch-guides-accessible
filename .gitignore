@@ -26,6 +26,15 @@ js_snippet_2.txt
 standalone.txt
 patch_cookies.py
 
+# GPG keyring / private signing material — MUST NEVER be committed.
+# The public key is distributed as tilas01.asc in the repo root; that is the
+# only key material that belongs in version control.
+.keys/
+*.key
+*.gpg
+secring.*
+private-keys-v1.d/
+
 # Misc
 *.pyc
 __pycache__/

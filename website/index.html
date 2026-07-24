@@ -61,9 +61,7 @@
             <span class="nav-sep">|</span>
             <a href="wiki.html#security-suite" class="nav-link nav-tooltip security-suite-nav" 
                data-title="🦀 Security Suite" 
-               data-desc="tilas01's custom Rust tools. Individual or Full Suite. Reproducible builds. Left-click: View Releases. Right-click: View Wiki."
-               onclick="window.open('releases.html', '_blank'); return false;"
-               oncontextmenu="window.location.href='wiki.html#security-suite'; return false;"
+               data-desc="tilas01's custom Rust tools. Individual or Full Suite. Reproducible builds. Static explanation and releases."
                >🦀 Security Suite</a>
             <span class="nav-sep">|</span>
             <a href="wiki.html#cheatsheets" class="nav-link nav-tooltip" data-title="Cheatsheets" data-desc="Quick-reference keyboard shortcuts and command cheatsheets for Arch Linux, Dusky OS, DWM, GNOME, KDE, and Xorg vs Wayland.">📋 Cheatsheets</a>
@@ -882,7 +880,59 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         
 
                     <!-- ─── Other Security Tools (checkboxes) ─── -->
-                    
+                    <div class="my-tools-box">
+                        <div class="my-tools-header">
+                            <span class="my-tools-title">🦀 tilas01's Security Suite (Rust)</span>
+                            <button type="button" class="my-tools-enable-btn" onclick="enableAllTilas()">✅ Enable All Suite</button>
+                        </div>
+                        <div class="app-grid-container">
+                            <label class="app-card tilas-tool" oncontextmenu="window.open('wiki.html#security-suite', '_blank'); return false;">
+                                <input type="checkbox" name="post_apps" value="libre-otp">
+                                <span class="app-icon">🔐</span> <a href="wiki.html#security-suite" target="_blank">Libre OTP</a> <span class="app-desc">Double OTP</span>
+                            </label>
+                            <label class="app-card tilas-tool" oncontextmenu="window.open('wiki.html#security-suite', '_blank'); return false;">
+                                <input type="checkbox" name="post_apps" value="anti-ducky">
+                                <span class="app-icon">🦆</span> <a href="wiki.html#security-suite" target="_blank">Anti-Ducky</a> <span class="app-desc">USB Blocker</span>
+                            </label>
+                            <label class="app-card tilas-tool" oncontextmenu="window.open('wiki.html#security-suite', '_blank'); return false;">
+                                <input type="checkbox" name="post_apps" value="anti-evil-maid">
+                                <span class="app-icon">🧹</span> <a href="wiki.html#security-suite" target="_blank">Anti Evil Maid</a> <span class="app-desc">Boot verify</span>
+                            </label>
+                            <label class="app-card tilas-tool" oncontextmenu="window.open('wiki.html#security-suite', '_blank'); return false;">
+                                <input type="checkbox" name="post_apps" value="kernel-watcher">
+                                <span class="app-icon">👁️</span> <a href="wiki.html#security-suite" target="_blank">Kernel Watcher</a> <span class="app-desc">Ring 0 Mon</span>
+                            </label>
+                            <label class="app-card tilas-tool" oncontextmenu="window.open('wiki.html#security-suite', '_blank'); return false;">
+                                <input type="checkbox" name="post_apps" value="scarecrow">
+                                <span class="app-icon">🦅</span> <a href="wiki.html#security-suite" target="_blank">Scarecrow</a> <span class="app-desc">Canary Tokens</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="other-sec-box">
+                        <div class="other-sec-header">
+                            <span class="other-sec-title">🛡️ Other Security Tools</span>
+                            <button type="button" class="other-sec-enable-btn" onclick="enableAllOtherSec()">✅ Enable All</button>
+                        </div>
+                        <div class="app-grid-container">
+                            <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#other-sec', '_blank'); return false;">
+                                <input type="checkbox" name="other_sec_tools" value="apparmor">
+                                <span class="app-icon">🛡️</span> AppArmor <span class="app-desc">MAC System</span>
+                            </label>
+                            <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#other-sec', '_blank'); return false;">
+                                <input type="checkbox" name="other_sec_tools" value="fail2ban">
+                                <span class="app-icon">🚫</span> fail2ban <span class="app-desc">Intrusion Prev</span>
+                            </label>
+                            <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#other-sec', '_blank'); return false;">
+                                <input type="checkbox" name="other_sec_tools" value="ufw">
+                                <span class="app-icon">🧱</span> UFW <span class="app-desc">Firewall</span>
+                            </label>
+                            <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#other-sec', '_blank'); return false;">
+                                <input type="checkbox" name="other_sec_tools" value="lynis">
+                                <span class="app-icon">🔍</span> Lynis <span class="app-desc">Security Audit</span>
+                            </label>
+                        </div>
+                    </div>
 
 </div>
 </div>
@@ -892,15 +942,8 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
                     </div>
                     <div style="display:flex; justify-content:center; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap; position:sticky; bottom:0; padding:1rem; background:var(--bg-darker); border-top:1px solid var(--accent-cyan); z-index:100; border-radius:8px; width:100%;">
-                        <div class="btn-container">
-                    <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above." style="flex:1; min-width:200px; max-width:350px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
-                        
-                        <div style="display:flex; align-items:center; gap:8px; justify-content:center; flex:1; min-width:200px; max-width:350px;" class="nav-tooltip" data-title="Apply Selection Changes Live" data-desc="Automatically regenerates the guide when you change a setting and routes you to the live editor output page.">
-                            <span style="font-size:0.9rem; color:var(--accent-cyan); font-weight:bold;">Apply Selection Changes Live:</span>
-                            <label class="switch">
-                                <input type="checkbox" id="live_generation_toggle">
-                                <span class="slider"></span>
-                            </label>
+                        <div class="btn-container" style="width: 100%; justify-content: center;">
+                            <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above. Will open in the Live Editor." style="width:100%; max-width:500px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
                         </div>
                     </div>
                 </form>
@@ -911,7 +954,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
         <div style="display:flex; align-items:center; gap:15px;">
             
               <label class="btn nav-tooltip" data-title="Upload Raw Script/Guide" data-desc="Upload a previously generated .sh or .md file to view and edit." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--accent-purple); color:var(--bg-color); font-size:0.85rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem; margin:0;">
-                  ðŸ“¤ Upload .sh / .md
+                  📤 Upload .sh / .md
                   <input type="file" id="upload-source-input" accept=".sh,.md" style="display:none">
               </label>
 

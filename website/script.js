@@ -92,40 +92,12 @@ window.injectLiveEditorLink = function() {
 };
 
 
-// ─── Security Suite Toggle Functions ────────────────────────────────────────
-
-// tilas01 My Tools — toggle all on, allow individual toggle after
-let myToolsEnabled = false;
-window.enableAllMyTools = function() {
-    myToolsEnabled = !myToolsEnabled;
-    const btn = document.getElementById('my-tools-enable-btn');
-    const checkboxes = document.querySelectorAll('#my-tools-grid .tilas-sec-app');
-    checkboxes.forEach(cb => {
-        cb.checked = myToolsEnabled;
-        cb.dispatchEvent(new Event('change'));
-    });
-    if (btn) {
-        btn.textContent = myToolsEnabled ? '✅ Enabled (Click to Disable All)' : '✅ Enable All (Recommended)';
-        btn.style.background = myToolsEnabled
-            ? 'linear-gradient(135deg, var(--accent-green), var(--accent-cyan))'
-            : 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))';
-    }
-};
-
-// Other Security Tools — toggle all on, allow individual toggle after
-let otherSecEnabled = false;
-window.enableAllOtherSec = function() {
-    otherSecEnabled = !otherSecEnabled;
-    const btn = document.querySelector('.other-sec-enable-btn');
-    const checkboxes = document.querySelectorAll('#other-security-grid input[type="checkbox"]');
-    checkboxes.forEach(cb => { cb.checked = otherSecEnabled; });
-    if (btn) {
-        btn.textContent = otherSecEnabled ? '✅ Enabled (Click to Disable All)' : '✅ Enable All';
-        btn.style.background = otherSecEnabled
-            ? 'linear-gradient(135deg, var(--accent-green), var(--accent-orange))'
-            : 'linear-gradient(135deg, var(--accent-orange), var(--accent-red))';
-    }
-};
+// NOTE: the group select-all helpers live near the bottom of this file
+// (enableAllTilas / enableAllOtherSec). Earlier duplicates of them used to sit
+// here and, because `window.x = ...` runs after function hoisting, they
+// silently overwrote the working versions with ones that queried grid IDs
+// (#my-tools-grid, #other-security-grid) that do not exist in the markup —
+// which is why both "Enable All" buttons did nothing.
 
 // =============================================
 // Arch Guides Dynamic - Main Script
@@ -135,12 +107,6 @@ window.enableAllOtherSec = function() {
 // ---- Form Initialization & "No Selection" Injection ----
 document.addEventListener('DOMContentLoaded', () => {
 
-// ---- Full Suite Toggle Logic ----
-
-    });
-}
-
-    
     // Ensure 'No Selection Provided' text is greyed out
     document.querySelectorAll('.generator-form select').forEach(sel => {
         if (sel.value === "") sel.style.color = "var(--fg-dim, #888)";
@@ -162,13 +128,18 @@ document.addEventListener('DOMContentLoaded', () => {
         sel.addEventListener('change', removePlaceholder);
     });
 
+    // Guarantee every select has a placeholder, but never duplicate one the
+    // markup already provides, and never clobber a real default selection.
     document.querySelectorAll('select').forEach(select => {
+        if (select.querySelector('option[value=""]')) return;
+
         const defaultOption = document.createElement('option');
         defaultOption.value = "";
         defaultOption.disabled = true;
-        defaultOption.selected = true;
+        defaultOption.hidden = true;
         defaultOption.textContent = "No Selection Provided";
-        // Insert at the top
+        // Only claim the selection when the markup didn't declare a default.
+        defaultOption.selected = !select.querySelector('option[selected]');
         select.insertBefore(defaultOption, select.firstChild);
     });
 });
@@ -228,7 +199,7 @@ window.toggleHistoryModal = function() {
 };
 
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Page switching: Generator ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Â Output ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ─── Page switching: Generator ↔ Output ──────────────────────────────────────
 function showOutputPage(mdContent, shContent, format, scContent) {
     // Save to sessionStorage for live.html
     sessionStorage.setItem('live_md', mdContent || '');
@@ -268,7 +239,7 @@ function showOutputPage(mdContent, shContent, format, scContent) {
             b.setAttribute('data-title', 'Download Markdown Guide');
             b.setAttribute('data-desc', 'Download the generated installation guide as a .md file.');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-cyan);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = 'Ã¢Â¬â€¡ Download .md';
+            b.textContent = '⬇ Download .md';
             b.onclick = () => downloadFile(mdContent, 'arch-install-guide.md');
             dlContainer.appendChild(b);
         }
@@ -278,7 +249,7 @@ function showOutputPage(mdContent, shContent, format, scContent) {
             b.setAttribute('data-title', 'Download Shell Script');
             b.setAttribute('data-desc', 'Download the generated Bash install script as a .sh file. REVIEW before executing!');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-blue);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = 'Ã¢Â¬â€¡ Download .sh';
+            b.textContent = '⬇ Download .sh';
             b.onclick = () => downloadFile(shContent, 'arch-install.sh');
             dlContainer.appendChild(b);
         }
@@ -288,7 +259,7 @@ function showOutputPage(mdContent, shContent, format, scContent) {
             b.setAttribute('data-title', 'Download Selection Config (.sc)');
             b.setAttribute('data-desc', 'Download your exact form selections as a .sc JSON file so you can restore them later.');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-purple);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = 'Ã¢Â¬â€¡ Download .sc';
+            b.textContent = '⬇ Download .sc';
             b.onclick = () => downloadFile(scContent, 'arch-config.sc');
             dlContainer.appendChild(b);
         }
@@ -328,6 +299,23 @@ function updateHistoryTooltip() {
     );
 }
 
+// ---- Proprietary / non-libre software register ----
+// Shared between the generator (which writes warnings into the output) and the
+// form UI (which flags the checkboxes), so the two can never disagree.
+const PROPRIETARY_APPS = {
+    'firefox':  'Firefox ships proprietary firmware blobs and closed-source telemetry components. LibreWolf is the libre-hardened fork.',
+    'chromium': 'Chromium bundles proprietary codecs and Google service integrations.',
+    'chrome':   'Google Chrome is fully proprietary and telemetry-heavy. Chromium or LibreWolf is libre.',
+    'signal':   'The Signal desktop client is an Electron build distributing pre-compiled proprietary binaries.',
+    'flatpak':  'Flatpak itself is libre, but the default Flathub remote distributes proprietary applications.',
+    'discord':  'Discord is closed-source and tracks user activity. Use WebCord or a Matrix bridge for a libre alternative.',
+    'steam':    'Steam is a proprietary storefront and DRM client by Valve.',
+    'spotify':  'Spotify is a closed-source streaming client with proprietary DRM.',
+    'vmware':   'VMware Tools (open-vm-tools is libre, but the VMware hypervisor is proprietary).',
+    'vbox':     'VirtualBox Extension Pack contains proprietary code (PUEL license).',
+    'nvidia':   'NVIDIA drivers contain heavily proprietary closed-source blobs.'
+};
+
 // ---- Utility: Escape HTML ----
 const escapeHTML = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -361,6 +349,11 @@ window.updatePreview = function() {
 // MAIN OUTPUT GENERATOR
 // ====================================================================
 window.generateOutput = function(auto = false) {
+
+    // Validation warnings are only surfaced for a deliberate click on Generate.
+    // Auto-regeneration (on form change) stays silent so the user isn't nagged
+    // while they are still filling the form in.
+    const showWarnings = !auto;
 
     // --- SMART CONFIGURATION VALIDATION MATRIX ---
     if (showWarnings) {
@@ -457,6 +450,9 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     const disk = gv('target-disk','/dev/sda');
     const part = gv('partitioning','luks2');
     const initSys = gv('init_system','systemd');
+    // Encryption "layer" selections (base type is `part`, above).
+    const enc_cipher = gv('encryption_cipher','aes-xts-plain64');
+    const enc_pq = gv('encryption_pq','none');
     const boot = gv('bootloader','uki-custom');
     const kernelMain = gv('kernel-main','linux-hardened');
     const kernelBackup = gv('kernel-backup','linux-zen');
@@ -492,9 +488,6 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     const post_apps = [];
     document.querySelectorAll('input[name="post_apps"]:checked').forEach(cb => post_apps.push(cb.value));
 
-    
-    }
-
     const other_sec_tools = [];
     document.querySelectorAll('input[name="other_sec_tools"]:checked').forEach(cb => other_sec_tools.push(cb.value));
 
@@ -509,7 +502,7 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
 
     const configJSON = JSON.stringify(getFormValues(), null, 2);
 
-    // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Validation Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+    // ─── Validation ───
     const errors = [];
     
     // Clear previous highlights
@@ -585,7 +578,7 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
             let errorDiv = document.createElement("div"); 
             errorDiv.id = "config-errors"; 
             document.getElementById("install-form").prepend(errorDiv);
-            errorDiv.innerHTML = `<div class="alert warning" style="border-left-color:var(--accent-red); padding: 0.8rem;"><strong>Ã¢Å¡Â Ã¯Â¸Â  Missing Selections:</strong> <ul>${errors.join("")}</ul></div>`;
+            errorDiv.innerHTML = `<div class="alert warning" style="border-left-color:var(--accent-red); padding: 0.8rem;"><strong>⚠︠ Missing Selections:</strong> <ul>${errors.join("")}</ul></div>`;
             window.scrollTo(0, 0);
         }
         return;
@@ -594,9 +587,14 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     if (errorBox) errorBox.style.display = 'none';
 
     // Default Profiles Check for Apps & Security
+    const SECURITY_APP_VALUES = ['libre-otp', 'anti-ducky', 'anti-evil-maid',
+                                 'kernel-watcher', 'scarecrow'];
     const hasApps = document.querySelectorAll('input[name="post_apps"]:checked').length > 0;
-    
-    
+    const hasSec =
+        SECURITY_APP_VALUES.some(v =>
+            document.querySelector(`input[name="post_apps"][value="${v}"]`)?.checked) ||
+        document.querySelectorAll('input[name="other_sec_tools"]:checked').length > 0;
+
     if (!hasApps || !hasSec) {
         if (!confirm("You have not selected any Apps or Security Tools. Default minimal profiles will be automatically applied. Proceed?")) {
             return;
@@ -610,8 +608,9 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
             });
         }
         if (!hasSec) {
-            const defSec = ['iso-verifier', 'input-guard'];
+            const defSec = ['anti-ducky', 'anti-evil-maid'];
             defSec.forEach(val => {
+                const cb = document.querySelector(`input[name="post_apps"][value="${val}"]`);
                 if (cb) cb.checked = true;
             });
         }
@@ -621,15 +620,9 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     let partEfi = disk + (disk.includes("nvme") ? "p1" : "1");
     let partRoot = disk + (disk.includes("nvme") ? "p2" : "2");
 
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Proprietary Software Analysis ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
-    const propAppsDB = {
-        'discord': 'Discord is closed-source and tracks user activity. Use WebCord or matrix-bridges for a libre alternative.',
-        'steam': 'Steam is a proprietary storefront and DRM client by Valve.',
-        'spotify': 'Spotify is a closed-source streaming client with proprietary DRM.',
-        'vmware': 'VMware Tools (open-vm-tools is libre, but VMware hypervisor is proprietary).',
-        'vbox': 'VirtualBox Extension Pack contains proprietary code (PUEL license).'
-    };
-    if (gpu_brand === 'nvidia') propAppsDB['nvidia'] = 'NVIDIA drivers contain heavily proprietary closed-source blobs.';
+    // ── Proprietary Software Analysis ──
+    // Local copy so the per-run additions below don't mutate the shared register.
+    const propAppsDB = { ...PROPRIETARY_APPS };
 
     const selectedPropApps = post_apps.filter(app => propAppsDB[app]);
     if (gpu_brand === 'nvidia') selectedPropApps.push('nvidia');
@@ -670,7 +663,7 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
             o += `echo -e "\${COLOR_BG}\${COLOR_FG}"\n`;
             o += `clear\n`;
             o += `echo -e "\${COLOR_BLUE}========================================================================\${COLOR_RESET}"\n`;
-            o += `echo -e "\${COLOR_BLUE}             ARCH RUSTY SECURITY SUITE Ã¢â‚¬â€ AUTO-INSTALLER                 \${COLOR_RESET}"\n`;
+            o += `echo -e "\${COLOR_BLUE}             ARCH RUSTY SECURITY SUITE — AUTO-INSTALLER                 \${COLOR_RESET}"\n`;
             o += `echo -e "\${COLOR_BLUE}========================================================================\${COLOR_RESET}\n\n"\n`;
             if (verbosity_level === 'progress' || verbosity_level === 'simple') {
                 o += `
@@ -687,7 +680,7 @@ run_with_progress() {
     local pos=0
     local direction=1
     
-    echo -e "\${COLOR_FG}${msg}..."
+    echo -e "\${COLOR_FG}\${msg}..."
     tput civis # hide cursor
     while kill -0 $pid 2>/dev/null; do
         # Build the bar
@@ -703,7 +696,7 @@ run_with_progress() {
         done
         bar+="]"
         
-        echo -ne "\\r\${COLOR_BLUE}${bar}\${COLOR_RESET}"
+        echo -ne "\\r\${COLOR_BLUE}\${bar}\${COLOR_RESET}"
         
         # Bounce logic
         if [ $pos -eq $((width-1)) ]; then
@@ -772,15 +765,21 @@ run_with_progress() {
         }
 
         let targetMount = partRoot;
+        // Post-quantum overlay is experimental; warn loudly in the script itself.
+        const pqWarn = enc_pq === "kyber1024"
+            ? `echo -e "\\e[1;31m[!] WARNING: KYBER-1024 PQ OVERLAY ENABLED (EXPERIMENTAL) - may prevent boot\\e[0m"\n`
+            : "";
+        if (part !== "unencrypted") o += pqWarn;
+
         if (part === "luks1") {
             if (cmdOnly) o += `echo -e "\\n\${COLOR_BLUE}:: Encrypting with LUKS1\${COLOR_RESET}\\n\${COLOR_FG}Using legacy LUKS1 to support GRUB decryption. AES-XTS-512 encryption.\\nWiki: https://wiki.archlinux.org/title/Dm-crypt\${COLOR_RESET}"\n`;
-            o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks1 -c aes-xts-plain64 -s 512 -h sha512 - ${partRoot}\n`;
+            o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks1 -c ${enc_cipher} -s 512 -h sha512 - ${partRoot}\n`;
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
             targetMount = "/dev/mapper/cryptroot";
         } else if (part === "luks2") {
             if (cmdOnly) o += `echo -e "\\n\${COLOR_BLUE}:: Encrypting with LUKS2\${COLOR_RESET}\\n\${COLOR_FG}Using modern LUKS2 with Argon2id key derivation. Extremely resistant to brute force.\\nWiki: https://wiki.archlinux.org/title/Dm-crypt\${COLOR_RESET}"\n`;
-            o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 - ${partRoot}\n`;
+            o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type luks2 --cipher ${enc_cipher} --key-size 512 --hash sha512 --pbkdf argon2id --iter-time 5000 - ${partRoot}\n`;
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptroot\n`;
             targetMount = "/dev/mapper/cryptroot";
@@ -789,11 +788,7 @@ run_with_progress() {
         let luksType = part.includes("luks1") ? "luks1" : "luks2";
         let pbkdf = luksType === "luks2" ? "--pbkdf argon2id --iter-time 2000" : "--pbkdf pbkdf2";
         
-        let pqWarning = enc_pq === "kyber1024" ? `echo -e "\e[1;31m[!] WARNING: KYBER-1024 PQ OVERLAY ENABLED (EXPERIMENTAL)\e[0m"
-` : "";
-        o += pqWarning;
-        o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type ${luksType} --cipher ${enc_cipher} --key-size 512 ${pbkdf} - ${partRoot}
-`;
+        o += `echo -n "$LUKS_PASS" | cryptsetup luksFormat --type ${luksType} --cipher ${enc_cipher} --key-size 512 ${pbkdf} - ${partRoot}\n`;
 
             o += `LUKS_UUID=$(blkid -s UUID -o value ${partRoot})\n`;
             o += `cryptsetup open UUID=$LUKS_UUID cryptlvm\npvcreate /dev/mapper/cryptlvm\nvgcreate vg0 /dev/mapper/cryptlvm\nlvcreate -l 100%FREE vg0 -n root\n`;
@@ -819,12 +814,6 @@ run_with_progress() {
             if (fs === "btrfs") o += `btrfs filesystem mkswapfile --size ${swap_size} /mnt/swapfile\n`;
             else o += `fallocate -l ${swap_size} /mnt/swapfile\nchmod 600 /mnt/swapfile\nmkswap /mnt/swapfile\n`;
             o += `swapon /mnt/swapfile\n`;
-        }
-
-            if (!cmdOnly) o += `\`\`\`\n\n## ISO Verification\n> *It is highly recommended to verify the Arch ISO integrity before installing.*\n\`\`\`bash\n`;
-            o += `curl -sLO https://geo.mirror.pkgbuild.com/iso/latest/sha256sums.txt\n`;
-            o += `echo "Verifying ISO Hash..."\n`;
-            o += `sha256sum -c sha256sums.txt --ignore-missing || { echo "ISO HASH VERIFICATION FAILED!"; exit 1; }\n`;
         }
 
         if (!cmdOnly) o += `\`\`\`\n\n## 2. Base Installation\n\`\`\`bash\n`;
@@ -1095,7 +1084,7 @@ run_with_progress() {
         // Hardened OpenSSH setup
         if (post_apps.includes('openssh')) {
             if (!cmdOnly) o += `\`\`\`\n\n### OpenSSH Server Setup (Hardened)\n\`\`\`bash\n`;
-            else o += `\n# OpenSSH Ã¢â‚¬â€ Hardened Setup\n`;
+            else o += `\n# OpenSSH — Hardened Setup\n`;
             o += `# Generate Ed25519 host keys\n`;
             o += `ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ""\n`;
             o += `rm -f /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key /etc/ssh/ssh_host_ecdsa_key\n`;
@@ -1119,7 +1108,7 @@ run_with_progress() {
             o += `systemctl enable sshd.service\n`;
             o += `echo "# SSH private key saved: $USER_SSH_DIR/id_ed25519"\n`;
             o += `echo "# Copy id_ed25519 to your client machine before rebooting!"\n`;
-            if (!cmdOnly) o += `\`\`\`\n\n> Ã¢Å¡Â Ã¯Â¸Â **Save your SSH private key** (\`~/.ssh/id_ed25519\`) to your client machine before rebooting. Password auth is disabled.\n\n`;
+            if (!cmdOnly) o += `\`\`\`\n\n> ⚠️ **Save your SSH private key** (\`~/.ssh/id_ed25519\`) to your client machine before rebooting. Password auth is disabled.\n\n`;
         }
 
         // Snapper hooks
@@ -1195,7 +1184,7 @@ run_with_progress() {
             if (!cmdOnly) o += `\n### Dusky OS Auto-Setup\n> Watch the [YouTube guide](https://www.youtube.com/watch?v=JmgvSdEIK8c) and read the [dusky repo](https://github.com/dusklinux/dusky) cheatsheet before running.\n\n\`\`\`bash\n`;
             else o += `\n# Dusky OS Auto-Setup (by dusklinux)\n# Watch: https://www.youtube.com/watch?v=JmgvSdEIK8c\n# Repo:  https://github.com/dusklinux/dusky\n`;
             o += `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && ./install.sh"\n`;
-            if (!cmdOnly) o += `\`\`\`\n\n> Ã°Å¸â€œâ€¹ **Cheatsheet**: \`/tmp/dusky/cheatsheet.md\` Ã¢â‚¬â€ Hyprland keybinds and workflow\n`;
+            if (!cmdOnly) o += `\`\`\`\n\n> 📋 **Cheatsheet**: \`/tmp/dusky/cheatsheet.md\` — Hyprland keybinds and workflow\n`;
         }
 
         if (vm_guest === "vbox") o += `systemctl enable vboxservice.service\n`;
@@ -1203,35 +1192,47 @@ run_with_progress() {
         else if (vm_guest === "qemu") o += `systemctl enable qemu-guest-agent.service\n`;
         if (needsAUR) o += `userdel -r builder\nrm -f /etc/sudoers.d/builder\n`;
 
-        // Security tools (now Arch Rusty Security Suite)
-            if (!cmdOnly) o += `\`\`\`\n\n## 7. Arch Rusty Security Suite by tilas01\n\`\`\`bash\n`;
-            else o += `\n# 7. Arch Rusty Security Suite\n`;
-            o += `# Download the latest release from GitHub\n`;
-            o += `SUITE_VERSION=$(curl -s "https://api.github.com/repos/tilas01/arch-guides-dynamic/releases/latest" | grep '"tag_name"' | cut -d'"' -f4)\n`;
-            o += `curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/$SUITE_VERSION/arch-rusty-security-suite-linux-x86_64"\n`;
-            o += `curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/$SUITE_VERSION/arch-rusty-security-suite-linux-x86_64.sha256"\n`;
-            o += `echo "Verifying integrity..."\nsha256sum -c arch-rusty-security-suite-linux-x86_64.sha256\n`;
-            o += `chmod +x arch-rusty-security-suite-linux-x86_64\n`;
-            o += `cp arch-rusty-security-suite-linux-x86_64 /usr/local/bin/arch-rusty-security-suite\n`;
+        // ── Security tool configuration (tilas01 Rust suite) ──
+        // The binaries themselves are built above by the secApps loop, which
+        // installs each crate to /usr/local/bin/<crate>. This block only
+        // configures the ones the user actually selected.
+        const SUITE_TOOLS = ['libre-otp', 'anti-ducky', 'anti-evil-maid',
+                             'kernel-watcher', 'scarecrow', 'kloak',
+                             'webhooks', 'panic-password'];
+        const selectedSuite = SUITE_TOOLS.filter(t => post_apps.includes(t));
 
-                o += `\n# Configuring Webhooks\nmkdir -p /etc/arch-security/\ncat << 'WH' > /etc/arch-security/webhook.conf\nPROVIDER=${webhook_provider}\nURL=${webhook_url}\nWH\n`;
-                o += `arch-rusty-security-suite webhooks --install-service\n`;
+        if (selectedSuite.length > 0) {
+            if (!cmdOnly) o += `\`\`\`\n\n## 7. Security Suite Configuration (tilas01)\n\`\`\`bash\n`;
+            else o += `\n# 7. Security Suite Configuration\n`;
+            o += `mkdir -p /etc/arch-security\n`;
+
+            if (post_apps.includes('webhooks')) {
+                o += `\n# Configuring alert webhooks\ncat << 'WH' > /etc/arch-security/webhook.conf\nPROVIDER=${webhook_provider}\nURL=${webhook_url}\nWH\n`;
+                o += `chmod 600 /etc/arch-security/webhook.conf\n`;
             }
+
+            if (post_apps.includes('libre-otp')) {
                 let otpOpts = `--setup --mode ${libreOtpMode} --hash ${otp_sha} --recovery-codes ${otp_recovery}`;
                 if (otp_bypass !== "0" && otp_bypass !== "") otpOpts += ` --bypass-uses ${otp_bypass}`;
                 if (otp_double === "yes") otpOpts += ` --double-otp`;
+                o += `\n# Configuring Libre OTP\nlibre-otp ${otpOpts}\n`;
                 o += `\n# Injecting Libre OTP into PAM\n`;
-                if (libreOtpMode === "boot" || libreOtpMode === "both" || libreOtpMode === "all") {
-                    o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/system-auth\n`;
-                    o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/su\n`;
-                    o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/sudo\n`;
+                const pamLine = `auth required pam_exec.so expose_authtok quiet /usr/local/bin/libre-otp verify`;
+                if (libreOtpMode === "login" || libreOtpMode === "boot" || libreOtpMode === "both" || libreOtpMode === "all") {
+                    o += `echo '${pamLine}' >> /etc/pam.d/system-auth\n`;
+                    o += `echo '${pamLine}' >> /etc/pam.d/su\n`;
+                    o += `echo '${pamLine}' >> /etc/pam.d/sudo\n`;
                 }
                 if (libreOtpMode === "ssh" || libreOtpMode === "both" || libreOtpMode === "all") {
-                    o += `echo 'auth required pam_exec.so expose_authtok quiet /usr/local/bin/arch-rusty-security-suite otp' >> /etc/pam.d/sshd\n`;
+                    o += `echo '${pamLine}' >> /etc/pam.d/sshd\n`;
                 }
             }
-                o += `\n# Configuring Panic Password\narch-rusty-security-suite panic --setup\n`;
+
+            if (post_apps.includes('panic-password')) {
+                o += `\n# Configuring Panic Password\nlibre-otp --setup-panic\n`;
             }
+
+            if (post_apps.includes('anti-evil-maid')) {
                 if (cmdOnly) {
                     o += `\n# Configuring Anti-Evil Maid (Interactive)\n`;
                     o += `echo -e "\\n\\e[38;2;247;118;142m>> Anti-Evil Maid Configuration\\e[0m"\n`;
@@ -1246,12 +1247,15 @@ run_with_progress() {
                     o += `  3) DECOY_MODE="--decoy-count random" ;;\n`;
                     o += `  *) DECOY_MODE="--decoy-count 1" ;;\n`;
                     o += `esac\n`;
-                    o += `arch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} $DECOY_MODE\n`;
+                    o += `anti-evil-maid --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} $DECOY_MODE\n`;
+                } else {
+                    o += `\n# Configuring Anti-Evil Maid\nanti-evil-maid --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} --decoy-count 1\n`;
+                }
 
                 // ── Decoy & Duress Passwords for Anti-Evil Maid ──
                 const aemDecoyMode = document.getElementById('modal_aem_decoy_mode')?.value || 'none';
                 const aemDuressMode = document.getElementById('modal_aem_duress_mode')?.value || 'none';
-                
+
                 if (aemDecoyMode !== 'none') {
                     o += `\n# Anti-Evil Maid - Decoy Password (shows decoy OS, system intact)\n`;
                     o += `# A decoy password boots into a dummy/fake OS without any indication of the real system.\n`;
@@ -1265,7 +1269,7 @@ run_with_progress() {
                     }
                     o += `unset AEM_DECOY_PASS\n`;
                 }
-                
+
                 if (aemDuressMode !== 'none') {
                     o += `\n# Anti-Evil Maid - Duress Password (wipes real data, shows decoy)\n`;
                     o += `# WARNING: This password PERMANENTLY DESTROYS real data. Use with extreme caution.\n`;
@@ -1280,46 +1284,80 @@ run_with_progress() {
                     }
                     o += `unset AEM_DURESS_PASS\n`;
                 }
+
+                // Boot-integrity daemon
+                o += `cat << 'AEM_DAEMON' > /etc/systemd/system/aem.service\n[Unit]\nDescription=Anti-Evil Maid boot integrity daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/anti-evil-maid --daemon\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nAEM_DAEMON\n`;
+                o += `systemctl enable aem.service\n`;
+
+                // Periodic filesystem hash checks
+                o += `cat << 'AEM_HASH' > /usr/local/bin/aem-fs-hash-check.sh\n#!/bin/bash\nanti-evil-maid --fs-hash-check >> /var/log/aem-fs-hash.log 2>&1\nAEM_HASH\n`;
+                o += `chmod +x /usr/local/bin/aem-fs-hash-check.sh\n`;
+                o += `(crontab -l 2>/dev/null; echo "0 * * * * /usr/local/bin/aem-fs-hash-check.sh") | crontab -\n`;
+            }
+
+            if (post_apps.includes('anti-ducky')) {
+                o += `\n# Configuring Input Guard (Anti-Ducky) — trust currently attached devices\nanti-ducky --approve-current\n`;
+                o += `systemctl enable anti-ducky.service\n`;
+            }
+
+            if (post_apps.includes('openssh')) {
+                o += `\n# Hardening SSH Server\n`;
+                o += `sed -i 's/^#*PermitRootLogin.*/PermitRootLogin ${root_ssh === 'yes' ? 'prohibit-password' : 'no'}/' /etc/ssh/sshd_config\n`;
+                o += `sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config\n`;
+                o += `sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config\n`;
+                o += `ssh-keygen -A\nsystemctl enable sshd\n`;
+            }
+
+            if (post_apps.includes('kloak')) {
+                o += `\n# Installing Kloak (keystroke timing anonymisation)\nsystemctl enable kloak\n`;
+            }
+
+            if (post_apps.includes('kernel-watcher')) {
+                o += `\n# Configuring Kernel Watcher (Semi-EDR)\nkernel-watcher --setup\n`;
+                o += `cat << 'KW' > /etc/systemd/system/kernel-watcher.service\n[Unit]\nDescription=Kernel Watcher EDR daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/kernel-watcher\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nKW\n`;
+                o += `systemctl enable kernel-watcher.service\n`;
+            }
+
+            if (post_apps.includes('scarecrow')) {
+                o += `\n# Configuring Scarecrow (canary tokens / sandbox spoofing)\n`;
+                o += `cat << 'SC' > /etc/systemd/system/scarecrow.service\n[Unit]\nDescription=Scarecrow canary token monitor\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/scarecrow\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nSC\n`;
+                o += `systemctl enable scarecrow.service\n`;
+            }
+        }
+
+        // Third-party hardening tools (checkbox group `other_sec_tools`).
+        if (other_sec_tools.length > 0) {
+            if (!cmdOnly) o += `\`\`\`\n\n## 8. Other Security Hardening\n\`\`\`bash\n`;
+            else o += `\n# 8. Other Security Tools\n`;
+
+            if (other_sec_tools.includes('apparmor')) {
+                o += `pacman -S --noconfirm apparmor\n`;
+                // Only GRUB reads /etc/default/grub; UKI/systemd-boot use the cmdline file.
+                if (boot === 'grub') {
+                    o += `sed -i 's/^GRUB_CMDLINE_LINUX="/GRUB_CMDLINE_LINUX="apparmor=1 lsm=landlock,lockdown,yama,apparmor,bpf /' /etc/default/grub\n`;
+                    o += `grub-mkconfig -o /boot/grub/grub.cfg\n`;
                 } else {
-                    o += `\n# Configuring Anti-Evil Maid\narch-rusty-security-suite aem --setup --main-kernel ${aem_main} --backup-kernel ${aem_backup} --decoy-count 1\n`;
+                    o += `echo 'apparmor=1 lsm=landlock,lockdown,yama,apparmor,bpf' >> /etc/kernel/cmdline\n`;
                 }
-                
-                
-                // Add regular file system hash checks via cron
+                o += `systemctl enable apparmor\n`;
             }
-                
+            if (other_sec_tools.includes('usbguard')) {
+                o += `pacman -S --noconfirm usbguard\nusbguard generate-policy > /etc/usbguard/rules.conf\nsystemctl enable usbguard\n`;
             }
-                o += `\n# Hardening SSH Server\narch-rusty-security-suite ssh --harden\n`;
+            if (other_sec_tools.includes('auditd')) {
+                o += `pacman -S --noconfirm audit\nsystemctl enable auditd\n`;
+                o += `echo '-w /etc/passwd -p wa -k passwd_changes' >> /etc/audit/rules.d/audit.rules\n`;
+                o += `echo '-w /etc/sudoers -p wa -k sudoers_changes' >> /etc/audit/rules.d/audit.rules\n`;
             }
-                
+            if (other_sec_tools.includes('fail2ban')) {
+                o += `pacman -S --noconfirm fail2ban\ncat > /etc/fail2ban/jail.local << 'F2B'\n[DEFAULT]\nbantime = 3600\nfindtime = 600\nmaxretry = 3\n[sshd]\nenabled = true\nF2B\nsystemctl enable fail2ban\n`;
             }
+            if (other_sec_tools.includes('ufw')) {
+                o += `pacman -S --noconfirm ufw\nufw default deny incoming\nufw default allow outgoing\nsystemctl enable ufw\n`;
             }
+            if (other_sec_tools.includes('lynis')) {
+                o += `pacman -S --noconfirm lynis\n# Run an initial audit and keep the report for review\nlynis audit system --quick --no-colors > /var/log/lynis-initial.log 2>&1 || true\n`;
             }
-        }
-
-        if (otherSecTools !== 'no') {
-            if (!cmdOnly) o += `\`\`\`\n\n## 9. Other Security Hardening\n\`\`\`bash\n`;
-            else o += `\n# 9. Other Security Tools\n`;
-            const installAll = otherSecTools === 'all';
-            if (installAll || otherSecTools === 'apparmor') {
-                o += `pacman -S --noconfirm apparmor\nsed -i 's/^GRUB_CMDLINE_LINUX="/GRUB_CMDLINE_LINUX="apparmor=1 lsm=landlock,lockdown,yama,apparmor,bpf /' /etc/default/grub\nsystemctl enable apparmor\n`;
-            }
-            if (installAll || otherSecTools === 'usbguard') {
-                o += `pacman -S --noconfirm usbguard\nusbguard generate-policy > /etc/usbguard/rules.conf\nsystemctl enable --now usbguard\n`;
-            }
-            if (installAll || otherSecTools === 'auditd') {
-                o += `pacman -S --noconfirm audit\nsystemctl enable --now auditd\necho '-w /etc/passwd -p wa -k passwd_changes' >> /etc/audit/rules.d/audit.rules\necho '-w /etc/sudoers -p wa -k sudoers_changes' >> /etc/audit/rules.d/audit.rules\n`;
-            }
-            if (installAll || otherSecTools === 'fail2ban') {
-                o += `pacman -S --noconfirm fail2ban\ncat > /etc/fail2ban/jail.local << 'F2B'\n[DEFAULT]\nbantime = 3600\nfindtime = 600\nmaxretry = 3\n[sshd]\nenabled = true\nF2B\nsystemctl enable --now fail2ban\n`;
-            }
-        }
-
-        if (secTools !== "none") {
-            if (!cmdOnly) o += `\`\`\`\n\n## 9. Verify Arch ISO USB Integrity\n\`\`\`bash\n`;
-            else o += `\n# 9. ISO Verification\n`;
-            o += `# Verify the Arch ISO on USB that was used for this install\n`;
-            o += `arch-rusty-security-suite verify-iso /dev/sr0  # or USB path\n`;
         }
 
         if (auto_updates === "yes" || post_apps.includes("unattended-upgrades")) {
@@ -1351,7 +1389,7 @@ run_with_progress() {
             }
         }
 
-        // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Download Cheatsheets ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+        // ── Download Cheatsheets ──
         if (cmdOnly) {
             o += `\n# Downloading Cheatsheets\n`;
             o += `mkdir -p /home/$u1/cheatsheets\n`;
@@ -1396,20 +1434,20 @@ run_with_progress() {
             }
             o += `echo -e "\${COLOR_BLUE}>> INSTALL COMPLETE! You may now run 'reboot'\${COLOR_RESET}"\n`;
         } else {
-            o += `\`\`\`\n\n---\n*Guide complete. Reboot into your ${desktop !== "none" ? desktop : "TTY"} environment.*\n*Generated by [Arch Guides Dynamic](https://tilas01.github.io/arch-guides-dynamic/) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â by [tilas01](https://github.com/tilas01)*\n`;
+            o += `\`\`\`\n\n---\n*Guide complete. Reboot into your ${desktop !== "none" ? desktop : "TTY"} environment.*\n*Generated by [Arch Guides Dynamic](https://tilas01.github.io/arch-guides-dynamic/) — by [tilas01](https://github.com/tilas01)*\n`;
         }
 
 
         // --- STANDALONE SECURITY APP DEPLOYMENT (LIBRE-OTP & AUTO-UPDATER) ---
-        const secApps = [
+        const updaterApps = [
             { id: 'libre-otp', name: 'Libre-OTP Authenticator', repo: 'libre-otp' },
             { id: 'anti-ducky', name: 'Input Guard (Anti-Ducky)', repo: 'anti-ducky' },
             { id: 'anti-evil-maid', name: 'Anti-Evil Maid', repo: 'anti-evil-maid' },
             { id: 'kernel-watcher', name: 'Kernel Watcher (EDR)', repo: 'kernel-watcher' },
             { id: 'scarecrow', name: 'ScareCrow (LKM)', repo: 'scarecrow' }
         ];
-        
-        const selectedSecApps = secApps.filter(app => post_apps.includes(app.id));
+
+        const selectedSecApps = updaterApps.filter(app => post_apps.includes(app.id));
         
         if (selectedSecApps.length > 0) {
             if (!cmdOnly) o += `\n\n### Secure Standalone Tools (Auto-Updater)\n\n\`\`\`bash\n`;
@@ -1468,7 +1506,7 @@ run_with_progress() {
         return o;
     }
 
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Render ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // ── Render ──
     // For auto-mode (re-generate on form change): keep output section in whatever state it's in
     // For manual generate: showOutputPage() is called after this function builds the HTML
     const outputSection = document.getElementById('output-section');
@@ -1482,14 +1520,14 @@ run_with_progress() {
 
     // ISO pre-setup
     let isoHTML = "";
-    if (iso_setup === "ssh") isoHTML = `<div class="alert warning"><strong>ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¡ Run on Arch ISO first:</strong><pre><code>systemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
-    else if (iso_setup === "ssh_curl") isoHTML = `<div class="alert warning"><strong>ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¡ Run on Arch ISO first:</strong><pre><code>pacman -Sy --noconfirm curl\nsystemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
+    if (iso_setup === "ssh") isoHTML = `<div class="alert warning"><strong>📡 Run on Arch ISO first:</strong><pre><code>systemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
+    else if (iso_setup === "ssh_curl") isoHTML = `<div class="alert warning"><strong>📡 Run on Arch ISO first:</strong><pre><code>pacman -Sy --noconfirm curl\nsystemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
 
-    // Ã¢â€â‚¬Ã¢â€â‚¬ Smart Analysis & Proprietary Warnings Ã¢â€â‚¬Ã¢â€â‚¬
+    // ── Smart Analysis & Proprietary Warnings ──
     let analysisWarnings = 0;
     let analysisErrors = 0;
     if (selectedPropApps.length > 0 && software_type !== 'libre') {
-        let warnStr = `\n\n## Ã¢Å¡Â Ã¯Â¸Â Proprietary Software Notice\n> You have chosen to include software containing proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
+        let warnStr = `\n\n## ⚠️ Proprietary Software Notice\n> You have chosen to include software containing proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
         selectedPropApps.forEach(a => warnStr += `- **${a.toUpperCase()}**: ${propAppsDB[a]}\n`);
         mdOutput += warnStr;
         analysisWarnings += selectedPropApps.length;
@@ -1503,21 +1541,21 @@ run_with_progress() {
 
     let html = isoHTML;
 
-    // ÃƒÂ¢Ã¢â‚¬Â Ã¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬Â Ã¢â€šÂ¬ BOX 1: Markdown Editor ÃƒÂ¢Ã¢â‚¬Â Ã¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬Â Ã¢â€šÂ¬
+    // ── BOX 1: Markdown Editor ──
     if (format === "markdown" || format === "both") {
         html += `
         <div class="output-actions">
-            <h3 class="output-title md-edit">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â  Markdown Guide ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â  Live Editor</h3>
+            <h3 class="output-title md-edit">📄 Markdown Guide — Live Editor</h3>
             <div style="display:flex;gap:0.4rem;">
                 <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-md-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .md',2000)">Copy .md</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ .md</button>
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">💾 .md</button>
             </div>
         </div>
         <pre class="output-box editor-md"><code id="raw-md-code" class="language-markdown" contenteditable="true" oninput="updatePreview()">${escapeHTML(mdOutput)}</code></pre>
 
         <div class="output-actions">
-            <h3 class="output-title md-prev">ÃƒÂ°Ã…Â¸Ã¢â‚¬ËœÃ‚Â Markdown ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Live Preview</h3>
-            <h3 class="output-title ssh-cmd">ÃƒÂ°Ã…Â¸Ã¢â‚¬â€œÃ‚Â¥ SSH One-Liner Deploy</h3>
+            <h3 class="output-title md-prev">👁 Markdown — Live Preview</h3>
+            <h3 class="output-title ssh-cmd">🖥 SSH One-Liner Deploy</h3>
         </div>
         <pre class="output-box oneliner"><code class="language-bash">${escapeHTML(`cat << 'ARCHEOF' > install.sh\n${scriptOutput}\nARCHEOF\nbash install.sh`)}</code></pre>
         `;
@@ -1536,7 +1574,7 @@ run_with_progress() {
         `;
     }
 
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ History + state ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // ── History + state ──
     document.getElementById('generated-guide').innerHTML = html;
     if (window.Prism) Prism.highlightAll();
     updatePreview();
@@ -1561,7 +1599,7 @@ run_with_progress() {
             
             const statusEl = document.getElementById('upload-status');
             if (statusEl) {
-                statusEl.textContent = 'Ã¢Å“â€œ New generation applied to Live Editor.';
+                statusEl.textContent = '✓ New generation applied to Live Editor.';
                 statusEl.style.color = 'var(--accent-green)';
             }
         }
@@ -1572,10 +1610,10 @@ run_with_progress() {
         // Inject .sc code block into html
         const scHtml = `
         <div class="output-actions" style="margin-top:1rem;">
-            <h3 class="output-title sc-edit" style="color:var(--accent-purple);">Ã¢Å¡â„¢Ã¯Â¸Â Config File (.sc)</h3>
+            <h3 class="output-title sc-edit" style="color:var(--accent-purple);">⚙️ Config File (.sc)</h3>
             <div style="display:flex;gap:0.4rem;">
                 <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-sc-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .sc',2000)">Copy .sc</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-purple);color:#000;" onclick="downloadFile(document.getElementById('raw-sc-code').innerText, 'arch-install.sc')">Ã°Å¸â€™Â¾ .sc</button>
+                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-purple);color:#000;" onclick="downloadFile(document.getElementById('raw-sc-code').innerText, 'arch-install.sc')">💾 .sc</button>
             </div>
         </div>
         <pre class="output-box editor-sc"><code id="raw-sc-code" class="language-json" contenteditable="true">${escapeHTML(configJSONText)}</code></pre>
@@ -1587,13 +1625,13 @@ run_with_progress() {
         if (downloadBtnsContainer) {
             let btnsHTML = '';
             if (format === 'markdown' || format === 'both') {
-                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="Ã°Å¸â€œÂ Download Guide" data-desc="Save the step-by-step tutorial as a markdown file." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); font-size:0.9rem;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">Ã°Å¸â€™Â¾ .md Guide</button>`;
+                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="📝 Download Guide" data-desc="Save the step-by-step tutorial as a markdown file." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); font-size:0.9rem;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">💾 .md Guide</button>`;
             }
             if (format === 'script' || format === 'both') {
-                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="Ã¢Å¡Â¡ Download Script" data-desc="Save the executable auto-install Bash script." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:#000; font-size:0.9rem; font-weight:bold;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">Ã°Å¸â€™Â¾ .sh Script</button>`;
+                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="⚡ Download Script" data-desc="Save the executable auto-install Bash script." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:#000; font-size:0.9rem; font-weight:bold;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">💾 .sh Script</button>`;
             }
             // Always show the .sc config download option
-            btnsHTML += `<button type="button" class="btn tooltip-always" data-title="Ã¢Å¡â„¢Ã¯Â¸Â Save Configuration" data-desc="Download your selections as a .sc file so you can upload and restore them later." style="width:auto; padding:0.5rem 1.2rem; background:var(--bg-lighter); border:1px solid var(--accent-cyan); color:var(--accent-cyan); font-size:0.9rem;" onclick="downloadFile(JSON.stringify(window.getFormValues(), null, 2), 'arch-config.sc')">Ã°Å¸â€™Â¾ .sc Config</button>`;
+            btnsHTML += `<button type="button" class="btn tooltip-always" data-title="⚙️ Save Configuration" data-desc="Download your selections as a .sc file so you can upload and restore them later." style="width:auto; padding:0.5rem 1.2rem; background:var(--bg-lighter); border:1px solid var(--accent-cyan); color:var(--accent-cyan); font-size:0.9rem;" onclick="downloadFile(JSON.stringify(window.getFormValues(), null, 2), 'arch-config.sc')">💾 .sc Config</button>`;
             
             downloadBtnsContainer.innerHTML = btnsHTML;
             if (window.syncTooltipBtn) syncTooltipBtn(); // Re-bind tooltips
@@ -1609,7 +1647,7 @@ run_with_progress() {
     }
 };
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Form Serialization & Preview Logic Ã¢â€â‚¬Ã¢â€â‚¬
+// ── Form Serialization & Preview Logic ──
 window.getFormValues = function() {
     const data = {
         version: 1,
@@ -1639,12 +1677,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
     }
 
+    // Libre OTP sub-options are only relevant when the tool itself is selected.
+    const libreOtpCb = document.querySelector('input[name="post_apps"][value="libre-otp"]');
+    const libreOtpContainer = document.getElementById('libre-otp-options');
     if (libreOtpCb && libreOtpContainer) {
-        libreOtpCb.addEventListener('change', () => {
+        const syncOtpOptions = () => {
             libreOtpContainer.style.display = libreOtpCb.checked ? 'block' : 'none';
-        });
-        // Init
-        libreOtpContainer.style.display = libreOtpCb.checked ? 'block' : 'none';
+        };
+        libreOtpCb.addEventListener('change', syncOtpOptions);
+        syncOtpOptions();
     }
 
     // Modal Config State
@@ -1661,16 +1702,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateConfigButtons() {
         const doasChecked = document.querySelector('input[name="post_apps"][value="doas"]')?.checked;
         const snapperChecked = document.querySelector('input[name="post_apps"][value="snapper"]')?.checked;
-        
+        const aemChecked = document.querySelector('input[name="post_apps"][value="anti-evil-maid"]')?.checked;
+
         const btnDoas = document.querySelector('.btn-configure[data-app="doas"]');
         const btnSnapper = document.querySelector('.btn-configure[data-app="snapper"]');
         const btnAem = document.querySelector('.btn-configure[data-app="aem"]');
-        
+
         if (btnDoas) btnDoas.style.display = doasChecked ? 'inline-block' : 'none';
         if (btnSnapper) btnSnapper.style.display = snapperChecked ? 'inline-block' : 'none';
         if (btnAem) btnAem.style.display = aemChecked ? 'inline-block' : 'none';
     }
 
+    document.querySelectorAll('input[name="post_apps"]').forEach(cb => {
         cb.addEventListener('change', updateConfigButtons);
     });
     updateConfigButtons();
@@ -1768,53 +1811,18 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProprietaryHighlighting(); // Run on init
     }
 
-    // Full Suite Toggle Logic
-    
-
-    // Create the notice element
-    const fullSuiteNotice = document.createElement('div');
-    fullSuiteNotice.style.display = 'none';
-    fullSuiteNotice.style.padding = '1rem';
-    fullSuiteNotice.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
-    fullSuiteNotice.style.border = '1px solid var(--accent-blue)';
-    fullSuiteNotice.style.borderRadius = '8px';
-    fullSuiteNotice.style.color = 'var(--accent-blue)';
-    fullSuiteNotice.style.marginTop = '0.5rem';
-    fullSuiteNotice.innerHTML = '<strong>Ã°Å¸â€ºÂ¡Ã¯Â¸Â Full Suite Active:</strong> The unified <code>arch-rusty-security-suite</code> binary will be installed. All security modules are included automatically.<br><br><span style="font-size:0.85rem;opacity:0.8;" title="Untoggle \'Using Full Suite\' to select them individually."><em>(Hover for info: Security suite includes this module already. Untoggle to use them individually.)</em></span>';
-    
-    }
-    
-    if (fullSuiteToggle) {
-        fullSuiteToggle.addEventListener('change', function() {
-            const isChecked = this.checked;
-            
-            if (isChecked) {
-                // Save current state before overriding
-                
-                // Hide grid, show notice, and UNCHECK them so their sub-options hide and don't block generation validation
-                fullSuiteNotice.style.display = 'block';
-                
-                    cb.checked = false;
-                    cb.dispatchEvent(new Event('change'));
-                });
-            } else {
-                // Show grid, hide notice, and restore previous states
-                fullSuiteNotice.style.display = 'none';
-                
-                    cb.dispatchEvent(new Event('change'));
-                });
-            }
-        });
-    }
+    // NOTE: the old "Full Suite" toggle was removed together with the
+    // monolithic arch-rusty-security-suite binary. Each tool is now built and
+    // configured individually; "Enable All Suite" (enableAllTilas) replaces it.
 
     // Proprietary App Warnings UI
     document.querySelectorAll('input[name="post_apps"]').forEach(cb => {
-        if (typeof propAppsDB !== 'undefined' && propAppsDB[cb.value]) {
+        if (PROPRIETARY_APPS[cb.value]) {
             const warningSpan = document.createElement('span');
             warningSpan.className = 'prop-warning nav-tooltip';
-            warningSpan.setAttribute('data-title', 'Ã¢Å¡Â Ã¯Â¸Â Proprietary Software');
-            warningSpan.setAttribute('data-desc', propAppsDB[cb.value]);
-            warningSpan.innerHTML = ' <span style="color:var(--accent-red); cursor:help;">Ã¢Å¡Â Ã¯Â¸Â</span>';
+            warningSpan.setAttribute('data-title', '⚠️ Proprietary Software');
+            warningSpan.setAttribute('data-desc', PROPRIETARY_APPS[cb.value]);
+            warningSpan.innerHTML = ' <span style="color:var(--accent-red); cursor:help;">⚠️</span>';
             // Insert after the icon
             const iconSpan = cb.parentElement.querySelector('.app-icon');
             if (iconSpan) {
@@ -2019,17 +2027,17 @@ document.getElementById('generate-btn').addEventListener('click', function(e) {
         return;
     }
     
-    // Show output section and hide generator form
-    const outSec = document.getElementById('output-section');
+    // Show live editor section and hide generator form
+    const liveEditor = document.getElementById('live-editor');
     const genForm = document.querySelector('.generator-form');
-    if (outSec && genForm) {
-        outSec.style.display = 'block';
+    if (liveEditor && genForm) {
+        liveEditor.style.display = 'block';
         genForm.style.display = 'none';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 });
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Tooltip toggle (emoji button, always-enabled) Ã¢â€â‚¬Ã¢â€â‚¬
+// ── Tooltip toggle (emoji button, always-enabled) ──
 let tooltipsEnabled = sessionStorage.getItem('tooltips_enabled') !== 'false';
 const tooltipToggleBtn = document.getElementById('toggle-tooltips-btn');
 
@@ -2037,10 +2045,10 @@ function syncTooltipBtn() {
     if (!tooltipToggleBtn) return;
     const on = window.tooltipsEnabled !== false;
     tooltipToggleBtn.classList.toggle('disabled', !on);
-    tooltipToggleBtn.setAttribute('data-title', on ? 'Ã¢â€žÂ¹Ã¯Â¸Â Tooltips: ON' : 'Ã¢â€žÂ¹Ã¯Â¸Â Tooltips: OFF');
+    tooltipToggleBtn.setAttribute('data-title', on ? 'ℹ️ Tooltips: ON' : 'ℹ️ Tooltips: OFF');
     tooltipToggleBtn.setAttribute('data-desc', on
         ? 'Tooltips are ON. Hover (desktop) or tap (mobile) any element for info. Click to disable.'
-        : 'Tooltips are OFF. Only Ã¢â€žÂ¹Ã¯Â¸Â and Ã°Å¸â€¢â€œ always show. Click to re-enable.');
+        : 'Tooltips are OFF. Only ℹ️ and 🕓 always show. Click to re-enable.');
 }
 
 if (tooltipToggleBtn) {
@@ -2075,11 +2083,11 @@ const wikiMap = {
     'Desktop Environment':          '?page=07-post-installation.md',
     'DNS Caching':                  '?page=07-post-installation.md',
     'Display Server':               '?page=xorg-vs-wayland.md',
-    'Ã°Å¸Â¦â‚¬ Arch Rusty Security Suite': '?page=security-suite.md',
+    '🦀 Arch Rusty Security Suite': '?page=security-suite.md',
     'Anti-Evil Maid Decoys':        '?page=security-suite.md',
     'Other Security Tools':         '?page=security-suite.md',
 };
-// Note: updateInfoPanel sidebar removed Ã¢â‚¬â€ unified tooltip.js handles all tooltips
+// Note: updateInfoPanel sidebar removed — unified tooltip.js handles all tooltips
 
 // Back to generator button
 const backToGenBtn = document.getElementById('back-to-gen-btn');
@@ -2096,11 +2104,6 @@ const customScriptsContainer = document.getElementById('custom-scripts-container
 if (customScriptsSelect && customScriptsContainer) {
     customScriptsSelect.addEventListener('change', () => {
         customScriptsContainer.style.display = customScriptsSelect.value === 'yes' ? 'block' : 'none';
-    });
-}
-const securityToolsSelect = document.getElementById('securitytools');
-if (securityToolsSelect && libreOtpModeContainer) {
-    securityToolsSelect.addEventListener('change', () => {
     });
 }
 
@@ -2133,23 +2136,6 @@ function validateConfigurations() {
     const desktop = document.getElementById('desktop')?.value || 'none';
     const displayServer = document.getElementById('display_server')?.value || 'auto';
 
-    if (suiteToggle) {
-        const securityCbs = document.querySelectorAll('input[name="securitytools"]');
-        securityCbs.forEach(cb => {
-            if (suiteToggle.checked) {
-                cb.checked = true;
-                cb.disabled = true;
-                cb.parentElement.style.opacity = '0.6';
-                cb.parentElement.setAttribute('data-desc', 'Locked: Full Suite Binary enabled.');
-                cb.parentElement.classList.add('tooltip-always');
-            } else {
-                cb.disabled = false;
-                cb.parentElement.style.opacity = '1';
-                cb.parentElement.removeAttribute('data-desc');
-            }
-        });
-    }
-
     // DuskyOS Automation Lock
     const duskyAppCb = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
     const displayServerSelect = document.getElementById('display_server');
@@ -2178,9 +2164,9 @@ function validateConfigurations() {
         }
     }
 
-    if (part.value === 'unencrypted') warnings.push("Ã¢Å¡Â Ã¯Â¸Â No encryption Ã¢â‚¬â€ physical access = full compromise.");
-    if (gpuBrand === 'nvidia' && softwareType === 'libre') warnings.push("Ã¢Å¡Â Ã¯Â¸Â Nvidia + Libre = Nouveau only. Limited performance.");
-    if (displayServer === 'wayland' && (desktop === 'dusky' || desktop === 'dwm')) warnings.push(`Ã¢Å¡Â Ã¯Â¸Â ${desktop} requires X11/Xorg. Wayland will break it.`);
+    if (part.value === 'unencrypted') warnings.push("⚠️ No encryption — physical access = full compromise.");
+    if (gpuBrand === 'nvidia' && softwareType === 'libre') warnings.push("⚠️ Nvidia + Libre = Nouveau only. Limited performance.");
+    if (displayServer === 'wayland' && (desktop === 'dusky' || desktop === 'dwm')) warnings.push(`⚠️ ${desktop} requires X11/Xorg. Wayland will break it.`);
 
     window.smartAnalysisWarnings = warnings;
     const div = document.getElementById('global-warnings');
@@ -2194,7 +2180,7 @@ function validateConfigurations() {
 
 validateConfigurations();
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Config restore ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Config restore ──
 const restoreConfig = sessionStorage.getItem('arch_restore_config');
 if (restoreConfig) {
     try {
@@ -2219,7 +2205,7 @@ if (banner) banner.style.cursor = 'pointer';
 // Update history tooltip on load
 updateHistoryTooltip();
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Live Editor / Upload Handler ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ─── Live Editor / Upload Handler ─────────────────────────────────────────────
 (function initLiveEditor() {
     const fileInput      = document.getElementById('upload-file-input');
     const clearBtn       = document.getElementById('upload-clear-btn');
@@ -2274,7 +2260,7 @@ updateHistoryTooltip();
         // Check extension
         const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
         if (!VALID_EXTS.includes(ext)) {
-            setStatus('ÃƒÂ¢Ã…Â¡Ã‚Â  Invalid file type. Only .sh, .md, .bash, or .txt files are accepted.', 'var(--accent-red)');
+            setStatus('⚠ Invalid file type. Only .sh, .md, .bash, or .txt files are accepted.', 'var(--accent-red)');
             if (fileInput) fileInput.value = '';
             return;
         }
@@ -2291,7 +2277,7 @@ updateHistoryTooltip();
 
             // Populate editor
             if (editor) editor.value = text;
-            if (filenameEl) filenameEl.textContent = file.name + (isValid ? '' : ' (no valid config ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â editable only)');
+            if (filenameEl) filenameEl.textContent = file.name + (isValid ? '' : ' (no valid config — editable only)');
 
             // Show/hide restore button
             if (restoreBtn)  restoreBtn.style.display  = isValid ? '' : 'none';
@@ -2303,15 +2289,15 @@ updateHistoryTooltip();
             if (editorWrapper) editorWrapper.style.display  = '';
 
             if (isValid) {
-                setStatus('ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Valid config file ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â settings can be restored to the generator.', 'var(--accent-green)');
+                setStatus('✓ Valid config file — settings can be restored to the generator.', 'var(--accent-green)');
             } else {
-                setStatus('ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¹ No valid config header found. Showing file as editable text only.', 'var(--accent-orange, #ff9e64)');
+                setStatus('ℹ No valid config header found. Showing file as editable text only.', 'var(--accent-orange, #ff9e64)');
             }
         };
         reader.readAsText(file);
     }
 
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Event listeners ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // ── Event listeners ──────────────────────────────────
     if (fileInput) fileInput.addEventListener('change', function() {
         loadFile(this.files[0]);
     });
@@ -2334,8 +2320,8 @@ updateHistoryTooltip();
             const el = document.getElementById(map[k] || k);
             if (el) el.value = parsedConfig[k];
         });
-        setStatus('ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Settings restored to generator! Adjust options above then re-generate.', 'var(--accent-green)');
-        setTimeout(() => setStatus(isValid ? 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Valid config file loaded.' : '', 'var(--accent-cyan)'), 4000);
+        setStatus('✓ Settings restored to generator! Adjust options above then re-generate.', 'var(--accent-green)');
+        setTimeout(() => setStatus(isValid ? '✓ Valid config file loaded.' : '', 'var(--accent-cyan)'), 4000);
         validateConfigurations();
         // Scroll to top of generator
         const form = document.getElementById('install-form');
@@ -2362,7 +2348,7 @@ updateHistoryTooltip();
     }
 })();
 
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Bind Generate Button Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// ─── Bind Generate Button ───
 // Duplicate listener removed to prevent double-firing and bypassing validation.
 
 const historyBtn = document.getElementById('history-btn');
@@ -2628,7 +2614,9 @@ window.toggleAppConfig = function(appId) {
     const configDiv = document.getElementById('config-' + appId);
     const containerDiv = document.getElementById('container-' + appId);
     if (!configDiv) return;
-    
+
+    const cb = document.querySelector(`input[name="post_apps"][value="${appId}"]`);
+
     // Automatically check the box when opening the config if it's not checked
     if (configDiv.style.display === 'none') {
         configDiv.style.display = 'block';
@@ -2928,15 +2916,12 @@ document.addEventListener('contextmenu', function(e) {
     }
 });
 
-function closeAppConfigModal(appId) {
-    const m = document.getElementById('modal-' + appId);
-    if(m) m.style.display = 'none';
-    const am = document.getElementById('app-config-modal');
-    if(am) am.style.display = 'none';
-}
+// NOTE: closeAppConfigModal is defined once, near the top of this file, where
+// it also handles the discard-and-uncheck behaviour. A second plain-hide
+// definition used to live here and was silently overwritten at load.
 
 function saveAppConfig(appId) {
-    closeAppConfigModal(appId);
+    window.closeAppConfigModal();
     
     // Find the checkbox and mark it as configured
     const cb = document.querySelector(`input[type="checkbox"][value="${appId}"]`);
@@ -3012,34 +2997,57 @@ document.querySelector('a[href="index.html"]')?.addEventListener('click', functi
 });
 
 
-function enableAllSecurityApps() {
-    document.querySelectorAll('.tilas-sec-app').forEach(cb => {
-        cb.checked = true;
-        const evt = new Event('change');
-        cb.dispatchEvent(evt);
+// ── Group select-all / select-none ("lock select") ──
+// Both buttons toggle: first click selects the whole group, second clears it.
+// The button reflects the current state so it is never ambiguous.
+const TILAS_TOOL_VALUES = ['libre-otp', 'anti-ducky', 'anti-evil-maid',
+                           'kernel-watcher', 'scarecrow'];
+
+function toggleGroup(checkboxes, btn, labels, gradients) {
+    const boxes = Array.from(checkboxes);
+    if (boxes.length === 0) return;
+    // If any box is unchecked, select all; otherwise clear the group.
+    const turnOn = boxes.some(cb => !cb.checked);
+    boxes.forEach(cb => {
+        if (cb.checked !== turnOn) {
+            cb.checked = turnOn;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+        }
     });
+    if (btn) {
+        btn.textContent = turnOn ? labels.on : labels.off;
+        btn.style.background = turnOn ? gradients.on : gradients.off;
+        btn.setAttribute('aria-pressed', String(turnOn));
+    }
 }
 
 // ── Enable All tilas01 Security Tools ──
 function enableAllTilas() {
-    const tilaIds = ['libre-otp', 'anti-ducky', 'anti-evil-maid', 'kernel-watcher', 'scarecrow'];
-    tilaIds.forEach(id => {
-        const cb = document.querySelector(`input[name="post_apps"][value="${id}"]`);
-        if (cb && !cb.checked) {
-            cb.checked = true;
-            cb.dispatchEvent(new Event('change', { bubbles: true }));
+    const boxes = TILAS_TOOL_VALUES
+        .map(id => document.querySelector(`input[name="post_apps"][value="${id}"]`))
+        .filter(Boolean);
+    toggleGroup(
+        boxes,
+        document.querySelector('.my-tools-enable-btn'),
+        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All Suite' },
+        {
+            on: 'linear-gradient(135deg, var(--accent-green), var(--accent-cyan))',
+            off: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))'
         }
-    });
+    );
 }
 
 // ── Enable All Other Security Tools ──
 function enableAllOtherSec() {
-    document.querySelectorAll('input[name="other_sec_tools"]').forEach(cb => {
-        if (!cb.checked) {
-            cb.checked = true;
-            cb.dispatchEvent(new Event('change', { bubbles: true }));
+    toggleGroup(
+        document.querySelectorAll('input[name="other_sec_tools"]'),
+        document.querySelector('.other-sec-enable-btn'),
+        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All' },
+        {
+            on: 'linear-gradient(135deg, var(--accent-green), var(--accent-orange))',
+            off: 'linear-gradient(135deg, var(--accent-orange), var(--accent-red))'
         }
-    });
+    );
 }
 
 
