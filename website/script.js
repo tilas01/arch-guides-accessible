@@ -67,11 +67,34 @@ window.closeAppConfigModal = function() {
 };
 
 
-// ─── Save to sessionStorage & wire Live Editor teleport ─────────────────────
-window.saveToliveEditor = function(scriptContent, markdownContent) {
-    if (scriptContent) sessionStorage.setItem('generated_script', scriptContent);
-    if (markdownContent) sessionStorage.setItem('generated_markdown', markdownContent);
-};
+// ─── Live Editor hand-off ───────────────────────────────────────────────────
+// live.html reads exactly these three keys on load. Previously the generator
+// wrote 'live_md'/'live_sh'/'live_post_sh' while live.html read
+// 'generated_script'/'generated_markdown', so the standalone editor never found
+// anything -- which is why both of its Load buttons appeared to do nothing.
+// One writer, one set of key names.
+const LIVE_KEYS = { md: 'live_md', sh: 'live_sh', post: 'live_post_sh' };
+
+// The generator emits one script with a boundary marker; the UI shows the two
+// halves separately. Single source of truth for that split.
+const POST_INSTALL_BOUNDARY = '### POST-INSTALL BOUNDARY ###';
+
+function splitInstallScript(shContent) {
+    const sh = shContent || '';
+    if (!sh.includes(POST_INSTALL_BOUNDARY)) return { mainSh: sh, postSh: '' };
+    const parts = sh.split(POST_INSTALL_BOUNDARY);
+    return { mainSh: parts[0].trim(), postSh: parts.slice(1).join(POST_INSTALL_BOUNDARY).trim() };
+}
+window.splitInstallScript = splitInstallScript;
+
+function stageForLiveEditor(mdContent, shContent, postContent) {
+    try {
+        sessionStorage.setItem(LIVE_KEYS.md, mdContent || '');
+        sessionStorage.setItem(LIVE_KEYS.sh, shContent || '');
+        sessionStorage.setItem(LIVE_KEYS.post, postContent || '');
+    } catch (e) { /* storage full or blocked; editor will just open empty */ }
+}
+window.stageForLiveEditor = stageForLiveEditor;
 
 // Called from generate button — adds "Open in Live Editor" button to output
 window.injectLiveEditorLink = function() {
@@ -144,77 +167,144 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ---- Generation History (sessionStorage, clears on reload) ----
+// ---- Generation History ----------------------------------------------------
+// Session-scoped only: sessionStorage, so it clears when the tab closes and no
+// cookies are involved (the site is static on GitHub Pages). One implementation
+// only -- there used to be two, and the second one shadowed the stored history
+// with the browser's own `window.history` object, so `history.map` threw and
+// the History button silently did nothing.
 const HISTORY_KEY = 'arch_gen_history';
+const HISTORY_LIMIT = 10;
 
-function saveToHistory(mdContent, shContent, format) {
-    let history = [];
-    try { history = JSON.parse(sessionStorage.getItem(HISTORY_KEY)) || []; } catch(e) {}
-    history.unshift({ timestamp: (() => {
-            const d = new Date();
-            const pad = n => n.toString().padStart(2, '0');
-            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-        })(), format, md: mdContent || '', sh: shContent || '' });
-    if (history.length > 10) history = history.slice(0, 10);
-    sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+function readHistory() {
+    try {
+        const raw = JSON.parse(sessionStorage.getItem(HISTORY_KEY));
+        return Array.isArray(raw) ? raw : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function writeHistory(entries) {
+    try {
+        sessionStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+    } catch (e) {
+        // Quota exceeded: drop the oldest half and try once more.
+        try {
+            sessionStorage.setItem(HISTORY_KEY,
+                JSON.stringify(entries.slice(0, Math.ceil(entries.length / 2))));
+        } catch (e2) { /* give up silently; history is a convenience */ }
+    }
+}
+
+function timestampNow() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
+           `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function saveToHistory(mdContent, shContent, format, postContent, scContent) {
+    const entries = readHistory();
+    entries.unshift({
+        timestamp: timestampNow(),
+        format,
+        md: mdContent || '',
+        sh: shContent || '',
+        post: postContent || '',
+        sc: scContent || ''
+    });
+    writeHistory(entries.slice(0, HISTORY_LIMIT));
     updateHistoryTooltip();
 }
 
-function renderHistoryPanel() {
-    const panel = document.getElementById('history-panel');
-    if (!panel) return;
-    let history = [];
-    try { history = JSON.parse(sessionStorage.getItem(HISTORY_KEY)) || []; } catch(e) {}
-    if (history.length === 0) {
-        panel.innerHTML = '<em style="color:var(--fg-color)">No generations yet this session.</em>';
+// Renders into whichever history container the page provides.
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    if (!list) return;
+    const entries = readHistory();
+
+    if (entries.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:var(--fg-color); opacity:0.7;">' +
+            'No generations yet this session.</p>';
         return;
     }
-    panel.innerHTML = history.map((entry, i) => `
-        <div style="border-bottom:1px solid var(--bg-lighter);padding:0.4rem 0;display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:0.82rem;color:var(--accent-cyan)">${entry.timestamp} (${entry.format})</span>
-            <button class="btn" style="width:auto;padding:0.25rem 0.6rem;font-size:0.78rem;" onclick="restoreFromHistory(${i})">Restore</button>
+
+    list.innerHTML = entries.map((h, i) => `
+        <div style="background:var(--bg-color); border:1px solid var(--border-color); padding:1rem; border-radius:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem; gap:0.5rem; flex-wrap:wrap;">
+                <strong style="color:var(--accent-blue);">${escapeHTML(h.timestamp)}</strong>
+                <span style="font-size:0.78rem; color:var(--accent-cyan);">${escapeHTML(h.format || 'both')}</span>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem; background:var(--accent-cyan); color:var(--bg-darker);" onclick="loadHistoryIntoEditor(${i})">📝 Open in Live Editor</button>
+                <button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadHistoryItem(${i}, 'md')">📄 Guide</button>
+                <button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadHistoryItem(${i}, 'sh')">⚙️ Install</button>
+                ${h.post ? `<button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadHistoryItem(${i}, 'post')">🚀 Post</button>` : ''}
+                ${h.sc ? `<button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem; background:var(--bg-lighter);" onclick="downloadHistoryItem(${i}, 'sc')">📦 Config</button>` : ''}
+            </div>
         </div>
     `).join('');
 }
 
-window.restoreFromHistory = function(idx) {
-    let history = [];
-    try { history = JSON.parse(sessionStorage.getItem(HISTORY_KEY)) || []; } catch(e) {}
-    const entry = history[idx];
+// Downloads straight from the stored entry. The previous version base64-encoded
+// every entry into the markup on render, which broke on non-Latin-1 content and
+// bloated the DOM; reading the entry on click avoids both problems.
+window.downloadHistoryItem = function(idx, which) {
+    const entry = readHistory()[idx];
     if (!entry) return;
-    const mdEl = document.getElementById('raw-md-code');
-    const shEl = document.getElementById('raw-script-code');
-    if (mdEl && entry.md) mdEl.innerText = entry.md;
-    if (shEl && entry.sh) shEl.innerText = entry.sh;
-    updatePreview();
-    if (window.Prism) Prism.highlightAll();
+    const files = {
+        md:   ['arch_guide.md',     entry.md],
+        sh:   ['install.sh',        entry.sh],
+        post: ['post_install.sh',   entry.post],
+        sc:   ['arch-config.sc',    entry.sc]
+    };
+    const [name, content] = files[which] || [];
+    if (name && content) window.downloadFile(content, name);
+};
+
+// Hands a past generation to the standalone Live Editor page, which auto-loads
+// whatever is in sessionStorage when it opens.
+window.loadHistoryIntoEditor = function(idx) {
+    const entry = readHistory()[idx];
+    if (!entry) return;
+    stageForLiveEditor(entry.md, entry.sh, entry.post);
+    window.open('live.html', '_blank');
+};
+
+window.openHistoryModal = function() {
+    const modal = document.getElementById('history-modal');
+    if (!modal) return;
+    renderHistory();
+    modal.style.display = 'flex';
+};
+
+window.closeHistoryModal = function() {
+    const modal = document.getElementById('history-modal');
+    if (modal) modal.style.display = 'none';
 };
 
 window.toggleHistoryModal = function() {
     const modal = document.getElementById('history-modal');
     if (!modal) return;
-    const vis = modal.style.display === 'block';
-    modal.style.display = vis ? 'none' : 'block';
-    if (!vis) renderHistoryPanel();
+    const visible = modal.style.display === 'flex';
+    if (visible) window.closeHistoryModal();
+    else window.openHistoryModal();
+};
+
+window.clearHistory = function() {
+    if (!confirm("Are you sure you want to clear all generation history?")) return;
+    sessionStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+    updateHistoryTooltip();
 };
 
 
 // ─── Page switching: Generator ↔ Output ──────────────────────────────────────
 function showOutputPage(mdContent, shContent, format, scContent) {
-    // Save to sessionStorage for live.html
-    sessionStorage.setItem('live_md', mdContent || '');
-    sessionStorage.setItem('live_sh', shContent || '');
-    
-    // Attempt to split install vs post-install scripts (Fallback split mechanism)
-    let postSh = '';
-    let mainSh = shContent || '';
-    if (shContent && shContent.includes('### POST-INSTALL BOUNDARY ###')) {
-        const parts = shContent.split('### POST-INSTALL BOUNDARY ###');
-        mainSh = parts[0].trim();
-        postSh = parts[1].trim();
-    }
-    sessionStorage.setItem('live_sh', mainSh);
-    sessionStorage.setItem('live_post_sh', postSh);
+    // Split install vs post-install on the boundary marker the generator emits.
+    const { mainSh, postSh } = splitInstallScript(shContent);
+    stageForLiveEditor(mdContent, mainSh, postSh);
 
     // Check if Live Generation Toggle is checked
     const liveToggle = document.getElementById('live_generation_toggle');
@@ -345,6 +435,14 @@ window.updatePreview = function() {
     }
 };
 
+// ---- Form readers ----
+// Module scope on purpose: the validation matrix at the top of generateOutput
+// needs these before the per-run config constants are declared. Keeping them
+// function-local caused a temporal-dead-zone throw ("Cannot access 'gv' before
+// initialization") on every single generation.
+const gv = (id, def = '') => { const e = document.getElementById(id); return e ? e.value : def; };
+const gi = (id, def = 1) => { const e = document.getElementById(id); return e ? parseInt(e.value) || def : def; };
+
 // ====================================================================
 // MAIN OUTPUT GENERATOR
 // ====================================================================
@@ -369,7 +467,8 @@ window.generateOutput = function(auto = false) {
         // ── Anti-Evil Maid + Unencrypted /boot or /efi Warning ──
         
         // ── Auto Updater Validation ──
-        if (auto_updates === 'systemd' && initSys !== 'systemd') {
+        // Read locally: the shared config constants are declared further down.
+        if (gv('auto_updates', 'no') === 'systemd' && gv('init_system', 'systemd') !== 'systemd') {
             smartWarnings.push("Systemd Timer for Auto Updates selected, but you are not using Systemd as your Init System. Please choose Pacman Hook or Manual instead.");
         }
 const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_apps"]:checked')).map(c => c.value);
@@ -399,10 +498,14 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
         
         // 2. BTRFS without btrfs-progs (Usually installed by base, but good to check conceptually)
         // 3. Custom Firewall with Endlessh
-        let endlesshSelected = false;
-        document.querySelectorAll('input[type="checkbox"][data-requires-config="true"]').forEach(cb => {
-            if (cb.checked && cb.parentElement.innerText.includes('Endlessh')) endlesshSelected = true;
-        });
+        // textContent, not innerText: innerText is layout-dependent and absent
+        // in non-browser DOMs, and the optional chaining keeps a detached
+        // checkbox from throwing and aborting the whole generation.
+        const endlesshSelected = Array.from(
+            document.querySelectorAll('input[name="post_apps"]')
+        ).some(cb => cb.checked &&
+            (cb.value === 'endlessh' ||
+             (cb.parentElement?.textContent || '').includes('Endlessh')));
         if (endlesshSelected && firewall !== 'none') {
             smartWarnings.push("You selected a Custom Firewall profile AND Endlessh. Ensure your firewall allows port 2222 for your real SSH daemon, as Endlessh binds to 22.");
         }
@@ -415,8 +518,8 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
             errDiv.style.marginBottom = '1.5rem';
             
             const form = document.querySelector('.generator-form');
-            form.insertBefore(errDiv, form.firstChild);
-            
+            if (form) form.insertBefore(errDiv, form.firstChild);
+
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
@@ -441,9 +544,6 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
             }
         }
     }
-
-    const gv = (id, def='') => { const e = document.getElementById(id); return e ? e.value : def; };
-    const gi = (id, def=1) => { const e = document.getElementById(id); return e ? parseInt(e.value)||def : def; };
 
     const fw = gv('firmware','uefi');
     const fs = gv('filesystem','btrfs');
@@ -1506,146 +1606,89 @@ run_with_progress() {
         return o;
     }
 
-    // ── Render ──
-    // For auto-mode (re-generate on form change): keep output section in whatever state it's in
-    // For manual generate: showOutputPage() is called after this function builds the HTML
-    const outputSection = document.getElementById('output-section');
-    if (auto && outputSection && outputSection.style.display !== 'none') {
-        // Stay visible if already showing
-    }
-
+    // ── Build the output ──
     let mdOutput = "", scriptOutput = "";
     if (format === "script" || format === "both") scriptOutput = buildOutput(true);
     if (format === "markdown" || format === "both") mdOutput = buildOutput(false);
 
-    // ISO pre-setup
-    let isoHTML = "";
-    if (iso_setup === "ssh") isoHTML = `<div class="alert warning"><strong>📡 Run on Arch ISO first:</strong><pre><code>systemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
-    else if (iso_setup === "ssh_curl") isoHTML = `<div class="alert warning"><strong>📡 Run on Arch ISO first:</strong><pre><code>pacman -Sy --noconfirm curl\nsystemctl start sshd\necho 'root:arch' | chpasswd\nip addr</code></pre></div>`;
-
-    // ── Smart Analysis & Proprietary Warnings ──
-    let analysisWarnings = 0;
-    let analysisErrors = 0;
-    if (selectedPropApps.length > 0 && software_type !== 'libre') {
-        let warnStr = `\n\n## ⚠️ Proprietary Software Notice\n> You have chosen to include software containing proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
-        selectedPropApps.forEach(a => warnStr += `- **${a.toUpperCase()}**: ${propAppsDB[a]}\n`);
-        mdOutput += warnStr;
-        analysisWarnings += selectedPropApps.length;
+    // ── Proprietary software notices appended to the guide ──
+    if (selectedPropApps.length > 0) {
+        if (software_type === 'libre') {
+            mdOutput += `\n\n> [!CAUTION]\n> **LIBRE CONFLICT**: You selected "Fully Libre" software type, but included ` +
+                `proprietary applications (${selectedPropApps.join(', ')}). Your system will NOT be fully libre!\n`;
+        } else {
+            let warnStr = `\n\n## ⚠️ Proprietary Software Notice\n> You have chosen to include software containing ` +
+                `proprietary (closed-source) code. Be aware of the following privacy/freedom implications:\n`;
+            selectedPropApps.forEach(a => { warnStr += `- **${a.toUpperCase()}**: ${propAppsDB[a]}\n`; });
+            mdOutput += warnStr;
+        }
     }
 
-    if (selectedPropApps.length > 0 && software_type === 'libre') {
-        analysisErrors += 1;
-        let conflictStr = `\n\n> [!CAUTION]\n> **LIBRE CONFLICT**: You selected "Fully Libre (Strict)" software type, but included proprietary applications (${selectedPropApps.join(', ')}). Your system will NOT be fully libre!\n`;
-        mdOutput += conflictStr;
-    }
+    // ── Hand off to the Live Editor ──
+    // The generated output goes straight into the staging editor, where the user
+    // can tweak it before pressing "Confirm & Save" to reach the static output
+    // view. (This block used to render into a #generated-guide container that no
+    // longer exists in index.html, so generation produced nothing visible.)
+    const { mainSh, postSh } = splitInstallScript(scriptOutput);
+    const configJSONText = JSON.stringify(window.getFormValues(), null, 2);
+    try { sessionStorage.setItem('last_generated_sc', configJSONText); } catch (e) { /* non-fatal */ }
 
-    let html = isoHTML;
+    const mdBox   = document.getElementById('live-editor-textarea-md');
+    const shBox   = document.getElementById('live-editor-textarea-sh');
+    const postBox = document.getElementById('live-editor-textarea-post');
 
-    // ── BOX 1: Markdown Editor ──
-    if (format === "markdown" || format === "both") {
-        html += `
-        <div class="output-actions">
-            <h3 class="output-title md-edit">📄 Markdown Guide — Live Editor</h3>
-            <div style="display:flex;gap:0.4rem;">
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-md-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .md',2000)">Copy .md</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">💾 .md</button>
-            </div>
-        </div>
-        <pre class="output-box editor-md"><code id="raw-md-code" class="language-markdown" contenteditable="true" oninput="updatePreview()">${escapeHTML(mdOutput)}</code></pre>
+    if (mdBox)   mdBox.value   = (format === 'script') ? '' : mdOutput;
+    if (shBox)   shBox.value   = (format === 'markdown') ? '' : mainSh;
+    if (postBox) postBox.value = (format === 'markdown') ? '' : postSh;
 
-        <div class="output-actions">
-            <h3 class="output-title md-prev">👁 Markdown — Live Preview</h3>
-            <h3 class="output-title ssh-cmd">🖥 SSH One-Liner Deploy</h3>
-        </div>
-        <pre class="output-box oneliner"><code class="language-bash">${escapeHTML(`cat << 'ARCHEOF' > install.sh\n${scriptOutput}\nARCHEOF\nbash install.sh`)}</code></pre>
-        `;
-    }
+    // Hide the post-install panel when there is nothing to put in it.
+    const postWrap = document.getElementById('live-editor-post-sh-container');
+    if (postWrap) postWrap.style.display = postSh.trim() ? '' : 'none';
 
-    if (format === "script" || format === "both") {
-        html += `
-        <div class="output-actions" style="margin-top:1.5rem;">
-            <h3 class="output-title script-edit">⚡ Bash Script — Live Editor</h3>
-            <div style="display:flex;gap:0.4rem;">
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-script-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .sh',2000)">Copy .sh</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-green);color:#000;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">💾 .sh</button>
-            </div>
-        </div>
-        <pre class="output-box editor-script"><code id="raw-script-code" class="language-bash" contenteditable="true">${escapeHTML(scriptOutput)}</code></pre>
-        `;
-    }
+    const liveEditorSection = document.getElementById('live-editor');
+    if (liveEditorSection) liveEditorSection.style.display = 'block';
 
-    // ── History + state ──
-    document.getElementById('generated-guide').innerHTML = html;
-    if (window.Prism) Prism.highlightAll();
-    updatePreview();
+    // Keep the syntax-highlighted mirrors in step with the textareas.
+    if (window.refreshLiveEditorPreviews) window.refreshLiveEditorPreviews();
+
+    stageForLiveEditor(mdOutput, mainSh, postSh);
+    buildSshDeployCommands(mainSh, postSh);
 
     if (!auto) {
-        saveToHistory(mdOutput, scriptOutput, format);
-        
-        // Push output into the Live Editor directly
-        const uploadEditor = document.getElementById('upload-editor');
-        if (uploadEditor) {
-            if (format === 'both') {
-                uploadEditor.value = mdOutput + '\n\n---\n\n' + scriptOutput;
-            } else {
-                uploadEditor.value = format === 'script' ? scriptOutput : mdOutput;
-            }
-            // Trigger input event to update preview
-            uploadEditor.dispatchEvent(new Event('input'));
-            
-            // Show the live editor UI
-            document.getElementById('upload-editor-wrapper').style.display = 'block';
-            document.getElementById('upload-clear-btn').style.display = 'block';
-            
-            const statusEl = document.getElementById('upload-status');
-            if (statusEl) {
-                statusEl.textContent = '✓ New generation applied to Live Editor.';
-                statusEl.style.color = 'var(--accent-green)';
-            }
-        }
-
-        // Generate .sc config string
-        const configJSONText = JSON.stringify(window.getFormValues(), null, 2);
-        
-        // Inject .sc code block into html
-        const scHtml = `
-        <div class="output-actions" style="margin-top:1rem;">
-            <h3 class="output-title sc-edit" style="color:var(--accent-purple);">⚙️ Config File (.sc)</h3>
-            <div style="display:flex;gap:0.4rem;">
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-sc-code').innerText).then(()=>this.textContent='Copied!'); setTimeout(()=>this.textContent='Copy .sc',2000)">Copy .sc</button>
-                <button class="btn" style="width:auto;padding:0.3rem 0.8rem;font-size:0.82rem;background:var(--accent-purple);color:#000;" onclick="downloadFile(document.getElementById('raw-sc-code').innerText, 'arch-install.sc')">💾 .sc</button>
-            </div>
-        </div>
-        <pre class="output-box editor-sc"><code id="raw-sc-code" class="language-json" contenteditable="true">${escapeHTML(configJSONText)}</code></pre>
-        `;
-        document.getElementById('generated-guide').innerHTML += scHtml;
-        
-        // Populate the download buttons dynamically
-        const downloadBtnsContainer = document.getElementById('download-btns');
-        if (downloadBtnsContainer) {
-            let btnsHTML = '';
-            if (format === 'markdown' || format === 'both') {
-                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="📝 Download Guide" data-desc="Save the step-by-step tutorial as a markdown file." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-blue); font-size:0.9rem;" onclick="downloadFile(document.getElementById('raw-md-code').innerText, 'arch-install.md')">💾 .md Guide</button>`;
-            }
-            if (format === 'script' || format === 'both') {
-                btnsHTML += `<button type="button" class="btn tooltip-always" data-title="⚡ Download Script" data-desc="Save the executable auto-install Bash script." style="width:auto; padding:0.5rem 1.2rem; background:var(--accent-green); color:#000; font-size:0.9rem; font-weight:bold;" onclick="downloadFile(document.getElementById('raw-script-code').innerText, 'arch-install.sh')">💾 .sh Script</button>`;
-            }
-            // Always show the .sc config download option
-            btnsHTML += `<button type="button" class="btn tooltip-always" data-title="⚙️ Save Configuration" data-desc="Download your selections as a .sc file so you can upload and restore them later." style="width:auto; padding:0.5rem 1.2rem; background:var(--bg-lighter); border:1px solid var(--accent-cyan); color:var(--accent-cyan); font-size:0.9rem;" onclick="downloadFile(JSON.stringify(window.getFormValues(), null, 2), 'arch-config.sc')">💾 .sc Config</button>`;
-            
-            downloadBtnsContainer.innerHTML = btnsHTML;
-            if (window.syncTooltipBtn) syncTooltipBtn(); // Re-bind tooltips
-        }
-
-        // Ensure Live Preview is visible but do NOT hide generator
-        const outputSec = document.getElementById('output-section');
-        if (outputSec) {
-            outputSec.style.display = 'block';
-            // Scroll smoothly to Live Preview
-            outputSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        saveToHistory(mdOutput, scriptOutput, format, postSh, configJSONText);
+        if (liveEditorSection) {
+            liveEditorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 };
+
+// Builds the copy-paste SSH one-liners shown on the static output page.
+function buildSshDeployCommands(mainSh, postSh) {
+    const container = document.getElementById('ssh-commands-container');
+    if (!container) return;
+
+    const heredoc = (label, filename, body, colour) => `
+        <div>
+            <p style="color:var(--fg-color); margin:0 0 0.3rem; font-size:0.85rem;"><strong>${escapeHTML(label)}</strong></p>
+            <pre class="output-box oneliner" style="border-color:${colour};"><code class="language-bash">${escapeHTML(
+                `ssh root@<TARGET-IP> "cat > /root/${filename}" << 'ARCHEOF'\n${body}\nARCHEOF\n` +
+                `ssh root@<TARGET-IP> "bash /root/${filename}"`
+            )}</code></pre>
+        </div>`;
+
+    let out = '';
+    if (mainSh && mainSh.trim()) {
+        out += heredoc('Install script', 'install.sh', mainSh, 'var(--accent-green)');
+    }
+    if (postSh && postSh.trim()) {
+        out += heredoc('Post-install script (run after first boot)', 'post_install.sh', postSh, 'var(--accent-blue)');
+    }
+    container.innerHTML = out || '<p style="color:var(--fg-color); opacity:0.7;">Generate a script to see the deploy command.</p>';
+    // Prism comes from a CDN; degrade to unhighlighted code if it didn't load.
+    if (window.Prism && typeof Prism.highlightAllUnder === 'function') {
+        Prism.highlightAllUnder(container);
+    }
+}
 
 // ── Form Serialization & Preview Logic ──
 window.getFormValues = function() {
@@ -1695,8 +1738,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <input type="hidden" id="adv_aem_mode" value="1">
         <input type="hidden" id="adv_theme_mode" value="tokyonight">
     `;
-    if (!document.getElementById('adv_doas_mode')) {
-        document.getElementById('generator-form').insertAdjacentHTML('beforeend', hiddenStateHtml);
+    // "generator-form" is a CLASS, not an id, so getElementById returned null
+    // here and this whole DOMContentLoaded handler threw -- taking the
+    // .btn-configure wiring, the proprietary highlighting and the .sc upload
+    // listener down with it. Append into the actual <form> so these hidden
+    // fields are also picked up by getFormValues() for the .sc export.
+    const advHost = document.getElementById('install-form');
+    if (advHost && !document.getElementById('adv_doas_mode')) {
+        advHost.insertAdjacentHTML('beforeend', hiddenStateHtml);
     }
 
     function updateConfigButtons() {
@@ -2628,25 +2677,42 @@ window.toggleAppConfig = function(appId) {
     }
 };
 
+// The staging editor has three panes (guide, install script, post-install
+// script), each with a textarea and a syntax-highlighted <pre> mirror. The
+// previous version addressed single #live-editor-textarea / -preview / -code
+// elements that do not exist in the markup, so it threw on the first null and
+// the Raw Edit / Syntax Preview switch did nothing.
+const LIVE_EDITOR_PANES = [
+    { textarea: 'live-editor-textarea-md',   preview: 'live-editor-preview-md' },
+    { textarea: 'live-editor-textarea-sh',   preview: 'live-editor-preview-sh' },
+    { textarea: 'live-editor-textarea-post', preview: 'live-editor-preview-post' }
+];
+
+// Copies textarea content into the highlighted mirrors and re-runs Prism.
+window.refreshLiveEditorPreviews = function() {
+    LIVE_EDITOR_PANES.forEach(pane => {
+        const ta = document.getElementById(pane.textarea);
+        const pre = document.getElementById(pane.preview);
+        if (!ta || !pre) return;
+        const code = pre.querySelector('code');
+        if (!code) return;
+        code.textContent = ta.value;
+        if (window.Prism) Prism.highlightElement(code);
+    });
+};
+
 window.toggleLiveEditorMode = function() {
     const toggle = document.getElementById('live-preview-toggle');
-    const textarea = document.getElementById('live-editor-textarea');
-    const preview = document.getElementById('live-editor-preview');
-    const code = document.getElementById('live-editor-code');
-    
-    if (toggle.checked) {
-        // Switch to Preview Mode
-        textarea.style.display = 'none';
-        preview.style.display = 'block';
-        code.textContent = textarea.value;
-        if (window.Prism) {
-            Prism.highlightElement(code);
-        }
-    } else {
-        // Switch to Raw Edit Mode
-        preview.style.display = 'none';
-        textarea.style.display = 'block';
-    }
+    const showPreview = !!(toggle && toggle.checked);
+
+    if (showPreview) window.refreshLiveEditorPreviews();
+
+    LIVE_EDITOR_PANES.forEach(pane => {
+        const ta = document.getElementById(pane.textarea);
+        const pre = document.getElementById(pane.preview);
+        if (ta) ta.style.display = showPreview ? 'none' : 'block';
+        if (pre) pre.style.display = showPreview ? 'block' : 'none';
+    });
 };
 
 // ====================================================================
@@ -2689,15 +2755,13 @@ window.toggleSplitScripts = function() {
     const toggle = document.getElementById('split-scripts-toggle');
     const postContainer = document.getElementById('live-editor-post-sh-container');
     const titleInstall = document.getElementById('title-install-sh');
-    
-    if (toggle.checked) {
-        // Split Mode
-        postContainer.style.display = 'block';
-        titleInstall.textContent = "Install Script (.sh)";
-    } else {
-        // Unified Mode
-        postContainer.style.display = 'none';
-        titleInstall.textContent = "Unified Install & Post-Install Script (.sh)";
+    const split = !!(toggle && toggle.checked);
+
+    if (postContainer) postContainer.style.display = split ? 'block' : 'none';
+    if (titleInstall) {
+        titleInstall.textContent = split
+            ? "Install Script (.sh)"
+            : "Unified Install & Post-Install Script (.sh)";
     }
 };
 
@@ -2725,33 +2789,26 @@ window.confirmAndSaveLiveEditor = function() {
         finalPost = ""; // Clear post since it's unified
     }
     
-    // Save to LocalStorage History
-    const newEntry = {
+    // Record the confirmed edit in session history. `history` here used to
+    // refer to the browser's window.history object, so unshift() threw and this
+    // whole function aborted before it could show the static output.
+    const entries = readHistory();
+    entries.unshift({
         id: Date.now().toString(),
-        timestamp: (() => {
-            const d = new Date();
-            const pad = n => n.toString().padStart(2, '0');
-            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-        })(),
+        timestamp: timestampNow(),
+        format: 'both',
         md: finalMd,
         sh: finalSh,
         post: finalPost,
         sc: sessionStorage.getItem('last_generated_sc') || '{}'
-    };
-    
-    history.unshift(newEntry);
-    
-    // Rolling cache: Keep max 10 to avoid quota limits
-    if (history.length > 10) {
-        history.pop();
-    }
-    
-    try {
-    } catch(e) {
-        alert("Storage quota exceeded! Clearing oldest history items...");
-        history = history.slice(0, 5);
-    }
-    
+    });
+    writeHistory(entries.slice(0, HISTORY_LIMIT));
+    updateHistoryTooltip();
+
+    // Keep the standalone Live Editor in sync with the confirmed content.
+    stageForLiveEditor(finalMd, finalSh, finalPost);
+
+
     // Transition to Static Output
     document.getElementById('live-editor').style.display = 'none';
     const outSec = document.getElementById('output-section');
@@ -2843,36 +2900,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Generation History Modal Logic
-window.openHistoryModal = function() {
-    const modal = document.getElementById('history-modal');
-    const list = document.getElementById('history-list');
-    modal.style.display = 'flex';
-    
-    if (history.length === 0) {
-        list.innerHTML = '<p style="text-align:center; color:var(--fg-color); opacity:0.7;">No history available.</p>';
-        return;
-    }
-    
-    list.innerHTML = history.map(h => `
-        <div style="background:var(--bg-color); border:1px solid var(--border-color); padding:1rem; border-radius:8px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem;">
-                <strong style="color:var(--accent-blue);">${h.timestamp}</strong>
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadString('${btoa(unescape(encodeURIComponent(h.md)))}', 'arch_guide.md')">📄 Guide</button>
-                <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadString('${btoa(unescape(encodeURIComponent(h.sh)))}', 'install.sh')">⚙️ Install</button>
-                ${h.post ? `<button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadString('${btoa(unescape(encodeURIComponent(h.post)))}', 'post_install.sh')">🚀 Post</button>` : ''}
-                <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem; background:var(--bg-lighter);" onclick="downloadString('${btoa(unescape(encodeURIComponent(h.sc)))}', 'config.sc')">📦 Config</button>
-            </div>
-        </div>
-    `).join('');
-};
-
-window.clearHistory = function() {
-    if (confirm("Are you sure you want to clear all generation history?")) {
-        openHistoryModal(); // refresh
-    }
-};
+// NOTE: openHistoryModal / clearHistory are defined once, near the top of this
+// file alongside the rest of the history helpers.
 
 window.downloadString = function(b64, filename) {
     const text = decodeURIComponent(escape(atob(b64)));
@@ -3020,6 +3049,26 @@ function toggleGroup(checkboxes, btn, labels, gradients) {
         btn.setAttribute('aria-pressed', String(turnOn));
     }
 }
+
+// ── Select / clear every post-install app ──
+// Referenced by the "Enable All" control in the Post-Install Apps header. It was
+// never defined, so that button threw ReferenceError on click.
+function toggleAllPostApps() {
+    const boxes = Array.from(document.querySelectorAll('input[name="post_apps"]'))
+        // Never mass-toggle something the user must configure first, or a
+        // disabled box that another selection is currently forcing.
+        .filter(cb => !cb.disabled && cb.dataset.requiresConfig !== 'true');
+    toggleGroup(
+        boxes,
+        document.querySelector('.post-apps-enable-btn'),
+        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All' },
+        {
+            on: 'linear-gradient(135deg, var(--accent-green), var(--accent-purple))',
+            off: 'var(--accent-purple)'
+        }
+    );
+}
+window.toggleAllPostApps = toggleAllPostApps;
 
 // ── Enable All tilas01 Security Tools ──
 function enableAllTilas() {
