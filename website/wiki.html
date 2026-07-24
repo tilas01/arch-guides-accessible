@@ -114,21 +114,18 @@
             <li><strong>Mostly Reproducible:</strong> <em>(Still highly verified and safe)</em> The application is fully open-source and the code can be audited. However, the build system (like GitHub Actions or the Arch Build System) embeds non-deterministic metadata during compilation, such as build timestamps, randomized IDs, or system file paths. This means the binaries won't be perfectly identical bit-for-bit, but the actual compiled code logic is safe and verifiable.</li>
             <li><strong>Non-Reproducible:</strong> <em>(Requires trusting the developer)</em> The application uses an opaque build process or relies on precompiled blobs (common with Electron apps like Signal). This does not mean the software is malicious, but it means you cannot independently verify that the resulting binary exactly matches the public source code. You must trust that the developer, or the automated CI system they authorized, compiled it safely without modifications.</li>
             <li><strong>Proprietary / Closed Source:</strong> The application contains closed-source, proprietary code (such as Firefox's DRM firmware blobs, Chromium's Google integration, or Flatpak's proprietary catalog). The source code is not fully available for public auditing, so you are entirely reliant on trusting the corporate entity or developer behind it.</li>
-        </ul>
-    </div>
-
-    <div class="section" id="downloads">
-        <h2><span class="icon">📦</span> Downloads & Live Releases</h2>
-        <p>All tools can be compiled directly via Cargo. Ensure you have the Rust toolchain installed (<code>pacman -S rust</code>).</p>
+        </ul    <div class="section" id="security-suite">
+        <h2><span class="icon">🦀</span> Security Suite & Live Releases</h2>
+        <p>All tools can be compiled directly via Cargo or downloaded from the GitHub releases page below. Ensure you have the Rust toolchain installed (<code>pacman -S rust</code>) for compiling.</p>
         
         <div style="margin-bottom:1.5rem; padding:1rem; border-left:4px solid var(--accent-green); background:rgba(46, 160, 67, 0.1);">
-            <strong>✅ 100% Reproducible & GPG Signed</strong>
+            <strong>🔒 100% Reproducible & GPG Signed</strong>
             <p style="margin-top:0.5rem; font-size:0.95rem;">Every binary released in this repository is strictly <strong>100% Reproducible</strong>. Our GitHub Actions CI environment compiles the releases deterministically. Furthermore, every release is <strong>GPG Signed</strong> by the author to guarantee supply-chain integrity.</p>
         </div>
         
         <div style="background:var(--bg-lighter); padding:1rem; border-radius:8px; border:1px solid var(--border-color); margin-bottom:1.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                <h3 style="margin:0;"><span class="icon">🚀</span> Live Release History</h3>
+                <h3 style="margin:0;"><span class="icon">📦</span> Live GitHub Statistics & Releases</h3>
                 
             </div>
             <div id="live-releases-container">
@@ -144,16 +141,15 @@
         <code>cargo install arch-rusty-security-suite --git https://github.com/tilas01/arch-guides-dynamic</code>
         <p>Installs the unified binary containing all modules.</p>
 
-        <h4>Standalone Modules</h4>
+        <h4>Standalone Modules / Static Explanation</h4>
         <ul>
-            
-            
-            
-            
-            
+            <li><strong>Libre OTP:</strong> Double OTP verifier. Requires two consecutive valid OTP codes (must wait 30s) or two different authenticators for extreme security.</li>
+            <li><strong>Anti-Ducky:</strong> USB Blocker. Dynamically detects and blocks rogue HID devices (Rubber Duckies) attempting payload injection.</li>
+            <li><strong>Anti-Evil-Maid:</strong> Boot Verification. Checks TPM and Secure Boot state against known-good hashes to prevent offline tampering.</li>
+            <li><strong>Kernel Watcher:</strong> Ring 0 Monitor. Scans for illicit kernel module loads and unexpected sysfs parameter modifications.</li>
+            <li><strong>Scarecrow:</strong> Canary Tokens. Generates and monitors fake credentials/files to detect network breaches immediately.</li>
         </ul>
     </div>
-
 
     <div class="section" id="firewall">
         <h2><span class="icon">🛡️</span> UFW Firewall Profiles</h2>
@@ -323,3 +319,45 @@
 
 </body>
 </html>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('live-releases-container');
+    if (!container) return;
+
+    fetch('https://api.github.com/repos/tilas01/arch-guides-dynamic/releases')
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.length === 0) {
+                container.innerHTML = '<p>No releases found yet.</p>';
+                return;
+            }
+            
+            // Show up to 3 recent releases
+            const recent = data.slice(0, 3);
+            let html = '<ul style="list-style-type:none; padding-left:0;">';
+            recent.forEach(release => {
+                const date = new Date(release.published_at).toLocaleDateString();
+                const downloads = release.assets.reduce((acc, asset) => acc + asset.download_count, 0);
+                html += \<li style="margin-bottom:1rem; padding:1rem; background:var(--bg-dark); border:1px solid var(--accent-purple); border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
+                        <strong style="color:var(--accent-cyan); font-size:1.1rem;">\</strong>
+                        <span style="font-size:0.85rem; color:#8b949e;">\</span>
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--fg-color); margin-bottom:0.5rem;">
+                        <span style="margin-right:15px;">?? \ Downloads</span>
+                        <a href="\" target="_blank" style="color:var(--accent-blue); text-decoration:underline;">View on GitHub</a>
+                    </div>
+                </li>\;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error fetching releases:', error);
+            container.innerHTML = '<p style="color:var(--accent-red);">Failed to load releases from GitHub API. Please check your connection or view them directly on GitHub.</p>';
+        });
+});
+</script>

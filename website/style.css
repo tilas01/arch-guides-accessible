@@ -93,7 +93,7 @@ section {
     padding: 2rem;
     border-radius: 12px;
     margin-bottom: 2rem;
-    bpx solid var(--bg-lighter);
+    border: 1px solid var(--bg-lighter);
 }
 
 /* ─── Form ─── */
@@ -111,7 +111,7 @@ input, select {
     padding: 0.6rem;
     background-color: var(--bg-color);
     color: var(--fg-color);
-    bpx solid var(--accent-purple);
+    border: 1px solid var(--accent-purple);
     border-radius: 6px;
     font-family: var(--font-mono);
     font-size: 0.9rem;
@@ -144,12 +144,12 @@ input:focus, select:focus {
 .alert { padding: 0.8rem; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.9rem; }
 .alert.warning {
     background-color: rgba(247, 118, 142, 0.1);
-    bpx solid var(--accent-red);
+    border: 1px solid var(--accent-red);
     color: var(--accent-red);
 }
 .alert.info {
     background-color: rgba(122, 162, 247, 0.1);
-    bpx solid var(--accent-blue);
+    border: 1px solid var(--accent-blue);
     color: var(--accent-blue);
 }
 
@@ -171,17 +171,17 @@ input:focus, select:focus {
     margin-bottom: 0.5rem;
 }
 .output-box.editor-md {
-    bpx solid var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
 }
 .output-box.editor-sh {
-    bpx solid var(--accent-blue);
+    border: 1px solid var(--accent-blue);
 }
 .output-box.preview-md {
-    bpx solid var(--accent-purple);
+    border: 1px solid var(--accent-purple);
     color: var(--fg-color);
 }
 .output-box.oneliner {
-    bpx solid var(--accent-green);
+    border: 1px solid var(--accent-green);
     background: rgba(158, 206, 106, 0.05);
     font-size: 0.82rem;
 }
@@ -214,7 +214,7 @@ input:focus, select:focus {
     border-radius: 12px;
     white-space: normal;
     font-size: 0.95rem;
-    bpx solid var(--accent-blue);
+    border: 1px solid var(--accent-blue);
     word-wrap: break-word;
     overflow-wrap: break-word;
     max-width: 100%;
@@ -224,7 +224,7 @@ input:focus, select:focus {
     padding: 1rem;
     border-radius: 8px;
     overflow-x: auto;
-    bpx solid var(--accent-purple);
+    border: 1px solid var(--accent-purple);
     white-space: pre-wrap;
     word-wrap: break-word;
 }
@@ -245,7 +245,7 @@ input:focus, select:focus {
 .markdown-body ul, .markdown-body ol { margin: 0.5rem 0 0.5rem 1.5rem; }
 .markdown-body table { border-collapse: collapse; width: 100%; margin: 0.8rem 0; }
 .markdown-body th, .markdown-body td {
-    bpx solid var(--bg-lighter);
+    border: 1px solid var(--bg-lighter);
     padding: 0.4rem 0.7rem;
     text-align: left;
 }
@@ -381,7 +381,7 @@ noscript .js-only { display: none !important; }
     align-items: center;
     gap: 0.8rem;
     background: var(--bg-darker);
-    bpx solid var(--bg-lighter);
+    border: 1px solid var(--bg-lighter);
     border-radius: 12px;
     padding: 0.8rem 1.2rem;
     min-width: 260px;
@@ -392,7 +392,7 @@ noscript .js-only { display: none !important; }
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    bpx solid var(--accent-purple);
+    border: 1px solid var(--accent-purple);
 }
 .credit-card .credit-info { display: flex; flex-direction: column; }
 .credit-card .credit-name { color: var(--heading-color); font-weight: bold; font-size: 0.95rem; }
@@ -409,7 +409,7 @@ noscript .js-only { display: none !important; }
     min-width: 250px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
     z-index: 1;
-    bpx solid var(--accent-purple);
+    border: 1px solid var(--accent-purple);
     border-radius: 5px;
 }
 .dropdown-content a {
@@ -662,7 +662,7 @@ input:checked + .slider:before {
 
 /* ─── Other Security Tools Box ─── */
 .other-sec-box {
-    bpx solid var(--accent-orange);
+    border: 1px solid var(--accent-orange);
     border-radius: 10px;
     background: linear-gradient(135deg, rgba(255,158,100,0.07) 0%, rgba(247,118,142,0.04) 100%);
     padding: 0.9rem;
@@ -697,71 +697,6 @@ input:checked + .slider:before {
     white-space: nowrap;
 }
 .other-sec-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
-
-
-/* ─── Other security tool card layout (bigger cards) ─── */
-.other-sec-box 
-.other-sec-box 
-.other-sec-box 
-
-/* ─── App Card Row (one per line, left-to-right) ─── */
-
-
-
-
-/* Checkbox (Order 1) */
-
-
-/* Emoji icon column (Order 2) */
-
-
-/* Proprietary warning badge (Order 3) */
-
-
-/* Gear config button (Order 4) */
-
-.gear-config-btn { 
-    display: none; 
-    cursor: pointer; 
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
-}
-
-
-
-
-/* App name link (Order 5) */
-
-
-
-/* Info tooltip icon (Order 6) */
-
-
-/* Short description tag (Order 7) */
-
-.app-desc {
-    color: #8b949e;
-    font-size: 0.78rem;
-    margin-left: auto;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-
-/* Ensure global app-grid-container doesn't overflow */
-
-
-/* Smaller columns for security boxes */
-.my-tools-box .app-grid-container,
-.other-sec-box 
-
-.my-tools-box .app-card,
-.other-sec-box 
-
-
 /* ─── Application Grids (Restored to Original Multi-Column) ─── */
 .app-grid-container {
     display: grid;
@@ -769,7 +704,7 @@ input:checked + .slider:before {
     gap: 0.8rem;
     background: var(--bg-dark);
     padding: 1.2rem;
-    bpx solid var(--accent-purple);
+    border: 1px solid var(--accent-purple);
     border-radius: 8px;
     width: 100%;
     box-sizing: border-box;
@@ -798,13 +733,12 @@ input:checked + .slider:before {
 }
 
 /* ─── App Card Layout (Compact & Neat) ─── */
-
 .app-card {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem;
-    bpx solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.05);
     border-radius: 6px;
     background: var(--bg-lighter);
     transition: background 0.15s, border-color 0.15s;
@@ -815,38 +749,31 @@ input:checked + .slider:before {
     text-align: left;
 }
 
-
 .app-card:hover { 
     background: rgba(255,255,255,0.08); 
     border-color: rgba(255,255,255,0.15);
 }
 
-/* Flex Ordering to ensure Checkbox -> Emoji -> Warn -> Gear -> Name -> Desc */
 .app-card input[type="checkbox"] {
-    
     margin: 0;
     cursor: pointer;
     transform: scale(1.1);
     accent-color: var(--accent-purple);
-    
+    flex-shrink: 0;
 }
 
 .app-card .app-icon {
-    
-    
     font-size: 1.1rem;
     text-align: center;
+    min-width: 1.5rem;
 }
 
 .app-card .prop-warn {
-    
     color: var(--accent-red);
-    font-weight: 900;
+    font-weight: bold;
     font-size: 0.85rem;
     cursor: help;
-    
 }
-
 
 .gear-config-btn { 
     display: none; 
@@ -856,47 +783,19 @@ input:checked + .slider:before {
     font-size: 0.9rem;
     margin-left: 0.5rem;
 }
-
-.app-card input[type="checkbox"]:checked ~ 
-.gear-config-btn { 
-    display: none; 
-    cursor: pointer; 
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
-}
-
-.app-card:hover 
-.gear-config-btn { 
-    display: none; 
-    cursor: pointer; 
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
-}
-
 
 .app-card a {
-    
     font-weight: 600;
     color: var(--fg-color);
     text-decoration: none;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    
 }
 .app-card a:hover { color: var(--accent-cyan); }
 
 .app-card .info-tooltip-icon {
-    
-    
     opacity: 0.6;
     cursor: help;
 }
-
 
 .app-desc {
     color: #8b949e;
