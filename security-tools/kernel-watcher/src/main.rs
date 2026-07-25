@@ -1,5 +1,7 @@
 use clap::Parser;
-use kernel_watcher::start_gui;
+// start_gui lives in the `gui` module and is not re-exported at the crate root,
+// so it has to be addressed through its module path.
+use kernel_watcher::gui::start_gui;
 use kernel_watcher::start_watcher;
 use std::process;
 

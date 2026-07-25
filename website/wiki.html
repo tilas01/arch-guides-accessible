@@ -218,6 +218,174 @@
         <p>Single-use codes for when you lose your authenticator. Print them and store them offline — not on the machine they unlock. Choosing <strong>None</strong> means a lost authenticator locks you out permanently.</p>
     </div>
 
+    <!-- ── Hardware security ──────────────────────────────────────────────────
+         Deliberately separate from the generator. None of this can be automated
+         by an install script: it involves buying hardware, opening a laptop, or
+         flashing firmware with a clip. Documented here so the software side does
+         not imply protection it cannot provide. -->
+    <div class="section" id="hardware-security">
+        <h2><span class="icon">🔧</span> Hardware &amp; Firmware Security</h2>
+        <p>
+            Everything the generator does happens <em>after</em> your firmware has already
+            run. If someone can modify the firmware, none of it helps — they can capture
+            your passphrase before the kernel exists. This section is about closing that
+            gap, and none of it is something an install script can do for you.
+        </p>
+
+        <div class="alert" style="border-left-color:var(--accent-blue); background:rgba(122,162,247,0.1);">
+            <strong>Read this first.</strong> Full-disk encryption plus Secure Boot with your
+            own keys already defeats the realistic threat for most people: a stolen laptop.
+            The measures below address a targeted attacker with repeated physical access.
+            They cost money, void warranties, and can permanently brick hardware. Work out
+            which threat you actually have before spending anything.
+        </div>
+
+        <h3 id="lock-down-firmware">Step 0: lock down the firmware you already have</h3>
+        <p>Free, reversible, and by far the best value. Do this regardless of anything else:</p>
+        <ol>
+            <li><strong>Set a firmware supervisor/admin password.</strong> Without one, an attacker just changes the boot order and boots their own media.</li>
+            <li><strong>Set a separate power-on password</strong> if your firmware supports it.</li>
+            <li><strong>Disable booting from USB, network (PXE) and optical media.</strong></li>
+            <li><strong>Enable Secure Boot and enrol your own keys</strong> — the generator's <em>UKI + Custom Keys</em> option does the key side. See <a href="https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot" target="_blank" rel="noopener">Arch Wiki: Secure Boot</a>.</li>
+            <li><strong>Clear the factory Microsoft keys</strong> once your own are enrolled and you have confirmed the machine boots. Keep recovery media to hand.</li>
+            <li><strong>Disable Intel ME / AMD PSP</strong> features where your firmware exposes the option.</li>
+        </ol>
+        <p>
+            Caveat worth knowing: a supervisor password is stored in firmware, and on many
+            consumer boards it can be cleared by shorting a jumper or pulling the CMOS
+            battery. It stops casual tampering, not a determined attacker with a
+            screwdriver — which is the gap the rest of this section addresses.
+        </p>
+
+        <h3 id="buskill">🔌 BusKill — recommended, cheap, reversible</h3>
+        <p>
+            <a href="https://www.buskill.in/" target="_blank" rel="noopener">BusKill</a> is a
+            magnetically-separating USB cable: one end plugs into your laptop, the other
+            clips to your belt. Walk away — or have the laptop taken — and the magnet
+            releases, which registers as a USB removal event and triggers your chosen
+            response.
+        </p>
+        <p><strong>Why it is the first thing to buy:</strong> it is inexpensive, needs no
+        firmware modification, works on any machine, and is completely reversible. It also
+        addresses the scenario that FDE genuinely does not: the machine being seized while
+        it is <em>already unlocked</em>, when your keys are sitting in RAM.</p>
+        <p>Pair it with the generator's <a href="#usb-kill">USB kill switch</a> set to
+        <em>removal</em> as the trigger. Start with lock-session and only move to shutdown
+        once you trust the setup:</p>
+        <pre><code class="language-bash"># BusKill registers as an ordinary USB device, so the same allowlist applies.
+lsusb                                   # identify the cable
+echo '1d6b:0104' >> /etc/arch-security/usb-allowlist   # example ID — use yours
+udevadm control --reload-rules</code></pre>
+        <p style="color:var(--accent-orange);">
+            ⚠️ Test it thoroughly with the lock action before arming a shutdown. A cable
+            that disconnects when you shift in your chair will lose your work.
+        </p>
+
+        <h3 id="measured-boot">Measured boot: what coreboot, Heads and NitroPad actually do</h3>
+        <p>
+            Secure Boot checks a <em>signature</em> — it asks whether the thing about to run
+            was signed by a trusted key. Measured boot instead <em>hashes</em> each stage
+            into a TPM before running it. The TPM will then only release a stored secret if
+            those hashes match what it saw last time. The practical difference: measured
+            boot can prove to <em>you</em> that the firmware has not changed since you last
+            looked, which is precisely the evil-maid problem.
+        </p>
+
+        <h4>How a NitroPad demonstrates it</h4>
+        <p>
+            A <a href="https://www.nitrokey.com/products/nitropads" target="_blank" rel="noopener">NitroPad</a>
+            is a ThinkPad shipped with coreboot and Heads, paired with a Nitrokey. At every
+            boot, Heads measures the firmware and boot files into the TPM, and asks the TPM
+            to sign a challenge. The Nitrokey blinks <strong>green</strong> if the
+            measurements are unchanged and <strong>red</strong> if anything was modified.
+            You are told about tampering <em>before</em> you type your passphrase — the one
+            thing a purely software defence cannot do.
+        </p>
+        <p>
+            It is also the honest shortcut: you get measured boot without flashing anything
+            yourself, and without the risk of bricking a machine.
+        </p>
+
+        <h4 id="coreboot-vs-libreboot">coreboot vs libreboot — DIY route</h4>
+        <p>Both replace your proprietary firmware. They are not the same thing:</p>
+        <ul>
+            <li>
+                <strong><a href="https://www.coreboot.org/" target="_blank" rel="noopener">coreboot</a></strong>
+                is the upstream project. It is a firmware framework that still permits
+                proprietary blobs where hardware requires them — notably Intel FSP for
+                memory initialisation, and the ME (which can be neutered but not fully
+                removed on most Intel platforms). Broad hardware support, and the base that
+                Heads builds on.
+            </li>
+            <li>
+                <strong><a href="https://libreboot.org/" target="_blank" rel="noopener">libreboot</a></strong>
+                is a coreboot distribution with a stricter policy: no proprietary blobs at
+                all. That means it only supports hardware that can boot without them, which
+                in practice is older machines — the very ones that lack a usable TPM. So
+                libreboot gives you maximum software freedom, but generally <em>not</em>
+                measured boot.
+            </li>
+        </ul>
+        <p>
+            <strong><a href="https://osresearch.net/" target="_blank" rel="noopener">Heads</a></strong>
+            is the payload that adds the security story on top of coreboot: it measures the
+            boot chain into the TPM and can attest to a USB security key.
+        </p>
+        <div class="alert">
+            <strong>The freedom/security trade-off, stated plainly.</strong> If your goal is
+            tamper-evident boot, you want coreboot + Heads + a TPM + a USB token. If your
+            goal is zero proprietary code, you want libreboot — and you will likely be on
+            hardware old enough that measured boot is not available. You usually cannot
+            maximise both at once. Decide which you actually care about.
+        </div>
+
+        <h4>ThinkPad notes</h4>
+        <p>
+            ThinkPads are the usual choice here: well-documented, repairable, and the best
+            supported family in both projects. The X230, T430, T440p, X220 and W541 come up
+            most often. Support varies by exact model and even by board revision, so check
+            the hardware list for <em>your</em> machine before buying anything.
+        </p>
+        <p style="color:var(--accent-red);">
+            <strong>This guide does not cover the flashing procedure, deliberately.</strong>
+            Reflashing firmware on a ThinkPad usually means disassembling the machine and
+            attaching a clip to the SPI chip. Getting it wrong leaves you with a laptop that
+            will not power on, and recovery needs an external programmer. It is also
+            model-specific in ways a general guide cannot safely cover. Follow the upstream
+            documentation for your exact board — the
+            <a href="https://doc.coreboot.org/" target="_blank" rel="noopener">coreboot docs</a>,
+            <a href="https://libreboot.org/docs/install/" target="_blank" rel="noopener">libreboot install guide</a>
+            and <a href="https://osresearch.net/" target="_blank" rel="noopener">Heads documentation</a> —
+            or buy a machine with it pre-installed.
+        </p>
+
+        <h3>Where this leaves the generator</h3>
+        <p>
+            The generator's <a href="#security-suite">Anti-Evil Maid</a> is the software
+            approximation: it hashes your boot files and tells you if they changed. That is
+            genuinely useful and costs nothing — but it runs <em>after</em> the firmware, so
+            it cannot detect firmware-level tampering. Measured boot is what closes that
+            gap, and it needs hardware. Both are worth having; neither replaces the other.
+        </p>
+    </div>
+
+    <div class="section" id="cheatsheets">
+        <h2><span class="icon">📋</span> Cheatsheets</h2>
+        <p>Quick references, kept outside the generator so you can reach them any time.</p>
+        <ul>
+            <li><a href="docs/helpful-commands.md">Arch command cheatsheet</a> — pacman, systemd, LUKS, BTRFS/Snapper, networking, journald and recovery.</li>
+            <li><a href="docs/dusky-cheatsheet.md">DuskyOS / Hyprland keybinds</a> — every shortcut in the Dusky desktop, if you chose it in the generator.</li>
+            <li><a href="docs/cheatsheets/arch-commands.md">Condensed command list</a> — the short version, good for printing.</li>
+            <li><a href="docs/cheatsheets/duskyos-hyprland.md">DuskyOS keybind reference</a> — the printable version.</li>
+            <li><a href="docs/xorg-vs-wayland.md">Xorg vs Wayland</a> — what actually differs, and which you need.</li>
+            <li><a href="docs/maintenance.md">Maintenance</a> — keeping an Arch install healthy over time.</li>
+        </ul>
+        <p style="font-size:0.85rem; color:var(--fg-dim);">
+            The generator also drops the cheatsheets into <code>~/cheatsheets</code> on the
+            installed system, so they are available offline on the machine itself.
+        </p>
+    </div>
+
     <div class="section" id="libre-policy">
         <h2><span class="icon">🐧</span> 100% Libre Software Policy</h2>
         <p>
