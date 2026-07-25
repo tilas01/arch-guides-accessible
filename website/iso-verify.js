@@ -324,12 +324,21 @@ document.addEventListener('DOMContentLoaded', () => {
     el('region-guess').textContent = picked.region;
     el('fpr').textContent = ARCH_SIGNING_FPR;
 
-    /* Step 1 — the image mirror. */
+    /* Step 1 — the image mirror, with the download startable from here.
+       The browser fetches straight from the mirror; nothing routes through this
+       site, which has no server to route it through. A cross-origin `download`
+       attribute is ignored by every engine, so the file keeps the mirror's
+       name — which is what you want, since that name is what the checksum list
+       refers to. */
     const imgBase = picked.image.url.replace(/\/$/, '');
     const imgLink = el('image-mirror-link');
     imgLink.href = `${imgBase}/iso/latest/`;
     imgLink.textContent = hostOf(picked.image.url);
     el('image-mirror-country').textContent = picked.image.country;
+
+    el('dl-iso').href = `${imgBase}/iso/latest/archlinux-x86_64.iso`;
+    el('dl-sig').href = `${imgBase}/iso/latest/archlinux-x86_64.iso.sig`;
+    el('dl-dir').href = `${imgBase}/iso/latest/`;
 
     /* Step 2 — checksum mirrors, deliberately not the image mirror. */
     const list = el('checksum-mirrors');
@@ -412,6 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'This proves the file is byte-for-byte what those mirrors serve. It ' +
             'does not prove Arch published it — for that, check the GPG ' +
             'signature in step 4. Do that too.');
+        // Lights the tick on the header control, for this session only.
+        if (typeof window.markIsoVerified === 'function') window.markIsoVerified();
     }
 
     async function start(file) {
