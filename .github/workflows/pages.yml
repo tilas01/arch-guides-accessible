@@ -89,12 +89,23 @@ jobs:
       # catch: 578 permutations of the walkthrough asserted on content, every
       # generated script through `bash -n`, structural responsive checks, and
       # html-validate on all nine pages.
-      - name: Run the test suite
-        run: |
-          set -euo pipefail
-          cd tests
-          npm install --no-audit --no-fund
-          npm test
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
+        working-directory: tests
+
+      # Run separately rather than through `npm test`, so a failure names itself
+      # in the job summary instead of showing up as "npm test exited 1".
+      - name: "Test: 578 generator permutations"
+        run: npm run permutations
+        working-directory: tests
+
+      - name: "Test: responsive structure"
+        run: npm run responsive
+        working-directory: tests
+
+      - name: "Test: HTML validity"
+        run: npm run html
+        working-directory: tests
 
       - name: Download Static Latest Release
         if: github.event_name == 'workflow_run'
