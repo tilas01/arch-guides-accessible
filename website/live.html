@@ -132,7 +132,7 @@
         /* Confirm Download Bar */
         .confirm-bar {
             display: none;
-            background: linear-gradient(135deg, rgba(125,207,255,0.08), rgba(187,154,247,0.08));
+            background: var(--tint-cyan);
             border: 1px solid var(--accent-purple);
             border-radius: 10px;
             padding: 1.2rem 1.5rem;
@@ -198,12 +198,12 @@
     <h3 style="margin:0 0 0.5rem; color:var(--accent-cyan);">Load Generated Output</h3>
     <p>Load what you generated in this session, pick an earlier generation from the history below, or upload a saved <code>.sh</code> / <code>.md</code> file.</p>
     <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
-        <button class="btn-editor primary" onclick="loadFromGenerator()">📥 Load Latest Generation</button>
+        <button type="button" class="btn-editor primary" onclick="loadFromGenerator()">📥 Load Latest Generation</button>
         <label class="btn-editor" style="cursor:pointer;">
             📂 Upload .sh or .md File
             <input type="file" accept=".sh,.md,.txt" style="display:none;" id="upload-file-input" onchange="handleFileUpload(event)">
         </label>
-        <button class="btn-editor" onclick="loadExample()">💡 Load Example Script</button>
+        <button type="button" class="btn-editor" onclick="loadExample()">💡 Load Example Script</button>
     </div>
     <div class="upload-zone" id="drop-zone" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
         <div style="font-size:2rem;">⬇️</div>
@@ -217,8 +217,8 @@
     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
         <h3 style="margin:0; color:var(--accent-purple);">🕓 This Session's History</h3>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-            <button class="btn-editor" onclick="renderSessionHistory()">🔄 Refresh</button>
-            <button class="btn-editor danger" onclick="clearSessionHistory()">🗑️ Clear</button>
+            <button type="button" class="btn-editor" onclick="renderSessionHistory()">🔄 Refresh</button>
+            <button type="button" class="btn-editor danger" onclick="clearSessionHistory()">🗑️ Clear</button>
         </div>
     </div>
     <p style="margin:0.5rem 0 1rem;">Session-only, held in <code>sessionStorage</code> — it disappears when you close this tab, and never leaves your browser.</p>
@@ -231,10 +231,10 @@
         <strong>✅ Edits ready!</strong> Confirm and download your static outputs below.
     </div>
     <div class="confirm-actions">
-        <button class="btn-editor primary" onclick="downloadScript()">⬇️ Download Script (.sh)</button>
-        <button class="btn-editor" style="border-color:var(--accent-blue); color:var(--accent-blue);" onclick="downloadMarkdown()">⬇️ Download Guide (.md)</button>
-        <button class="btn-editor" onclick="downloadBoth()">⬇️ Download Both</button>
-        <button class="btn-editor danger" onclick="clearEditors()">🗑️ Clear</button>
+        <button type="button" class="btn-editor primary" onclick="downloadScript()">⬇️ Download Script (.sh)</button>
+        <button type="button" class="btn-editor" style="border-color:var(--accent-blue); color:var(--accent-blue);" onclick="downloadMarkdown()">⬇️ Download Guide (.md)</button>
+        <button type="button" class="btn-editor" onclick="downloadBoth()">⬇️ Download Both</button>
+        <button type="button" class="btn-editor danger" onclick="clearEditors()">🗑️ Clear</button>
     </div>
 </div>
 
@@ -250,9 +250,9 @@
                 <span class="line-count" id="sh-line-count">0 lines</span>
             </div>
             <div class="editor-actions">
-                <button class="btn-editor" onclick="copyToClipboard('script-editor')">📋 Copy</button>
-                <button class="btn-editor" onclick="formatScript()">✨ Format</button>
-                <button class="btn-editor primary" onclick="downloadScript()">⬇️ .sh</button>
+                <button type="button" class="btn-editor" onclick="copyToClipboard('script-editor')">📋 Copy</button>
+                <button type="button" class="btn-editor" onclick="formatScript()">✨ Format</button>
+                <button type="button" class="btn-editor primary" onclick="downloadScript()">⬇️ .sh</button>
             </div>
         </div>
         <textarea id="script-editor" class="editor-textarea"
@@ -274,9 +274,9 @@
                 <span class="line-count" id="md-line-count">0 lines</span>
             </div>
             <div class="editor-actions">
-                <button class="btn-editor" onclick="copyToClipboard('markdown-editor')">📋 Copy</button>
-                <button class="btn-editor" id="preview-toggle-btn" onclick="toggleMarkdownPreview()">👁️ Preview</button>
-                <button class="btn-editor primary" onclick="downloadMarkdown()">⬇️ .md</button>
+                <button type="button" class="btn-editor" onclick="copyToClipboard('markdown-editor')">📋 Copy</button>
+                <button type="button" class="btn-editor" id="preview-toggle-btn" onclick="toggleMarkdownPreview()">👁️ Preview</button>
+                <button type="button" class="btn-editor primary" onclick="downloadMarkdown()">⬇️ .md</button>
             </div>
         </div>
         <textarea id="markdown-editor" class="editor-textarea"
@@ -306,8 +306,8 @@ All edits are local — nothing is sent to any server."
                 <span class="line-count" id="post-line-count">0 lines</span>
             </div>
             <div class="editor-actions">
-                <button class="btn-editor" onclick="copyToClipboard('post-editor')">📋 Copy</button>
-                <button class="btn-editor primary" onclick="downloadPost()">⬇️ .sh</button>
+                <button type="button" class="btn-editor" onclick="copyToClipboard('post-editor')">📋 Copy</button>
+                <button type="button" class="btn-editor primary" onclick="downloadPost()">⬇️ .sh</button>
             </div>
         </div>
         <textarea id="post-editor" class="editor-textarea" style="min-height:260px;"
@@ -504,7 +504,7 @@ function renderSessionHistory() {
                 </span>
             </div>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                <button class="btn-editor primary" onclick="loadHistoryEntry(${i})">📥 Load</button>
+                <button type="button" class="btn-editor primary" onclick="loadHistoryEntry(${i})">📥 Load</button>
             </div>
         </div>`;
     }).join('');
@@ -720,5 +720,39 @@ function initLiveEditor() {
 
 document.addEventListener('DOMContentLoaded', initLiveEditor);
 </script>
+<div class="site-footer">
+
+    <div class="legal-notice">
+        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
+        <p>
+            <strong>AI-assisted content, no warranty.</strong> This site and the scripts it
+            generates were built with AI assistance. Everything is provided
+            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
+            <strong>no liability</strong> for data loss, system damage, hardware failure or
+            security breaches arising from use of these tools.
+        </p>
+        <p>
+            <strong>You are responsible for your own machine.</strong> Always read a generated
+            script before running it. These scripts repartition disks, and some options here
+            deliberately destroy data. Test in a virtual machine and cross-check against the
+            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
+        </p>
+        <p>
+            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
+            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
+            Selling or monetising it is not permitted.
+        </p>
+        <p style="margin-bottom:0;">
+            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+            <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+            <a href="index.html">Generator</a> ·
+            <a href="wiki.html">Wiki</a> ·
+            <a href="security-tools.html">Security Tools</a> ·
+            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+        </p>
+    </div>
+
+</div>
 </body>
 </html>

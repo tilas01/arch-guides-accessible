@@ -435,6 +435,129 @@ window.updatePreview = function() {
     }
 };
 
+// ─── Validation presentation ─────────────────────────────────────────────────
+// One red box, offenders outlined in red, and a single control that walks
+// through them. The previous version printed one list item per unset dropdown,
+// which on a fresh page meant a wall of ~30 identical complaints.
+
+function clearValidationState() {
+    document.querySelectorAll('#install-form .field-invalid').forEach(el => {
+        el.classList.remove('field-invalid');
+    });
+    document.querySelectorAll('#install-form .app-card.card-invalid').forEach(el => {
+        el.classList.remove('card-invalid');
+    });
+}
+
+function hideValidationBox() {
+    const box = document.getElementById('generate-error-box');
+    if (box) box.style.display = 'none';
+}
+
+// Remembers where we are in the walk-through, so repeated clicks advance.
+let validationCursor = 0;
+
+function showValidationProblems({ missing, conflicts, unconfigured, nothingTouched }) {
+    const box = document.getElementById('generate-error-box');
+    const body = document.getElementById('error-list');
+    const countEl = document.getElementById('error-count');
+    if (!box || !body) return;
+
+    // Outline the offenders.
+    missing.forEach(sel => sel.classList.add('field-invalid'));
+    conflicts.forEach(c => c.el && c.el.classList.add('field-invalid'));
+    unconfigured.forEach(u => u.el?.closest('.app-card')?.classList.add('card-invalid'));
+
+    // The ordered list of things to walk through.
+    const targets = [
+        ...conflicts.map(c => c.el).filter(Boolean),
+        ...unconfigured.map(u => u.el).filter(Boolean),
+        ...missing
+    ];
+    validationCursor = 0;
+
+    let html = '';
+
+    if (nothingTouched && conflicts.length === 0 && unconfigured.length === 0) {
+        // Nothing filled in: say that once, and don't itemise.
+        html = `<p style="margin:0;">Nothing has been selected yet, so there is nothing to generate.
+                Work down the form and choose your options — every dropdown has a
+                <a href="wiki.html#option-reference" target="_blank" rel="noopener">wiki entry</a>
+                explaining it, and you can right-click any of them to jump straight there.</p>`;
+        if (countEl) countEl.textContent = '0';
+    } else {
+        const parts = [];
+
+        // Conflicts are always explained in full.
+        conflicts.forEach(c => {
+            parts.push(`<li><strong style="color:var(--accent-red);">Conflict:</strong> ${escapeHTML(c.msg)}</li>`);
+        });
+
+        // Unconfigured apps name themselves, since the fix is specific.
+        unconfigured.forEach(u => {
+            parts.push(`<li><strong style="color:var(--accent-orange);">Needs setup:</strong>
+                open the ⚙️ gear on <strong>${escapeHTML(u.name)}</strong> and save its configuration.</li>`);
+        });
+
+        // Omissions are summarised, not enumerated.
+        if (missing.length === 1) {
+            const label = fieldLabel(missing[0]);
+            parts.push(`<li><strong style="color:var(--accent-red);">Not chosen:</strong> ${escapeHTML(label)}</li>`);
+        } else if (missing.length > 1) {
+            parts.push(`<li><strong style="color:var(--accent-red);">Not chosen:</strong>
+                ${missing.length} options still need a value — they are outlined in red below.</li>`);
+        }
+
+        html = `<ul style="margin:0 0 0 1.1rem; padding:0;">${parts.join('')}</ul>`;
+        if (countEl) countEl.textContent = String(conflicts.length + unconfigured.length + missing.length);
+    }
+
+    // One clear action, rather than making the whole box a mystery click target.
+    if (targets.length > 0) {
+        html += `<div style="margin-top:0.7rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button type="button" class="btn" style="width:auto; padding:0.35rem 0.9rem; font-size:0.82rem;"
+                    onclick="jumpToNextProblem()">↪ Jump to next (${targets.length})</button>
+        </div>`;
+    }
+
+    body.innerHTML = html;
+    window.__validationTargets = targets;
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Human-readable name for a field, preferring the form-step title.
+function fieldLabel(el) {
+    const step = el.closest('.form-step');
+    const title = step?.getAttribute('data-title');
+    if (title) return title.replace(/^[^\w]+\s*/, '');   // strip a leading emoji
+    const lbl = el.closest('.form-group')?.querySelector('label');
+    return (lbl?.textContent || el.id || 'this field').replace(/:\s*$/, '').trim();
+}
+
+// Walks through the outstanding problems, one click at a time.
+window.jumpToNextProblem = function() {
+    const targets = window.__validationTargets || [];
+    if (targets.length === 0) return;
+    const el = targets[validationCursor % targets.length];
+    validationCursor++;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Focus the control itself where possible so it can be answered immediately.
+    if (typeof el.focus === 'function') {
+        try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+    }
+};
+
+// Clear a field's red outline as soon as the user answers it.
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#install-form select').forEach(sel => {
+        sel.addEventListener('change', () => {
+            if (sel.value) sel.classList.remove('field-invalid');
+        });
+    });
+});
+
 // ---- Form readers ----
 // Module scope on purpose: the validation matrix at the top of generateOutput
 // needs these before the per-run config constants are declared. Keeping them
@@ -606,89 +729,56 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
 
     const configJSON = JSON.stringify(getFormValues(), null, 2);
 
-    // ─── Validation ───
-    const errors = [];
-    
-    // Clear previous highlights
-    document.querySelectorAll('select').forEach(sel => sel.style.border = '');
+    // ─── Validation ─────────────────────────────────────────────────────────
+    // Kept deliberately quiet. Rather than listing every unset field, the offenders
+    // are outlined in red and the box offers one "jump to next" control that walks
+    // through them. If nothing has been filled in at all, it just says so, because
+    // enumerating thirty untouched dropdowns is noise, not help.
+    clearValidationState();
 
-    // Strict dropdown checking: Only validate truly visible selects
-    const requiredSelects = Array.from(document.querySelectorAll('select')).filter(sel => {
-        return sel.offsetParent !== null;
-    });
+    // Only fields the user can actually see are required.
+    const requiredSelects = Array.from(document.querySelectorAll('#install-form select'))
+        .filter(sel => sel.offsetParent !== null);
 
-    let firstErrorEl = null;
+    const missing = requiredSelects.filter(sel => !sel.value);
 
-    requiredSelects.forEach(sel => {
-        if (!sel.value) {
-            const stepName = sel.closest('.form-step')?.getAttribute('data-title') || sel.id;
-            errors.push(`<li style="margin-bottom:0.3rem;"><a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;">${stepName}</a></li>`);
-            if (!auto) {
-                sel.style.border = '2px solid var(--accent-red)';
-            }
-            if (!firstErrorEl) firstErrorEl = sel;
-        }
-    });
+    // Conflicts are different from omissions: they need explaining, so they are
+    // always spelled out (there are only ever one or two).
+    const conflicts = [];
+    if (fw === "bios" && boot !== "grub") {
+        conflicts.push({
+            el: document.getElementById('bootloader'),
+            msg: 'Legacy BIOS can only boot GRUB — UKI and systemd-boot need UEFI.'
+        });
+    }
+    if (fw === "bios" && part.includes("luks2")) {
+        conflicts.push({
+            el: document.getElementById('partitioning'),
+            msg: 'GRUB on BIOS cannot reliably unlock LUKS2. Use LUKS1 instead.'
+        });
+    }
 
-    if (fw === "bios" && boot !== "grub") errors.push(`<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">Legacy BIOS requires GRUB. UKI/systemd-boot are UEFI only.</span></li>`);
-    
-    if (fw === "bios" && part.includes("luks2")) errors.push(`<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">GRUB has limited LUKS2 support on BIOS. Use LUKS1.</span></li>`);
-
-    // Enforce Required App Configuration
+    // Apps that must be configured before they can be installed.
+    const unconfigured = [];
     document.querySelectorAll('input[name="post_apps"]:checked').forEach(cb => {
         if (cb.dataset.requiresConfig === "true" && cb.dataset.configured === "false") {
-            const appName = cb.parentElement.querySelector('a')?.innerText || cb.value;
-            errors.push(`<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">[!] Configuration Required:</span> You must click the ⚙️ gear icon to configure <strong>${appName}</strong> before generating!</li>`);
+            unconfigured.push({
+                el: cb,
+                name: cb.parentElement?.querySelector('a')?.textContent?.trim() || cb.value
+            });
         }
     });
 
+    const nothingTouched = missing.length === requiredSelects.length && requiredSelects.length > 0;
+    const hasProblem = missing.length > 0 || conflicts.length > 0 || unconfigured.length > 0;
 
-    const errorBox = document.getElementById("generate-error-box");
-    const errorList = document.getElementById("error-list");
-    const errorCount = document.getElementById("error-count");
-
-    // Remove legacy config-errors if it exists
-    const legacyErrorDiv = document.getElementById("config-errors");
-    if (legacyErrorDiv) legacyErrorDiv.remove();
-
-    if (errors.length > 0) {
-        if (auto) return;
-        
-        if (errorBox && errorList && errorCount) {
-            if (errors.length === requiredSelects.length) {
-                // Entire form is empty
-                errorCount.textContent = errors.length;
-                errorList.innerHTML = `<li style="margin-bottom:0.3rem;"><span style="color:var(--accent-red);font-weight:bold;">No input provided! Please configure the generator.</span></li>`;
-                errorBox.style.display = 'block';
-                errorBox.onclick = null; // No teleporting if completely empty
-            } else {
-                // Partial selections missing
-                errorCount.textContent = errors.length;
-                errorList.innerHTML = errors.join("");
-                errorBox.style.display = 'block';
-                
-                // Teleport to first error on click
-                errorBox.onclick = () => {
-                    if (firstErrorEl) {
-                        firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        firstErrorEl.focus();
-                    }
-                };
-            }
-            
-            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            // Fallback if HTML doesn't have the new box
-            let errorDiv = document.createElement("div"); 
-            errorDiv.id = "config-errors"; 
-            document.getElementById("install-form").prepend(errorDiv);
-            errorDiv.innerHTML = `<div class="alert warning" style="border-left-color:var(--accent-red); padding: 0.8rem;"><strong>⚠︠ Missing Selections:</strong> <ul>${errors.join("")}</ul></div>`;
-            window.scrollTo(0, 0);
-        }
+    if (hasProblem) {
+        if (auto) return;   // never nag during background regeneration
+        showValidationProblems({ missing, conflicts, unconfigured, nothingTouched });
         return;
     }
     
-    if (errorBox) errorBox.style.display = 'none';
+    hideValidationBox();
 
     // Default Profiles Check for Apps & Security
     const SECURITY_APP_VALUES = ['libre-otp', 'anti-ducky', 'anti-evil-maid',
@@ -1493,6 +1583,18 @@ run_with_progress() {
             if (other_sec_tools.includes('lynis')) {
                 o += `pacman -S --noconfirm lynis\n# Run an initial audit and keep the report for review\nlynis audit system --quick --no-colors > /var/log/lynis-initial.log 2>&1 || true\n`;
             }
+            if (other_sec_tools.includes('usbkill')) {
+                // Upstream usbkill: installed but deliberately NOT enabled, because
+                // it powers the machine off with no confirmation. Arming it is an
+                // explicit, separate decision the user makes on the machine itself.
+                o += `\n# usbkill (upstream anti-forensic kill switch)\n`;
+                o += `su - builder -c "paru -S --noconfirm usbkill"\n`;
+                o += `echo "usbkill installed but NOT enabled."\n`;
+                o += `echo "It powers the machine off immediately when USB devices change,"\n`;
+                o += `echo "with no confirmation and no chance to save work."\n`;
+                o += `echo "Review /etc/usbkill/usbkill.ini, then start it manually with:"\n`;
+                o += `echo "  sudo usbkill"\n`;
+            }
         }
 
         if (auto_updates === "yes" || post_apps.includes("unattended-upgrades")) {
@@ -2001,6 +2103,56 @@ document.addEventListener('DOMContentLoaded', () => {
         if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
     }
 
+    // Post-quantum overlay is experimental; only warn once it is actually chosen.
+    const pqSelect = document.getElementById('encryption_pq');
+    if (pqSelect) {
+        const syncPq = () => {
+            const warn = document.getElementById('pq-warn');
+            if (warn) warn.style.display = pqSelect.value === 'none' ? 'none' : 'block';
+        };
+        pqSelect.addEventListener('change', syncPq);
+        syncPq();
+    }
+
+    // ── DuskyOS: one yes/no that answers the desktop questions for you ──
+    // Dusky ships its own Hyprland/Wayland configuration, so asking the user to
+    // pick a desktop and display server as well is redundant and easy to get
+    // wrong (Hyprland cannot run on Xorg). Answering Yes sets both and hides them.
+    const duskySelect = document.getElementById('dusky_setup');
+    if (duskySelect) {
+        const syncDusky = () => {
+            const on = duskySelect.value === 'yes';
+            const desktopGroup = document.getElementById('desktop')?.closest('.form-group');
+            const dsGroup = document.getElementById('display_server')?.closest('.form-step');
+            const note = document.getElementById('dusky-note');
+            const duskyApp = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
+            const desktopSel = document.getElementById('desktop');
+            const dsSel = document.getElementById('display_server');
+
+            if (on) {
+                if (desktopSel) desktopSel.value = 'dusky';
+                if (dsSel) dsSel.value = 'wayland';
+                if (duskyApp && !duskyApp.checked) {
+                    duskyApp.checked = true;
+                    duskyApp.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            } else if (duskyApp && duskyApp.checked && desktopSel?.value === 'dusky') {
+                // Leaving Dusky: release the forced answers so the user can choose.
+                duskyApp.checked = false;
+                duskyApp.dispatchEvent(new Event('change', { bubbles: true }));
+                desktopSel.value = 'none';
+            }
+
+            // Hidden groups are also skipped by validation, since it only
+            // requires selects whose offsetParent is non-null.
+            if (desktopGroup) desktopGroup.style.display = on ? 'none' : '';
+            if (dsGroup) dsGroup.style.display = on ? 'none' : '';
+            if (note) note.style.display = on ? 'block' : 'none';
+        };
+        duskySelect.addEventListener('change', syncDusky);
+        syncDusky();
+    }
+
     // ── USB kill switch: show the trigger picker and warning when armed. ──
     const usbKillSelect = document.getElementById('usb_kill');
     if (usbKillSelect) {
@@ -2152,34 +2304,67 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
     });
 
-    // Dynamic Proprietary Highlighting Logic
+    // ── Proprietary software: highlight, or hard-disable when enforcing ──
+    // Two distinct behaviours, as requested:
+    //   policy OFF  -> apps stay selectable, name shown in red, plain reminder.
+    //   policy ON    -> apps are greyed out, unticked and unclickable, with a
+    //                   tooltip on each explaining that the libre policy did it.
     const softwareTypeSelect = document.getElementById('software_type');
-    const propAppValues = ['firefox', 'chromium', 'signal', 'flatpak'];
-    
+    const librePolicyToggle = document.getElementById('libre_policy_toggle');
+
+    const ENFORCE_MSG = 'Disabled by the 100% Libre Software Policy. This app contains ' +
+        'proprietary code. Untick "Enforce 100% Libre Software Policy" above to allow it.';
+
     function updateProprietaryHighlighting() {
-        if (!softwareTypeSelect) return;
-        const isLibre = softwareTypeSelect.value === 'libre';
-        
-        propAppValues.forEach(val => {
+        // "Enforced" means either the explicit policy toggle, or picking the
+        // strictly-libre software type.
+        const enforced = !!(librePolicyToggle && librePolicyToggle.checked);
+        const libreType = softwareTypeSelect && softwareTypeSelect.value === 'libre';
+
+        Object.keys(PROPRIETARY_APPS).forEach(val => {
             const cb = document.querySelector(`input[name="post_apps"][value="${val}"]`);
-            if (cb) {
-                const label = cb.closest('label');
-                const link = label ? label.querySelector('a') : null;
-                if (link) {
-                    if (isLibre) {
-                        link.style.color = 'var(--accent-red)';
-                    } else {
-                        link.style.color = 'inherit'; // Reset to standard link color
-                    }
+            if (!cb) return;
+            const card = cb.closest('label');
+            const link = card ? card.querySelector('a') : null;
+
+            if (enforced) {
+                // Untick first so a disabled box can't smuggle a selection through.
+                if (cb.checked) {
+                    cb.checked = false;
+                    cb.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                cb.disabled = true;
+                if (card) {
+                    card.classList.add('app-disabled');
+                    card.classList.add('nav-tooltip');
+                    card.setAttribute('data-title', '🔒 Blocked by Libre Policy');
+                    card.setAttribute('data-desc', ENFORCE_MSG);
+                }
+            } else {
+                cb.disabled = false;
+                if (card) {
+                    card.classList.remove('app-disabled');
+                    card.removeAttribute('data-title');
+                    card.removeAttribute('data-desc');
                 }
             }
+
+            // Red name whenever it is proprietary and the user leans libre.
+            if (link) link.style.color = (libreType || enforced) ? 'var(--accent-red)' : '';
         });
+
+        // Swap the two explanatory paragraphs.
+        const reminder = document.getElementById('prop-reminder');
+        const enforcedNote = document.getElementById('prop-enforced');
+        if (reminder) reminder.style.display = enforced ? 'none' : '';
+        if (enforcedNote) enforcedNote.style.display = enforced ? '' : 'none';
+
+        if (window.refreshTooltips) window.refreshTooltips();
     }
 
-    if (softwareTypeSelect) {
-        softwareTypeSelect.addEventListener('change', updateProprietaryHighlighting);
-        updateProprietaryHighlighting(); // Run on init
-    }
+    if (softwareTypeSelect) softwareTypeSelect.addEventListener('change', updateProprietaryHighlighting);
+    if (librePolicyToggle) librePolicyToggle.addEventListener('change', updateProprietaryHighlighting);
+    updateProprietaryHighlighting();
 
     // NOTE: the old "Full Suite" toggle was removed together with the
     // monolithic arch-rusty-security-suite binary. Each tool is now built and
@@ -2292,120 +2477,17 @@ function injectNoSelectionProvided() {
     });
 }
 document.addEventListener('DOMContentLoaded', injectNoSelectionProvided);
-document.getElementById('generate-btn').addEventListener('click', function(e) {
-    e.preventDefault();
-
-    let missingFields = [];
-    let totalFields = 0;
-    
-    document.querySelectorAll('.generator-form select').forEach(el => {
-        if (!el.disabled && el.offsetParent !== null) {
-            totalFields++;
-            if (el.value === "") {
-                const labelEl = el.parentElement.querySelector('label');
-                const fieldName = labelEl ? labelEl.innerText.replace(':', '') : 'Unknown Field';
-                missingFields.push(fieldName);
-            }
-        }
+// The generate button delegates straight to generateOutput(), which owns all
+// validation and error presentation. Nothing is duplicated here on purpose:
+// there used to be a second copy of the validation logic in this handler, and
+// the two disagreed with each other.
+const generateBtn = document.getElementById('generate-btn');
+if (generateBtn) {
+    generateBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.generateOutput(false);
     });
-
-    document.querySelectorAll('input[type="checkbox"][data-requires-config="true"]').forEach(cb => {
-        if (cb.checked && cb.dataset.configured !== "true") {
-            const appName = cb.parentElement.innerText.replace('⚙️', '').trim();
-            missingFields.push(`App Configuration missing for: ${appName}`);
-        }
-    });
-
-    
-    // Phase 4: Conflict Checks
-    const deConf = document.getElementById('desktop_env') ? document.getElementById('desktop_env').value : 'none';
-    const rofiSelected = document.querySelector('input[name="post_apps"][value="rofi"]')?.checked;
-    
-    if (deConf === "duskyos" && rofiSelected) {
-        missingFields.push("Conflict: DuskyOS (Custom Tiling WM) relies on its native launcher. Please deselect Rofi to prevent X11 keybind conflicts.");
-    }
-
-    const errorBox = document.getElementById('generate-error-box');
-
-    if (missingFields.length > 0) {
-        if (missingFields.length === totalFields && document.querySelectorAll('input[type="checkbox"][data-requires-config="true"]:checked').length === 0) {
-            // No input provided at all
-            if(errorBox) {
-                errorBox.style.display = 'block';
-                errorBox.innerHTML = '<h3 style="color:var(--accent-red);margin:0;">🚨 No Input Provided</h3><p style="margin-bottom:0;">Please make at least one selection before generating.</p>';
-                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            return;
-        } else {
-            // >= 1 selection made
-            document.querySelectorAll('.generator-form select').forEach(el => {
-                if (!el.disabled && el.offsetParent !== null && el.value === "") {
-                    el.style.border = "2px solid var(--accent-red)";
-                    if (!el.parentElement.querySelector('.req-warning')) {
-                        const warn = document.createElement('span');
-                        warn.className = 'req-warning';
-                        warn.style.color = 'var(--accent-red)';
-                        warn.style.marginLeft = '10px';
-                        warn.style.fontSize = '0.85rem';
-                        warn.style.fontWeight = 'bold';
-                        warn.innerText = ' 🚨 Required!';
-                        const labelEl = el.parentElement.querySelector('label');
-                        if(labelEl) labelEl.appendChild(warn);
-                    }
-                }
-            });
-
-            document.querySelectorAll('input[type="checkbox"][data-requires-config="true"]').forEach(cb => {
-                if (cb.checked && cb.dataset.configured !== "true") {
-                    cb.parentElement.style.border = "2px solid var(--accent-red)";
-                    cb.parentElement.style.padding = "5px";
-                    cb.parentElement.style.borderRadius = "4px";
-                }
-            });
-
-            if(errorBox) {
-                errorBox.innerHTML = `<h3 style="color:var(--accent-red); margin-top:0;">🚨 Generation Failed: <span id="error-count">${missingFields.length}</span> Missing Selections</h3><p>Please complete the following required fields to generate your guide:</p><div id="error-list"></div>`;
-                const newErrorList = document.getElementById('error-list');
-                if(newErrorList) {
-                    newErrorList.style.listStyleType = "none";
-                    newErrorList.style.paddingLeft = "0";
-                    newErrorList.innerHTML = missingFields.map(f => {
-                        const safeF = f.replace(/'/g, "\\'");
-                        return `<a href="#" style="color:var(--accent-red);text-decoration:underline;font-weight:bold;margin-right:10px;line-height:1.8;" onclick="event.stopPropagation(); const els=Array.from(document.querySelectorAll('.generator-form select, input[type=\\'checkbox\\']')); const target=els.find(s=>s.parentElement.innerText.includes('${safeF.split(':')[0].trim()}')); if(target)target.scrollIntoView({behavior:'smooth',block:'center'}); return false;">[${f}]</a>`;
-                    }).join(' ');
-                }
-                errorBox.style.display = 'block';
-                errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            return;
-        }
-    } else {
-        if(errorBox) {
-            errorBox.style.display = 'none';
-            // Restore original error box format incase of future errors
-            errorBox.innerHTML = `<h3 style="color:var(--accent-red); margin-top:0;">🚨 Generation Failed: <span id="error-count">0</span> Missing Selections</h3><p>Please complete the following required fields to generate your guide:</p><ul id="error-list"></ul>`;
-        }
-    }
-    
-    // Clear any previous global warnings or errors
-    window.generateOutput(false);
-    
-    // Check if Live Generation Toggle is checked
-    const liveToggle = document.getElementById('live_generation_toggle');
-    if (liveToggle && liveToggle.checked) {
-        window.location.href = "live.html";
-        return;
-    }
-    
-    // Show live editor section and hide generator form
-    const liveEditor = document.getElementById('live-editor');
-    const genForm = document.querySelector('.generator-form');
-    if (liveEditor && genForm) {
-        liveEditor.style.display = 'block';
-        genForm.style.display = 'none';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-});
+}
 
 // ── Tooltip toggle (emoji button, always-enabled) ──
 let tooltipsEnabled = sessionStorage.getItem('tooltips_enabled') !== 'false';
@@ -2415,10 +2497,11 @@ function syncTooltipBtn() {
     if (!tooltipToggleBtn) return;
     const on = window.tooltipsEnabled !== false;
     tooltipToggleBtn.classList.toggle('disabled', !on);
+    tooltipToggleBtn.setAttribute('aria-pressed', String(on));
     tooltipToggleBtn.setAttribute('data-title', on ? 'ℹ️ Tooltips: ON' : 'ℹ️ Tooltips: OFF');
     tooltipToggleBtn.setAttribute('data-desc', on
-        ? 'Tooltips are ON. Hover (desktop) or tap (mobile) any element for info. Click to disable.'
-        : 'Tooltips are OFF. Only ℹ️ and 🕓 always show. Click to re-enable.');
+        ? 'Tooltips are ON. Hover on desktop, or tap on mobile, for an explanation of any control. Click to turn them off — this button keeps its own tooltip either way.'
+        : 'Tooltips are OFF everywhere else. This button keeps its own tooltip so you can always find your way back. Click to turn them on again.');
 }
 
 if (tooltipToggleBtn) {
@@ -3372,7 +3455,10 @@ document.querySelector('a[href="index.html"]')?.addEventListener('click', functi
 const TILAS_TOOL_VALUES = ['libre-otp', 'anti-ducky', 'anti-evil-maid',
                            'kernel-watcher', 'scarecrow'];
 
-function toggleGroup(checkboxes, btn, labels, gradients) {
+// Colour is driven entirely by CSS via [aria-pressed], so nothing here sets an
+// inline background. That keeps the flat Tokyo Night palette in one place
+// instead of hard-coding gradient strings in JavaScript.
+function toggleGroup(checkboxes, btn, labels) {
     const boxes = Array.from(checkboxes);
     if (boxes.length === 0) return;
     // If any box is unchecked, select all; otherwise clear the group.
@@ -3385,7 +3471,6 @@ function toggleGroup(checkboxes, btn, labels, gradients) {
     });
     if (btn) {
         btn.textContent = turnOn ? labels.on : labels.off;
-        btn.style.background = turnOn ? gradients.on : gradients.off;
         btn.setAttribute('aria-pressed', String(turnOn));
     }
 }
@@ -3401,11 +3486,7 @@ function toggleAllPostApps() {
     toggleGroup(
         boxes,
         document.querySelector('.post-apps-enable-btn'),
-        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All' },
-        {
-            on: 'linear-gradient(135deg, var(--accent-green), var(--accent-purple))',
-            off: 'var(--accent-purple)'
-        }
+        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All' }
     );
 }
 window.toggleAllPostApps = toggleAllPostApps;
@@ -3418,11 +3499,7 @@ function enableAllTilas() {
     toggleGroup(
         boxes,
         document.querySelector('.my-tools-enable-btn'),
-        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All Suite' },
-        {
-            on: 'linear-gradient(135deg, var(--accent-green), var(--accent-cyan))',
-            off: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))'
-        }
+        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All Suite' }
     );
 }
 
@@ -3431,11 +3508,7 @@ function enableAllOtherSec() {
     toggleGroup(
         document.querySelectorAll('input[name="other_sec_tools"]'),
         document.querySelector('.other-sec-enable-btn'),
-        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All' },
-        {
-            on: 'linear-gradient(135deg, var(--accent-green), var(--accent-orange))',
-            off: 'linear-gradient(135deg, var(--accent-orange), var(--accent-red))'
-        }
+        { on: '🔒 All Selected (click to clear)', off: '✅ Enable All' }
     );
 }
 

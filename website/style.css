@@ -30,6 +30,15 @@
     --border-color: #2f3450;
     --text-color: #c0caf5;
 
+    /* Flat translucent tints of the accents, used for panel backgrounds.
+       Deliberately single colours: this design uses no gradients. */
+    --tint-cyan:   rgba(125, 207, 255, 0.06);
+    --tint-orange: rgba(255, 158, 100, 0.06);
+    --tint-purple: rgba(187, 154, 247, 0.06);
+    --tint-green:  rgba(158, 206, 106, 0.06);
+    --tint-red:    rgba(247, 118, 142, 0.08);
+    --tint-blue:   rgba(122, 162, 247, 0.06);
+
     --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace,
                  "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
@@ -143,6 +152,22 @@ label {
     font-size: 0.92rem;
 }
 
+/* Same appearance as a <label>, but for a group heading that does not point at
+   a single labelable control. */
+.group-label {
+    display: block;
+    color: var(--accent-cyan);
+    font-size: 0.92rem;
+}
+
+/* Proprietary app blocked by the libre policy: visibly inert, not just dimmed. */
+.app-card.app-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    border-style: dashed;
+}
+.app-card.app-disabled a { pointer-events: none; }
+
 /* A label with an action button on the same row (e.g. "Enable All"). */
 .group-header {
     display: flex;
@@ -172,13 +197,11 @@ select {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image:
-        linear-gradient(45deg, transparent 50%, var(--accent-purple) 50%),
-        linear-gradient(135deg, var(--accent-purple) 50%, transparent 50%);
-    background-position:
-        calc(100% - 18px) calc(50% + 2px),
-        calc(100% - 13px) calc(50% + 2px);
-    background-size: 5px 5px, 5px 5px;
+    /* Chevron as a single-colour inline SVG. No gradients anywhere in this
+       stylesheet: the palette is used flat, as designed. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23bb9af7' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-position: right 0.85rem center;
+    background-size: 10px 6px;
     background-repeat: no-repeat;
     padding-right: 2.2rem;
     min-height: var(--tap-target);
@@ -197,6 +220,19 @@ input:focus, select:focus {
 /* Greyed placeholder for "No Selection Provided". */
 select:invalid, select.placeholder { color: var(--fg-dim); }
 
+/* Validation: outline the offending control rather than listing it in prose. */
+.field-invalid {
+    border-color: var(--accent-red) !important;
+    box-shadow: 0 0 0 1px var(--accent-red);
+}
+.app-card.card-invalid {
+    border-color: var(--accent-orange);
+    background: var(--tint-orange);
+}
+#generate-error-box { text-align: left; }
+#generate-error-box ul { margin: 0 0 0 1.1rem; }
+#generate-error-box li { margin-bottom: 0.3rem; }
+
 .btn {
     background-color: var(--accent-purple);
     color: var(--bg-color);
@@ -212,6 +248,17 @@ select:invalid, select.placeholder { color: var(--fg-dim); }
 }
 .btn:hover { background-color: var(--accent-blue); transform: translateY(-2px); }
 .btn:active { transform: translateY(0); }
+
+/* End-of-form generate block. Deliberately not sticky — it should not follow
+   the user around while they are still choosing options. */
+.generate-row {
+    margin-top: 1.5rem;
+    padding: 1.2rem 1rem;
+    background: var(--bg-darker);
+    border-top: 1px solid var(--accent-cyan);
+    border-radius: 8px;
+    width: 100%;
+}
 
 .btn-container {
     display: flex;
@@ -488,7 +535,7 @@ input[type="checkbox"].policy-toggle:checked {
 .my-tools-box {
     border: 1px solid var(--accent-cyan);
     border-radius: 10px;
-    background: linear-gradient(135deg, rgba(125, 207, 255, 0.07) 0%, rgba(122, 162, 247, 0.04) 100%);
+    background: var(--tint-cyan);
     padding: 0.9rem;
     margin-top: 1.2rem;
 }
@@ -518,7 +565,7 @@ input[type="checkbox"].policy-toggle:checked {
 .other-sec-box {
     border: 1px solid var(--accent-orange);
     border-radius: 10px;
-    background: linear-gradient(135deg, rgba(255, 158, 100, 0.07) 0%, rgba(247, 118, 142, 0.04) 100%);
+    background: var(--tint-orange);
     padding: 0.9rem;
     margin-top: 1.2rem;
 }
@@ -555,11 +602,75 @@ input[type="checkbox"].policy-toggle:checked {
 .my-tools-enable-btn:hover,
 .other-sec-enable-btn:hover,
 .post-apps-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
-.my-tools-enable-btn { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); }
-.other-sec-enable-btn { background: linear-gradient(135deg, var(--accent-orange), var(--accent-red)); }
+/* Flat palette colours, one per group. */
+.my-tools-enable-btn { background: var(--accent-cyan); }
+.other-sec-enable-btn { background: var(--accent-orange); }
 .post-apps-enable-btn { background: var(--accent-purple); }
+/* Selected/locked state: the palette green, still flat. */
+.my-tools-enable-btn[aria-pressed="true"],
+.other-sec-enable-btn[aria-pressed="true"],
+.post-apps-enable-btn[aria-pressed="true"] { background: var(--accent-green); }
 
 #post_apps_container strong { margin-top: 0.3rem; }
+
+/* ─── Layered encryption block ────────────────────────────────────────────── */
+/* Numbered layers with a consistent header row, so the four decisions read as
+   one stack rather than four unrelated dropdowns. */
+.enc-stack {
+    background: var(--bg-dark);
+    border: 1px solid var(--accent-purple);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    margin-top: 0.5rem;
+}
+.enc-intro {
+    font-size: 0.82rem;
+    color: var(--fg-dim);
+    margin: 0 0 1rem;
+}
+.enc-layer + .enc-layer { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--border-color); }
+.enc-layer-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.4rem;
+}
+.enc-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 4px;
+    color: var(--bg-darker);
+    font-size: 0.75rem;
+    font-weight: bold;
+    flex: 0 0 auto;
+}
+.enc-layer-title {
+    color: var(--heading-color);
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+.enc-hint {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--fg-dim);
+    white-space: nowrap;
+}
+.enc-warn {
+    font-size: 0.76rem;
+    color: var(--accent-red);
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0.7rem;
+    background: var(--tint-red);
+    border-left: 3px solid var(--accent-red);
+    border-radius: 4px;
+}
+@media screen and (max-width: 480px) {
+    .enc-hint { margin-left: 0; flex-basis: 100%; white-space: normal; }
+}
 
 /* ─── Generic checkbox grid ───────────────────────────────────────────────── */
 .checkbox-grid {
@@ -698,6 +809,38 @@ noscript .js-only { display: none !important; }
     padding: 2rem;
     word-wrap: break-word;
     overflow-wrap: break-word;
+}
+
+/* ─── Site footer: credits + legal ────────────────────────────────────────── */
+/* Present on every page. The legal notice is static HTML rather than injected,
+   so it is still there with JavaScript disabled. */
+.site-footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--bg-lighter);
+    text-align: center;
+}
+
+.legal-notice {
+    max-width: 90ch;
+    margin: 2rem auto 0;
+    padding: 1.1rem 1.3rem;
+    text-align: left;
+    font-size: 0.78rem;
+    line-height: 1.65;
+    color: var(--fg-dim);
+    background: var(--tint-red);
+    border: 1px solid var(--accent-red);
+    border-radius: 8px;
+}
+.legal-notice p { margin: 0.55rem 0; }
+.legal-notice strong { color: var(--fg-color); }
+.legal-notice a { color: var(--accent-blue); }
+.legal-notice code {
+    background: var(--bg-darker);
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    color: var(--accent-green);
 }
 
 /* ─── Credits ─────────────────────────────────────────────────────────────── */

@@ -2,27 +2,41 @@
 security-tools/*/target/
 **/target/
 
-# AI agent scratch files - never commit these
+# ── AI / agent scratch files ──────────────────────────────────────────────────
+# These are working notes and intermediate dumps. They must never be committed
+# and must never reach the published site.
 .ai/
+.ai*/
 ai_agent_files/
+agent_files/
+.agents/
+.aider*
+.cursor/
+.claude/
+CLAUDE.md
+GEMINI.md
+*.agent.md
+*_agent.py
+p[0-9]*_*.py
+p[0-9]*_*.txt
+audit_*.txt
+transcript*.txt
+prompt*.txt
 
-# Old/archived HTML snapshots saved for agent reference
-1073cf0_index.html
-3a27d59_index.html
-temp_old_index.html
-temp_old_style.css
-older_layout_index.html
+# Old/archived snapshots kept only as working references
+*_index.html
+temp_old_*
+older_*
 old_index.md
-older_index.md
 old_html_dump.txt
 old_layout_snippet.txt
-ui_diff.txt
-ui_diff_snippet.txt
+old_legal.js
+old_style.css
+ui_diff*.txt
 style_history.txt
 style_log.md
 index_log.md
-js_snippet.txt
-js_snippet_2.txt
+js_snippet*.txt
 standalone.txt
 patch_cookies.py
 
