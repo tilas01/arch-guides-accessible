@@ -172,11 +172,15 @@ Honest about what this review did **not** cover:
 * **`scarecrow`'s kernel module (`src/driver/`) was not reviewed.** Kernel code
   is a different risk class and warrants its own pass.
 * **`aya`/eBPF paths in `kernel-watcher` were not reviewed.**
-* **No dependency vulnerability scan.** `cargo audit` was not available in this
-  environment; it should be added to CI.
-* **`anti-evil-maid` declares `zeroize` but never uses it.** It does not appear
-  to handle raw secrets directly, so this is probably just an unused dependency
-  rather than a missed wipe — but it is worth confirming and removing if so.
+* ~~No dependency vulnerability scan.~~ **`cargo audit` is now in CI** for every
+  crate, advisory rather than blocking — a newly published advisory in a
+  transitive dependency should surface loudly, but must not stop a security fix
+  from shipping. Findings appear in the run summary.
+* ~~`anti-evil-maid` declares `zeroize` but never uses it.~~ **Confirmed and
+  removed.** The crate never touches a raw secret: password handling is delegated
+  to `kernel_watcher::verify_tamper_password()`, which zeroizes its own buffer,
+  and the only other input is a y/N confirmation. An unused security dependency is
+  worse than no dependency, because it implies a wipe that is not happening.
 
 Recommended next: add `cargo audit` and `cargo deny` to CI, write tests for the
 integrity-check paths (especially the fail-closed behaviour fixed above), and

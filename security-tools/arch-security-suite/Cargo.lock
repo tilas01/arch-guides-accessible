@@ -240,7 +240,6 @@ dependencies = [
  "sha2",
  "udev",
  "walkdir",
- "zeroize",
 ]
 
 [[package]]
