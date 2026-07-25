@@ -63,16 +63,23 @@
 </head>
 <body>
 
-    <a href="index.html" class="home-btn">← Back to Generator</a>
-
     <header>
-        <img src="img/banner.png" style="max-width: 100%; margin-bottom: 1rem;" alt="Arch Guides Banner">
+        <a href="index.html"><img src="img/banner.png" style="max-width: 100%; margin-bottom: 1rem;" alt="Arch Guides Banner"></a>
         <h1>Arch Guides Wiki</h1>
-        <p class="subtitle">The Official Documentation & Security Suite Wiki</p>
-        <p style="font-size: 0.9rem; color: #8b949e;">Developed by <strong><a href="https://github.com/tilas01" target="_blank">tilas01</a></strong></p>
+        <p class="subtitle">The Official Documentation &amp; Security Suite Wiki</p>
+        <p style="font-size: 0.9rem; color: #8b949e;">Developed by <strong><a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a></strong></p>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link">⚙️ Generator</a>
+            <span class="nav-sep">|</span>
+            <a href="security-tools.html" class="nav-link">🦀 Security Tools</a>
+            <span class="nav-sep">|</span>
+            <a href="wiki.html" class="nav-link" style="color:var(--accent-cyan);">📖 Wiki</a>
+            <span class="nav-sep">|</span>
+            <a href="live.html" class="nav-link" target="_blank">📝 Live Editor</a>
+        </nav>
     </header>
 
-    
+    <div class="section" id="generator-steps">
         <h2><span class="icon">⚙️</span> Generator Configuration Steps</h2>
         <p>This section explains every dropdown option available in the Arch Guides Dynamic generator.</p>
         
@@ -101,7 +108,6 @@
 
     <div class="section" id="memory-integrity">
         <h2><span class="icon">🧠</span> Memory Integrity Checker</h2>
-        <p>
         <p>If an advanced rootkit attempts to patch syscall tables in live memory or hide malicious kernel modules (Direct Kernel Object Manipulation - DKOM), the integrity checker will detect the checksum mismatch and alert you instantly.</p>
     </div>
 
@@ -114,8 +120,11 @@
             <li><strong>Mostly Reproducible:</strong> <em>(Still highly verified and safe)</em> The application is fully open-source and the code can be audited. However, the build system (like GitHub Actions or the Arch Build System) embeds non-deterministic metadata during compilation, such as build timestamps, randomized IDs, or system file paths. This means the binaries won't be perfectly identical bit-for-bit, but the actual compiled code logic is safe and verifiable.</li>
             <li><strong>Non-Reproducible:</strong> <em>(Requires trusting the developer)</em> The application uses an opaque build process or relies on precompiled blobs (common with Electron apps like Signal). This does not mean the software is malicious, but it means you cannot independently verify that the resulting binary exactly matches the public source code. You must trust that the developer, or the automated CI system they authorized, compiled it safely without modifications.</li>
             <li><strong>Proprietary / Closed Source:</strong> The application contains closed-source, proprietary code (such as Firefox's DRM firmware blobs, Chromium's Google integration, or Flatpak's proprietary catalog). The source code is not fully available for public auditing, so you are entirely reliant on trusting the corporate entity or developer behind it.</li>
-        </ul    <div class="section" id="security-suite">
-        <h2><span class="icon">🦀</span> Security Suite & Live Releases</h2>
+        </ul>
+    </div>
+
+    <div class="section" id="security-suite">
+        <h2><span class="icon">🦀</span> Security Suite &amp; Live Releases</h2>
         <p>All tools can be compiled directly via Cargo or downloaded from the GitHub releases page below. Ensure you have the Rust toolchain installed (<code>pacman -S rust</code>) for compiling.</p>
         
         <div style="margin-bottom:1.5rem; padding:1rem; border-left:4px solid var(--accent-green); background:rgba(46, 160, 67, 0.1);">
@@ -148,6 +157,166 @@
             <li><strong>Anti-Evil-Maid:</strong> Boot Verification. Checks TPM and Secure Boot state against known-good hashes to prevent offline tampering.</li>
             <li><strong>Kernel Watcher:</strong> Ring 0 Monitor. Scans for illicit kernel module loads and unexpected sysfs parameter modifications.</li>
             <li><strong>Scarecrow:</strong> Canary Tokens. Generates and monitors fake credentials/files to detect network breaches immediately.</li>
+        </ul>
+    </div>
+
+    <!-- ── Choose-your-own-path: physical access threat model ── -->
+    <div class="section" id="choose-your-path">
+        <h2><span class="icon">🧭</span> Choose Your Own Path</h2>
+        <p>
+            The options below are not a checklist to complete — several of them can
+            destroy your data or lock you out permanently. Start from the threat you
+            actually have and follow that branch only.
+        </p>
+
+        <div style="border-left:4px solid var(--accent-green); background:rgba(158,206,106,0.08); padding:1rem; margin-bottom:1rem;">
+            <strong>🟢 “I want a sensible, safe desktop.”</strong>
+            <p style="margin:0.5rem 0 0;">
+                LUKS2 + Argon2id · UKI with your own Secure Boot keys · BTRFS with Snapper ·
+                UFW default-deny · AppArmor · <a href="#libre-otp">Libre OTP</a> at login.
+                Nothing here can erase your disk. This is the recommended baseline.
+            </p>
+        </div>
+
+        <div style="border-left:4px solid var(--accent-orange); background:rgba(255,158,100,0.08); padding:1rem; margin-bottom:1rem;">
+            <strong>🟠 “My laptop might be tampered with while I'm away.”</strong>
+            <p style="margin:0.5rem 0 0;">
+                Add <a href="#security-suite">Anti-Evil Maid</a> for boot-integrity hashing,
+                <a href="#security-suite">Input Guard</a> against keystroke-injection USB devices,
+                and <a href="#usb-kill">the USB kill switch set to “lock session”</a>.
+                Still non-destructive — you can always get back in.
+            </p>
+        </div>
+
+        <div style="border-left:4px solid var(--accent-red); background:rgba(247,118,142,0.08); padding:1rem;">
+            <strong>🔴 “I need the machine to be unrecoverable under coercion.”</strong>
+            <p style="margin:0.5rem 0 0;">
+                <a href="#luks-duress">LUKS duress passphrase</a> with keyslot erasure, and/or
+                <a href="#usb-kill">USB kill switch set to shutdown</a>.
+                <strong style="color:var(--accent-red);">These permanently destroy data with no
+                confirmation prompt.</strong> Do not enable either until you have verified
+                offline backups and have rehearsed the whole flow in a virtual machine.
+                Understand the legal position in your jurisdiction before relying on them.
+            </p>
+        </div>
+    </div>
+
+    <div class="section" id="luks-duress">
+        <h2><span class="icon">🔴</span> LUKS Duress Passphrase</h2>
+        <p>
+            A duress passphrase is a <em>second</em> valid passphrase on the LUKS header.
+            Your real passphrase keeps working unchanged; entering the duress one at the
+            boot prompt runs a chosen response instead of unlocking normally.
+        </p>
+
+        <h3>How the generator implements it</h3>
+        <ul>
+            <li>The passphrase is registered as an additional LUKS keyslot with <code>cryptsetup luksAddKey</code>.</li>
+            <li>Only a <strong>salted SHA-512 hash</strong> is written to <code>/etc/arch-security/duress.conf</code> (mode 600). The passphrase itself is never stored.</li>
+            <li>A small initramfs hook runs <em>before</em> <code>encrypt</code>/<code>sd-encrypt</code>, compares what you typed against the hash, and either hands the passphrase on to the normal unlock path or triggers the response.</li>
+        </ul>
+
+        <h3>The four actions</h3>
+        <ul>
+            <li><strong>Shut down immediately</strong> — powers off, changes nothing on disk. The safe choice, and the one to start with. An observer sees a machine that turned itself off.</li>
+            <li><strong>Erase LUKS keyslots, then shut down</strong> — runs <code>cryptsetup erase</code> and overwrites the header region. <strong style="color:var(--accent-red);">Every byte becomes permanently unrecoverable.</strong></li>
+            <li><strong>Erase keyslots, then boot a decoy</strong> — as above, then unlocks a separate decoy volume so the machine appears to boot normally.</li>
+            <li><strong>Boot a decoy only</strong> — unlocks the decoy and leaves the real volume completely intact. Non-destructive, and reversible.</li>
+        </ul>
+
+        <div style="border-left:4px solid var(--accent-red); background:rgba(247,118,142,0.1); padding:1rem; margin:1rem 0;">
+            <strong style="color:var(--accent-red);">⚠️ Before you enable an erasing action</strong>
+            <ul style="margin-top:0.5rem;">
+                <li>There is no undo, no confirmation prompt at boot, and no forensic recovery.</li>
+                <li>Typing the duress passphrase by mistake destroys the installation.</li>
+                <li>Choose a duress passphrase you could not confuse with the real one.</li>
+                <li>Keep verified offline backups and rehearse the entire flow in a VM.</li>
+                <li>Destroying evidence may itself be an offence where you live. That is your call to make, not this tool's.</li>
+            </ul>
+        </div>
+
+        <h3>Setting up the decoy volume</h3>
+        <p>
+            The decoy options expect a partition labelled <code>decoy</code>, LUKS-formatted
+            with the duress passphrase and containing a minimal install. Until that exists the
+            hook falls back to powering off rather than revealing anything. Create it with:
+        </p>
+        <pre><code class="language-bash">cryptsetup luksFormat --type luks2 /dev/disk/by-partlabel/decoy
+cryptsetup open /dev/disk/by-partlabel/decoy decoyroot
+mkfs.ext4 /dev/mapper/decoyroot
+# then pacstrap a minimal system into it, with no reference to the real volume</code></pre>
+        <p>
+            Verify your real passphrase still works, and that the duress passphrase behaves as
+            expected, <strong>in a virtual machine</strong> before trusting this on hardware.
+        </p>
+    </div>
+
+    <div class="section" id="usb-kill">
+        <h2><span class="icon">🔌</span> USB Kill Switch</h2>
+        <p>
+            Modelled on the <a href="https://github.com/hephaest0s/usbkill" target="_blank" rel="noopener">usbkill</a>
+            project. At install time the generator snapshots the USB devices currently
+            attached into an allowlist at <code>/etc/arch-security/usb-allowlist</code>, and
+            installs a udev rule that reacts when something outside that list appears.
+        </p>
+
+        <h3>Actions</h3>
+        <ul>
+            <li><strong>Lock the session</strong> — calls <code>loginctl lock-sessions</code> and sends a desktop notification. Non-destructive. <em>Start here.</em></li>
+            <li><strong>Shut down</strong> — forces an immediate power-off. Unsaved work is lost.</li>
+            <li><strong>Shut down and wipe RAM/swap</strong> — syncs, disables swap, drops caches, then powers off. Intended to frustrate cold-boot key recovery, at the cost of a less clean shutdown.</li>
+        </ul>
+
+        <h3>Triggers</h3>
+        <ul>
+            <li><strong>Connected</strong> — an unlisted device is plugged in. Guards against a malicious device being attached.</li>
+            <li><strong>Removed</strong> — an allowlisted device is unplugged. Guards against your machine being taken, if you keep a USB token attached.</li>
+            <li><strong>Either</strong> — both of the above.</li>
+        </ul>
+
+        <div style="border-left:4px solid var(--accent-orange); background:rgba(255,158,100,0.1); padding:1rem; margin:1rem 0;">
+            <strong>⚠️ Practical warnings</strong>
+            <ul style="margin-top:0.5rem;">
+                <li>The shutdown actions fire with no confirmation. A keyboard, mouse, dock, phone or webcam that is not on the allowlist is enough.</li>
+                <li>The allowlist reflects only what was attached during installation, so review it before arming a shutdown action.</li>
+                <li>Test in a VM first, and prefer “lock session” until you trust your allowlist.</li>
+            </ul>
+        </div>
+
+        <h3>Managing it afterwards</h3>
+        <pre><code class="language-bash"># See the current allowlist (vendor:product IDs)
+cat /etc/arch-security/usb-allowlist
+
+# Find the ID of a device you want to trust, then add it
+lsusb
+echo '1234:5678' >> /etc/arch-security/usb-allowlist
+udevadm control --reload-rules
+
+# Review what has triggered
+cat /var/log/usb-kill.log
+
+# Disable the kill switch entirely
+rm /etc/udev/rules.d/99-usb-kill.rules
+udevadm control --reload-rules</code></pre>
+        <p>
+            For a less drastic alternative, <a href="#other-sec">USBGuard</a> enforces the same
+            allowlist idea by refusing to authorise the device, without touching power state.
+        </p>
+    </div>
+
+    <div class="section" id="other-sec">
+        <h2><span class="icon">🛡️</span> Third-Party Security Tools</h2>
+        <p>
+            Well-established tools from the Arch repositories, selectable in the generator and
+            on the <a href="security-tools.html">Security Tools</a> page.
+        </p>
+        <ul>
+            <li><strong>AppArmor</strong> — path-based mandatory access control. Confines a program to a declared set of files and capabilities, so a compromised process cannot roam. The generator adds the required kernel parameters to your bootloader or UKI cmdline automatically.</li>
+            <li><strong>fail2ban</strong> — bans source addresses after repeated authentication failures. Ships with a default SSH jail: 3 attempts, 1 hour ban.</li>
+            <li><strong>UFW</strong> — readable front end to netfilter, configured default-deny inbound.</li>
+            <li><strong>Lynis</strong> — audits the installed system against hardening benchmarks and writes a report to <code>/var/log/lynis-initial.log</code>.</li>
+            <li><strong>USBGuard</strong> — device authorisation policy for USB. Generates an allowlist from what is attached and rejects anything else at the kernel level. A gentler alternative to the <a href="#usb-kill">USB kill switch</a>.</li>
+            <li><strong>auditd</strong> — kernel audit daemon, preconfigured to watch <code>/etc/passwd</code> and <code>/etc/sudoers</code> for changes.</li>
         </ul>
     </div>
 

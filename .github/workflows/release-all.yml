@@ -35,29 +35,44 @@ jobs:
           sha512sum ${{ matrix.tool }} > ${{ matrix.tool }}.sha512
           sha256sum ${{ matrix.tool }} > ${{ matrix.tool }}.sha256
 
+      # Signing is all-or-nothing on purpose. This step used to fall back to
+      # writing the literal text "DUMMY SIG" into <tool>.sig and <tool>.asc when
+      # the secret was absent, and those files were then published as release
+      # assets. Anyone following the README's verification instructions would
+      # have hit a bogus signature file while the docs claimed every binary was
+      # signed. Now: sign properly, or publish hashes only and say so.
       - name: Generate GPG Signatures
+        id: sign
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          cd security-tools/${{ matrix.tool }}/target/release
-          if [ -n "$GPG_PRIVATE_KEY" ]; then
-            echo "$GPG_PRIVATE_KEY" | gpg --import --batch
-            echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback -u tilas01 --detach-sign -a ${{ matrix.tool }}
-            mv ${{ matrix.tool }}.asc ${{ matrix.tool }}.sig
-            
-            # Create a .asc copy for verify-integrity.sh
-            cp ${{ matrix.tool }}.sig ${{ matrix.tool }}.asc
-          else
-            echo "Warning: GPG_PRIVATE_KEY not set. Generating empty dummy signatures for testing."
-            echo "DUMMY SIG" > ${{ matrix.tool }}.sig
-            echo "DUMMY SIG" > ${{ matrix.tool }}.asc
+          set -euo pipefail
+          cd "security-tools/${{ matrix.tool }}/target/release"
+          if [ -z "${GPG_PRIVATE_KEY:-}" ]; then
+            echo "::warning::GPG_PRIVATE_KEY is not set - publishing SHA-256/512 hashes only, no signatures."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          printf '%s' "$GPG_PRIVATE_KEY" | gpg --batch --import
+          printf '%s' "${GPG_PASSPHRASE:-}" | gpg --batch --yes \
+            --passphrase-fd 0 --pinentry-mode loopback \
+            -u tilas01 --detach-sign --armor \
+            --output "${{ matrix.tool }}.sig" "${{ matrix.tool }}"
+          # verify-integrity.sh looks for .asc; keep both names for the same
+          # armored detached signature.
+          cp "${{ matrix.tool }}.sig" "${{ matrix.tool }}.asc"
+          # Fail loudly rather than shipping a signature that does not verify.
+          gpg --verify "${{ matrix.tool }}.sig" "${{ matrix.tool }}"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.tool }}-release
+          # if-no-files-found: ignore so an unsigned build (no .sig/.asc) still
+          # uploads its binary and hashes instead of failing the whole job.
+          if-no-files-found: ignore
           path: |
             security-tools/${{ matrix.tool }}/target/release/${{ matrix.tool }}
             security-tools/${{ matrix.tool }}/target/release/${{ matrix.tool }}.sha512
@@ -87,7 +102,7 @@ jobs:
           echo "tag=v$(date +'%Y.%m.%d-%H%M')-${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: "Security Tools Release (${{ github.ref_name }})"

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arch Security Tools — tilas01</title>
+    <meta name="description" content="Every security tool in the Arch Guides Dynamic project: tilas01's native Rust suite with live GitHub release stats, plus the vetted third-party hardening tools. Select a set and send it straight to the generator.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="stylesheet" href="style.css">
+    <link rel="prefetch" href="index.html">
+    <style>
+        /* ── Page-local layout. Palette and components come from style.css. ── */
+        .tools-header { text-align: center; margin-bottom: 1.5rem; }
+        .tools-header h1 { color: var(--accent-cyan); margin-bottom: 0.4rem; }
+        .tools-header p { color: var(--fg-dim); max-width: 70ch; margin: 0 auto; }
+
+        /* Repository stat strip, filled from the GitHub API. */
+        .repo-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+        .stat-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.85rem 0.5rem;
+            text-align: center;
+        }
+        .stat-value {
+            display: block;
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: var(--accent-cyan);
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.72rem;
+            color: var(--fg-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Pixel-art tool tiles ──
+           Hard edges, chunky borders and a stepped shadow, so the tiles read as
+           pixel art rather than soft material cards. */
+        .pixel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .pixel-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: var(--bg-dark);
+            border: 3px solid var(--accent-cyan);
+            border-radius: 0;                       /* pixel art has no radii */
+            padding: 0.9rem;
+            cursor: pointer;
+            image-rendering: pixelated;
+            box-shadow: 4px 4px 0 0 rgba(125, 207, 255, 0.25);
+            transition: box-shadow 0.1s steps(2), transform 0.1s steps(2);
+        }
+        .pixel-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 0 rgba(125, 207, 255, 0.35); }
+        .pixel-card:has(input:checked) {
+            background: rgba(125, 207, 255, 0.12);
+            box-shadow: inset 0 0 0 2px var(--accent-cyan), 4px 4px 0 0 rgba(125, 207, 255, 0.4);
+        }
+        .pixel-card.third-party { border-color: var(--accent-orange); box-shadow: 4px 4px 0 0 rgba(255, 158, 100, 0.25); }
+        .pixel-card.third-party:hover { box-shadow: 6px 6px 0 0 rgba(255, 158, 100, 0.35); }
+        .pixel-card.third-party:has(input:checked) {
+            background: rgba(255, 158, 100, 0.12);
+            box-shadow: inset 0 0 0 2px var(--accent-orange), 4px 4px 0 0 rgba(255, 158, 100, 0.4);
+        }
+
+        .pixel-card-top { display: flex; align-items: center; gap: 0.6rem; }
+        .pixel-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+            flex: 0 0 auto;
+            /* Snap the emoji to a pixel grid feel. */
+            filter: contrast(1.1);
+        }
+        .pixel-name { font-weight: bold; color: var(--heading-color); font-size: 1rem; }
+        .pixel-lang {
+            margin-left: auto;
+            font-size: 0.65rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            padding: 0.15rem 0.4rem;
+            background: rgba(255, 158, 100, 0.18);
+            color: var(--accent-orange);
+        }
+        .pixel-desc { font-size: 0.82rem; color: var(--fg-color); line-height: 1.55; }
+        .pixel-meta {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            font-size: 0.72rem;
+            color: var(--fg-dim);
+            margin-top: auto;
+            padding-top: 0.4rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .pixel-links { display: flex; gap: 0.6rem; flex-wrap: wrap; font-size: 0.75rem; }
+
+        /* Group headers with the lock-select control. */
+        .group-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 0.9rem;
+        }
+        .group-bar h2 { margin: 0; font-size: 1.1rem; }
+
+        /* Sticky action bar for the selection hand-off. */
+        .selection-bar {
+            position: sticky;
+            bottom: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: var(--bg-darker);
+            border-top: 2px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 0.9rem 1.1rem;
+            margin-top: 1.5rem;
+        }
+        .selection-count { font-size: 0.9rem; color: var(--fg-color); }
+        .selection-count strong { color: var(--accent-cyan); }
+
+        .api-note {
+            font-size: 0.75rem;
+            color: var(--fg-dim);
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        table.rel-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        table.rel-table th, table.rel-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.45rem 0.7rem;
+            text-align: left;
+        }
+        table.rel-table th { background: var(--bg-dark); color: var(--accent-cyan); }
+        .table-scroll { overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+<noscript>
+    <div class="alert warning">
+        JavaScript is disabled, so the live GitHub statistics and the selection
+        hand-off below will not work. Every tool is still described in full, and
+        the <a href="wiki.html#security-suite">Wiki</a> covers manual setup.
+    </div>
+</noscript>
+
+<header>
+    <a href="https://github.com/tilas01/arch-guides-dynamic" class="banner-link" target="_blank" rel="noopener">
+        <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
+    </a>
+    <nav class="main-nav">
+        <a href="index.html" class="nav-link">⚙️ Generator</a>
+        <span class="nav-sep">|</span>
+        <a href="security-tools.html" class="nav-link" style="color:var(--accent-cyan);">🦀 Security Tools</a>
+        <span class="nav-sep">|</span>
+        <a href="wiki.html" class="nav-link">📖 Wiki</a>
+        <span class="nav-sep">|</span>
+        <a href="live.html" class="nav-link" target="_blank">📝 Live Editor</a>
+    </nav>
+</header>
+
+<main>
+    <div class="tools-header">
+        <h1>🦀 Arch Security Tools</h1>
+        <p>
+            Every security tool this project can install. The first group is written
+            from scratch in Rust by <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a>;
+            the second is a set of well-established third-party tools packaged in the
+            Arch repositories. Pick any combination and send it straight to the generator.
+        </p>
+    </div>
+
+    <!-- ── Live repository statistics ── -->
+    <section>
+        <h2 style="color:var(--accent-purple); margin-top:0;">📊 Repository Statistics</h2>
+        <p style="color:var(--fg-dim); font-size:0.85rem;">
+            Pulled live from the GitHub REST API when this page loads. No token is used
+            and nothing is sent anywhere — the request goes from your browser straight
+            to <code>api.github.com</code>.
+        </p>
+        <div class="repo-stats" id="repo-stats">
+            <div class="stat-box"><span class="stat-value" id="stat-stars">–</span><span class="stat-label">Stars</span></div>
+            <div class="stat-box"><span class="stat-value" id="stat-forks">–</span><span class="stat-label">Forks</span></div>
+            <div class="stat-box"><span class="stat-value" id="stat-watchers">–</span><span class="stat-label">Watchers</span></div>
+            <div class="stat-box"><span class="stat-value" id="stat-issues">–</span><span class="stat-label">Open Issues</span></div>
+            <div class="stat-box"><span class="stat-value" id="stat-release">–</span><span class="stat-label">Latest Release</span></div>
+            <div class="stat-box"><span class="stat-value" id="stat-downloads">–</span><span class="stat-label">Asset Downloads</span></div>
+        </div>
+        <div id="stats-status" class="api-note">Loading statistics…</div>
+
+        <h3 style="color:var(--accent-cyan); font-size:1rem; margin-top:1.5rem;">Releases</h3>
+        <div class="table-scroll">
+            <table class="rel-table" id="releases-table">
+                <thead>
+                    <tr><th>Tag</th><th>Published</th><th>Assets</th><th>Downloads</th><th></th></tr>
+                </thead>
+                <tbody id="releases-body">
+                    <tr><td colspan="5" style="color:var(--fg-dim);">Loading releases…</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="api-note">
+            Every published binary is GPG-signed and SHA-512 hashed. Import the public key
+            (<a href="https://github.com/tilas01/arch-guides-dynamic/blob/main/tilas01.asc" target="_blank" rel="noopener"><code>tilas01.asc</code></a>)
+            and verify before running anything —
+            see <a href="wiki.html#verification">verification in the Wiki</a>.
+        </p>
+    </section>
+
+    <!-- ── tilas01's Rust suite ── -->
+    <section class="my-tools-box" style="margin-bottom:2rem;">
+        <div class="group-bar">
+            <h2 class="my-tools-title">🦀 tilas01's Security Suite (Rust)</h2>
+            <button type="button" class="my-tools-enable-btn" id="lock-mine"
+                    onclick="toggleGroupSelection('mine')" aria-pressed="false">
+                🔓 Select All Mine
+            </button>
+        </div>
+        <div class="pixel-grid" id="grid-mine"><!-- built by JS --></div>
+    </section>
+
+    <!-- ── Third-party tools ── -->
+    <section class="other-sec-box" style="margin-bottom:2rem;">
+        <div class="group-bar">
+            <h2 class="other-sec-title">🛡️ Third-Party Security Tools</h2>
+            <button type="button" class="other-sec-enable-btn" id="lock-theirs"
+                    onclick="toggleGroupSelection('theirs')" aria-pressed="false">
+                🔓 Select All Third-Party
+            </button>
+        </div>
+        <div class="pixel-grid" id="grid-theirs"><!-- built by JS --></div>
+    </section>
+
+    <!-- ── Selection hand-off ── -->
+    <div class="selection-bar">
+        <div class="selection-count">
+            Selected: <strong id="count-mine">0</strong> of mine,
+            <strong id="count-theirs">0</strong> third-party
+        </div>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <button type="button" class="btn" style="width:auto; background:var(--bg-lighter); color:var(--accent-red); border:1px solid var(--accent-red);"
+                    onclick="clearSelection()">🗑️ Clear</button>
+            <button type="button" class="btn" style="width:auto; background:var(--accent-green); color:var(--bg-darker);"
+                    onclick="applyToGenerator()">⚙️ Apply to Generator →</button>
+        </div>
+    </div>
+</main>
+
+<footer style="text-align:center; padding:2rem 1rem; color:var(--fg-dim); font-size:0.8rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+    🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+    <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
+    <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+    CC BY-NC-SA 4.0 ·
+    <a href="index.html">Back to Generator</a>
+    <br><br>
+    <span style="color:var(--accent-red);">
+        Provided AS IS with no warranty. Review every command before running it.
+        These tools can lock you out of your own machine if misconfigured.
+    </span>
+</footer>
+
+<script>
+// ─── Tool register ────────────────────────────────────────────────────────────
+// `value` must match the checkbox values in index.html so a selection made here
+// can be applied to the generator directly.
+const MY_TOOLS = [
+    {
+        value: 'libre-otp', icon: '🔐', name: 'Libre OTP', repo: 'libre-otp',
+        desc: 'Native Rust TOTP/HOTP two-factor authentication for boot, login and SSH. Configurable SHA-1/256/512, optional double-OTP, single-use recovery codes and a limited-use bypass password.',
+        enforces: 'PAM + initramfs'
+    },
+    {
+        value: 'anti-ducky', icon: '🦆', name: 'Input Guard (Anti-Ducky)', repo: 'anti-ducky',
+        desc: 'Watches USB HID keystroke timing and sandboxes unknown input devices, blocking Rubber Ducky style automated keystroke injection before it can type anything.',
+        enforces: 'udev + evdev'
+    },
+    {
+        value: 'anti-evil-maid', icon: '🕵️', name: 'Anti-Evil Maid', repo: 'anti-evil-maid',
+        desc: 'Verifies boot integrity and hides the real encrypted target behind generic decoy kernel entries. Supports a decoy password that boots a dummy environment, and a duress password.',
+        enforces: 'boot integrity'
+    },
+    {
+        value: 'kernel-watcher', icon: '👁️', name: 'Kernel Watcher', repo: 'kernel-watcher',
+        desc: 'Async filesystem monitor that flags infostealers touching browser profiles, SSH keys and wallets, and detects userland rootkit behaviour. A lightweight semi-EDR.',
+        enforces: 'inotify daemon'
+    },
+    {
+        value: 'scarecrow', icon: '🦅', name: 'Scarecrow', repo: 'scarecrow',
+        desc: 'Plants canary tokens and spoofs sandbox/VM artefacts so malware that checks whether it is being analysed decides to stay dormant. Includes an optional kernel module.',
+        enforces: 'canary tokens'
+    }
+];
+
+const THIRD_PARTY = [
+    { value: 'apparmor', icon: '🛡️', name: 'AppArmor', desc: 'Path-based mandatory access control. Confines programs to a declared set of files and capabilities, so a compromised process cannot reach the rest of the system.', url: 'https://apparmor.net/', pkg: 'apparmor' },
+    { value: 'fail2ban', icon: '🚫', name: 'fail2ban', desc: 'Scans service logs and bans source addresses that show repeated authentication failures. Ships here with a default-deny SSH jail.', url: 'https://github.com/fail2ban/fail2ban', pkg: 'fail2ban' },
+    { value: 'ufw', icon: '🧱', name: 'UFW', desc: 'A readable front end to netfilter. Configured default-deny inbound, allow outbound — the sane baseline for a desktop.', url: 'https://launchpad.net/ufw', pkg: 'ufw' },
+    { value: 'lynis', icon: '🔍', name: 'Lynis', desc: 'Security auditing tool that scores your installed system against hardening benchmarks and writes an actionable report.', url: 'https://cisofy.com/lynis/', pkg: 'lynis' },
+    { value: 'usbguard', icon: '🔌', name: 'USBGuard', desc: 'Device authorisation policy for USB. Generates an allowlist from what is currently attached and rejects anything else at the kernel level.', url: 'https://usbguard.github.io/', pkg: 'usbguard' },
+    { value: 'auditd', icon: '📋', name: 'auditd', desc: 'The Linux kernel audit daemon. Records security-relevant events; preconfigured here to watch /etc/passwd and /etc/sudoers for changes.', url: 'https://github.com/linux-audit/audit-userspace', pkg: 'audit' }
+];
+
+const REPO = 'tilas01/arch-guides-dynamic';
+
+// ─── Rendering ────────────────────────────────────────────────────────────────
+
+function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+}
+
+function renderMine() {
+    document.getElementById('grid-mine').innerHTML = MY_TOOLS.map(t => `
+        <label class="pixel-card" for="tool-${escapeHtml(t.value)}">
+            <div class="pixel-card-top">
+                <input type="checkbox" id="tool-${escapeHtml(t.value)}" data-group="mine"
+                       value="${escapeHtml(t.value)}" onchange="updateCounts()">
+                <span class="pixel-icon">${t.icon}</span>
+                <span class="pixel-name">${escapeHtml(t.name)}</span>
+                <span class="pixel-lang">RUST</span>
+            </div>
+            <p class="pixel-desc">${escapeHtml(t.desc)}</p>
+            <div class="pixel-meta">
+                <span>⚙️ ${escapeHtml(t.enforces)}</span>
+                <span id="dl-${escapeHtml(t.value)}">⬇️ –</span>
+            </div>
+            <div class="pixel-links">
+                <a href="https://github.com/${REPO}/tree/main/security-tools/${escapeHtml(t.repo)}"
+                   target="_blank" rel="noopener" onclick="event.stopPropagation()">Source</a>
+                <a href="wiki.html#security-suite" onclick="event.stopPropagation()">Wiki</a>
+                <a href="https://github.com/${REPO}/releases/latest"
+                   target="_blank" rel="noopener" onclick="event.stopPropagation()">Release</a>
+            </div>
+        </label>
+    `).join('');
+}
+
+function renderThirdParty() {
+    document.getElementById('grid-theirs').innerHTML = THIRD_PARTY.map(t => `
+        <label class="pixel-card third-party" for="tool-${escapeHtml(t.value)}">
+            <div class="pixel-card-top">
+                <input type="checkbox" id="tool-${escapeHtml(t.value)}" data-group="theirs"
+                       value="${escapeHtml(t.value)}" onchange="updateCounts()">
+                <span class="pixel-icon">${t.icon}</span>
+                <span class="pixel-name">${escapeHtml(t.name)}</span>
+                <span class="pixel-lang" style="background:rgba(158,206,106,0.18); color:var(--accent-green);">REPO</span>
+            </div>
+            <p class="pixel-desc">${escapeHtml(t.desc)}</p>
+            <div class="pixel-meta"><span>📦 pacman -S ${escapeHtml(t.pkg)}</span></div>
+            <div class="pixel-links">
+                <a href="${escapeHtml(t.url)}" target="_blank" rel="noopener"
+                   onclick="event.stopPropagation()">Upstream</a>
+                <a href="wiki.html#other-sec" onclick="event.stopPropagation()">Wiki</a>
+            </div>
+        </label>
+    `).join('');
+}
+
+// ─── Selection ────────────────────────────────────────────────────────────────
+
+function boxes(group) {
+    return Array.from(document.querySelectorAll(`input[data-group="${group}"]`));
+}
+
+function updateCounts() {
+    const mine = boxes('mine').filter(b => b.checked).length;
+    const theirs = boxes('theirs').filter(b => b.checked).length;
+    document.getElementById('count-mine').textContent = mine;
+    document.getElementById('count-theirs').textContent = theirs;
+
+    // Keep each lock button's label honest about what it will do next.
+    syncLockButton('mine', document.getElementById('lock-mine'),
+                   'Select All Mine', 'All Mine Selected');
+    syncLockButton('theirs', document.getElementById('lock-theirs'),
+                   'Select All Third-Party', 'All Third-Party Selected');
+}
+
+function syncLockButton(group, btn, offLabel, onLabel) {
+    if (!btn) return;
+    const all = boxes(group);
+    const locked = all.length > 0 && all.every(b => b.checked);
+    btn.textContent = (locked ? '🔒 ' : '🔓 ') + (locked ? onLabel : offLabel);
+    btn.setAttribute('aria-pressed', String(locked));
+}
+
+// "Lock select": first press selects the entire group, second clears it.
+function toggleGroupSelection(group) {
+    const all = boxes(group);
+    if (all.length === 0) return;
+    const turnOn = all.some(b => !b.checked);
+    all.forEach(b => { b.checked = turnOn; });
+    updateCounts();
+}
+
+function clearSelection() {
+    document.querySelectorAll('input[data-group]').forEach(b => { b.checked = false; });
+    updateCounts();
+}
+
+// Hands the selection to index.html through the same sessionStorage channel the
+// .sc config restore uses. additive:true so it adds to, rather than replaces,
+// whatever the user has already chosen in the generator.
+function applyToGenerator() {
+    const mine = boxes('mine').filter(b => b.checked).map(b => b.value);
+    const theirs = boxes('theirs').filter(b => b.checked).map(b => b.value);
+
+    if (mine.length === 0 && theirs.length === 0) {
+        alert('Nothing selected yet. Pick at least one tool, or use a "Select All" button.');
+        return;
+    }
+
+    try {
+        sessionStorage.setItem('arch_restore_config', JSON.stringify({
+            additive: true,
+            post_apps: mine,
+            other_sec_tools: theirs
+        }));
+    } catch (e) {
+        alert('Could not stage the selection (storage is blocked in this browser).');
+        return;
+    }
+    window.location.href = 'index.html';
+}
+
+// ─── GitHub API ───────────────────────────────────────────────────────────────
+
+function fmtNum(n) {
+    if (typeof n !== 'number') return '–';
+    return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n);
+}
+
+async function loadStats() {
+    const status = document.getElementById('stats-status');
+    try {
+        const [repoRes, relRes] = await Promise.all([
+            fetch(`https://api.github.com/repos/${REPO}`),
+            fetch(`https://api.github.com/repos/${REPO}/releases?per_page=20`)
+        ]);
+
+        if (repoRes.status === 403) throw new Error('rate-limited');
+        if (!repoRes.ok) throw new Error('HTTP ' + repoRes.status);
+
+        const repo = await repoRes.json();
+        document.getElementById('stat-stars').textContent = fmtNum(repo.stargazers_count);
+        document.getElementById('stat-forks').textContent = fmtNum(repo.forks_count);
+        document.getElementById('stat-watchers').textContent = fmtNum(repo.subscribers_count);
+        document.getElementById('stat-issues').textContent = fmtNum(repo.open_issues_count);
+
+        if (!relRes.ok) throw new Error('releases HTTP ' + relRes.status);
+        const releases = await relRes.json();
+
+        // Per-tool download counts, matched by asset name.
+        const perTool = {};
+        let grandTotal = 0;
+
+        const rows = releases.map(r => {
+            const assets = Array.isArray(r.assets) ? r.assets : [];
+            const dls = assets.reduce((sum, a) => sum + (a.download_count || 0), 0);
+            grandTotal += dls;
+            assets.forEach(a => {
+                MY_TOOLS.forEach(t => {
+                    if (a.name && a.name.toLowerCase().includes(t.value)) {
+                        perTool[t.value] = (perTool[t.value] || 0) + (a.download_count || 0);
+                    }
+                });
+            });
+            const when = r.published_at ? new Date(r.published_at).toISOString().slice(0, 10) : '–';
+            return `<tr>
+                <td><strong style="color:var(--accent-cyan);">${escapeHtml(r.tag_name || '–')}</strong>
+                    ${r.prerelease ? ' <span style="color:var(--accent-orange); font-size:0.75rem;">pre-release</span>' : ''}</td>
+                <td>${escapeHtml(when)}</td>
+                <td>${assets.length}</td>
+                <td>${fmtNum(dls)}</td>
+                <td><a href="${escapeHtml(r.html_url || '#')}" target="_blank" rel="noopener">View</a></td>
+            </tr>`;
+        });
+
+        const latest = releases.find(r => !r.draft && !r.prerelease) || releases[0];
+        document.getElementById('stat-release').textContent = latest ? (latest.tag_name || '–') : 'none yet';
+        document.getElementById('stat-downloads').textContent = fmtNum(grandTotal);
+
+        document.getElementById('releases-body').innerHTML = rows.length
+            ? rows.join('')
+            : '<tr><td colspan="5" style="color:var(--fg-dim);">No releases published yet.</td></tr>';
+
+        MY_TOOLS.forEach(t => {
+            const el = document.getElementById('dl-' + t.value);
+            if (el) el.textContent = '⬇️ ' + (perTool[t.value] ? fmtNum(perTool[t.value]) : '–');
+        });
+
+        status.textContent = 'Live from the GitHub API · updated ' + new Date().toLocaleTimeString();
+    } catch (err) {
+        // Unauthenticated GitHub API allows 60 requests/hour per IP, so a
+        // failure here is expected sometimes and must not break the page.
+        const rateLimited = /rate-limited|403/.test(String(err.message));
+        status.innerHTML = rateLimited
+            ? 'GitHub API rate limit reached (60 requests/hour for unauthenticated clients). ' +
+              `Statistics will return shortly — meanwhile see <a href="https://github.com/${REPO}/releases" target="_blank" rel="noopener">the releases page</a>.`
+            : `Could not reach the GitHub API (${escapeHtml(err.message)}). ` +
+              `See <a href="https://github.com/${REPO}/releases" target="_blank" rel="noopener">the releases page</a> directly.`;
+        document.getElementById('releases-body').innerHTML =
+            `<tr><td colspan="5" style="color:var(--fg-dim);">Unavailable — ` +
+            `<a href="https://github.com/${REPO}/releases" target="_blank" rel="noopener">view on GitHub</a>.</td></tr>`;
+    }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
+function initSecurityToolsPage() {
+    renderMine();
+    renderThirdParty();
+    updateCounts();
+    loadStats();
+}
+
+document.addEventListener('DOMContentLoaded', initSecurityToolsPage);
+</script>
+</body>
+</html>

@@ -1,6 +1,17 @@
 name: Deploy Website to GitHub Pages
 
 on:
+  # Deploy whenever the site itself changes on main. Previously the only
+  # automatic trigger was the release workflow completing, so a website-only
+  # commit never reached Pages on its own.
+  push:
+    branches: ["main"]
+    paths:
+      - 'website/**'
+      - 'docs/**'
+      - 'img/**'
+      - '.github/workflows/pages.yml'
+  # Still redeploy after a release, so the static release assets are refreshed.
   workflow_run:
     workflows: ["Release Security Tools"]
     types:
@@ -26,16 +37,35 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        
+
       - name: Setup Pages
-        uses: actions/configure-pages@v4
-        
+        uses: actions/configure-pages@v5
+
       - name: Prepare Website Assets
         run: |
-          # Copy root docs to website/docs/ without overwriting (website/docs has comprehensive versions)
+          # website/docs holds the comprehensive copies, so -n (no-clobber)
+          # keeps them and only fills in anything missing from the root docs.
+          mkdir -p website/docs
           cp -rn docs/* website/docs/ 2>/dev/null || true
           cp -rn img website/ 2>/dev/null || true
-          
+
+      - name: Verify the site is intact before publishing
+        run: |
+          set -euo pipefail
+          cd website
+          # Every page the nav links to must exist, or we publish 404s.
+          for page in index.html wiki.html live.html security-tools.html \
+                      style.css script.js tooltip.js legal.js; do
+            test -f "$page" || { echo "FATAL: website/$page is missing"; exit 1; }
+          done
+          # A SyntaxError in a classic <script> stops the whole file executing,
+          # which is exactly how this site shipped broken for 12 commits. Refuse
+          # to publish one.
+          for js in script.js tooltip.js legal.js; do
+            node --check "$js" || { echo "FATAL: $js does not parse"; exit 1; }
+          done
+          echo "Pre-publish checks passed."
+
       - name: Download Static Latest Release
         if: github.event_name == 'workflow_run'
         uses: actions/download-artifact@v4
@@ -45,12 +75,14 @@ jobs:
           path: './website/static-releases'
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v4
+        # NOTE: upload-pages-artifact has no v4. This was pinned to @v4, which
+        # does not resolve, so the deploy failed before uploading anything.
+        uses: actions/upload-pages-artifact@v3
         with:
           path: './website'
-          
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -553,6 +553,10 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     // Encryption "layer" selections (base type is `part`, above).
     const enc_cipher = gv('encryption_cipher','aes-xts-plain64');
     const enc_pq = gv('encryption_pq','none');
+    const luks_duress = gv('luks_duress_action','none');
+    const luks_duress_decoy = gv('luks_duress_decoy','tty');
+    const usb_kill = gv('usb_kill','none');
+    const usb_kill_trigger = gv('usb_kill_trigger','new');
     const boot = gv('bootloader','uki-custom');
     const kernelMain = gv('kernel-main','linux-hardened');
     const kernelBackup = gv('kernel-backup','linux-zen');
@@ -914,6 +918,32 @@ run_with_progress() {
             if (fs === "btrfs") o += `btrfs filesystem mkswapfile --size ${swap_size} /mnt/swapfile\n`;
             else o += `fallocate -l ${swap_size} /mnt/swapfile\nchmod 600 /mnt/swapfile\nmkswap /mnt/swapfile\n`;
             o += `swapon /mnt/swapfile\n`;
+        }
+
+        // ── LUKS header verification ──
+        // Confirm the volume really is the LUKS type and cipher that was asked
+        // for, before anything is written on top of it.
+        if (part !== "unencrypted") {
+            if (!cmdOnly) {
+                o += `\`\`\`\n\n### Verify the LUKS header\n` +
+                     `> Confirm the container matches what you selected before continuing. ` +
+                     `\`luksDump\` prints the header; the \`grep\` calls fail loudly if the ` +
+                     `type or cipher is not what you asked for.\n\n\`\`\`bash\n`;
+            } else {
+                o += `\necho -e "\${COLOR_BLUE}:: Verifying LUKS header\${COLOR_RESET}"\n`;
+            }
+            const luksTypeCheck = part === 'luks1' ? 'LUKS1' : 'LUKS2';
+            o += `cryptsetup luksDump ${partRoot}\n`;
+            o += `cryptsetup isLuks --type ${part === 'luks1' ? 'luks1' : 'luks2'} ${partRoot} \\\n`;
+            o += `  || { echo "FATAL: ${partRoot} is not a ${luksTypeCheck} volume"; exit 1; }\n`;
+            o += `cryptsetup luksDump ${partRoot} | grep -q "${enc_cipher}" \\\n`;
+            o += `  || { echo "FATAL: cipher is not ${enc_cipher}"; exit 1; }\n`;
+            o += `echo "LUKS header verified: ${luksTypeCheck} / ${enc_cipher}"\n`;
+        }
+
+        // ── LUKS duress passphrase ──
+        if (part !== "unencrypted" && luks_duress !== "none") {
+            o += buildLuksDuress(luks_duress, luks_duress_decoy, partRoot, cmdOnly);
         }
 
         if (!cmdOnly) o += `\`\`\`\n\n## 2. Base Installation\n\`\`\`bash\n`;
@@ -1425,6 +1455,11 @@ run_with_progress() {
             }
         }
 
+        // ── USB kill switch ──
+        if (usb_kill !== 'none') {
+            o += buildUsbKill(usb_kill, usb_kill_trigger, cmdOnly);
+        }
+
         // Third-party hardening tools (checkbox group `other_sec_tools`).
         if (other_sec_tools.length > 0) {
             if (!cmdOnly) o += `\`\`\`\n\n## 8. Other Security Hardening\n\`\`\`bash\n`;
@@ -1662,6 +1697,252 @@ run_with_progress() {
     }
 };
 
+// ─── USB kill switch ─────────────────────────────────────────────────────────
+// A udev-driven allowlist in the spirit of the usbkill project: the allowlist is
+// generated from the devices attached at install time, and anything outside it
+// triggers the configured response.
+//
+// "lock" is offered first and recommended, because the shutdown variants will
+// power the machine off the moment an unexpected device appears — including an
+// ordinary keyboard or dock — and that is a good way to lose work.
+function buildUsbKill(action, trigger, cmdOnly) {
+    let o = '';
+    const wipesRam = action === 'shutdown-wipe-ram';
+    const powersOff = action === 'shutdown' || wipesRam;
+
+    if (!cmdOnly) {
+        o += `\`\`\`\n\n## USB Kill Switch\n\n`;
+        o += `Builds an allowlist from the USB devices present during installation and ` +
+             `watches for anything else via udev.\n\n`;
+        if (powersOff) {
+            o += `> [!CAUTION]\n`;
+            o += `> **This powers the machine off without warning and loses unsaved work.** ` +
+                 `A missing entry in the allowlist is enough to trigger it, so plugging in a ` +
+                 `keyboard, mouse, dock or phone can shut the machine down mid-use. ` +
+                 `Test in a virtual machine first, and prefer the "lock session" action until ` +
+                 `you are confident in the allowlist.\n\n`;
+        }
+        if (wipesRam) {
+            o += `> [!CAUTION]\n`;
+            o += `> The RAM/swap wipe is an anti-forensic measure intended to defeat cold-boot ` +
+                 `key recovery. It makes an unclean shutdown even less recoverable — filesystem ` +
+                 `damage is possible. Only enable it if you specifically need this property.\n\n`;
+        }
+        o += `\`\`\`bash\n`;
+    } else {
+        o += `\n# ── USB kill switch ──\n`;
+        if (powersOff) {
+            o += `echo -e "\${COLOR_RED}[!] USB kill switch will POWER OFF this machine when an\${COLOR_RESET}"\n`;
+            o += `echo -e "\${COLOR_RED}[!] unlisted USB device appears. Unsaved work will be lost.\${COLOR_RESET}"\n`;
+        }
+    }
+
+    o += `pacman -S --noconfirm --needed usbutils\n`;
+    o += `mkdir -p /etc/arch-security\n\n`;
+
+    o += `# Snapshot the currently-attached USB devices as the allowlist.\n`;
+    o += `lsusb | awk '{print $6}' | sort -u > /etc/arch-security/usb-allowlist\n`;
+    o += `chmod 600 /etc/arch-security/usb-allowlist\n`;
+    o += `echo "Allowlisted USB IDs:"; cat /etc/arch-security/usb-allowlist\n\n`;
+
+    o += `cat > /usr/local/bin/usb-kill.sh << 'USBKILL_EOF'\n`;
+    o += `#!/bin/bash\n`;
+    o += `# Reacts to a USB event. Invoked by udev with ACTION and the device IDs set.\n`;
+    o += `set -u\n`;
+    o += `ALLOWLIST=/etc/arch-security/usb-allowlist\n`;
+    o += `LOG=/var/log/usb-kill.log\n`;
+    o += `[ -f "$ALLOWLIST" ] || exit 0\n\n`;
+    o += `ID="\${ID_VENDOR_ID:-}:\${ID_MODEL_ID:-}"\n`;
+    o += `log() { echo "[$(date -Is)] $*" >> "$LOG"; }\n\n`;
+    o += `if grep -qx "$ID" "$ALLOWLIST"; then\n`;
+    o += `    log "allowed device $ID (\${ACTION:-unknown})"\n`;
+    o += `    exit 0\n`;
+    o += `fi\n\n`;
+    o += `log "UNAUTHORISED device $ID action=\${ACTION:-unknown} -- triggering response"\n\n`;
+
+    if (action === 'lock') {
+        o += `# Lock every active session. Non-destructive.\n`;
+        o += `loginctl lock-sessions || true\n`;
+        o += `command -v notify-send >/dev/null && notify-send -u critical \\\n`;
+        o += `    "USB Kill Switch" "Unauthorised device $ID — sessions locked." || true\n`;
+    } else {
+        if (wipesRam) {
+            o += `# Anti-forensic: drop caches and clear swap before powering off, so keys\n`;
+            o += `# are less likely to survive in memory for a cold-boot attack.\n`;
+            o += `sync\n`;
+            o += `swapoff -a 2>/dev/null || true\n`;
+            o += `echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true\n`;
+        }
+        o += `# Power off immediately, without the usual graceful shutdown delay.\n`;
+        o += `systemctl poweroff --force --force 2>/dev/null || poweroff -f\n`;
+    }
+    o += `USBKILL_EOF\n`;
+    o += `chmod 700 /usr/local/bin/usb-kill.sh\n\n`;
+
+    // udev rule, matching the requested trigger.
+    const wantAdd = trigger === 'new' || trigger === 'both';
+    const wantRemove = trigger === 'removed' || trigger === 'both';
+    o += `cat > /etc/udev/rules.d/99-usb-kill.rules << 'UDEV_EOF'\n`;
+    if (wantAdd) {
+        o += `ACTION=="add", SUBSYSTEM=="usb", RUN+="/usr/local/bin/usb-kill.sh"\n`;
+    }
+    if (wantRemove) {
+        o += `ACTION=="remove", SUBSYSTEM=="usb", RUN+="/usr/local/bin/usb-kill.sh"\n`;
+    }
+    o += `UDEV_EOF\n`;
+    o += `udevadm control --reload-rules\n\n`;
+
+    o += `echo "USB kill switch installed (action: ${action}, trigger: ${trigger})."\n`;
+    o += `echo "Edit /etc/arch-security/usb-allowlist to add devices you trust,"\n`;
+    o += `echo "then run: udevadm control --reload-rules"\n`;
+    o += `echo "To disable: rm /etc/udev/rules.d/99-usb-kill.rules && udevadm control --reload-rules"\n`;
+
+    if (!cmdOnly) o += `\`\`\`\n`;
+    return o;
+}
+
+// ─── LUKS duress passphrase ──────────────────────────────────────────────────
+// Adds a second passphrase to the LUKS header. A tiny initramfs hook compares
+// the entered passphrase against a salted hash and, on a match, performs the
+// chosen response instead of unlocking the real volume.
+//
+// Deliberately conservative:
+//   * The hash is stored, never the passphrase.
+//   * "shutdown" is the default and the recommended action; nothing is erased.
+//   * Any option that erases keyslots emits explicit warnings into the script
+//     itself, requires a typed confirmation at setup time, and is described in
+//     the generated guide as irreversible.
+function buildLuksDuress(action, decoyEnv, partRoot, cmdOnly) {
+    let o = '';
+    const destructive = action === 'wipe-keys' || action === 'wipe-keys-decoy';
+    const usesDecoy = action === 'decoy-only' || action === 'wipe-keys-decoy';
+
+    if (!cmdOnly) {
+        o += `\`\`\`\n\n### LUKS Duress Passphrase\n\n`;
+        o += `A second passphrase is registered on the LUKS header. Entering it at the ` +
+             `boot prompt runs the configured response instead of unlocking the disk. ` +
+             `Your real passphrase keeps working exactly as before.\n\n`;
+        if (destructive) {
+            o += `> [!CAUTION]\n`;
+            o += `> **This configuration destroys data.** Erasing the LUKS keyslots makes ` +
+                 `every byte on the volume permanently unrecoverable — the correct passphrase ` +
+                 `will not help afterwards, and no forensic recovery is possible. Typing the ` +
+                 `duress passphrase by accident destroys the installation. Keep verified ` +
+                 `offline backups and test the whole flow in a virtual machine first.\n\n`;
+        }
+        if (usesDecoy) {
+            o += `> [!NOTE]\n`;
+            o += `> The decoy environment is a separate small LUKS volume that the duress ` +
+                 `passphrase unlocks. It contains no reference to the real volume, so a boot ` +
+                 `into the decoy is indistinguishable from a normal boot.\n\n`;
+        }
+        o += `\`\`\`bash\n`;
+    } else {
+        o += `\n# ── LUKS duress passphrase ──\n`;
+        o += `echo -e "\${COLOR_RED}[!] Configuring LUKS duress passphrase\${COLOR_RESET}"\n`;
+        if (destructive) {
+            o += `echo -e "\${COLOR_RED}[!] WARNING: the duress passphrase will ERASE ALL KEYSLOTS.\${COLOR_RESET}"\n`;
+            o += `echo -e "\${COLOR_RED}[!] Data becomes permanently unrecoverable. Ensure you have backups.\${COLOR_RESET}"\n`;
+            o += `read -p "Type DESTROY to confirm you understand this is irreversible: " _duress_ack\n`;
+            o += `if [ "$_duress_ack" != "DESTROY" ]; then echo "Skipping duress setup."; DURESS_SKIP=1; fi\n`;
+        }
+    }
+
+    const guard = (destructive && cmdOnly) ? `if [ -z "\${DURESS_SKIP:-}" ]; then\n` : '';
+    const endGuard = (destructive && cmdOnly) ? `fi\n` : '';
+    o += guard;
+
+    // Collect the duress passphrase and register it as an extra keyslot.
+    o += `read -s -p "Enter the DURESS passphrase (must differ from your real one): " DURESS_PASS\necho\n`;
+    o += `read -s -p "Confirm the duress passphrase: " DURESS_PASS2\necho\n`;
+    o += `[ "$DURESS_PASS" = "$DURESS_PASS2" ] || { echo "Duress passphrases did not match."; exit 1; }\n`;
+    o += `[ "$DURESS_PASS" != "$LUKS_PASS" ] || { echo "Duress passphrase must differ from the real passphrase."; exit 1; }\n\n`;
+
+    o += `# Register the duress passphrase as an additional keyslot.\n`;
+    o += `printf '%s' "$DURESS_PASS" | cryptsetup luksAddKey ${partRoot} --key-file=- <<< "$LUKS_PASS"\n\n`;
+
+    o += `# Store only a salted hash of the duress passphrase for the boot hook.\n`;
+    o += `mkdir -p /mnt/etc/arch-security\n`;
+    o += `DURESS_SALT=$(head -c 16 /dev/urandom | base64 -w0)\n`;
+    o += `DURESS_HASH=$(printf '%s%s' "$DURESS_SALT" "$DURESS_PASS" | sha512sum | cut -d' ' -f1)\n`;
+    o += `cat > /mnt/etc/arch-security/duress.conf << 'DURESS_EOF'\n`;
+    o += `# Generated by Arch Guides Dynamic. Contains no passphrase, only a hash.\n`;
+    o += `ACTION=${action}\n`;
+    o += `DECOY_ENV=${usesDecoy ? decoyEnv : 'none'}\n`;
+    o += `DURESS_EOF\n`;
+    o += `printf 'SALT=%s\\nHASH=%s\\n' "$DURESS_SALT" "$DURESS_HASH" >> /mnt/etc/arch-security/duress.conf\n`;
+    o += `chmod 600 /mnt/etc/arch-security/duress.conf\n`;
+    o += `unset DURESS_PASS DURESS_PASS2 DURESS_HASH DURESS_SALT\n\n`;
+
+    // The initramfs hook that reacts to the duress passphrase.
+    o += `# Initramfs hook: compare the entered passphrase against the stored hash.\n`;
+    o += `cat > /mnt/etc/initcpio/hooks/duress << 'HOOK_EOF'\n`;
+    o += `#!/usr/bin/ash\n`;
+    o += `run_hook() {\n`;
+    o += `    [ -f /etc/arch-security/duress.conf ] || return 0\n`;
+    o += `    . /etc/arch-security/duress.conf\n`;
+    o += `    printf 'Enter passphrase: '\n`;
+    o += `    read -s _pw; echo\n`;
+    o += `    _try=$(printf '%s%s' "$SALT" "$_pw" | sha512sum | cut -d' ' -f1)\n`;
+    o += `    if [ "$_try" != "$HASH" ]; then\n`;
+    o += `        # Not the duress passphrase: hand it to the normal unlock path.\n`;
+    o += `        printf '%s' "$_pw" > /crypto_keyfile.bin\n`;
+    o += `        unset _pw _try\n`;
+    o += `        return 0\n`;
+    o += `    fi\n`;
+    o += `    unset _pw _try\n`;
+
+    if (destructive) {
+        o += `    # Duress: erase every keyslot. This is irreversible.\n`;
+        o += `    cryptsetup erase --batch-mode ${partRoot} >/dev/null 2>&1\n`;
+        o += `    # Overwrite the header area as a second line of defence.\n`;
+        o += `    dd if=/dev/urandom of=${partRoot} bs=1M count=32 conv=fsync >/dev/null 2>&1\n`;
+    }
+
+    if (usesDecoy) {
+        o += `    # Boot the decoy volume. It has no reference to the real volume.\n`;
+        o += `    if cryptsetup open --key-file=- /dev/disk/by-partlabel/decoy decoyroot; then\n`;
+        o += `        mount /dev/mapper/decoyroot /new_root 2>/dev/null && return 0\n`;
+        o += `    fi\n`;
+        o += `    # Decoy unavailable: fall back to powering off rather than revealing anything.\n`;
+        o += `    poweroff -f\n`;
+    } else {
+        o += `    # No decoy configured: power off immediately.\n`;
+        o += `    poweroff -f\n`;
+    }
+
+    o += `}\n`;
+    o += `HOOK_EOF\n`;
+    o += `chmod 755 /mnt/etc/initcpio/hooks/duress\n\n`;
+
+    o += `cat > /mnt/etc/initcpio/install/duress << 'INST_EOF'\n`;
+    o += `#!/bin/bash\n`;
+    o += `build() {\n`;
+    o += `    add_runscript\n`;
+    o += `    add_binary cryptsetup\n`;
+    o += `    add_binary sha512sum\n`;
+    o += `    add_binary dd\n`;
+    o += `    add_file /etc/arch-security/duress.conf\n`;
+    o += `}\n`;
+    o += `help() { echo "Handles the LUKS duress passphrase."; }\n`;
+    o += `INST_EOF\n`;
+    o += `chmod 755 /mnt/etc/initcpio/install/duress\n\n`;
+    o += `# Add the hook ahead of encrypt/sd-encrypt so it sees the passphrase first.\n`;
+    o += `sed -i 's/\\(HOOKS=.*\\)\\(encrypt\\|sd-encrypt\\)/\\1duress \\2/' /mnt/etc/mkinitcpio.conf\n`;
+    o += `arch-chroot /mnt mkinitcpio -P\n`;
+
+    if (usesDecoy) {
+        o += `\n# Reminder: create the decoy volume before relying on this.\n`;
+        o += `echo "NOTE: create a partition labelled 'decoy', LUKS-format it with the duress"\n`;
+        o += `echo "      passphrase, and install a minimal ${decoyEnv} environment into it."\n`;
+        o += `echo "      Until that exists, the duress passphrase powers the machine off."\n`;
+    }
+
+    o += endGuard;
+    if (!cmdOnly) o += `\`\`\`\n`;
+    return o;
+}
+
 // Builds the copy-paste SSH one-liners shown on the static output page.
 function buildSshDeployCommands(mainSh, postSh) {
     const container = document.getElementById('ssh-commands-container');
@@ -1718,6 +1999,46 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initial populate
         const pre = document.getElementById('sc-preview-json');
         if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
+    }
+
+    // ── USB kill switch: show the trigger picker and warning when armed. ──
+    const usbKillSelect = document.getElementById('usb_kill');
+    if (usbKillSelect) {
+        const syncUsbKillUI = () => {
+            const detail = document.getElementById('usb-kill-detail');
+            if (detail) detail.style.display = usbKillSelect.value === 'none' ? 'none' : 'block';
+        };
+        usbKillSelect.addEventListener('change', syncUsbKillUI);
+        syncUsbKillUI();
+    }
+
+    // ── LUKS duress: reveal the decoy picker and the data-loss warning only
+    // when the chosen action actually needs them. ──
+    const duressSelect = document.getElementById('luks_duress_action');
+    if (duressSelect) {
+        const syncDuressUI = () => {
+            const action = duressSelect.value;
+            const destructive = action === 'wipe-keys' || action === 'wipe-keys-decoy';
+            const usesDecoy = action === 'decoy-only' || action === 'wipe-keys-decoy';
+
+            const detail = document.getElementById('luks-duress-detail');
+            const warning = document.getElementById('luks-duress-warning');
+            if (detail) detail.style.display = usesDecoy ? 'block' : 'none';
+            if (warning) warning.style.display = destructive ? 'block' : 'none';
+
+            // A duress passphrase is meaningless on an unencrypted volume.
+            const part = document.getElementById('partitioning');
+            if (part && part.value === 'unencrypted' && action !== 'none') {
+                alert('A LUKS duress passphrase needs an encrypted volume. ' +
+                      'Choose LUKS1, LUKS2 or LVM on LUKS2 first.');
+                duressSelect.value = 'none';
+                syncDuressUI();
+            }
+        };
+        duressSelect.addEventListener('change', syncDuressUI);
+        const partSelect = document.getElementById('partitioning');
+        if (partSelect) partSelect.addEventListener('change', syncDuressUI);
+        syncDuressUI();
     }
 
     // Libre OTP sub-options are only relevant when the tool itself is selected.
@@ -2230,21 +2551,40 @@ function validateConfigurations() {
 validateConfigurations();
 
 // ── Config restore ──
+// Selections handed over from another page (security-tools.html "Apply to
+// Generator", or a restored .sc config).
 const restoreConfig = sessionStorage.getItem('arch_restore_config');
 if (restoreConfig) {
     try {
         const c = JSON.parse(restoreConfig);
-        const map = { initSys:'init_system', kernelMain:'kernel-main', kernelBackup:'kernel-backup', secTools:'securitytools', fakeEvilMaid:'fake-evil-maid', format:'outputformat', part:'partitioning', disk:'target-disk', fw:'firmware', fs:'filesystem', boot:'bootloader' };
+        const map = {
+            initSys: 'init_system', kernelMain: 'kernel-main', kernelBackup: 'kernel-backup',
+            fakeEvilMaid: 'fake-evil-maid', format: 'outputformat', part: 'partitioning',
+            disk: 'target-disk', fw: 'firmware', fs: 'filesystem', boot: 'bootloader'
+        };
+        // Checkbox groups are addressed by name, scalar fields by element id.
+        const checkboxGroups = ['post_apps', 'other_sec_tools', 'boot_theme'];
+
         Object.keys(c).forEach(k => {
-            if (k === 'post_apps' && Array.isArray(c[k])) {
-                document.querySelectorAll('input[name="post_apps"]').forEach(cb => cb.checked = c[k].includes(cb.value));
+            if (checkboxGroups.includes(k) && Array.isArray(c[k])) {
+                document.querySelectorAll(`input[name="${k}"]`).forEach(cb => {
+                    // additive:true adds to the current selection instead of
+                    // replacing it, so arriving from the tools page doesn't wipe
+                    // choices the user already made here.
+                    cb.checked = c.additive ? (cb.checked || c[k].includes(cb.value))
+                                            : c[k].includes(cb.value);
+                    cb.dispatchEvent(new Event('change', { bubbles: true }));
+                });
                 return;
             }
+            if (k === 'additive') return;
             const el = document.getElementById(map[k] || k);
             if (el) el.value = c[k];
         });
         sessionStorage.removeItem('arch_restore_config');
-    } catch(e) { console.error(e); }
+    } catch (e) {
+        console.error('Could not apply restored configuration:', e);
+    }
 }
 
 // Banner cursor (link already in HTML <a> tag)
