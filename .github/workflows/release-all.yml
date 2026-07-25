@@ -31,12 +31,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Pinned by security-tools/rust-toolchain.toml. Reproducibility needs a
-      # fixed toolchain: "stable" moves and the bytes change with it.
+      # Kept in step with security-tools/rust-toolchain.toml. Reproducibility
+      # needs a fixed toolchain, but the pin must be at or above the dependency
+      # floor (sysinfo 0.39 requires 1.95; two crates are edition 2024).
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.90.0"
+          toolchain: "1.95.0"
 
       - name: Install Ubuntu Dependencies
         run: sudo apt-get update && sudo apt-get install -y pkg-config libudev-dev

@@ -1,10 +1,15 @@
 # Pinned so a rebuild years from now produces the same bytes. A floating
 # "stable" would change under you and break reproducibility silently.
 #
+# Floor is set by the dependency graph, not by preference: sysinfo 0.39.x
+# requires 1.95, and kernel-watcher and anti-evil-maid are edition 2024. Pinning
+# below the floor produces a build that cannot possibly succeed — which is
+# exactly what an earlier 1.90.0 pin here did.
+#
 # When bumping this: rebuild every tool, re-publish hashes, and note the
-# toolchain version in the release, so anyone verifying knows which to use.
+# toolchain version in the release so anyone verifying knows which to use.
 [toolchain]
-channel = "1.90.0"
+channel = "1.95.0"
 components = ["rustfmt", "clippy"]
 targets = ["x86_64-unknown-linux-gnu"]
 profile = "minimal"
