@@ -1,66 +1,104 @@
 <div align="center">
-  <img src="assets/icon.png" width="128" height="128" style="border-radius: 50%;">
-  <br>
-  <img src="assets/banner.png" width="800">
+  <img src="assets/banner.png" width="880" alt="Libre OTP">
 </div>
 
-# Libre OTP Authenticator
+# Libre OTP
 
-Native Rust OTP authenticator designed for PAM integration without proprietary backends. Supports SSH auth, boot, login, and YubiKey.
+TOTP and HOTP one-time passwords in Rust, with no proprietary backend, no cloud account and no binary blobs.
 
-## Overview
-This standalone application provides comprehensive libre otp authenticator capabilities for Arch Linux, natively integrated with Wayland/Xorg via `egui` and providing strict CLI parity via `clap`.
+Part of the [Arch Guides Dynamic](../../) security suite. Everything here is
+Rust, builds reproducibly, and ships as a signed release binary.
 
-## Build Instructions
-Ensure you have the Rust toolchain installed:
+---
+
+## What it does
+
+A second factor should not require an app store, a phone that phones home, or a
+vendor who can lock you out of your own accounts. `libre-otp` generates RFC 6238
+(TOTP) and RFC 4226 (HOTP) codes locally, from secrets that never leave the
+machine.
+
+TTY display has three modes — `discreet`, `visible` and `none` — so a code can be
+shown, partly masked, or withheld entirely depending on who can see the screen.
+
+Secrets are handled through `zeroize`, so they are overwritten rather than left
+sitting in freed memory.
+
+## Install
+
+The suite installer verifies the SHA-512 hash *and* the GPG signature, pins the
+signing key by fingerprint, and refuses to install anything that fails either
+check:
+
 ```bash
-# Install rustup
-pacman -S rustup
-rustup default stable
+curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/install-security-suite.sh -o install.sh
+less install.sh          # read it before you run it
+sudo bash install.sh
 ```
 
-Clone the repository and build:
+Or build it yourself. The builds are reproducible, so a local build is an
+independent check that does not require trusting any signing key at all:
+
 ```bash
+pacman -S rustup && rustup default stable
 git clone https://github.com/tilas01/arch-guides-dynamic.git
 cd arch-guides-dynamic/security-tools/libre-otp
-cargo build --release
+cargo build --release --locked
 ```
+
+[docs/building-from-source.md](../../docs/building-from-source.md) has the exact
+toolchain and the `SOURCE_DATE_EPOCH` setting that makes the output
+byte-identical to the published binary.
 
 ## Usage
-The application can be run as a daemon or launched interactively via the GUI dashboard.
 
-**Daemon Mode:**
+```
+  -i, --interactive   Launch the GUI dashboard (Wayland/Xorg)
+  -h, --help          Full argument list
+  -V, --version       Version
+```
+
 ```bash
-./target/release/libre-otp
+libre-otp --help
 ```
 
-**Interactive Dashboard (GUI):**
+## Verifying a release binary
+
 ```bash
-./target/release/libre-otp --interactive
-# or
-./target/release/libre-otp -i
+gpg --import tilas01.asc
+gpg --fingerprint 745F82B41AFD945636859C922F43352EC307EF09   # compare against the root README
+gpg --verify libre-otp.sig libre-otp
+sha512sum -c libre-otp.sha512
 ```
 
-**Help Menu:**
-```bash
-./target/release/libre-otp --help
-```
+The previous signing key `4C0383A1…` is **revoked** — its private half was
+committed to public git history. See
+[Verifying downloads](../../README.md#-verifying-downloads).
 
-## Advanced Integration (PAM)
-Libre-OTP can be integrated directly into your PAM stack for SSH authentication, boot decryption, or local login.
+## Honest limitations
 
-**SSH Integration:**
-Add the PAM module to `/etc/pam.d/sshd`:
-```text
-auth required pam_libre_otp.so
-```
+Three things this README used to claim that were **not true**. They are
+corrected here rather than quietly deleted, because someone may have acted on
+them:
 
-**YubiKey Hardware Key:**
-Libre-OTP fully supports YubiKey hardware tokens for HMAC-SHA1 Challenge-Response. Enable this via the GUI dashboard.
+* **There is no PAM module.** The README told you to add
+  `auth required pam_libre_otp.so` to `/etc/pam.d/sshd`. No such module exists —
+  this crate builds a binary, not a `cdylib`. Following that instruction adds a
+  line referencing a missing module to your SSH auth stack, which can lock you
+  out of the machine. If you did this, remove that line.
+* **There is no YubiKey support.** HMAC-SHA1 challenge-response with a hardware
+  token is not implemented anywhere in this crate.
+* **`--interactive` did not work.** The dashboard was fully written but nothing
+  ever called it, so clap rejected the flag as unknown. That is fixed.
 
+PAM integration is a reasonable thing to want and may be built later. Until it
+exists, this README will not say it does.
 
-## Cryptographic Memory Hygiene
+## Licence
 
-To prevent cold boot attacks, memory scraping, and privilege escalation vulnerabilities, this tool employs strict cryptographic memory hygiene. All sensitive data (passwords, PINs, cryptographic seeds, and TOTP secrets) are handled via the `zeroize` crate.
+CC BY-NC-SA 4.0 — free to use, modify and share non-commercially, with
+attribution, under the same licence. See [LICENSE](../../LICENSE).
 
-As soon as a sensitive variable falls out of scope or is no longer immediately required for verification, its memory address is explicitly overwritten with zeroes. This guarantees that your secrets do not linger in RAM.
+Provided **AS IS, without warranty of any kind**. These tools can lock you out
+of your own machine if misconfigured. Read the
+[wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html) first.

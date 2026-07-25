@@ -23,5 +23,11 @@ clap = { version = "4.5.4", features = ["derive"] }
 zeroize = { version = "1.8", features = ["zeroize_derive"] }
 rpassword = "7.2"
 
+# The unlock PIN is stored as an Argon2id hash rather than compared against a
+# constant in the source. Versions match the rest of the suite so the workspace
+# resolves one copy of each.
+argon2 = "0.5.3"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+
 [target.'cfg(target_os = "linux")'.dependencies]
 evdev = "0.12.2"

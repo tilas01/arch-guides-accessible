@@ -116,13 +116,19 @@ out of scope — getting it wrong bricks the machine and it is board-specific.
 
 Native Rust tools built for this project. All standalone, all open source.
 
-| Tool | What it does |
-|---|---|
-| 🔐 **[Libre OTP](security-tools/libre-otp/)** | TOTP/HOTP two-factor for boot, login and SSH. Defaults to a *silent* mode: one secret, never displayed, compared internally at boot so a mismatch means the boot chain changed. |
-| 🦆 **[Input Guard (Anti-Ducky)](security-tools/anti-ducky/)** | Watches USB HID keystroke timing and sandboxes unknown input devices, blocking BadUSB / Rubber Ducky injection before the payload can type. |
-| 🕵️ **[Anti-Evil Maid](security-tools/anti-evil-maid/)** | Verifies boot integrity and hides the real encrypted target behind decoy kernel entries. Supports decoy and duress passphrases. |
-| 👁️ **[Kernel Watcher](security-tools/kernel-watcher/)** | Async filesystem monitor that flags infostealers touching browser profiles, SSH keys and wallets, and detects userland rootkit behaviour. |
-| 🦅 **[Scarecrow](security-tools/scarecrow/)** | Plants canary tokens and spoofs sandbox artefacts so malware that checks whether it is being analysed stays dormant. |
+| | Tool | What it does |
+|---|---|---|
+| <img src="img/icons/libre-otp-64.png" width="40" alt=""> | **[Libre OTP](security-tools/libre-otp/)** | TOTP/HOTP two-factor for boot, login and SSH. Defaults to a *silent* mode: one secret, never displayed, compared internally at boot so a mismatch means the boot chain changed. |
+| <img src="img/icons/anti-ducky-64.png" width="40" alt=""> | **[Input Guard (Anti-Ducky)](security-tools/anti-ducky/)** | Watches USB HID keystroke timing and sandboxes unknown input devices, blocking BadUSB / Rubber Ducky injection before the payload can type. |
+| <img src="img/icons/anti-evil-maid-64.png" width="40" alt=""> | **[Anti-Evil Maid](security-tools/anti-evil-maid/)** | Verifies boot integrity and hides the real encrypted target behind decoy kernel entries. Supports decoy and duress passphrases. |
+| <img src="img/icons/kernel-watcher-64.png" width="40" alt=""> | **[Kernel Watcher](security-tools/kernel-watcher/)** | Async filesystem monitor that flags infostealers touching browser profiles, SSH keys and wallets, and detects userland rootkit behaviour. |
+| <img src="img/icons/scarecrow-64.png" width="40" alt=""> | **[Scarecrow](security-tools/scarecrow/)** | Plants canary tokens and spoofs sandbox artefacts so malware that checks whether it is being analysed stays dormant. |
+| <img src="img/icons/arch-security-suite-64.png" width="40" alt=""> | **[Arch Security Suite](security-tools/arch-security-suite/)** | All five of the above in one signed binary, dispatching to whichever you ask for. |
+
+Every icon, favicon and banner in this repository is generated from one source —
+[`scripts/gen-icons.py`](scripts/gen-icons.py) — which emits SVG, PNG, ICO and
+the raw RGBA blob each GUI binary embeds for its window icon. Regenerate with
+`python scripts/gen-icons.py`; the output is deterministic.
 
 ### Install all of them in one step
 
