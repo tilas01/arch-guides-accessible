@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index — Arch Guides Dynamic</title>
+    <meta name="description" content="The contents page for the whole project. Search the wiki, every generator and walkthrough question, the security tools, the cheatsheets and the docs at once, or browse everything by section.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" href="search-index.json" as="fetch" crossorigin="anonymous">
+    <link rel="prefetch" href="wiki.html">
+    <link rel="prefetch" href="manual.html">
+    <link rel="prefetch" href="index.html">
+    <style>
+        .idx-head { text-align: center; margin-bottom: 1.4rem; }
+        .idx-head h1 { color: var(--accent-cyan); margin-bottom: 0.4rem; }
+        .idx-head p { color: var(--fg-dim); max-width: 74ch; margin: 0 auto; }
+
+        .search-shell { max-width: 900px; margin: 0 auto 2rem; }
+        #site-search {
+            width: 100%;
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            background: var(--bg-dark);
+            color: var(--fg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            min-height: 52px;
+        }
+        #site-search:focus-visible { border-color: var(--accent-cyan); outline: none; }
+        #site-search:disabled { opacity: 0.6; }
+        .search-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.78rem;
+            color: var(--fg-dim);
+            margin-top: 0.45rem;
+        }
+        kbd {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-bottom-width: 2px;
+            border-radius: 4px;
+            padding: 0 0.3rem;
+            color: var(--accent-cyan);
+            font-size: 0.85em;
+        }
+
+        #search-results { display: flex; flex-direction: column; gap: 0.5rem; }
+        .result {
+            display: block;
+            background: var(--bg-lighter);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 0.7rem 0.9rem;
+            text-decoration: none;
+            color: var(--fg-color);
+        }
+        .result:hover, .result:focus-visible {
+            border-left-color: var(--accent-purple);
+            background: var(--tint-purple);
+            text-decoration: none;
+        }
+        .result-title { display: block; font-weight: bold; color: var(--heading-color); }
+        .result-section {
+            display: inline-block;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--accent-cyan);
+            margin-top: 0.15rem;
+        }
+        .result-desc { display: block; font-size: 0.82rem; color: var(--fg-dim); margin-top: 0.3rem; line-height: 1.5; }
+        .result-url { display: block; font-size: 0.7rem; color: var(--border-color); margin-top: 0.25rem; word-break: break-all; }
+        mark { background: rgba(224, 175, 104, 0.28); color: var(--accent-yellow); border-radius: 2px; padding: 0 1px; }
+
+        /* Contents */
+        .contents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.1rem;
+        }
+        .contents-card {
+            background: var(--bg-lighter);
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--accent-purple);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+        }
+        .contents-card h2 { font-size: 1rem; color: var(--accent-purple); margin-bottom: 0.3rem; }
+        .contents-card > p { font-size: 0.8rem; color: var(--fg-dim); margin-bottom: 0.6rem; }
+        .contents-card ul { list-style: none; margin: 0; padding: 0; font-size: 0.86rem; }
+        .contents-card li { margin-bottom: 0.28rem; }
+        .contents-card li a { display: block; padding: 0.15rem 0; }
+        .contents-card.start { border-top-color: var(--accent-green); }
+        .contents-card.start h2 { color: var(--accent-green); }
+        .contents-card.sec { border-top-color: var(--accent-red); }
+        .contents-card.sec h2 { color: var(--accent-red); }
+        .contents-card.ref { border-top-color: var(--accent-cyan); }
+        .contents-card.ref h2 { color: var(--accent-cyan); }
+
+        .three-ways {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        .way {
+            display: block;
+            background: var(--bg-lighter);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--fg-color);
+        }
+        .way:hover, .way:focus-visible { border-color: var(--accent-purple); background: var(--tint-purple); text-decoration: none; }
+        .way strong { display: block; color: var(--heading-color); font-size: 1rem; margin-bottom: 0.3rem; }
+        .way span { display: block; font-size: 0.82rem; color: var(--fg-dim); line-height: 1.55; }
+        .way em { display: block; margin-top: 0.4rem; font-size: 0.76rem; color: var(--accent-green); font-style: normal; }
+    </style>
+</head>
+<body>
+
+<noscript>
+    <div class="alert warning">
+        Search needs JavaScript. Everything it can find is also listed by hand
+        below, and the <a href="wiki.html">wiki</a> has its own contents.
+    </div>
+</noscript>
+
+<header>
+    <a href="https://github.com/tilas01/arch-guides-dynamic" class="banner-link" target="_blank" rel="noopener">
+        <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
+    </a>
+    <nav class="main-nav" aria-label="Site">
+        <a href="site-index.html" class="nav-link nav-tooltip" style="color:var(--accent-cyan);" data-title="🔎 Index" data-desc="You are here. The contents page for the whole project, with a search box that looks through the wiki, every generator and walkthrough question, the security tools, the cheatsheets and the docs at once.">🔎 Index</a>
+        <span class="nav-sep">|</span>
+        <a href="index.html" class="nav-link nav-tooltip" data-title="⚙️ Generator" data-desc="Fill in a form, get a script and a guide. Fastest when you already know what you want.">⚙️ Generator</a>
+        <span class="nav-sep">|</span>
+        <a href="manual.html" class="nav-link nav-tooltip" data-title="🧭 Manual" data-desc="One question at a time, with an explanation of every option and the commands appearing as you answer. The recommended path on mobile.">🧭 Manual</a>
+        <span class="nav-sep">|</span>
+        <a href="iso-verify.html" class="nav-link nav-tooltip" data-title="💿 Verify ISO" data-desc="Hash an Arch ISO in your browser and check it against mirrors other than the one that served it.">💿 Verify ISO</a>
+        <span class="nav-sep">|</span>
+        <a href="security-tools.html" class="nav-link nav-tooltip" data-title="🦀 Security Tools" data-desc="The Rust security suite and the vetted third-party hardening tools.">🦀 Security Tools</a>
+        <span class="nav-sep">|</span>
+        <a href="wiki.html" class="nav-link nav-tooltip" data-title="📖 Wiki" data-desc="Every option explained in full, plus firmware lockdown, dual boot, ARM and AUR safety.">📖 Wiki</a>
+    </nav>
+</header>
+
+<main>
+    <div class="idx-head">
+        <h1>🔎 Index</h1>
+        <p>
+            Everything in this project, in one place. Search it, or browse it
+            below. If you are not sure where to start, start with
+            <a href="iso-verify.html">verifying your ISO</a> — that comes before
+            everything else.
+        </p>
+    </div>
+
+    <div class="search-shell">
+        <label class="visually-hidden" for="site-search">Search the whole site</label>
+        <input type="search" id="site-search" disabled autocomplete="off"
+               spellcheck="false" placeholder="Loading the search index…"
+               aria-describedby="search-status">
+        <div class="search-meta">
+            <span id="search-status">Loading the search index…</span>
+            <span><kbd>/</kbd> to focus · <kbd>↓</kbd> to walk results · <kbd>Enter</kbd> opens the first · <span id="result-count"></span></span>
+        </div>
+    </div>
+
+    <div id="search-results" hidden></div>
+
+    <div id="site-contents">
+
+        <h2 style="margin-bottom:0.8rem;">Three ways to the same install</h2>
+        <div class="three-ways">
+            <a class="way" href="manual.html">
+                <strong>🧭 Manual walkthrough</strong>
+                <span>One question at a time. Every option says what it does and
+                      what it costs, and the guide builds itself as you answer.</span>
+                <em>Recommended on a phone.</em>
+            </a>
+            <a class="way" href="index.html">
+                <strong>⚙️ Dynamic generator</strong>
+                <span>One form, every option at once, straight to a script and a
+                      guide. Fastest when you already know what you want.</span>
+                <em>Recommended on a desktop.</em>
+            </a>
+            <a class="way" href="wiki.html#manual-install">
+                <strong>📖 Read it instead</strong>
+                <span>The same install written out longhand, with the decision
+                      points as branches you choose between.</span>
+                <em>Also in the repository as markdown.</em>
+            </a>
+        </div>
+
+        <div class="contents-grid">
+
+            <section class="contents-card start">
+                <h2>Start here</h2>
+                <p>In the order these actually matter.</p>
+                <ul>
+                    <li><a href="iso-verify.html">💿 Verify your ISO</a> — before anything else</li>
+                    <li><a href="wiki.html#bios-lockdown">🔐 Lock down the firmware</a> — and why each setting</li>
+                    <li><a href="wiki.html#architecture">🧩 x86_64 or aarch64</a> — what actually differs</li>
+                    <li><a href="wiki.html#dual-boot">🪟 Dual booting with Windows</a> — the five ways it goes wrong</li>
+                    <li><a href="wiki.html#choose-your-path">🧭 Choose your own path</a> — by threat, not by checklist</li>
+                    <li><a href="wiki.html#manual-install">⌨️ The manual install, written out</a></li>
+                </ul>
+            </section>
+
+            <section class="contents-card">
+                <h2>The generator</h2>
+                <p>Every option, and what it does.</p>
+                <ul>
+                    <li><a href="index.html">⚙️ Open the generator</a></li>
+                    <li><a href="manual.html">🧭 Open the walkthrough</a></li>
+                    <li><a href="wiki.html#generator-steps">Configuration steps</a></li>
+                    <li><a href="wiki.html#option-reference">Per-option reference</a></li>
+                    <li><a href="wiki.html#advanced-config">Advanced app configuration</a></li>
+                    <li><a href="wiki.html#libre-policy">100% libre policy</a></li>
+                    <li><a href="live.html">📝 Live editor</a></li>
+                </ul>
+            </section>
+
+            <section class="contents-card sec">
+                <h2>Security</h2>
+                <p>Read what each tool does before enabling it.</p>
+                <ul>
+                    <li><a href="security-tools.html">🦀 All the tools</a></li>
+                    <li><a href="wiki.html#security-suite">The Rust suite</a></li>
+                    <li><a href="wiki.html#suite-installer">One-step installer</a></li>
+                    <li><a href="wiki.html#audit">Security audit of these tools</a></li>
+                    <li><a href="wiki.html#luks-duress">LUKS duress passphrase</a></li>
+                    <li><a href="wiki.html#usb-kill">USB kill switch &amp; BusKill</a></li>
+                    <li><a href="wiki.html#aur-safety">📦 AUR safety</a></li>
+                    <li><a href="wiki.html#verification">Verifying downloads</a></li>
+                    <li><a href="wiki.html#reproducible-builds">Reproducible builds</a></li>
+                </ul>
+            </section>
+
+            <section class="contents-card">
+                <h2>Hardening</h2>
+                <p>Things you turn on after it boots.</p>
+                <ul>
+                    <li><a href="wiki.html#firewall-profiles">UFW firewall profiles</a></li>
+                    <li><a href="wiki.html#fail2ban">Fail2ban</a></li>
+                    <li><a href="wiki.html#endlessh">Endlessh SSH tarpit</a></li>
+                    <li><a href="wiki.html#yubikey">FIDO2 / U2F hardware keys</a></li>
+                    <li><a href="wiki.html#other-sec">Third-party tools</a></li>
+                    <li><a href="wiki.html#hardware-security">coreboot, Heads &amp; measured boot</a></li>
+                    <li><a href="docs/network-hardening.md">Network hardening</a></li>
+                </ul>
+            </section>
+
+            <section class="contents-card ref">
+                <h2>Reference</h2>
+                <p>Cheatsheets and command lists.</p>
+                <ul>
+                    <li><a href="wiki.html#cheatsheets">All cheatsheets</a></li>
+                    <li><a href="docs/helpful-commands.md">Arch command cheatsheet</a></li>
+                    <li><a href="docs/dusky-cheatsheet.md">DuskyOS keybinds</a></li>
+                    <li><a href="docs/maintenance.md">Maintenance</a></li>
+                    <li><a href="docs/xorg-vs-wayland.md">Xorg vs Wayland</a></li>
+                    <li><a href="docs/building-from-source.md">Building from source</a></li>
+                    <li><a href="docs/architecture.md">How the generator works</a></li>
+                </ul>
+            </section>
+
+            <section class="contents-card ref">
+                <h2>The install, step by step</h2>
+                <p>The written guides, in order.</p>
+                <ul>
+                    <li><a href="docs/01-pre-installation.md">01 · Pre-installation</a></li>
+                    <li><a href="docs/02-partitioning/">02 · Partitioning</a></li>
+                    <li><a href="docs/03-base-installation.md">03 · Base installation</a></li>
+                    <li><a href="docs/04-bootloaders/">04 · Bootloaders</a></li>
+                    <li><a href="docs/05-secure-boot/">05 · Secure Boot</a></li>
+                    <li><a href="docs/06-dual-boot/">06 · Dual boot</a></li>
+                    <li><a href="docs/07-post-installation.md">07 · Post-installation</a></li>
+                </ul>
+            </section>
+
+            <section class="contents-card">
+                <h2>Project</h2>
+                <p>Releases, source and licence.</p>
+                <ul>
+                    <li><a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">🐙 Source repository</a></li>
+                    <li><a href="releases.html">📦 Releases</a></li>
+                    <li><a href="repo.html">Repository overview</a></li>
+                    <li><a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki — the authority</a></li>
+                    <li><a href="https://archlinux.org/download/" target="_blank" rel="noopener">Official Arch download</a></li>
+                    <li><a href="https://archlinuxarm.org/" target="_blank" rel="noopener">Arch Linux ARM</a></li>
+                </ul>
+            </section>
+
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="legal-notice">
+        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
+        <p>
+            <strong>AI-assisted content, no warranty.</strong> This site and the guides it
+            generates were built with AI assistance. Everything is provided
+            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
+            <strong>no liability</strong> for data loss, system damage, hardware failure or
+            security breaches arising from use of these tools.
+        </p>
+        <p>
+            <strong>You are responsible for your own machine.</strong> Always read a generated
+            script before running it. These scripts repartition disks, and some options here
+            deliberately destroy data. Test in a virtual machine and cross-check against the
+            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
+        </p>
+        <p>
+            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
+            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
+            Selling or monetising it is not permitted.
+        </p>
+        <p style="margin-bottom:0;">
+            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+            <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+            <a href="index.html">Generator</a> ·
+            <a href="manual.html">Manual</a> ·
+            <a href="wiki.html">Wiki</a> ·
+            <a href="iso-verify.html">Verify ISO</a> ·
+            <a href="security-tools.html">Security Tools</a>
+        </p>
+    </div>
+</footer>
+
+<script src="site-index.js" defer></script>
+<script src="tooltip.js" defer></script>
+<script src="shared-ui.js" defer></script>
+</body>
+</html>
