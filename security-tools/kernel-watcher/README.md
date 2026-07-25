@@ -1,54 +1,100 @@
 <div align="center">
-  <img src="assets/icon.png" width="128" height="128" style="border-radius: 50%;">
-  <br>
-  <img src="assets/banner.png" width="800">
+  <img src="assets/banner.png" width="880" alt="Kernel Watcher">
 </div>
 
-# Kernel Watcher (EDR)
+# Kernel Watcher
 
-eBPF-based EDR for real-time kernel integrity monitoring.
+Asynchronous filesystem monitor that flags infostealers reading browser profiles, SSH keys and wallets, and userland rootkit behaviour.
 
-## Overview
-This standalone application provides comprehensive kernel watcher (edr) capabilities for Arch Linux, natively integrated with Wayland/Xorg via `egui` and providing strict CLI parity via `clap`.
+Part of the [Arch Guides Dynamic](../../) security suite. Everything here is
+Rust, builds reproducibly, and ships as a signed release binary.
 
-## Build Instructions
-Ensure you have the Rust toolchain installed:
+---
+
+## What it does
+
+Most credential theft on a desktop Linux machine is not exotic. It is a process
+reading `~/.ssh/id_*`, `~/.mozilla`, a browser's `Login Data` or a wallet
+directory and sending the contents somewhere. `kernel-watcher` watches those
+paths and reports who touched them.
+
+Destructive controls are behind a master password stored as an Argon2id hash
+(m=64MiB, t=3, p=4, well above the OWASP floor) written at 0600, so a stolen
+hash is expensive to attack offline.
+
+## Install
+
+The suite installer verifies the SHA-512 hash *and* the GPG signature, pins the
+signing key by fingerprint, and refuses to install anything that fails either
+check:
+
 ```bash
-# Install rustup
-pacman -S rustup
-rustup default stable
+curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/install-security-suite.sh -o install.sh
+less install.sh          # read it before you run it
+sudo bash install.sh
 ```
 
-Clone the repository and build:
+Or build it yourself. The builds are reproducible, so a local build is an
+independent check that does not require trusting any signing key at all:
+
 ```bash
+pacman -S rustup && rustup default stable
 git clone https://github.com/tilas01/arch-guides-dynamic.git
 cd arch-guides-dynamic/security-tools/kernel-watcher
-cargo build --release
+cargo build --release --locked
 ```
+
+[docs/building-from-source.md](../../docs/building-from-source.md) has the exact
+toolchain and the `SOURCE_DATE_EPOCH` setting that makes the output
+byte-identical to the published binary.
 
 ## Usage
-The application can be run as a daemon or launched interactively via the GUI dashboard.
 
-**Daemon Mode:**
-```bash
-./target/release/kernel-watcher
+```
+  -i, --interactive   Launch the GUI dashboard (Wayland/Xorg)
+  -h, --help          Full argument list
+  -V, --version       Version
 ```
 
-**Interactive Dashboard (GUI):**
+Run with no arguments to start the daemon:
+
 ```bash
-./target/release/kernel-watcher --interactive
-# or
-./target/release/kernel-watcher -i
+sudo kernel-watcher
 ```
 
-**Help Menu:**
+Or open the dashboard:
+
 ```bash
-./target/release/kernel-watcher --help
+kernel-watcher --interactive
 ```
 
+## Verifying a release binary
 
-## Cryptographic Memory Hygiene
+```bash
+gpg --import tilas01.asc
+gpg --fingerprint 745F82B41AFD945636859C922F43352EC307EF09   # compare against the root README
+gpg --verify kernel-watcher.sig kernel-watcher
+sha512sum -c kernel-watcher.sha512
+```
 
-To prevent cold boot attacks, memory scraping, and privilege escalation vulnerabilities, this tool employs strict cryptographic memory hygiene. All sensitive data (passwords, PINs, cryptographic seeds, and TOTP secrets) are handled via the `zeroize` crate.
+The previous signing key `4C0383A1…` is **revoked** — its private half was
+committed to public git history. See
+[Verifying downloads](../../README.md#-verifying-downloads).
 
-As soon as a sensitive variable falls out of scope or is no longer immediately required for verification, its memory address is explicitly overwritten with zeroes. This guarantees that your secrets do not linger in RAM.
+## Honest limitations
+
+The eBPF paths have **not** been independently reviewed. Treat the filesystem
+monitoring as the part that has had attention.
+
+Monitoring is detection, not prevention. A process that has already read your
+SSH key has already read it; what this buys you is knowing, and knowing quickly.
+For prevention, look at AppArmor profiles — and at not running the thing.
+
+## Licence
+
+CC BY-NC-SA 4.0 — free to use, modify and share non-commercially, with
+attribution, under the same licence. See [LICENSE](../../LICENSE).
+
+Provided **AS IS, without warranty of any kind**. These tools can lock you out
+of your own machine if misconfigured. Read the
+[wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html) first.
