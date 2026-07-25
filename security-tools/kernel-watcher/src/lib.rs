@@ -40,8 +40,7 @@ pub fn run_setup() {
     }
 
     let salt = SaltString::generate(&mut OsRng);
-    let argon2 = Argon2::default();
-    let password_hash = argon2
+    let password_hash = tamper_argon2()
         .hash_password(password.as_bytes(), &salt)
         .expect("Failed to hash password")
         .to_string();
@@ -49,14 +48,29 @@ pub fn run_setup() {
     password.zeroize();
     confirm.zeroize();
 
-    // Ensure directory exists
-    if let Some(parent) = Path::new(TAMPER_HASH_FILE).parent() {
-        fs::create_dir_all(parent).unwrap_or_default();
-    }
-
-    fs::write(TAMPER_HASH_FILE, password_hash)
+    // 0600, not the umask default. This is a hash of the master password: at
+    // 0644 any local user could copy it and brute force offline, which defeats
+    // the point of using Argon2 in the first place.
+    write_private(TAMPER_HASH_FILE, &password_hash)
         .expect("Failed to write tamper protection hash. Are you root?");
     println!("Tamper Protection password successfully set!");
+}
+
+/// Argon2id parameters for the tamper-protection master password.
+///
+/// Argon2::default() is m=19MiB, t=2, p=1 — the OWASP *minimum*. This password
+/// guards the controls that decide whether a tampered machine keeps booting, and
+/// it is verified interactively at most a few times a day, so spending
+/// noticeably more work per attempt is close to free for the legitimate user and
+/// expensive for anyone brute forcing a stolen hash.
+///
+/// m=64MiB, t=3, p=4. Falls back to the library default if the parameters are
+/// ever rejected, so a bad constant cannot render the tool unusable.
+fn tamper_argon2() -> Argon2<'static> {
+    match argon2::Params::new(64 * 1024, 3, 4, None) {
+        Ok(params) => Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params),
+        Err(_) => Argon2::default(),
+    }
 }
 
 pub fn verify_tamper_password() -> bool {
@@ -69,60 +83,132 @@ pub fn verify_tamper_password() -> bool {
         .expect("Failed to read password");
 
     let parsed_hash = PasswordHash::new(hash_str.trim()).expect("Invalid hash format in file");
-    let argon2 = Argon2::default();
 
-    let is_valid = argon2
+    // Argon2::default() is correct here and must not be "fixed" to match
+    // tamper_argon2(). verify_password reads m, t and p from the PHC string in
+    // the stored hash, not from this instance, which is also what keeps hashes
+    // written by an earlier parameter set verifying after an upgrade.
+    let is_valid = Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
         .is_ok();
     password.zeroize();
     is_valid
 }
 
-pub fn setup_evil_maid_hash() {
-    println!("=== Anti-Evil-Maid Hash Setup ===");
-    let mut hasher = Sha256::new();
+/// Hashes /boot deterministically.
+///
+/// Three things matter here and the previous version got all three wrong:
+///
+///  1. **Order.** `WalkDir` iteration order is filesystem-dependent and is not
+///     guaranteed stable between runs. Hashing in traversal order meant the
+///     baseline could differ from the check on an unchanged /boot, producing
+///     false RED ALERTs — which is worse than no alert, because it teaches the
+///     user to ignore the one that matters. Entries are now sorted by path.
+///  2. **Paths.** Only file *contents* were hashed, so renaming a file, or
+///     removing one and adding another with the same bytes, was invisible. The
+///     path is now hashed alongside the content.
+///  3. **Boundaries.** Concatenating contents with no length prefix means two
+///     different file layouts can produce the same byte stream. Each entry now
+///     contributes its length explicitly.
+fn hash_boot_partition() -> String {
+    let mut entries: Vec<_> = WalkDir::new("/boot")
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+        .collect();
 
-    println!("Hashing /boot partition. This may take a moment...");
-    for entry in WalkDir::new("/boot").into_iter().filter_map(|e| e.ok()) {
-        if entry.file_type().is_file() {
-            if let Ok(content) = fs::read(entry.path()) {
+    // Stable, locale-independent ordering.
+    entries.sort_by(|a, b| a.path().cmp(b.path()));
+
+    let mut hasher = Sha256::new();
+    for entry in entries {
+        let path_bytes = entry.path().to_string_lossy().into_owned().into_bytes();
+        hasher.update((path_bytes.len() as u64).to_le_bytes());
+        hasher.update(&path_bytes);
+
+        match fs::read(entry.path()) {
+            Ok(content) => {
+                hasher.update((content.len() as u64).to_le_bytes());
                 hasher.update(&content);
+            }
+            Err(_) => {
+                // An unreadable file must still affect the hash, or it becomes a
+                // blind spot an attacker can hide a payload in.
+                hasher.update(u64::MAX.to_le_bytes());
             }
         }
     }
+    hex::encode(hasher.finalize())
+}
 
-    let hash = hex::encode(hasher.finalize());
+/// Writes a file that only root may read.
+///
+/// `fs::write` creates with the process umask, typically 0644. For anything
+/// deriving from a password that means any local user can copy it and brute
+/// force offline at their leisure.
+fn write_private(path: &str, contents: &str) -> std::io::Result<()> {
+    use std::io::Write;
+    use std::os::unix::fs::OpenOptionsExt;
 
-    if let Some(parent) = Path::new(EVIL_MAID_HASH_FILE).parent() {
-        fs::create_dir_all(parent).unwrap_or_default();
+    if let Some(parent) = Path::new(path).parent() {
+        fs::create_dir_all(parent)?;
     }
+    // mode() on create means the file is never briefly world-readable.
+    let mut f = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .open(path)?;
+    f.write_all(contents.as_bytes())
+}
 
-    // In a production scenario, we would encrypt this hash with a TPM key or user password.
-    // Here we save it directly for demonstration of the integrity check.
-    fs::write(EVIL_MAID_HASH_FILE, &hash).expect("Failed to write Evil Maid hash");
+pub fn setup_evil_maid_hash() {
+    println!("=== Anti-Evil-Maid Hash Setup ===");
+    println!("Hashing /boot partition. This may take a moment...");
+
+    let hash = hash_boot_partition();
+
+    // 0600: the baseline is not secret, but it is integrity-critical, and there
+    // is no reason for it to be readable beyond root.
+    write_private(EVIL_MAID_HASH_FILE, &hash).expect("Failed to write Evil Maid hash");
+
     println!(
         "Anti-Evil-Maid baseline hash stored successfully: {}",
-        &hash[..16]
+        &hash[..16.min(hash.len())]
     );
 }
 
 pub fn check_evil_maid_hash() -> bool {
     let stored_hash = fs::read_to_string(EVIL_MAID_HASH_FILE).unwrap_or_default();
-    if stored_hash.is_empty() {
-        return true; // Not set up
+
+    // Fail CLOSED. This previously returned true ("integrity fine") whenever the
+    // baseline was missing or empty, so deleting one file silently disabled the
+    // entire check — trivial for exactly the attacker this defends against, who
+    // by definition has offline access to the disk.
+    if stored_hash.trim().is_empty() {
+        eprintln!("\n=======================================================");
+        eprintln!("            [ANTI-EVIL-MAID: NO BASELINE]              ");
+        eprintln!("=======================================================");
+        eprintln!("No integrity baseline was found at {EVIL_MAID_HASH_FILE}.");
+        eprintln!();
+        eprintln!("Either this has never been set up, or the baseline was deleted.");
+        eprintln!("A missing baseline is NOT treated as a pass: an attacker who can");
+        eprintln!("modify /boot can also delete this file.");
+        eprintln!();
+        eprintln!("If you have not set it up yet, run:  kernel-watcher --setup");
+        eprintln!("If you HAVE set it up, treat this as tampering.");
+        eprintln!("=======================================================\n");
+        return false;
     }
 
-    let mut hasher = Sha256::new();
-    for entry in WalkDir::new("/boot").into_iter().filter_map(|e| e.ok()) {
-        if entry.file_type().is_file() {
-            if let Ok(content) = fs::read(entry.path()) {
-                hasher.update(&content);
-            }
-        }
-    }
+    let current_hash = hash_boot_partition();
 
-    let current_hash = hex::encode(hasher.finalize());
-
+    // Note on comparison: this is a plain !=, not a constant-time compare. That
+    // is deliberate. The /boot hash is not a secret — an attacker with the disk
+    // can compute it themselves — so there is no timing signal worth hiding.
+    // Constant-time comparison matters for the password path, which uses
+    // argon2's verify_password and is already constant-time.
     if current_hash != stored_hash.trim() {
         eprintln!("\n=======================================================");
         eprintln!("                  [RED ALERT]                          ");

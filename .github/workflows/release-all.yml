@@ -54,6 +54,17 @@ jobs:
           cargo clippy --release -- -D warnings || echo "::warning::clippy reported findings"
         working-directory: security-tools/${{ matrix.tool }}
 
+      # Advisory rather than blocking: a newly published advisory in a transitive
+      # dependency should surface loudly but must not stop a security fix from
+      # shipping. Findings appear in the run summary.
+      - name: Audit dependencies for known vulnerabilities
+        continue-on-error: true
+        run: |
+          cargo install cargo-audit --locked --quiet 2>/dev/null || cargo install cargo-audit --locked
+          cargo audit --deny warnings \
+            || echo "::warning::cargo audit reported advisories for ${{ matrix.tool }} - see log"
+        working-directory: security-tools/${{ matrix.tool }}
+
       # --locked so the committed Cargo.lock is honoured exactly; without it a
       # dependency could resolve differently and the build would not reproduce.
       - name: Build Release
