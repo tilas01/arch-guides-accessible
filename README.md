@@ -169,23 +169,62 @@ Detail: [Installing the Suite in One Step](https://tilas01.github.io/arch-guides
 Release binaries are SHA-512 hashed and, when the CI signing key is configured,
 GPG-signed. The public key (`tilas01.asc`) is committed at the repository root.
 
-```bash
-gpg --import tilas01.asc                  # 1. import the key
-gpg --verify libre-otp.sig libre-otp      # 2. verify the signature
-sha512sum -c libre-otp.sha512             # 3. verify the hash
+**Current signing key — trust this one:**
+
+```
+745F 82B4 1AFD 9456 3685  9C92 2F43 352E C307 EF09
+tilas01 (Arch Guides Dynamic release signing) <recordtrack32@gmail.com>
+ed25519, created 2026-07-25, expires 2028-07-24
 ```
 
-A `Good signature from "tilas01"` plus an `OK` means the binary is what was
-built. If either check fails, do not run it.
+```bash
+gpg --import tilas01.asc                                  # 1. import the key
+gpg --fingerprint 745F82B41AFD945636859C922F43352EC307EF09  # 2. compare against the block above
+gpg --verify libre-otp.sig libre-otp                      # 3. verify the signature
+sha512sum -c libre-otp.sha512                             # 4. verify the hash
+```
 
-> A signature only proves the key holder signed it — it says nothing about
-> whether the key is still trustworthy. Compare the fingerprint against the one
-> published here, and if this project's signing key is ever exposed, treat every
-> signature made with it as meaningless until a new key is published and the old
-> one revoked.
+A `Good signature from "tilas01 (Arch Guides Dynamic release signing)"` plus an
+`OK` means the binary is what was built. If either check fails, do not run it.
 
 You can also use [`scripts/verify-integrity.sh`](scripts/verify-integrity.sh),
 which does all three steps and refuses to pass if `gpg` is unavailable.
+
+### ⚠️ Key rotation — the first signing key was compromised
+
+The original signing key was **exposed**. Its private key material
+(`.keys/private.key` and `.keys/private-keys-v1.d/*.key`) was committed to this
+public repository and remains recoverable from git history. Anyone who cloned
+this repo can sign anything as `tilas01` with it.
+
+| | |
+|---|---|
+| **Compromised key** | `4C03 83A1 68D0 EA1D D6F1  ACB5 A131 18E0 3A7D 55A0` |
+| **Status** | **Revoked.** Revocation published as [`tilas01-revoked-2026-06.asc`](tilas01-revoked-2026-06.asc) |
+| **Replaced by** | `745F 82B4 1AFD 9456 3685  9C92 2F43 352E C307 EF09` |
+
+If you imported the old key at any point, import the revocation so GnuPG stops
+trusting it:
+
+```bash
+gpg --import tilas01-revoked-2026-06.asc
+gpg --list-keys 4C0383A168D0EA1DD6F1ACB5A13118E03A7D55A0   # must show "revoked"
+```
+
+**Treat every signature made by `4C0383A1…` as meaningless**, including
+signatures on releases published before 2026-07-25. Re-verify anything you
+installed from those releases against the new key, or rebuild from source using
+[`docs/building-from-source.md`](docs/building-from-source.md) — the builds are
+reproducible, so a rebuild is an independent check that does not rely on any key
+at all.
+
+The old key file was additionally committed as UTF-16 text, which GnuPG cannot
+parse (`invalid packet`), so signature verification against it never actually
+worked. `tilas01.asc` is now plain ASCII armor with LF endings.
+
+Private key material for the new key is stored **outside this repository and
+outside any cloud-synced folder**, and `.keys/`, `*.key` and `*.gpg` are in
+[`.gitignore`](.gitignore). Nothing secret is committed.
 
 ---
 

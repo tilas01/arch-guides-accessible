@@ -54,6 +54,34 @@ else
         curl -sLO "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/tilas01.asc"
     fi
 
+    # Pin the fingerprint. The key and the binary come from the same host, so a
+    # downloaded-and-trusted key proves nothing on its own: whoever can swap the
+    # binary can swap the key that signs it. Compare this against the value
+    # printed in README.md before trusting anything below.
+    EXPECTED_FPR="745F82B41AFD945636859C922F43352EC307EF09"
+    # Previous key. Its private half was committed to public git history; it is
+    # revoked and every signature it made is worthless.
+    REVOKED_FPR="4C0383A168D0EA1DD6F1ACB5A13118E03A7D55A0"
+
+    SERVED_FPRS="$(gpg --show-keys --with-colons tilas01.asc 2>/dev/null \
+                   | awk -F: '$1=="fpr"{print $10}')"
+
+    if [ -z "$SERVED_FPRS" ]; then
+        echo "❌ tilas01.asc is not a parseable OpenPGP key. Aborting."
+        exit 1
+    fi
+    if echo "$SERVED_FPRS" | grep -qx "$REVOKED_FPR"; then
+        echo "❌ This key is the REVOKED $REVOKED_FPR. Do NOT trust it. Aborting."
+        exit 1
+    fi
+    if ! echo "$SERVED_FPRS" | grep -qx "$EXPECTED_FPR"; then
+        echo "❌ Signing key fingerprint mismatch."
+        echo "   expected: $EXPECTED_FPR"
+        echo "   served:   $(echo "$SERVED_FPRS" | tr '\n' ' ')"
+        echo "   Either this script is out of date, or the key was substituted."
+        exit 1
+    fi
+
     if ! gpg --import tilas01.asc 2>/dev/null; then
         echo "❌ Could not import the signing key. Aborting."
         exit 1
