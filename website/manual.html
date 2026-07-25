@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Install Walkthrough — Arch Guides Dynamic</title>
+    <meta name="description" content="A guided manual Arch Linux install. Answer one question at a time, see what each choice means, and build a guide with every command and the reason for it. Full parity with the dynamic generator, and the recommended path on mobile.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" href="manual-data.js" as="script">
+    <link rel="preload" href="manual-guide.js" as="script">
+    <link rel="prefetch" href="wiki.html">
+    <link rel="prefetch" href="iso-verify.html">
+    <style>
+        /* ── Manual walkthrough. Palette and shared components from style.css. ── */
+        .manual-head { text-align: center; margin-bottom: 1.2rem; }
+        .manual-head h1 { color: var(--accent-purple); margin-bottom: 0.4rem; }
+        .manual-head p { color: var(--fg-dim); max-width: 76ch; margin: 0 auto; }
+
+        .manual-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* Progress */
+        .prog-wrap { margin: 1rem auto 1.6rem; max-width: 900px; }
+        .prog-track {
+            height: 8px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .prog-fill {
+            height: 100%;
+            width: 0;
+            background: var(--accent-purple);
+            transition: width 0.25s ease;
+        }
+        #manual-progress-text {
+            font-size: 0.78rem;
+            color: var(--fg-dim);
+            text-align: center;
+            margin-top: 0.3rem;
+        }
+
+        /* Question card. The fade-and-rise is short and only on entry, so the
+           walkthrough feels continuous without making you wait for it. */
+        .q-card {
+            background: var(--bg-lighter);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-purple);
+            border-radius: 10px;
+            padding: 1.3rem 1.4rem;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        .q-card.q-in { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .q-card { transition: none; opacity: 1; transform: none; }
+        }
+        .q-card.q-invalid { border-left-color: var(--accent-red); animation: q-shake 0.3s; }
+        @keyframes q-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .q-card.q-invalid { animation: none; }
+        }
+
+        .q-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--fg-dim);
+            margin-bottom: 0.5rem;
+        }
+        .q-section { color: var(--accent-cyan); }
+        .q-title { font-size: 1.2rem; color: var(--heading-color); margin-bottom: 0.5rem; }
+        .q-wiki { font-size: 0.95rem; margin-left: 0.5rem; text-decoration: none; }
+        .q-help { font-size: 0.88rem; color: var(--fg-dim); margin-bottom: 1rem; }
+        .q-locked {
+            background: var(--tint-orange);
+            border-left: 3px solid var(--accent-orange);
+            border-radius: 0 6px 6px 0;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .q-locked strong { color: var(--accent-orange); }
+
+        .opt-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 0.7rem;
+        }
+        .opt-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            text-align: left;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 0.85rem;
+            color: var(--fg-color);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            cursor: pointer;
+            min-height: var(--tap-target);
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .opt-card:hover:not([disabled]) { border-color: var(--accent-purple); background: var(--tint-purple); }
+        .opt-card.selected { border-color: var(--accent-green); background: var(--tint-green); }
+        .opt-card[disabled] { opacity: 0.5; cursor: not-allowed; }
+        .opt-head { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .opt-label { font-weight: bold; color: var(--heading-color); }
+        .opt-desc { color: var(--fg-dim); font-size: 0.8rem; line-height: 1.5; }
+        .opt-note { color: var(--accent-orange); font-size: 0.78rem; line-height: 1.45; }
+        .opt-danger { color: var(--accent-red); font-size: 0.78rem; line-height: 1.45; }
+        .badge {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+        }
+        .badge-rec { background: var(--tint-green); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .badge-danger { background: var(--tint-red); color: var(--accent-red); border: 1px solid var(--accent-red); }
+
+        .q-text {
+            width: 100%;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            background: var(--bg-dark);
+            color: var(--fg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.6rem 0.7rem;
+            min-height: var(--tap-target);
+        }
+        .q-text:focus-visible { border-color: var(--accent-cyan); outline: none; }
+
+        .q-error {
+            margin-top: 0.7rem;
+            padding: 0.6rem 0.8rem;
+            border-left: 3px solid var(--accent-red);
+            background: var(--tint-red);
+            border-radius: 0 6px 6px 0;
+            color: var(--accent-red);
+            font-size: 0.84rem;
+        }
+        .q-error a { color: var(--accent-cyan); }
+
+        .q-next { margin-top: 1rem; }
+        .q-nav { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+        .btn-ghost {
+            background: transparent;
+            color: var(--fg-dim);
+            border: 1px solid var(--border-color);
+        }
+        .btn-ghost:hover { background: var(--bg-dark); color: var(--accent-cyan); }
+
+        /* Guide pane */
+        .guide-pane {
+            position: sticky;
+            top: 1rem;
+            background: var(--bg-lighter);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            max-height: calc(100vh - 2rem);
+            display: flex;
+            flex-direction: column;
+        }
+        .guide-pane h2 { font-size: 1rem; color: var(--accent-cyan); margin-bottom: 0.6rem; }
+        #guide-out {
+            flex: 1;
+            overflow: auto;
+            overscroll-behavior: contain;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 0.76rem;
+            line-height: 1.6;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.8rem;
+            color: var(--fg-color);
+            margin: 0;
+        }
+        #guide-empty { color: var(--fg-dim); font-size: 0.85rem; }
+        .guide-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+        .guide-actions .btn { flex: 1 1 140px; font-size: 0.8rem; padding: 0.5rem 0.6rem; min-height: var(--tap-target); }
+
+        @media (max-width: 1100px) {
+            .manual-layout { grid-template-columns: minmax(0, 1fr); }
+            .guide-pane { position: static; max-height: none; }
+            #guide-out { max-height: 50vh; }
+        }
+        @media (max-width: 520px) {
+            .opt-grid { grid-template-columns: minmax(0, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<noscript>
+    <div class="alert warning">
+        The walkthrough needs JavaScript, because it runs entirely in your
+        browser — there is no server here to run it on. Everything it produces is
+        also written out longhand in the
+        <a href="wiki.html#manual-install">wiki's manual install section</a>,
+        which needs nothing but a browser that renders text.
+    </div>
+</noscript>
+
+<header>
+    <a href="https://github.com/tilas01/arch-guides-dynamic" class="banner-link" target="_blank" rel="noopener">
+        <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
+    </a>
+    <nav class="main-nav" aria-label="Site">
+        <a href="site-index.html" class="nav-link nav-tooltip" data-title="🔎 Index" data-desc="The contents page for the whole site, with a search box that looks through the wiki, every generator option, the manual walkthrough, the security tools and the cheatsheets at once.">🔎 Index</a>
+        <span class="nav-sep">|</span>
+        <a href="index.html" class="nav-link nav-tooltip" data-title="⚙️ Generator" data-desc="Fill in a form, get a script. Faster than the walkthrough when you already know what you want.">⚙️ Generator</a>
+        <span class="nav-sep">|</span>
+        <a href="manual.html" class="nav-link nav-tooltip" style="color:var(--accent-purple);" data-title="🧭 Manual walkthrough" data-desc="One question at a time, with an explanation of every option and the commands appearing as you answer. The recommended path on mobile.">🧭 Manual</a>
+        <span class="nav-sep">|</span>
+        <a href="iso-verify.html" class="nav-link nav-tooltip" data-title="💿 Verify ISO" data-desc="Hash an Arch ISO in your browser and check it against mirrors other than the one that served it.">💿 Verify ISO</a>
+        <span class="nav-sep">|</span>
+        <a href="security-tools.html" class="nav-link nav-tooltip" data-title="🦀 Security Tools" data-desc="The Rust security suite and the vetted third-party hardening tools.">🦀 Security Tools</a>
+        <span class="nav-sep">|</span>
+        <a href="wiki.html" class="nav-link nav-tooltip" data-title="📖 Wiki" data-desc="Every option explained in full, plus firmware lockdown, dual boot, ARM and AUR safety.">📖 Wiki</a>
+    </nav>
+</header>
+
+<main>
+    <div class="manual-head">
+        <h1>🧭 Manual install walkthrough</h1>
+        <p>
+            One question at a time. Every option says what it does and what it
+            costs, and the guide below builds itself as you answer — with the
+            reason for each command, not just the command. Everything runs in
+            your browser; nothing is sent anywhere.
+        </p>
+    </div>
+
+    <div class="prog-wrap">
+        <div class="prog-track">
+            <div class="prog-fill" id="manual-progress" role="progressbar"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                 aria-label="Walkthrough progress"></div>
+        </div>
+        <div id="manual-progress-text">Not started</div>
+    </div>
+
+    <div class="manual-layout">
+        <section id="question-host" aria-label="Questions" aria-live="polite"></section>
+
+        <aside class="guide-pane" aria-label="Your guide">
+            <h2>📄 Your guide, so far</h2>
+            <p id="guide-empty">
+                Answer the first question and this fills in. Right-click any
+                question to open the wiki section that explains it.
+            </p>
+            <div id="guide-wrap" hidden style="display:contents;">
+                <pre id="guide-out" tabindex="0"></pre>
+            </div>
+            <div class="guide-actions">
+                <button type="button" class="btn nav-tooltip" id="copy-guide"
+                        data-title="Copy the guide"
+                        data-desc="Copies the markdown to your clipboard.">📋 Copy guide</button>
+                <button type="button" class="btn nav-tooltip" id="dl-md"
+                        data-title="Download markdown"
+                        data-desc="The guide as a .md file: every command with the reason for it. This is the one to read.">⬇️ .md</button>
+                <button type="button" class="btn nav-tooltip" id="dl-sh"
+                        data-title="Download shell script"
+                        data-desc="The same commands as a runnable bash script, built from the same guide so the two cannot disagree. It refuses to run until you confirm you have read it.">⬇️ .sh</button>
+                <button type="button" class="btn nav-tooltip" id="dl-json"
+                        data-title="Download config as JSON"
+                        data-desc="Your answers as JSON — a documented, diffable format any tool can read. The generator accepts the same file. This replaces the old .sc format.">⬇️ .json</button>
+                <button type="button" class="btn nav-tooltip" id="open-live"
+                        data-title="Open in the live editor"
+                        data-desc="Sends the guide and the script to the editor, where you can change them side by side before downloading.">📝 Live editor</button>
+                <label class="btn nav-tooltip" style="cursor:pointer; text-align:center;"
+                       data-title="Load a saved config"
+                       data-desc="Reads a .json config exported from here or from the generator and refills every answer.">
+                    📂 Load .json
+                    <input type="file" id="import-json" accept=".json,application/json" hidden>
+                </label>
+            </div>
+        </aside>
+    </div>
+
+    <div class="alert" style="margin-top:2rem; border-left:4px solid var(--accent-cyan); background:var(--tint-cyan);">
+        <strong style="color:var(--accent-cyan);">Three ways to the same install.</strong>
+        This walkthrough, the <a href="index.html">dynamic generator</a>, and the
+        <a href="wiki.html#manual-install">wiki's written guide</a> cover the same
+        options and produce the same result. Use whichever suits you — the
+        walkthrough on a phone, the generator when you already know what you want,
+        the wiki when you would rather read than answer. The
+        <a href="https://github.com/tilas01/arch-guides-dynamic">repository</a> has
+        all of it as markdown too.
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="legal-notice">
+        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
+        <p>
+            <strong>AI-assisted content, no warranty.</strong> This site and the guides it
+            generates were built with AI assistance. Everything is provided
+            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
+            <strong>no liability</strong> for data loss, system damage, hardware failure or
+            security breaches arising from use of these tools.
+        </p>
+        <p>
+            <strong>You are responsible for your own machine.</strong> Always read a generated
+            script before running it. These scripts repartition disks, and some options here
+            deliberately destroy data. Test in a virtual machine and cross-check against the
+            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
+        </p>
+        <p>
+            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
+            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
+            Selling or monetising it is not permitted.
+        </p>
+        <p style="margin-bottom:0;">
+            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+            <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+            <a href="index.html">Generator</a> ·
+            <a href="wiki.html">Wiki</a> ·
+            <a href="iso-verify.html">Verify ISO</a> ·
+            <a href="security-tools.html">Security Tools</a> ·
+            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+        </p>
+    </div>
+</footer>
+
+<script src="manual-data.js"></script>
+<script src="manual-guide.js"></script>
+<script src="manual.js"></script>
+<script src="tooltip.js" defer></script>
+<script src="shared-ui.js" defer></script>
+</body>
+</html>
