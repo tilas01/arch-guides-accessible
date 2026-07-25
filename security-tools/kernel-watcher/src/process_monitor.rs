@@ -3,7 +3,7 @@ use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
 use std::thread;
 use std::time::Duration;
-use sysinfo::{Process, System};
+use sysinfo::System;
 
 const SUSPICIOUS_PROCESSES: &[&str] =
     &["obs", "obs64", "wayvnc", "x11vnc", "anydesk", "teamviewer"];

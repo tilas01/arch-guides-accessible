@@ -218,3 +218,12 @@ fn run_fs_hash_check() {
     // A real implementation would check against a manifest.
     println!("File system hash check complete. See {}", log_file);
 }
+
+/// Entry point used by `main.rs` for the non-GUI daemon path.
+///
+/// This is what `--daemon` and the generated systemd unit invoke: verify the
+/// boot chain against the recorded measurements and report the result. It was
+/// referenced by main.rs but never defined, so the crate did not compile.
+pub fn start_monitor() {
+    run_boot_check();
+}
