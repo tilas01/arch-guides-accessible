@@ -10,6 +10,11 @@ repository = "https://github.com/tilas01/arch-guides-dynamic"
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
 
+# Needed for the eframe::Result returned by each tool's start_gui(). Must stay
+# on the same version as the tools themselves, or their Result type and ours are
+# two different types and the dispatcher will not compile.
+eframe = "0.27.2"
+
 # The five tools are linked in directly, so this really is one binary that
 # contains all of them rather than a launcher that shells out.
 libre-otp      = { path = "../libre-otp" }
