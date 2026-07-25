@@ -3921,3 +3921,76 @@ window.closeConfigModal = function(modalId) {
         currentModalId = null;
     }
 };
+
+
+// Hard-Locking Logic
+let myToolsLocked = false;
+function lockAllMyTools(btn) {
+    myToolsLocked = !myToolsLocked;
+    const inputs = document.querySelectorAll('input[name="post_apps"][value="scarecrow"], input[name="post_apps"][value="libre-otp"], input[name="post_apps"][value="anti-evil-maid"], input[name="post_apps"][value="kernel-watcher"], input[name="post_apps"][value="anti-ducky"]');
+    
+    inputs.forEach(input => {
+        input.checked = myToolsLocked;
+        input.disabled = myToolsLocked; // Hard toggle lock
+    });
+    
+    if (myToolsLocked) {
+        btn.style.background = 'var(--accent-red)';
+        btn.innerHTML = '🔒 Locked (Enabled)';
+    } else {
+        btn.style.background = 'var(--accent-green)';
+        btn.innerHTML = '✅ Enable All';
+    }
+    updateOutput();
+}
+
+let otherSecLocked = false;
+function lockAllOtherSec(btn) {
+    otherSecLocked = !otherSecLocked;
+    const inputs = document.querySelectorAll('input[name="post_apps"][value="ufw"], input[name="post_apps"][value="fail2ban"], input[name="post_apps"][value="apparmor"], input[name="post_apps"][value="firejail"], input[name="post_apps"][value="clamav"], input[name="post_apps"][value="lynis"], input[name="post_apps"][value="usbguard"], input[name="post_apps"][value="aide"], input[name="post_apps"][value="auditd"]');
+    
+    inputs.forEach(input => {
+        input.checked = otherSecLocked;
+        input.disabled = otherSecLocked; // Hard toggle lock
+    });
+    
+    if (otherSecLocked) {
+        btn.style.background = 'var(--accent-red)';
+        btn.innerHTML = '🔒 Locked (Enabled)';
+    } else {
+        btn.style.background = 'var(--accent-green)';
+        btn.innerHTML = '✅ Enable All';
+    }
+    updateOutput();
+}
+
+// Modify updateOutput to include disabled inputs if they are checked
+// Since native form serialization skips disabled inputs, we must ensure our script generator logic picks them up.
+// Actually, our JS generator uses `document.querySelectorAll('input[name="post_apps"]:checked')` which DOES select disabled inputs!
+
+
+// Advanced Setup Toggle Logic
+function toggleAdvancedSetup() {
+    const isAdvanced = document.getElementById('advanced-setup-toggle').checked;
+    const configBtns = document.querySelectorAll('.gear-config-btn');
+    
+    configBtns.forEach(btn => {
+        btn.style.display = isAdvanced ? 'inline-flex' : 'none';
+    });
+    
+    // Clear custom app configs if disabled so they fall back to default
+    if (!isAdvanced) {
+        appConfigs = {};
+    }
+    
+    updateOutput();
+}
+
+// Popup Blocker Detection for Wiki
+function openWiki(e) {
+    if (e) e.preventDefault();
+    const newWin = window.open('wiki.html', '_blank');
+    if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
+        alert("⚠️ Your browser blocked the pop-up! Please allow pop-ups for this site to view the Wiki, or manually click the Wiki link at the top of the page.");
+    }
+}
