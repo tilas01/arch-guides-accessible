@@ -693,7 +693,12 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     const format = gv('outputformat','both');
     const user_count = gi('user_count',1);
     const root_ssh = gv('root_ssh','no');
-    const otp_sha = gv('otp_sha','sha1');
+    // NOTE: the OTP hash, double-OTP, bypass-uses and recovery-count questions
+    // were removed. They were five separate ways to configure one mechanism, and
+    // two of them (bypass password, recovery codes) are by definition ways around
+    // the second factor. The generator now picks safe values: SHA-512 for the
+    // silent tamper check, SHA-1 for interactive 2FA because that is what
+    // authenticator apps can actually read, and no bypass password.
     const iso_setup = gv('iso_setup','none');
     const cpu_brand = gv('cpu_brand','amd');
     const gpu_brand = gv('gpu_brand','amd');
@@ -719,9 +724,6 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     document.querySelectorAll('input[name="other_sec_tools"]:checked').forEach(cb => other_sec_tools.push(cb.value));
 
     const libreOtpMode = gv('libre_otp_mode','login');
-    const otp_recovery = gv('otp_recovery','5');
-    const otp_bypass = gv('otp_bypass','0');
-    const otp_double = gv('otp_double','no');
     const webhook_provider = gv('webhook_provider','ntfy');
     const webhook_url = gv('webhook_url','');
     const aem_main = gv('aem-kernel-main','linux');
@@ -1422,8 +1424,25 @@ run_with_progress() {
         const selectedSuite = SUITE_TOOLS.filter(t => post_apps.includes(t));
 
         if (selectedSuite.length > 0) {
-            if (!cmdOnly) o += `\`\`\`\n\n## 7. Security Suite Configuration (tilas01)\n\`\`\`bash\n`;
-            else o += `\n# 7. Security Suite Configuration\n`;
+            if (!cmdOnly) {
+                o += `\`\`\`\n\n## 7. Security Suite Configuration (tilas01)\n\n`;
+                o += `> **Shortcut:** instead of the per-tool steps below, the repository ships ` +
+                     `a single installer that fetches all of these, verifies each hash and GPG ` +
+                     `signature, installs them and writes hardened systemd units:\n>\n`;
+                o += `> \`\`\`bash\n`;
+                o += `> curl -fsSLO https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/install-security-suite.sh\n`;
+                o += `> # read it before running it\n`;
+                o += `> less install-security-suite.sh\n`;
+                o += `> sudo bash install-security-suite.sh --only ${selectedSuite.join(',')}\n`;
+                o += `> \`\`\`\n>\n`;
+                o += `> It fails closed: anything that does not verify aborts the run. Daemons are ` +
+                     `installed but left stopped so you can review them first.\n\n`;
+                o += `The steps below are the equivalent done by hand.\n\n\`\`\`bash\n`;
+            } else {
+                o += `\n# 7. Security Suite Configuration\n`;
+                o += `# Equivalent one-liner (verifies hashes and signatures, fails closed):\n`;
+                o += `#   sudo bash install-security-suite.sh --only ${selectedSuite.join(',')}\n`;
+            }
             o += `mkdir -p /etc/arch-security\n`;
 
             if (post_apps.includes('webhooks')) {
@@ -1432,19 +1451,91 @@ run_with_progress() {
             }
 
             if (post_apps.includes('libre-otp')) {
-                let otpOpts = `--setup --mode ${libreOtpMode} --hash ${otp_sha} --recovery-codes ${otp_recovery}`;
-                if (otp_bypass !== "0" && otp_bypass !== "") otpOpts += ` --bypass-uses ${otp_bypass}`;
-                if (otp_double === "yes") otpOpts += ` --double-otp`;
-                o += `\n# Configuring Libre OTP\nlibre-otp ${otpOpts}\n`;
-                o += `\n# Injecting Libre OTP into PAM\n`;
-                const pamLine = `auth required pam_exec.so expose_authtok quiet /usr/local/bin/libre-otp verify`;
-                if (libreOtpMode === "login" || libreOtpMode === "boot" || libreOtpMode === "both" || libreOtpMode === "all") {
-                    o += `echo '${pamLine}' >> /etc/pam.d/system-auth\n`;
-                    o += `echo '${pamLine}' >> /etc/pam.d/su\n`;
-                    o += `echo '${pamLine}' >> /etc/pam.d/sudo\n`;
-                }
-                if (libreOtpMode === "ssh" || libreOtpMode === "both" || libreOtpMode === "all") {
-                    o += `echo '${pamLine}' >> /etc/pam.d/sshd\n`;
+                if (libreOtpMode === 'tamper-check') {
+                    // Silent mode: one secret, never shown, compared internally at
+                    // boot. Detects a modified boot chain; asks the user for nothing.
+                    o += `\n# ── Libre OTP: silent boot-integrity check ──\n`;
+                    o += `# One secret is generated here and never displayed. At each boot the\n`;
+                    o += `# expected value is recomputed and compared internally; a mismatch means\n`;
+                    o += `# the boot chain was modified since this install.\n`;
+                    o += `libre-otp --setup-tamper-check --hash sha512\n`;
+                    o += `chmod 600 /etc/arch-security/otp.seal\n`;
+                    o += `chown root:root /etc/arch-security/otp.seal\n\n`;
+
+                    o += `# Verify the boot chain early, before the passphrase prompt, so a warning\n`;
+                    o += `# reaches the user while it still matters.\n`;
+                    o += `cat > /etc/initcpio/hooks/otp-tamper << 'OTPHOOK'\n`;
+                    o += `#!/usr/bin/ash\n`;
+                    o += `run_hook() {\n`;
+                    o += `    [ -f /etc/arch-security/otp.seal ] || return 0\n`;
+                    o += `    if /usr/local/bin/libre-otp --verify-tamper --quiet; then\n`;
+                    o += `        return 0\n`;
+                    o += `    fi\n`;
+                    o += `    printf '\\n\\033[1;31m########################################\\033[0m\\n'\n`;
+                    o += `    printf '\\033[1;31m##  BOOT INTEGRITY CHECK FAILED       ##\\033[0m\\n'\n`;
+                    o += `    printf '\\033[1;31m########################################\\033[0m\\n\\n'\n`;
+                    o += `    printf 'The boot chain does not match what was recorded at install.\\n'\n`;
+                    o += `    printf 'This can mean tampering, or simply a kernel or firmware update.\\n\\n'\n`;
+                    o += `    printf 'Do NOT enter your passphrase if you did not expect this.\\n'\n`;
+                    o += `    printf 'Re-seal after a legitimate update with: libre-otp --reseal\\n\\n'\n`;
+                    o += `    printf 'Press Enter to continue anyway, or power off now. '\n`;
+                    o += `    read _ack\n`;
+                    o += `}\n`;
+                    o += `OTPHOOK\n`;
+                    o += `chmod 755 /etc/initcpio/hooks/otp-tamper\n\n`;
+
+                    o += `cat > /etc/initcpio/install/otp-tamper << 'OTPINST'\n`;
+                    o += `#!/bin/bash\n`;
+                    o += `build() {\n`;
+                    o += `    add_runscript\n`;
+                    o += `    add_binary /usr/local/bin/libre-otp\n`;
+                    o += `    add_file /etc/arch-security/otp.seal\n`;
+                    o += `}\n`;
+                    o += `help() { echo "Silent Libre OTP boot-integrity check."; }\n`;
+                    o += `OTPINST\n`;
+                    o += `chmod 755 /etc/initcpio/install/otp-tamper\n`;
+                    o += `sed -i 's/\\(HOOKS=.*\\)\\(encrypt\\|sd-encrypt\\)/\\1otp-tamper \\2/' /etc/mkinitcpio.conf\n`;
+                    o += `mkinitcpio -P\n\n`;
+
+                    o += `# Re-seal automatically after a kernel update, or every update would\n`;
+                    o += `# look like tampering and the warning would be ignored.\n`;
+                    o += `cat > /usr/share/libalpm/hooks/95-otp-reseal.hook << 'RESEAL'\n`;
+                    o += `[Trigger]\nOperation = Install\nOperation = Upgrade\nType = Package\nTarget = linux\nTarget = linux-*\n\n`;
+                    o += `[Action]\nDescription = Re-sealing Libre OTP boot integrity baseline...\nWhen = PostTransaction\nExec = /usr/local/bin/libre-otp --reseal\n`;
+                    o += `RESEAL\n`;
+
+                    if (!cmdOnly) {
+                        o += `\`\`\`\n\n`;
+                        o += `> [!IMPORTANT]\n`;
+                        o += `> This check runs **after** your firmware. An attacker who can reflash the\n`;
+                        o += `> firmware or boot other media defeats it. It is only meaningful alongside\n`;
+                        o += `> Secure Boot with your own keys, a firmware supervisor password, and\n`;
+                        o += `> USB/network boot disabled. For tamper-evidence at the firmware level you\n`;
+                        o += `> need measured boot — see the Hardware & Firmware Security wiki section.\n\n`;
+                        o += `\`\`\`bash\n`;
+                    }
+                } else {
+                    // Interactive 2FA. SHA-512 internally; SHA-1 only where an
+                    // authenticator app has to be able to read it.
+                    o += `\n# Configuring Libre OTP (interactive 2FA)\n`;
+                    o += `libre-otp --setup --mode ${libreOtpMode} --hash sha1 --recovery-codes 5\n`;
+                    o += `\n# Injecting Libre OTP into PAM\n`;
+                    const pamLine = `auth required pam_exec.so expose_authtok quiet /usr/local/bin/libre-otp verify`;
+                    if (libreOtpMode === "login" || libreOtpMode === "both") {
+                        o += `echo '${pamLine}' >> /etc/pam.d/system-auth\n`;
+                        o += `echo '${pamLine}' >> /etc/pam.d/su\n`;
+                        o += `echo '${pamLine}' >> /etc/pam.d/sudo\n`;
+                    }
+                    if (libreOtpMode === "boot" || libreOtpMode === "both") {
+                        o += `# Boot-time prompt lives in the initramfs, not PAM.\n`;
+                        o += `libre-otp --install-initramfs-hook\nmkinitcpio -P\n`;
+                    }
+                    if (post_apps.includes('openssh')) {
+                        o += `echo '${pamLine}' >> /etc/pam.d/sshd\n`;
+                    }
+                    o += `\n# Recovery codes are printed once. Store them OFF this machine.\n`;
+                    o += `echo "Recovery codes were printed above. Write them down now — without them,"\n`;
+                    o += `echo "a lost authenticator means you cannot log in."\n`;
                 }
             }
 
@@ -2204,6 +2295,20 @@ document.addEventListener('DOMContentLoaded', () => {
         syncOtpOptions();
     }
 
+    // Silent tamper check vs interactive 2FA: swap the explanation to match.
+    const otpModeSelect = document.getElementById('libre_otp_mode');
+    if (otpModeSelect) {
+        const syncOtpMode = () => {
+            const silent = otpModeSelect.value === 'tamper-check';
+            const tamperNote = document.getElementById('otp-tamper-note');
+            const interactiveNote = document.getElementById('otp-interactive-note');
+            if (tamperNote) tamperNote.style.display = silent ? 'block' : 'none';
+            if (interactiveNote) interactiveNote.style.display = silent ? 'none' : 'block';
+        };
+        otpModeSelect.addEventListener('change', syncOtpMode);
+        syncOtpMode();
+    }
+
     // Modal Config State
     const hiddenStateHtml = `
         <input type="hidden" id="adv_doas_mode" value="both">
@@ -2398,11 +2503,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = JSON.parse(ev.target.result);
                     if (data.generator !== "arch-guides-dynamic") throw new Error("Invalid format");
                     
-                    // Restore Selects
+                    // Restore Selects.
+                    // Applied in two passes: set every value first, then fire the
+                    // change events. Otherwise a handler could run against a
+                    // half-restored form (DuskyOS reading a desktop value that has
+                    // not been set yet) and force the wrong answer.
                     if (data.selects) {
                         for (const [id, val] of Object.entries(data.selects)) {
                             const el = document.getElementById(id);
                             if (el) el.value = val;
+                        }
+                        for (const id of Object.keys(data.selects)) {
+                            const el = document.getElementById(id);
+                            if (el) el.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     }
                     // Restore Inputs
@@ -2477,12 +2590,15 @@ function injectNoSelectionProvided() {
     });
 }
 document.addEventListener('DOMContentLoaded', injectNoSelectionProvided);
-// The generate button delegates straight to generateOutput(), which owns all
-// validation and error presentation. Nothing is duplicated here on purpose:
-// there used to be a second copy of the validation logic in this handler, and
-// the two disagreed with each other.
+// Generation is triggered by the form's submit event (see the onsubmit on
+// #install-form), which covers both clicking the button and pressing Enter in
+// any field. There is deliberately no separate click handler here: one would
+// double-fire alongside submit, and there used to be a second full copy of the
+// validation logic in exactly that place, disagreeing with generateOutput().
+//
+// Fallback only: if the button somehow sits outside a form, wire it directly.
 const generateBtn = document.getElementById('generate-btn');
-if (generateBtn) {
+if (generateBtn && !generateBtn.form) {
     generateBtn.addEventListener('click', function (e) {
         e.preventDefault();
         window.generateOutput(false);
@@ -2662,7 +2778,12 @@ if (restoreConfig) {
             }
             if (k === 'additive') return;
             const el = document.getElementById(map[k] || k);
-            if (el) el.value = c[k];
+            if (!el) return;
+            el.value = c[k];
+            // Setting .value does not fire change, so any dependent logic
+            // (DuskyOS forcing Wayland, the libre policy disabling apps, the
+            // duress and USB-kill sub-options) would not re-apply on restore.
+            el.dispatchEvent(new Event('change', { bubbles: true }));
         });
         sessionStorage.removeItem('arch_restore_config');
     } catch (e) {

@@ -930,57 +930,62 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         </select>
                     </div>
 
-                    <!-- Libre OTP sub-options. Shown only while the Libre OTP
-                         tool is selected in the security suite box below. -->
+                    <!-- Libre OTP options. Shown only while the Libre OTP tool is
+                         ticked in the security suite box below.
+
+                         One secret, one question. The old version asked five
+                         separate questions (mode, hash, double-OTP, bypass uses,
+                         recovery count) about a single mechanism, which is a lot
+                         of ways to weaken it by accident — a bypass password and
+                         a recovery code are both, by definition, ways around the
+                         second factor. -->
                     <div id="libre-otp-options" style="display:none;">
-                        <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="OTP Enforcement Mode" data-desc="Login Only: OTP at TTY/display manager. Boot: OTP in initramfs before kernel. Both: maximum coverage.">
-                                <label for="libre_otp_mode">OTP Mode:</label>
-                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="libre_otp_mode">
-                                    <option value="" disabled selected hidden>No Selection Provided</option>
-                                    <option value="login" >Login Only</option>
-                                    <option value="boot">Boot Only</option>
-                                    <option value="both">Both Boot &amp; Login</option>
-                                </select>
+                        <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="🔐 Libre OTP Mode" data-desc="Interactive 2FA asks you for a code from your authenticator. Silent tamper check never shows you anything: the system holds one secret, recomputes the expected value at boot and compares internally — a mismatch means the boot chain was modified.">
+                            <label for="libre_otp_mode">Libre OTP mode:</label>
+                            <select oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" id="libre_otp_mode">
+                                <option value="tamper-check" selected>Silent tamper check — no code to type ⭐ Recommended</option>
+                                <option value="login">Interactive 2FA at login</option>
+                                <option value="boot">Interactive 2FA at boot (initramfs)</option>
+                                <option value="both">Interactive 2FA at boot and login</option>
+                            </select>
+
+                            <!-- Shown for the silent mode -->
+                            <div id="otp-tamper-note" style="margin-top:0.7rem;">
+                                <p style="font-size:0.8rem; color:var(--fg-color); margin:0 0 0.5rem;">
+                                    🔒 <strong>Silent mode.</strong> A single secret is generated at install
+                                    time and sealed on disk with permissions <code>600</code>. At every boot
+                                    the system recomputes the expected value and compares it internally.
+                                    You are never shown a code and never type one.
+                                </p>
+                                <ul style="font-size:0.78rem; color:var(--fg-dim); margin:0 0 0.5rem 1.1rem;">
+                                    <li><strong>Match</strong> — boot continues silently.</li>
+                                    <li><strong>Mismatch</strong> — the boot chain was modified. You are warned before entering your passphrase.</li>
+                                </ul>
+                                <div class="alert warning" style="font-size:0.78rem; margin:0;">
+                                    ⚠️ <strong>This only works with locked-down firmware.</strong> The check runs
+                                    after your firmware does, so an attacker who can reflash firmware or boot
+                                    other media can bypass it. It requires Secure Boot with your own keys
+                                    (<em>UKI + Custom Keys</em> above), a firmware supervisor password, and
+                                    USB/network boot disabled.
+                                    <a href="wiki.html#lock-down-firmware">How to lock down your firmware →</a>
+                                </div>
                             </div>
-                            <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="OTP Hash Algorithm" data-desc="SHA1 is universally compatible (Google Auth, Aegis). SHA256/SHA512 offer stronger hashing but fewer apps support them. Recommended: SHA1.">
-                                <label>OTP Algorithm:</label>
-                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="otp_sha">
-                                    <option value="" disabled selected hidden>No Selection Provided</option>
-                                    <option value="sha1" >SHA1 (Max compatibility)</option>
-                                    <option value="sha256">SHA256 (More secure, e.g. 2FAS)</option>
-                                    <option value="sha512">SHA512 (Maximum, e.g. 2FAS)</option>
-                                </select>
-                            </div>
-                            <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Double OTP Verification" data-desc="Require two consecutive valid OTP codes (must wait 30s) or two different authenticators. Extreme security mode.">
-                                <label>Double OTP:</label>
-                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="otp_double">
-                                    <option value="" disabled selected hidden>No Selection Provided</option>
-                                    <option value="no" >No (Standard)</option>
-                                    <option value="yes">Yes (High Security)</option>
-                                </select>
-                            </div>
-                            <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="Bypass Password" data-desc="Set a custom bypass password that can be used up to a specified number of times to bypass OTP entirely.">
-                                <label>Bypass Uses:</label>
-                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="otp_bypass">
-                                    <option value="" disabled selected hidden>No Selection Provided</option>
-                                    <option value="0" >None (Recommended)</option>
-                                    <option value="1">1 Use</option>
-                                    <option value="3">3 Uses</option>
-                                    <option value="5">5 Uses</option>
-                                    <option value="10">10 Uses</option>
-                                </select>
-                            </div>
-                            <div class="form-group form-step" oncontextmenu="window.open('wiki.html#libre-otp', '_blank'); return false;" data-title="OTP Recovery Codes" data-desc="Generate backup recovery codes during setup. Each code is single-use. If a recovery code is used, an alert is sent via webhook.">
-                                <label>Recovery Codes:</label>
-                                <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="otp_recovery">
-                                    <option value="" disabled selected hidden>No Selection Provided</option>
-                                    <option value="5" >5 codes (Recommended)</option>
-                                    <option value="10">10 codes</option>
-                                    <option value="20">20 codes</option>
-                                    <option value="0">None (not recommended)</option>
-                                </select>
+
+                            <!-- Shown for the interactive modes -->
+                            <div id="otp-interactive-note" style="display:none; margin-top:0.7rem;">
+                                <p style="font-size:0.8rem; color:var(--fg-color); margin:0 0 0.5rem;">
+                                    📱 <strong>Interactive mode.</strong> A QR code is shown once at install so you
+                                    can add it to an authenticator, and you type a 6-digit code to log in.
+                                    SHA-1 is used because every authenticator supports it; it is not a weakness
+                                    in the way TOTP uses it.
+                                </p>
+                                <div class="alert warning" style="font-size:0.78rem; margin:0;">
+                                    ⚠️ Recovery codes are printed once during setup. <strong>Store them off this
+                                    machine.</strong> Losing your authenticator without them means you cannot log in.
+                                </div>
                             </div>
                         </div>
+                    </div>
 
                     <!-- ─── tilas01 Security Suite (Rust) ─── -->
                     <div class="my-tools-box">
@@ -1073,7 +1078,10 @@ Website: https://github.com/hephaest0s/usbkill">ℹ️</span> <span class="app-d
                          down every option above. -->
                     <div class="generate-row">
                         <div class="btn-container" style="width: 100%; justify-content: center; margin-top: 0;">
-                            <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Builds your install script and markdown guide from the selections above, then opens them in the Live Editor so you can review and edit before downloading." style="width:100%; max-width:500px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
+                            <!-- A real submit button, so Enter works from any field and
+                                 assistive tech sees the form's action. The form's onsubmit
+                                 prevents the default navigation and runs the generator. -->
+                            <button type="submit" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Builds your install script and markdown guide from the selections above, then opens them in the Live Editor so you can review and edit before downloading." style="width:100%; max-width:500px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
                         </div>
                         <p style="font-size:0.78rem; color:var(--fg-dim); text-align:center; margin:0.6rem 0 0;">
                             Nothing is uploaded — generation happens entirely in your browser.
