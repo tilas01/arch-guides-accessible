@@ -1,0 +1,34 @@
+[package]
+name = "arch-security-suite"
+version = "1.0.0"
+edition = "2021"
+description = "All five tilas01 security tools in a single binary, dispatched by subcommand."
+authors = ["tilas01"]
+license = "CC-BY-NC-SA-4.0"
+repository = "https://github.com/tilas01/arch-guides-dynamic"
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+
+# The five tools are linked in directly, so this really is one binary that
+# contains all of them rather than a launcher that shells out.
+libre-otp      = { path = "../libre-otp" }
+anti-ducky     = { path = "../anti-ducky" }
+anti-evil-maid = { path = "../anti-evil-maid" }
+kernel-watcher = { path = "../kernel-watcher" }
+scarecrow      = { path = "../scarecrow" }
+
+# ─── Reproducible, optimised release builds ───────────────────────────────────
+# Bit-for-bit reproducibility needs the build to contain nothing that varies
+# between machines: no absolute paths, no timestamps, no host-specific codegen.
+# The remaining requirements live in .cargo/config.toml (--remap-path-prefix)
+# and in CI (SOURCE_DATE_EPOCH, --locked, a pinned toolchain).
+[profile.release]
+opt-level = 3
+lto = "fat"           # whole-program optimisation across all five crates
+codegen-units = 1     # required for determinism: parallel codegen is not stable
+panic = "abort"       # smaller, and a security tool should not unwind past a fault
+strip = "symbols"     # no local paths or symbol noise in the shipped binary
+debug = false
+incremental = false   # incremental artefacts are not reproducible
+overflow-checks = true # keep arithmetic checks in release; correctness over speed

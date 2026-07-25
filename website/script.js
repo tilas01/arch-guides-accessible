@@ -1530,7 +1530,14 @@ run_with_progress() {
         const SUITE_TOOLS = ['libre-otp', 'anti-ducky', 'anti-evil-maid',
                              'kernel-watcher', 'scarecrow', 'kloak',
                              'webhooks', 'panic-password'];
-        const selectedSuite = SUITE_TOOLS.filter(t => post_apps.includes(t));
+        // The all-in-one binary stands in for all five individual tools, so
+        // configuration below treats it as if each one were selected.
+        const wantsAllInOne = post_apps.includes('arch-security-suite');
+        const effectiveSuite = wantsAllInOne
+            ? Array.from(new Set([...post_apps, 'libre-otp', 'anti-ducky',
+                                  'anti-evil-maid', 'kernel-watcher', 'scarecrow']))
+            : post_apps;
+        const selectedSuite = SUITE_TOOLS.filter(t => effectiveSuite.includes(t));
 
         if (selectedSuite.length > 0) {
             if (!cmdOnly) {
@@ -1554,12 +1561,25 @@ run_with_progress() {
             }
             o += `mkdir -p /etc/arch-security\n`;
 
-            if (post_apps.includes('webhooks')) {
+            // Shared alert delivery. Installed whenever any suite tool is
+            // selected, because a warning that only reaches a desktop
+            // notification daemon is a warning you cannot rely on: notify-send
+            // does nothing on a bare TTY, during early boot, or over SSH.
+            o += `\n# ── Alert delivery (works on Wayland, Xorg and bare TTY) ──\n`;
+            o += `curl --proto '=https' --tlsv1.2 -fsSLO \\\n`;
+            o += `  https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/security-alert.sh\n`;
+            o += `install -Dm755 security-alert.sh /usr/local/bin/security-alert\n`;
+            o += `rm -f security-alert.sh\n`;
+            o += `# Every tool below routes its warnings through this, so they reach\n`;
+            o += `# desktop notifications, a blocking dialog, the console, every TTY,\n`;
+            o += `# journald and an on-disk log — not just whichever one happens to work.\n`;
+
+            if (effectiveSuite.includes('webhooks')) {
                 o += `\n# Configuring alert webhooks\ncat << 'WH' > /etc/arch-security/webhook.conf\nPROVIDER=${webhook_provider}\nURL=${webhook_url}\nWH\n`;
                 o += `chmod 600 /etc/arch-security/webhook.conf\n`;
             }
 
-            if (post_apps.includes('libre-otp')) {
+            if (effectiveSuite.includes('libre-otp')) {
                 if (libreOtpMode === 'tamper-check') {
                     // Silent mode: one secret, never shown, compared internally at
                     // boot. Detects a modified boot chain; asks the user for nothing.
@@ -1639,7 +1659,7 @@ run_with_progress() {
                         o += `# Boot-time prompt lives in the initramfs, not PAM.\n`;
                         o += `libre-otp --install-initramfs-hook\nmkinitcpio -P\n`;
                     }
-                    if (post_apps.includes('openssh')) {
+                    if (effectiveSuite.includes('openssh')) {
                         o += `echo '${pamLine}' >> /etc/pam.d/sshd\n`;
                     }
                     o += `\n# Recovery codes are printed once. Store them OFF this machine.\n`;
@@ -1648,11 +1668,11 @@ run_with_progress() {
                 }
             }
 
-            if (post_apps.includes('panic-password')) {
+            if (effectiveSuite.includes('panic-password')) {
                 o += `\n# Configuring Panic Password\nlibre-otp --setup-panic\n`;
             }
 
-            if (post_apps.includes('anti-evil-maid')) {
+            if (effectiveSuite.includes('anti-evil-maid')) {
                 if (cmdOnly) {
                     o += `\n# Configuring Anti-Evil Maid (Interactive)\n`;
                     o += `echo -e "\\n\\e[38;2;247;118;142m>> Anti-Evil Maid Configuration\\e[0m"\n`;
@@ -1705,8 +1725,39 @@ run_with_progress() {
                     o += `unset AEM_DURESS_PASS\n`;
                 }
 
-                // Boot-integrity daemon
-                o += `cat << 'AEM_DAEMON' > /etc/systemd/system/aem.service\n[Unit]\nDescription=Anti-Evil Maid boot integrity daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/anti-evil-maid --daemon\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nAEM_DAEMON\n`;
+                // Boot-integrity daemon, wrapped so a failed check is reported on
+                // every available channel rather than only to the journal.
+                o += `\n# Boot integrity check with alerting on every channel.\n`;
+                o += `cat > /usr/local/bin/aem-boot-check << 'AEMCHECK'\n`;
+                o += `#!/bin/bash\n`;
+                o += `# Runs the Anti-Evil Maid check and escalates a failure loudly.\n`;
+                o += `set -u\n`;
+                o += `REPORT=$(mktemp)\n`;
+                o += `if /usr/local/bin/anti-evil-maid --daemon > "$REPORT" 2>&1; then\n`;
+                o += `  rm -f "$REPORT"; exit 0\n`;
+                o += `fi\n`;
+                o += `{\n`;
+                o += `  echo "What was checked:"\n`;
+                o += `  echo "  - EFI variables hash"\n`;
+                o += `  echo "  - /boot contents hash"\n`;
+                o += `  echo "  - Hardware ID (board UUID + MAC addresses)"\n`;
+                o += `  echo "  - TPM PCR values"\n`;
+                o += `  echo ""\n`;
+                o += `  cat "$REPORT"\n`;
+                o += `  echo ""\n`;
+                o += `  echo "Legitimate causes: a kernel update, a firmware update, changed"\n`;
+                o += `  echo "boot settings, or added/removed hardware. If you just did one of"\n`;
+                o += `  echo "those, re-baseline with: anti-evil-maid --setup"\n`;
+                o += `  echo ""\n`;
+                o += `  echo "If you did NOT: stop using this machine. Back up your data from a"\n`;
+                o += `  echo "live medium and reinstall. Do not enter passwords in the meantime."\n`;
+                o += `} > "$REPORT.full"\n`;
+                o += `/usr/local/bin/security-alert critical "Boot integrity check FAILED" \\\n`;
+                o += `  "The boot chain does not match the recorded baseline." "$REPORT.full"\n`;
+                o += `rm -f "$REPORT" "$REPORT.full"\n`;
+                o += `AEMCHECK\n`;
+                o += `chmod 700 /usr/local/bin/aem-boot-check\n\n`;
+                o += `cat << 'AEM_DAEMON' > /etc/systemd/system/aem.service\n[Unit]\nDescription=Anti-Evil Maid boot integrity check\nAfter=network.target\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/aem-boot-check\nRemainAfterExit=yes\n\n[Install]\nWantedBy=multi-user.target\nAEM_DAEMON\n`;
                 o += `systemctl enable aem.service\n`;
 
                 // Periodic filesystem hash checks
@@ -1715,12 +1766,48 @@ run_with_progress() {
                 o += `(crontab -l 2>/dev/null; echo "0 * * * * /usr/local/bin/aem-fs-hash-check.sh") | crontab -\n`;
             }
 
-            if (post_apps.includes('anti-ducky')) {
+            if (effectiveSuite.includes('anti-ducky')) {
                 o += `\n# Configuring Input Guard (Anti-Ducky) — trust currently attached devices\nanti-ducky --approve-current\n`;
                 o += `systemctl enable anti-ducky.service\n`;
+                // Report the full device identity, so the user can judge it rather
+                // than just being told "something happened".
+                o += `\n# Alert on an unrecognised USB input device, with its full identity.\n`;
+                o += `cat > /etc/udev/rules.d/98-anti-ducky-alert.rules << 'DUCKYALERT'\n`;
+                o += `ACTION=="add", SUBSYSTEM=="input", ENV{ID_INPUT_KEYBOARD}=="1", RUN+="/usr/local/bin/anti-ducky-notify"\n`;
+                o += `DUCKYALERT\n`;
+                o += `cat > /usr/local/bin/anti-ducky-notify << 'DUCKYNOTIFY'\n`;
+                o += `#!/bin/bash\n`;
+                o += `# Called by udev when a keyboard-capable device appears.\n`;
+                o += `set -u\n`;
+                o += `ALLOWLIST=/etc/arch-security/usb-allowlist\n`;
+                o += `ID="\${ID_VENDOR_ID:-?}:\${ID_MODEL_ID:-?}"\n`;
+                o += `[ -f "$ALLOWLIST" ] && grep -qx "$ID" "$ALLOWLIST" && exit 0\n`;
+                o += `DETAIL=$(mktemp)\n`;
+                o += `{\n`;
+                o += `  echo "Device details:"\n`;
+                o += `  echo "  Vendor:product : $ID"\n`;
+                o += `  echo "  Vendor name    : \${ID_VENDOR:-unknown}"\n`;
+                o += `  echo "  Model name     : \${ID_MODEL:-unknown}"\n`;
+                o += `  echo "  Serial         : \${ID_SERIAL_SHORT:-none}"\n`;
+                o += `  echo "  Device path    : \${DEVPATH:-unknown}"\n`;
+                o += `  echo "  Claims to be   : keyboard / HID"\n`;
+                o += `  echo ""\n`;
+                o += `  echo "A BadUSB device can present ANY vendor, model and serial it likes."\n`;
+                o += `  echo "These details are what the device claims, not what it is. A device"\n`;
+                o += `  echo "that says it is your keyboard may be a keystroke injector."\n`;
+                o += `  echo ""\n`;
+                o += `  echo "If you did not just plug this in, unplug it before touching the keyboard."\n`;
+                o += `  echo "To trust it: echo '$ID' >> $ALLOWLIST && udevadm control --reload-rules"\n`;
+                o += `} > "$DETAIL"\n`;
+                o += `/usr/local/bin/security-alert critical "Unrecognised keyboard device" \\\n`;
+                o += `  "An input device not on the allowlist was connected: $ID" "$DETAIL"\n`;
+                o += `rm -f "$DETAIL"\n`;
+                o += `DUCKYNOTIFY\n`;
+                o += `chmod 700 /usr/local/bin/anti-ducky-notify\n`;
+                o += `udevadm control --reload-rules\n`;
             }
 
-            if (post_apps.includes('openssh')) {
+            if (effectiveSuite.includes('openssh')) {
                 o += `\n# Hardening SSH Server\n`;
                 o += `sed -i 's/^#*PermitRootLogin.*/PermitRootLogin ${root_ssh === 'yes' ? 'prohibit-password' : 'no'}/' /etc/ssh/sshd_config\n`;
                 o += `sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config\n`;
@@ -1728,17 +1815,17 @@ run_with_progress() {
                 o += `ssh-keygen -A\nsystemctl enable sshd\n`;
             }
 
-            if (post_apps.includes('kloak')) {
+            if (effectiveSuite.includes('kloak')) {
                 o += `\n# Installing Kloak (keystroke timing anonymisation)\nsystemctl enable kloak\n`;
             }
 
-            if (post_apps.includes('kernel-watcher')) {
+            if (effectiveSuite.includes('kernel-watcher')) {
                 o += `\n# Configuring Kernel Watcher (Semi-EDR)\nkernel-watcher --setup\n`;
                 o += `cat << 'KW' > /etc/systemd/system/kernel-watcher.service\n[Unit]\nDescription=Kernel Watcher EDR daemon\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/kernel-watcher\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nKW\n`;
                 o += `systemctl enable kernel-watcher.service\n`;
             }
 
-            if (post_apps.includes('scarecrow')) {
+            if (effectiveSuite.includes('scarecrow')) {
                 o += `\n# Configuring Scarecrow (canary tokens / sandbox spoofing)\n`;
                 o += `cat << 'SC' > /etc/systemd/system/scarecrow.service\n[Unit]\nDescription=Scarecrow canary token monitor\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/scarecrow\nRestart=always\n\n[Install]\nWantedBy=multi-user.target\nSC\n`;
                 o += `systemctl enable scarecrow.service\n`;
@@ -2404,6 +2491,67 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         libreOtpCb.addEventListener('change', syncOtpOptions);
         syncOtpOptions();
+    }
+
+    // ── All-in-One Suite: mutually exclusive with the individual tools ──
+    // The suite binary links all five in, so having both selected would install
+    // the same code twice. Ticking the suite disables the individual boxes and
+    // explains why; unticking restores individual choice.
+    const suiteBox = document.getElementById('suite_all_in_one');
+    if (suiteBox) {
+        const syncSuiteLock = () => {
+            const locked = suiteBox.checked;
+            const note = document.getElementById('suite-lock-note');
+            const explain = 'Included in the All-in-One Suite, which is currently selected. ' +
+                'The suite binary already contains this tool — untick the suite above to ' +
+                'select tools individually.';
+
+            TILAS_TOOL_VALUES.forEach(v => {
+                const cb = document.querySelector(`input[name="post_apps"][value="${v}"]`);
+                if (!cb) return;
+                const card = cb.closest('label');
+
+                if (locked) {
+                    // Untick before disabling: the generator reads :checked and
+                    // would otherwise still see a disabled box as selected and
+                    // install the tool twice.
+                    if (cb.checked) {
+                        cb.checked = false;
+                        cb.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    cb.disabled = true;
+                    if (card) {
+                        card.classList.add('app-disabled', 'nav-tooltip');
+                        card.setAttribute('data-title', '📦 Provided by the Suite');
+                        card.setAttribute('data-desc', explain);
+                    }
+                } else {
+                    cb.disabled = false;
+                    if (card) {
+                        card.classList.remove('app-disabled');
+                        card.removeAttribute('data-title');
+                        card.removeAttribute('data-desc');
+                    }
+                }
+            });
+
+            if (note) note.style.display = locked ? 'block' : 'none';
+
+            // The group select-all would fight the lock, so disable it too.
+            const enableAllBtn = document.querySelector('.my-tools-enable-btn');
+            if (enableAllBtn) {
+                enableAllBtn.disabled = locked;
+                enableAllBtn.style.opacity = locked ? '0.45' : '';
+                enableAllBtn.style.cursor = locked ? 'not-allowed' : 'pointer';
+                enableAllBtn.title = locked
+                    ? 'The All-in-One Suite already includes every tool.'
+                    : '';
+            }
+
+            if (window.refreshTooltips) window.refreshTooltips();
+        };
+        suiteBox.addEventListener('change', syncSuiteLock);
+        syncSuiteLock();
     }
 
     // Silent tamper check vs interactive 2FA: swap the explanation to match.
@@ -3923,68 +4071,16 @@ window.closeConfigModal = function(modalId) {
 };
 
 
-// Hard-Locking Logic
-let myToolsLocked = false;
-function lockAllMyTools(btn) {
-    myToolsLocked = !myToolsLocked;
-    const inputs = document.querySelectorAll('input[name="post_apps"][value="scarecrow"], input[name="post_apps"][value="libre-otp"], input[name="post_apps"][value="anti-evil-maid"], input[name="post_apps"][value="kernel-watcher"], input[name="post_apps"][value="anti-ducky"]');
-    
-    inputs.forEach(input => {
-        input.checked = myToolsLocked;
-        input.disabled = myToolsLocked; // Hard toggle lock
-    });
-    
-    if (myToolsLocked) {
-        btn.style.background = 'var(--accent-red)';
-        btn.innerHTML = '🔒 Locked (Enabled)';
-    } else {
-        btn.style.background = 'var(--accent-green)';
-        btn.innerHTML = '✅ Enable All';
-    }
-    updateOutput();
-}
-
-let otherSecLocked = false;
-function lockAllOtherSec(btn) {
-    otherSecLocked = !otherSecLocked;
-    const inputs = document.querySelectorAll('input[name="post_apps"][value="ufw"], input[name="post_apps"][value="fail2ban"], input[name="post_apps"][value="apparmor"], input[name="post_apps"][value="firejail"], input[name="post_apps"][value="clamav"], input[name="post_apps"][value="lynis"], input[name="post_apps"][value="usbguard"], input[name="post_apps"][value="aide"], input[name="post_apps"][value="auditd"]');
-    
-    inputs.forEach(input => {
-        input.checked = otherSecLocked;
-        input.disabled = otherSecLocked; // Hard toggle lock
-    });
-    
-    if (otherSecLocked) {
-        btn.style.background = 'var(--accent-red)';
-        btn.innerHTML = '🔒 Locked (Enabled)';
-    } else {
-        btn.style.background = 'var(--accent-green)';
-        btn.innerHTML = '✅ Enable All';
-    }
-    updateOutput();
-}
-
-// Modify updateOutput to include disabled inputs if they are checked
-// Since native form serialization skips disabled inputs, we must ensure our script generator logic picks them up.
-// Actually, our JS generator uses `document.querySelectorAll('input[name="post_apps"]:checked')` which DOES select disabled inputs!
-
-
-// Advanced Setup Toggle Logic
-function toggleAdvancedSetup() {
-    const isAdvanced = document.getElementById('advanced-setup-toggle').checked;
-    const configBtns = document.querySelectorAll('.gear-config-btn');
-    
-    configBtns.forEach(btn => {
-        btn.style.display = isAdvanced ? 'inline-flex' : 'none';
-    });
-    
-    // Clear custom app configs if disabled so they fall back to default
-    if (!isAdvanced) {
-        appConfigs = {};
-    }
-    
-    updateOutput();
-}
+// NOTE: a "hard-locking" block used to sit here, carried over from an older
+// branch. It called updateOutput() and appConfigs, neither of which exists, read
+// an #advanced-setup-toggle that is not in the markup, and matched the
+// third-party tools with name="post_apps" when they actually use
+// name="other_sec_tools" - so those selectors never matched anything.
+//
+// The behaviour it was reaching for is now provided by the All-in-One Suite
+// checkbox (mutual exclusion with an on-card explanation) and by
+// APP_CONFIG_DEFAULTS (recommended settings when a dialog is never opened).
+// Both are covered by tests.
 
 // Popup Blocker Detection for Wiki
 function openWiki(e) {
