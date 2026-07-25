@@ -171,6 +171,46 @@
                 ⚠️ <strong>WARNING:</strong> Post-Quantum overlays (Kyber) are highly experimental in early Linux kernels. May cause boot failure.
             </div>
         </div>
+
+        <!-- Layer 4: Duress response -->
+        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-color);">
+            <strong style="color:var(--accent-red);">Layer 4: LUKS Duress Password</strong>
+            <p style="font-size:0.8rem; color:var(--fg-color); margin:0.4rem 0 0.6rem;">
+                Registers a <em>second</em> passphrase on the LUKS header. Entering it at
+                the boot prompt triggers the response below instead of unlocking normally.
+                Your real passphrase is unaffected.
+            </p>
+            <label for="luks_duress_action">Duress action:</label>
+            <select oncontextmenu="window.open('wiki.html#luks-duress', '_blank'); return false;" id="luks_duress_action" style="width:100%;">
+                <option value="none" selected>None (no duress password)</option>
+                <option value="shutdown">Shut down immediately (safest)</option>
+                <option value="wipe-keys">Erase LUKS keyslots, then shut down</option>
+                <option value="wipe-keys-decoy">Erase LUKS keyslots, then boot a decoy desktop</option>
+                <option value="decoy-only">Boot a decoy desktop only (data left intact)</option>
+            </select>
+
+            <div id="luks-duress-detail" style="display:none; margin-top:0.6rem;">
+                <label for="luks_duress_decoy">Decoy environment:</label>
+                <select oncontextmenu="window.open('wiki.html#luks-duress', '_blank'); return false;" id="luks_duress_decoy" style="width:100%;">
+                    <option value="tty" selected>Minimal TTY (looks like a fresh install)</option>
+                    <option value="xfce">XFCE desktop with sample files</option>
+                    <option value="gnome">GNOME desktop with sample files</option>
+                </select>
+                <p style="font-size:0.75rem; color:var(--fg-dim); margin-top:0.4rem;">
+                    The decoy lives in a separate small LUKS volume unlocked by the duress
+                    passphrase. It has no reference to the real volume, so an observer
+                    cannot tell a decoy boot from a normal one.
+                </p>
+            </div>
+
+            <div id="luks-duress-warning" class="alert warning" style="display:none; margin-top:0.6rem; font-size:0.78rem;">
+                🔴 <strong>THIS PERMANENTLY DESTROYS DATA.</strong>
+                Erasing the LUKS keyslots makes every byte on the disk unrecoverable —
+                there is no undo, and no recovery even with the correct passphrase.
+                Keep verified offline backups, and test in a VM first.
+                Typing the duress passphrase by mistake destroys the installation.
+            </div>
+        </div>
     </div>
 </div>
 
@@ -720,6 +760,32 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre users: Firefox firmware blobs, Flatpak proprietary apps, Signal Electron build, and Chromium may conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                     </div>
 
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#usb-kill', '_blank'); return false;" data-title="USB Kill Switch" data-desc="Monitors connected USB devices against an allowlist and reacts if an unauthorised device is attached or a whitelisted one is removed. Modelled on the usbkill project.">
+                        <label for="usb_kill">USB Kill Switch:</label>
+                        <select oncontextmenu="window.open('wiki.html#usb-kill', '_blank'); return false;" id="usb_kill">
+                            <option value="none" selected>None</option>
+                            <option value="lock">Lock the session on an unknown USB device</option>
+                            <option value="shutdown">Shut down on an unknown USB device</option>
+                            <option value="shutdown-wipe-ram">Shut down and wipe RAM/swap (anti-forensic)</option>
+                        </select>
+                        <div id="usb-kill-detail" style="display:none; margin-top:0.6rem;">
+                            <label for="usb_kill_trigger">Also trigger when:</label>
+                            <select oncontextmenu="window.open('wiki.html#usb-kill', '_blank'); return false;" id="usb_kill_trigger">
+                                <option value="new" selected>A new unlisted device is connected</option>
+                                <option value="removed">An allowlisted device is removed</option>
+                                <option value="both">Either — connected or removed</option>
+                            </select>
+                            <div class="alert warning" style="margin-top:0.6rem; font-size:0.78rem;">
+                                ⚠️ <strong>This powers the machine off without warning.</strong>
+                                Unsaved work is lost, and a poorly chosen allowlist can shut you
+                                down during normal use — plugging in a keyboard, mouse or dock is
+                                enough. The allowlist is generated from whatever is attached at
+                                install time. Test in a VM before enabling on real hardware.
+                                Start with "Lock the session" rather than shutdown.
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Automatic System Updates" data-desc="Daily cron job to auto-update pacman packages with logging.">
                         <label>Auto Updates:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="auto_updates">
@@ -902,6 +968,14 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                             <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#other-sec', '_blank'); return false;">
                                 <input type="checkbox" name="other_sec_tools" value="lynis">
                                 <span class="app-icon">🔍</span> Lynis <span class="app-desc">Security Audit</span>
+                            </label>
+                            <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#other-sec', '_blank'); return false;">
+                                <input type="checkbox" name="other_sec_tools" value="usbguard">
+                                <span class="app-icon">🔌</span> <a href="https://usbguard.github.io/" target="_blank" rel="noopener">USBGuard</a> <span class="app-desc">USB allowlist</span>
+                            </label>
+                            <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#other-sec', '_blank'); return false;">
+                                <input type="checkbox" name="other_sec_tools" value="auditd">
+                                <span class="app-icon">📋</span> auditd <span class="app-desc">Audit daemon</span>
                             </label>
                         </div>
                     </div>
