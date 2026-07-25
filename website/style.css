@@ -88,14 +88,15 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 
 /* ─── Header controls: emoji-only, absolute top-right ─────────────────────── */
 /* Control cluster.
-   Top-LEFT, and inset rather than flush to the edge: a control in the very
+   Top right, and inset rather than flush to the edge: a control in the very
    corner is the one a phone's rounded display clips and a browser's back
-   gesture swallows. Order is chronological — verify the ISO, then the
-   repository, then this session's history, then the tooltip switch. */
+   gesture swallows. Order is the tooltip switch, the source repository, then
+   this session's history — the switch first because it is the control that
+   explains all the others. */
 #header-controls {
     position: absolute;
     top: 12px;
-    left: 16px;
+    right: 16px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -153,28 +154,44 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 #header-controls .ctrl-current { opacity: 0.55; cursor: default; }
 #header-controls .ctrl-current:hover { transform: none; }
 
-/* The verify-ISO control: the Arch mark with a tick badge. The tick is a
-   status readout — it lights up only after a hash has matched two independent
-   mirrors in this session — so it is deliberately not a control you can tick. */
-#iso-verify-btn { position: relative; }
-.ctrl-arch-logo { display: block; image-rendering: pixelated; }
-.ctrl-tick {
-    position: absolute;
-    right: 0;
-    bottom: 1px;
-    font-size: 0.72rem;
+/* Drawn icons in the control cluster. Pixel art, so let it stay crisp rather
+   than be smoothed into mush by the browser's default scaler. */
+.ctrl-pixel { display: block; image-rendering: pixelated; }
+
+/* The verified badge on the ISO page: the Arch mark with a tick beside it.
+   The tick is a status readout — lit only after a hash has matched two
+   independent mirrors in this session — so it is deliberately not a control
+   you can tick yourself. */
+.iso-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--bg-dark);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.55rem 0.9rem;
+    margin: 0 auto 1.2rem;
+    transition: border-color 0.25s, background-color 0.25s;
+}
+.iso-badge img { image-rendering: pixelated; flex: 0 0 auto; }
+.iso-badge-tick {
+    font-size: 1.15rem;
     line-height: 1;
     font-weight: bold;
     color: var(--fg-dim);
-    background: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 3px;
-    padding: 0 1px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    padding: 0.1rem 0.3rem;
+    transition: color 0.25s, border-color 0.25s, background-color 0.25s;
 }
-#iso-verify-btn.ctrl-verified .ctrl-tick {
+.iso-badge-label { font-size: 0.82rem; color: var(--fg-dim); }
+.iso-badge.is-verified { border-color: var(--accent-green); background: var(--tint-green); }
+.iso-badge.is-verified .iso-badge-tick {
     color: var(--accent-green);
     border-color: var(--accent-green);
+    background: var(--bg-dark);
 }
+.iso-badge.is-verified .iso-badge-label { color: var(--accent-green); }
 
 /* An unexported history is one tab-close away from being gone. */
 #history-btn.ctrl-unsaved::after {
@@ -1014,7 +1031,7 @@ noscript .js-only { display: none !important; }
     .layout-container { flex-direction: column; }
     .output-box { padding: 0.8rem; font-size: 0.8rem; border-radius: 12px; }
     .output-title { font-size: 0.95rem; }
-    #header-controls { top: 8px; left: 10px; gap: 6px; }
+    #header-controls { top: 8px; right: 10px; gap: 6px; }
     #header-controls button { font-size: 1.3rem; }
     /* Single column so app names are never clipped on a phone. */
     .app-grid-container { grid-template-columns: 1fr; padding: 0.8rem; }

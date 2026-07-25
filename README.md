@@ -253,4 +253,10 @@ Contributions and issue reports are welcome.
 * **[Arch Wiki](https://wiki.archlinux.org/)** — the authoritative reference every procedure here follows.
 * **[max-baz/arch-secure-boot](https://github.com/max-baz/arch-secure-boot)** — the Secure Boot / UKI approach, whose guide covers running LUKS with a Unified Kernel Image instead of GRUB, as used here. [`scripts/arch-secure-boot.sh`](scripts/arch-secure-boot.sh) is adapted from it.
 * **[Snapper](https://github.com/openSUSE/snapper)** and **[usbkill](https://github.com/hephaest0s/usbkill)** — integrated into the generator.
-* **AI assistance** — used during development. All output is reviewed, tested and curated by tilas01; nothing ships unreviewed.
+* **[Claude](https://claude.com/claude-code)** (Anthropic) — the AI assistant that
+  wrote and rebuilt much of this site, the generator, the manual walkthrough, the
+  wiki and the Rust security tools, working alongside tilas01. Named rather than
+  credited vaguely: you should know what wrote the code that partitions your
+  disk. Every output is reviewed, tested and curated by tilas01, and nothing
+  ships unreviewed — but "AI-assisted" is doing real work in that sentence, and
+  the disclaimer at the top of every page means it.
