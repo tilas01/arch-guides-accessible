@@ -1,7 +1,21 @@
+/* ============================================================================
+   Arch Guides Dynamic — Tokyo Night
+   ----------------------------------------------------------------------------
+   Consolidated. The previous revision had .app-category-header defined four
+   times with conflicting values, and five selectors left dangling by a
+   partially-applied edit (a selector with no `{`, which silently swallows the
+   next rule). One of those casualties was the .my-tools-box box itself, which
+   is why the tilas01 suite had no border or background while the neighbouring
+   "Other Security Tools" box did.
+   ========================================================================= */
+
 :root {
     --bg-color: #1a1b26;
     --bg-dark: #13141c;
+    --bg-darker: #16161e;
+    --bg-lighter: #24283b;
     --fg-color: #a9b1d6;
+    --fg-dim: #7f88ad;
     --heading-color: #c0caf5;
     --accent-blue: #7aa2f7;
     --accent-purple: #bb9af7;
@@ -9,9 +23,18 @@
     --accent-green: #9ece6a;
     --accent-red: #f7768e;
     --accent-orange: #ff9e64;
-    --bg-darker: #16161e;
-    --bg-lighter: #24283b;
-    --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --accent-yellow: #e0af68;
+
+    /* These two were referenced ~30 times across every page but never
+       defined, so those borders and that text rendered as `unset`. */
+    --border-color: #2f3450;
+    --text-color: #c0caf5;
+
+    --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace,
+                 "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+    /* Minimum comfortable hit target for touch. */
+    --tap-target: 44px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,10 +48,20 @@ body {
     max-width: 1800px;
     margin: 0 auto;
     font-size: clamp(0.82rem, 1.4vw, 1rem);
+    -webkit-text-size-adjust: 100%;   /* stop iOS inflating text in landscape */
+    text-size-adjust: 100%;
 }
 
 a { color: var(--accent-blue); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--accent-cyan); text-decoration: underline; }
+
+/* Visible keyboard focus everywhere, since several controls are custom-drawn. */
+:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
+
+h1, h2, h3 { color: var(--heading-color); margin-bottom: 0.8rem; }
 
 header { text-align: center; margin-bottom: 2rem; position: relative; }
 
@@ -44,7 +77,7 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 .banner:hover { transform: scale(1.015); filter: brightness(1.07); }
 .banner-link { display: block; text-align: center; text-decoration: none; }
 
-/* ─── Header Controls: emoji-only, absolute top-right ─── */
+/* ─── Header controls: emoji-only, absolute top-right ─────────────────────── */
 #header-controls {
     position: absolute;
     top: 12px;
@@ -66,16 +99,16 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
     align-items: center;
     justify-content: center;
     color: inherit;
-    filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
 }
-#header-controls button:hover  { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--accent-cyan)); }
-#history-btn          { color: var(--accent-purple); }
-#history-btn:hover    { color: var(--accent-cyan); }
-/* Info button: white normally, red when tooltips disabled */
-#toggle-tooltips-btn           { color: #ffffff; }
-#toggle-tooltips-btn.disabled  { color: var(--accent-red); }
+#header-controls button:hover { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--accent-cyan)); }
+#history-btn { color: var(--accent-purple); }
+#history-btn:hover { color: var(--accent-cyan); }
+/* Info button: white normally, red when tooltips are disabled. */
+#toggle-tooltips-btn { color: #ffffff; }
+#toggle-tooltips-btn.disabled { color: var(--accent-red); }
 
-/* ─── Nav ─── */
+/* ─── Nav ─────────────────────────────────────────────────────────────────── */
 .main-nav {
     display: flex;
     justify-content: center;
@@ -84,9 +117,13 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
     flex-wrap: wrap;
     margin-top: 0.5rem;
 }
-.nav-sep { color: var(--bg-lighter); font-size: 1.1rem; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-
-h1, h2, h3 { color: var(--heading-color); margin-bottom: 0.8rem; }
+.nav-sep {
+    color: var(--bg-lighter);
+    font-size: 1.1rem;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.nav-link { font-size: 1.1rem; font-weight: bold; margin: 0 10px; }
 
 section {
     background-color: var(--bg-darker);
@@ -96,7 +133,7 @@ section {
     border: 1px solid var(--bg-lighter);
 }
 
-/* ─── Form ─── */
+/* ─── Form ────────────────────────────────────────────────────────────────── */
 .form-group { margin-bottom: 1rem; }
 
 label {
@@ -105,6 +142,17 @@ label {
     color: var(--accent-cyan);
     font-size: 0.92rem;
 }
+
+/* A label with an action button on the same row (e.g. "Enable All"). */
+.group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+.group-header label { margin-bottom: 0; }
 
 input, select {
     width: 100%;
@@ -117,11 +165,37 @@ input, select {
     font-size: 0.9rem;
 }
 
+/* Selects: normalise the native arrow away so Firefox, Chromium and WebKit
+   all render the same control. Without appearance:none each engine draws its
+   own dropdown chrome at a different height. */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--accent-purple) 50%),
+        linear-gradient(135deg, var(--accent-purple) 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(50% + 2px),
+        calc(100% - 13px) calc(50% + 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 2.2rem;
+    min-height: var(--tap-target);
+}
+/* Firefox keeps a focus inner-ring on selects; remove it. */
+select:-moz-focusring { color: transparent; text-shadow: 0 0 0 var(--fg-color); }
+/* Ensure the dropdown list itself is readable on all platforms. */
+select option { background-color: var(--bg-darker); color: var(--fg-color); }
+
 input:focus, select:focus {
     outline: none;
     border-color: var(--accent-blue);
     box-shadow: 0 0 5px var(--accent-blue);
 }
+
+/* Greyed placeholder for "No Selection Provided". */
+select:invalid, select.placeholder { color: var(--fg-dim); }
 
 .btn {
     background-color: var(--accent-purple);
@@ -136,10 +210,17 @@ input:focus, select:focus {
     font-family: var(--font-mono);
     transition: transform 0.1s, background-color 0.2s;
 }
-.btn:hover {
-    background-color: var(--accent-blue);
-    transform: translateY(-2px);
+.btn:hover { background-color: var(--accent-blue); transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+.btn-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
 }
+.btn-container .btn { flex: 1 1 200px; max-width: 300px; }
 
 .alert { padding: 0.8rem; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.9rem; }
 .alert.warning {
@@ -152,8 +233,347 @@ input:focus, select:focus {
     border: 1px solid var(--accent-blue);
     color: var(--accent-blue);
 }
+.alert.error {
+    background-color: rgba(247, 118, 142, 0.12);
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+}
 
-/* ─── Output Boxes ─── */
+/* ============================================================================
+   Cross-browser checkboxes and switches
+   ----------------------------------------------------------------------------
+   Both are drawn from scratch with appearance:none. `accent-color` alone was
+   not enough: Firefox, Chromium, WebKit/Safari and Android WebView each size
+   and round native checkboxes differently, so the app grid visibly disagreed
+   between browsers.
+   ========================================================================= */
+
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    min-width: 1.05rem;          /* never let flex squash it */
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    border: 1.5px solid var(--accent-purple);
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    cursor: pointer;
+    position: relative;
+    display: inline-grid;
+    place-content: center;
+    transition: background-color 0.15s, border-color 0.15s;
+    /* Keep the drawn box crisp rather than letting the UA scale it. */
+    vertical-align: middle;
+}
+
+/* The tick: a rotated rectangle, so no font or SVG dependency. */
+input[type="checkbox"]::before {
+    content: "";
+    width: 0.3rem;
+    height: 0.55rem;
+    border: solid var(--bg-color);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px) scale(0);
+    transition: transform 0.12s ease-out;
+}
+input[type="checkbox"]:checked {
+    background-color: var(--accent-purple);
+    border-color: var(--accent-purple);
+}
+input[type="checkbox"]:checked::before { transform: rotate(45deg) translate(-1px, -1px) scale(1); }
+input[type="checkbox"]:disabled { opacity: 0.5; cursor: not-allowed; }
+input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+
+/* Larger, green variant used by the libre-policy banner. */
+input[type="checkbox"].policy-toggle {
+    width: 1.25rem;
+    height: 1.25rem;
+    min-width: 1.25rem;
+    border-color: var(--accent-green);
+}
+input[type="checkbox"].policy-toggle:checked {
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+}
+
+/* ─── Animated switch ─────────────────────────────────────────────────────── */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    flex: 0 0 auto;
+    vertical-align: middle;
+}
+/* The real input stays in the layout for hit-testing and focus, just invisible. */
+.switch input {
+    -webkit-appearance: none;
+    appearance: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: none;
+    border-radius: 22px;
+    background: transparent;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+.switch input::before { content: none; }   /* suppress the checkbox tick */
+
+.slider {
+    position: absolute;
+    inset: 0;
+    background-color: var(--accent-red);   /* off */
+    transition: background-color 0.3s;
+    border-radius: 22px;
+    pointer-events: none;
+    border: 1px solid transparent;
+}
+.slider::before {
+    content: "";
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 2px;
+    background-color: #ffffff;
+    transition: transform 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.switch input:checked + .slider { background-color: var(--accent-blue); }
+.switch input:checked + .slider::before { transform: translateX(18px); }
+.switch input:focus-visible + .slider { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+/* `.round` is used in the markup; it carried no rules before. */
+.slider.round { border-radius: 22px; }
+
+/* ============================================================================
+   Application grids (post-install apps and the two security boxes)
+   ========================================================================= */
+
+.app-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.8rem;
+    background: var(--bg-dark);
+    padding: 1.2rem;
+    border: 1px solid var(--accent-purple);
+    border-radius: 8px;
+    width: 100%;
+}
+
+/* Category headers span the full grid width. Defined once. */
+.app-category-header {
+    grid-column: 1 / -1;
+    color: var(--accent-cyan);
+    font-size: 0.78rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    padding: 0.35rem 0.2rem 0.3rem;
+    border-bottom: 1px solid rgba(125, 207, 255, 0.18);
+    margin-top: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+.app-category-header:first-child { margin-top: 0; }
+
+/* One app per cell: checkbox, icon, name, badges, description. */
+.app-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    background: var(--bg-lighter);
+    transition: background 0.15s, border-color 0.15s;
+    cursor: pointer;
+    font-size: 0.88rem;
+    width: 100%;
+    text-align: left;
+    color: var(--fg-color);
+    margin: 0;
+    min-height: var(--tap-target);
+}
+.app-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+/* Selected state, so the choice reads at a glance. */
+.app-card:has(input[type="checkbox"]:checked) {
+    border-color: var(--accent-purple);
+    background: rgba(187, 154, 247, 0.12);
+}
+
+.app-card a {
+    font-weight: 600;
+    color: var(--fg-color);
+    text-decoration: none;
+}
+.app-card a:hover { color: var(--accent-cyan); text-decoration: underline; }
+
+.app-icon {
+    font-size: 1.05rem;
+    text-align: center;
+    min-width: 1.4rem;
+    flex: 0 0 auto;
+}
+
+.app-desc {
+    color: var(--fg-dim);
+    font-size: 0.76rem;
+    margin-left: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.prop-warn {
+    color: var(--accent-red);
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: help;
+    flex: 0 0 auto;
+}
+
+.info-tooltip-icon { opacity: 0.6; cursor: help; flex: 0 0 auto; }
+.info-tooltip-icon:hover { opacity: 1; }
+
+/* Gear: reveal on hover, on keyboard focus, and whenever the app is selected.
+   It previously had `display:none` both here and inline on every instance,
+   with no rule to bring it back, so app configuration was unreachable and any
+   app requiring config permanently blocked generation. */
+.gear-config-btn {
+    display: none;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 0.2s, transform 0.15s;
+    font-size: 0.95rem;
+    margin-left: 0.4rem;
+    flex: 0 0 auto;
+}
+.gear-config-btn:hover { opacity: 1; transform: scale(1.15); }
+.app-card:hover .gear-config-btn,
+.app-card:focus-within .gear-config-btn,
+.app-card:has(input[type="checkbox"]:checked) .gear-config-btn { display: inline-block; }
+
+/* An app awaiting configuration is flagged, so the blocking state is visible
+   before the user presses Generate. */
+.app-card:has(input[data-requires-config="true"][data-configured="false"]:checked) {
+    border-color: var(--accent-orange);
+    background: rgba(255, 158, 100, 0.12);
+}
+
+.btn-configure {
+    background: var(--accent-blue);
+    border: none;
+    color: var(--bg-darker);
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-left: 5px;
+    font-family: inherit;
+}
+
+/* ─── tilas01 suite box (cyan) ────────────────────────────────────────────── */
+.my-tools-box {
+    border: 1px solid var(--accent-cyan);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(125, 207, 255, 0.07) 0%, rgba(122, 162, 247, 0.04) 100%);
+    padding: 0.9rem;
+    margin-top: 1.2rem;
+}
+.my-tools-header,
+.other-sec-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.my-tools-title {
+    color: var(--accent-cyan);
+    font-weight: bold;
+    font-size: 0.92rem;
+    letter-spacing: 0.4px;
+}
+.my-tools-box .app-grid-container {
+    border-color: var(--accent-cyan);
+    background: rgba(125, 207, 255, 0.05);
+}
+.app-card.tilas-tool { border-left: 3px solid var(--accent-cyan); }
+.app-card.tilas-tool:has(input:checked) { border-color: var(--accent-cyan); background: rgba(125, 207, 255, 0.14); }
+
+/* ─── Third-party security box (orange) ───────────────────────────────────── */
+.other-sec-box {
+    border: 1px solid var(--accent-orange);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(255, 158, 100, 0.07) 0%, rgba(247, 118, 142, 0.04) 100%);
+    padding: 0.9rem;
+    margin-top: 1.2rem;
+}
+.other-sec-title {
+    color: var(--accent-orange);
+    font-weight: bold;
+    font-size: 0.92rem;
+    letter-spacing: 0.4px;
+}
+.other-sec-box .app-grid-container {
+    border-color: var(--accent-orange);
+    background: rgba(255, 158, 100, 0.05);
+}
+.app-card.other-sec-tool { border-left: 3px solid var(--accent-orange); }
+.app-card.other-sec-tool:has(input:checked) { border-color: var(--accent-orange); background: rgba(255, 158, 100, 0.14); }
+
+/* ─── Group "enable all" buttons ──────────────────────────────────────────── */
+.my-tools-enable-btn,
+.other-sec-enable-btn,
+.post-apps-enable-btn {
+    border: none;
+    border-radius: 6px;
+    color: var(--bg-darker);
+    font-weight: bold;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    font-family: inherit;
+    white-space: nowrap;
+    width: auto;
+    min-height: 32px;
+}
+.my-tools-enable-btn:hover,
+.other-sec-enable-btn:hover,
+.post-apps-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
+.my-tools-enable-btn { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); }
+.other-sec-enable-btn { background: linear-gradient(135deg, var(--accent-orange), var(--accent-red)); }
+.post-apps-enable-btn { background: var(--accent-purple); }
+
+#post_apps_container strong { margin-top: 0.3rem; }
+
+/* ─── Generic checkbox grid ───────────────────────────────────────────────── */
+.checkbox-grid {
+    display: grid;                 /* was missing, so this never gridded */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+.checkbox-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
+
+/* ============================================================================
+   Output
+   ========================================================================= */
+
 .output-box {
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -162,24 +582,17 @@ input:focus, select:focus {
     padding: 1.2rem 1.5rem;
     border-radius: 16px;
     max-width: 100%;
-    box-sizing: border-box;
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
     font-family: var(--font-mono);
     font-size: 0.88rem;
     line-height: 1.6;
-    overflow: hidden;
+    overflow-x: auto;
     margin-bottom: 0.5rem;
 }
-.output-box.editor-md {
-    border: 1px solid var(--accent-cyan);
-}
-.output-box.editor-sh {
-    border: 1px solid var(--accent-blue);
-}
-.output-box.preview-md {
-    border: 1px solid var(--accent-purple);
-    color: var(--fg-color);
-}
+.output-box.editor-md { border: 1px solid var(--accent-cyan); }
+.output-box.editor-sh, .output-box.editor-script { border: 1px solid var(--accent-blue); }
+.output-box.editor-sc { border: 1px solid var(--accent-purple); }
+.output-box.preview-md { border: 1px solid var(--accent-purple); color: var(--fg-color); }
 .output-box.oneliner {
     border: 1px solid var(--accent-green);
     background: rgba(158, 206, 106, 0.05);
@@ -195,8 +608,9 @@ input:focus, select:focus {
 }
 .output-title.md-edit { color: var(--accent-cyan); border-color: var(--accent-cyan); }
 .output-title.md-prev { color: var(--accent-purple); border-color: var(--accent-purple); }
-.output-title.sh-edit { color: var(--accent-blue); border-color: var(--accent-blue); }
+.output-title.sh-edit, .output-title.script-edit { color: var(--accent-blue); border-color: var(--accent-blue); }
 .output-title.ssh-cmd { color: var(--accent-green); border-color: var(--accent-green); }
+.output-title.sc-edit { color: var(--accent-purple); border-color: var(--accent-purple); }
 
 .output-actions {
     display: flex;
@@ -207,7 +621,7 @@ input:focus, select:focus {
     margin-bottom: 0.3rem;
 }
 
-/* ─── Markdown rendered body ─── */
+/* ─── Rendered markdown ───────────────────────────────────────────────────── */
 .markdown-body {
     background-color: var(--bg-color);
     padding: 1.5rem;
@@ -235,11 +649,7 @@ input:focus, select:focus {
     border-radius: 4px;
     font-family: var(--font-mono);
 }
-.markdown-body pre code {
-    color: #c0caf5;
-    background-color: transparent;
-    padding: 0;
-}
+.markdown-body pre code { color: var(--heading-color); background-color: transparent; padding: 0; }
 .markdown-body h1, .markdown-body h2, .markdown-body h3 { margin-top: 1.2rem; }
 .markdown-body p { margin: 0.5rem 0; }
 .markdown-body ul, .markdown-body ol { margin: 0.5rem 0 0.5rem 1.5rem; }
@@ -257,118 +667,40 @@ input:focus, select:focus {
     background: rgba(187, 154, 247, 0.05);
 }
 
-/* ─── Tokyo Night Syntax Tokens ─── */
+/* Any wide block scrolls inside itself rather than the page. */
+.markdown-body table, .markdown-body pre { max-width: 100%; }
+
+/* ─── Tokyo Night syntax tokens ───────────────────────────────────────────── */
 .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #565f89; }
 .token.punctuation { color: #89ddff; }
-.token.namespace { opacity: .7; }
-.token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted { color: #ff9e64; }
-.token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: #9ece6a; }
-.token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string { color: #89ddff; }
-.token.atrule, .token.attr-value, .token.keyword { color: #bb9af7; }
-.token.function, .token.class-name { color: #7aa2f7; }
-.token.regex, .token.important, .token.variable { color: #e0af68; }
+.token.namespace { opacity: 0.7; }
+.token.property, .token.tag, .token.boolean, .token.number,
+.token.constant, .token.symbol, .token.deleted { color: var(--accent-orange); }
+.token.selector, .token.attr-name, .token.string, .token.char,
+.token.builtin, .token.inserted { color: var(--accent-green); }
+.token.operator, .token.entity, .token.url,
+.language-css .token.string, .style .token.string { color: #89ddff; }
+.token.atrule, .token.attr-value, .token.keyword { color: var(--accent-purple); }
+.token.function, .token.class-name { color: var(--accent-blue); }
+.token.regex, .token.important, .token.variable { color: var(--accent-yellow); }
 
 ul { list-style-type: square; padding-left: 1.5rem; }
 ul li { margin-bottom: 0.3rem; }
 
 noscript .js-only { display: none !important; }
 
-.nav-link { font-size: 1.1rem; font-weight: bold; margin: 0 10px; }
-
-/* ─── Post-Install App Grid ─── */
-
-.app-category-header {
-    color: var(--accent-cyan);
-    font-size: 0.75rem;
-    font-weight: bold;
-    padding: 0.35rem 0.2rem 0.1rem;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid rgba(125, 207, 255, 0.15);
-    margin-top: 0.2rem;
-}
-.app-category-header:first-child { margin-top: 0; }
-.app-item {
-    display: flex !important;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.2rem 0.3rem !important;
-    margin: 0 !important;
-    font-size: 0.82rem !important;
-    line-height: 1.25 !important;
-    border-radius: 4px;
-    transition: background 0.15s;
-    cursor: pointer;
-    color: var(--fg-color) !important;
-}
-.app-item:hover { background: rgba(122, 162, 247, 0.08); }
-.app-item input[type="checkbox"] {
-    width: auto;
-    margin-right: 0.15rem;
-    accent-color: var(--accent-purple);
-    
-}
-.app-item a { color: var(--fg-color); font-weight: 500; }
-.app-item a:hover { color: var(--accent-cyan); text-decoration: underline; }
-.app-icon {
-    font-size: 0.9rem;
-    width: 1.2rem;
-    text-align: center;
-    
-}
-
-#post_apps_container strong {
-    margin-top: 0.3rem !important;
-}
-
-/* ─── Layout Container (no sidebar) ─── */
+/* ─── Layout ──────────────────────────────────────────────────────────────── */
 .layout-container { display: flex; gap: 2rem; align-items: flex-start; }
 .generator-form { flex: 1; min-width: 0; }
-/* info-panel removed — unified tooltip.js used instead */
 
-@media screen and (min-width: 769px) {
-    .layout-container { flex-direction: row; }
-}
-
-@media screen and (max-width: 768px) {
-    body { padding: 0.8rem; }
-    header { margin-bottom: 1.5rem; }
-    h1 { font-size: 1.4rem; }
-    section { padding: 1rem; }
-    .btn { padding: 0.7rem 1rem; font-size: 0.95rem; }
-    .markdown-body { padding: 0.8rem; font-size: 0.82rem; overflow-x: auto; }
-    .nav-link { display: block; margin: 0.4rem 0; }
-    .nav-sep { display: none; }
-    .layout-container { flex-direction: column; }
-    .output-box { padding: 0.8rem; font-size: 0.8rem; border-radius: 12px; }
-    .output-title { font-size: 0.95rem; }
-    #header-controls { top: 8px; right: 10px; gap: 8px; }
-    #header-controls button { font-size: 1.3rem; }
-}
-
-@media screen and (max-width: 480px) {
-    body { padding: 0.4rem; }
-    h1 { font-size: 1.3rem; }
-}
-
-/* ─── Animations ─── */
-.form-step { animation: fadeIn 0.4s ease-out; }
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Wiki specific ─── */
+/* ─── Wiki ────────────────────────────────────────────────────────────────── */
 .wiki-content {
-    padding: 2rem !important;
+    padding: 2rem;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    box-sizing: border-box;
-}
-@media (max-width: 768px) {
-    .wiki-content { padding: 1rem !important; }
 }
 
-/* ─── Credits ─── */
+/* ─── Credits ─────────────────────────────────────────────────────────────── */
 .credits-grid {
     display: flex;
     flex-wrap: wrap;
@@ -398,17 +730,15 @@ noscript .js-only { display: none !important; }
 .credit-card .credit-name { color: var(--heading-color); font-weight: bold; font-size: 0.95rem; }
 .credit-card .credit-role { color: var(--fg-color); font-size: 0.8rem; }
 
-/* History button styling moved to #header-controls */
-
-/* ─── Dropdown (cheatsheets) ─── */
+/* ─── Dropdown (cheatsheets) ──────────────────────────────────────────────── */
 .dropdown { position: relative; display: inline-block; }
 .dropdown-content {
     display: none;
     position: absolute;
     background-color: var(--bg-darker);
     min-width: 250px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
-    z-index: 1;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.5);
+    z-index: 10;
     border: 1px solid var(--accent-purple);
     border-radius: 5px;
 }
@@ -420,389 +750,67 @@ noscript .js-only { display: none !important; }
     font-size: 0.88rem;
 }
 .dropdown-content a:hover { background-color: var(--bg-lighter); color: var(--accent-cyan); }
-.dropdown:hover .dropdown-content { display: block; }
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content { display: block; }
 
-
-/* Animated Toggle Switch */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 36px;
-  height: 20px;
-}
-.switch input { 
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: var(--accent-red); /* Red when off */
-  transition: .4s;
-  border-radius: 20px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 14px; width: 14px;
-  left: 3px; bottom: 3px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-input:checked + .slider {
-  background-color: var(--accent-blue); /* Blue when on */
-}
-input:checked + .slider:before {
-  transform: translateX(16px);
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+.form-step { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.btn-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-    margin-top: 2rem;
-}
-.btn-container .btn {
-    flex: 1 1 200px;
-    max-width: 300px;
+/* Respect users who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
-
-/* ─── Checkbox Grid ─── */
-.checkbox-grid {
-    
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 10px;
-}
-.checkbox-item {
-    display: flex;
-    align-items: center;
-    font-size: 0.9rem;
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media screen and (min-width: 769px) {
+    .layout-container { flex-direction: row; }
 }
 
-
-/* ─── Post-Install App Grid (Single Column List) ─── */
-
-
-.app-category-header {
-    font-weight: bold;
-    color: var(--accent-blue);
-    padding: 0.8rem 0.5rem 0.3rem 0.5rem;
-    border-bottom: 2px solid var(--border-color);
-    margin-bottom: 0.2rem;
-    margin-top: 0.5rem;
-}
-.app-category-header:first-child {
-    margin-top: 0;
-}
-
-
-
-
-
-
-
-
-
-
-/* ─── My Tools (tilas01) Special Box ─── */
-
-.my-tools-box 
-.my-tools-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.4rem;
-}
-.my-tools-title {
-    color: var(--accent-cyan);
-    font-weight: bold;
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
-}
-.my-tools-enable-btn {
-    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-    border: none;
-    border-radius: 6px;
-    color: var(--bg-darker);
-    font-weight: bold;
-    font-size: 0.78rem;
-    padding: 0.25rem 0.7rem;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    font-family: inherit;
-}
-.my-tools-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
-.app-item.tilas-tool {
-    border-left: 3px solid var(--accent-cyan) !important;
-}
-.app-item.tilas-tool input:checked ~ span.app-icon { color: var(--accent-cyan); }
-
-/* ─── Other Security Tools Special Box ─── */
-
-.other-sec-box 
-.other-sec-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.4rem;
-}
-.other-sec-title {
-    color: var(--accent-orange);
-    font-weight: bold;
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
-}
-.other-sec-enable-btn {
-    background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
-    border: none;
-    border-radius: 6px;
-    color: var(--bg-darker);
-    font-weight: bold;
-    font-size: 0.78rem;
-    padding: 0.25rem 0.7rem;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    font-family: inherit;
-}
-.other-sec-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
-.app-item.other-sec-tool {
-    border-left: 3px solid var(--accent-orange) !important;
+@media screen and (max-width: 768px) {
+    body { padding: 0.8rem; }
+    header { margin-bottom: 1.5rem; }
+    h1 { font-size: 1.4rem; }
+    section { padding: 1rem; }
+    .btn { padding: 0.7rem 1rem; font-size: 0.95rem; }
+    .markdown-body { padding: 0.8rem; font-size: 0.82rem; overflow-x: auto; }
+    .wiki-content { padding: 1rem; }
+    .nav-link { display: block; margin: 0.4rem 0; }
+    .nav-sep { display: none; }
+    .layout-container { flex-direction: column; }
+    .output-box { padding: 0.8rem; font-size: 0.8rem; border-radius: 12px; }
+    .output-title { font-size: 0.95rem; }
+    #header-controls { top: 8px; right: 10px; gap: 8px; }
+    #header-controls button { font-size: 1.3rem; }
+    /* Single column so app names are never clipped on a phone. */
+    .app-grid-container { grid-template-columns: 1fr; padding: 0.8rem; }
 }
 
-/* ─── Gear config button visibility ─── */
-.app-item input[type="checkbox"]:checked ~ 
-.app-item:hover 
-
-
-/* ─── Side-by-Side Security Tools ─── */
-
-
-/* ─── App Grid Container (Post-Install Apps) ─── */
-
-
-/* ─── App Card Row (one per line, left-to-right) ─── */
-
-
-
-
-/* Checkbox */
-
-
-/* Emoji icon column */
-
-
-/* App name link */
-
-
-
-/* Proprietary warning badge */
-
-
-/* Info tooltip icon */
-
-
-/* Short description tag */
-
-
-/* Category header */
-.app-category-header {
-    color: var(--accent-cyan);
-    font-size: 0.72rem;
-    font-weight: bold;
-    padding: 0.3rem 0.2rem 0.1rem;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid rgba(125,207,255,0.12);
-    margin-top: 0.2rem;
-}
-.app-category-header:first-child { margin-top: 0; }
-
-/* ─── Gear config button ─── */
-
-
-.my-tools-box 
-.my-tools-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.4rem;
-}
-.my-tools-title {
-    color: var(--accent-cyan);
-    font-weight: bold;
-    font-size: 0.92rem;
-    letter-spacing: 0.4px;
-}
-.my-tools-enable-btn {
-    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-    border: none;
-    border-radius: 6px;
-    color: var(--bg-darker);
-    font-weight: bold;
-    font-size: 0.78rem;
-    padding: 0.28rem 0.75rem;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    font-family: inherit;
-    white-space: nowrap;
-}
-.my-tools-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
-
-
-/* ─── Other Security Tools Box ─── */
-.other-sec-box {
-    border: 1px solid var(--accent-orange);
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(255,158,100,0.07) 0%, rgba(247,118,142,0.04) 100%);
-    padding: 0.9rem;
-    margin-top: 1.2rem;
-}
-.other-sec-box 
-.other-sec-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.4rem;
-}
-.other-sec-title {
-    color: var(--accent-orange);
-    font-weight: bold;
-    font-size: 0.92rem;
-    letter-spacing: 0.4px;
-}
-.other-sec-enable-btn {
-    background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
-    border: none;
-    border-radius: 6px;
-    color: var(--bg-darker);
-    font-weight: bold;
-    font-size: 0.78rem;
-    padding: 0.28rem 0.75rem;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    font-family: inherit;
-    white-space: nowrap;
-}
-.other-sec-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
-/* ─── Application Grids (Restored to Original Multi-Column) ─── */
-.app-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 0.8rem;
-    background: var(--bg-dark);
-    padding: 1.2rem;
-    border: 1px solid var(--accent-purple);
-    border-radius: 8px;
-    width: 100%;
-    box-sizing: border-box;
+@media screen and (max-width: 480px) {
+    body { padding: 0.4rem; }
+    h1 { font-size: 1.3rem; }
+    .app-desc { display: none; }   /* the tooltip still carries the detail */
 }
 
-/* Specific border colors for security boxes for parity */
-.my-tools-box .app-grid-container {
-    border-color: var(--accent-cyan);
-    background: rgba(125,207,255,0.05);
+/* Coarse pointers (touch): the gear can't rely on :hover, so always show it. */
+@media (hover: none) {
+    .gear-config-btn { display: inline-block; }
+    .app-card { min-height: var(--tap-target); }
 }
 
-.other-sec-box .app-grid-container {
-    border-color: var(--accent-orange);
-    background: rgba(255,158,100,0.05);
+/* ─── Fallback for engines without :has() ─────────────────────────────────────
+   Safari gained :has() in 15.4 and Firefox in 121. On anything older the
+   selected-state highlighting above is skipped, so keep the gear reachable
+   there by revealing it on hover/focus only (already covered) and make sure
+   nothing depends on :has() for functionality — only for emphasis. */
+@supports not selector(:has(*)) {
+    .gear-config-btn { display: inline-block; opacity: 0.6; }
 }
-
-/* Category Headers span all columns */
-.app-category-header {
-    grid-column: 1 / -1;
-    margin-top: 0.5rem;
-    margin-bottom: 0.2rem;
-    color: var(--accent-blue);
-    font-weight: bold;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 0.3rem;
-}
-
-/* ─── App Card Layout (Compact & Neat) ─── */
-.app-card {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem;
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 6px;
-    background: var(--bg-lighter);
-    transition: background 0.15s, border-color 0.15s;
-    cursor: pointer;
-    font-size: 0.88rem;
-    width: 100%;
-    box-sizing: border-box;
-    text-align: left;
-}
-
-.app-card:hover { 
-    background: rgba(255,255,255,0.08); 
-    border-color: rgba(255,255,255,0.15);
-}
-
-.app-card input[type="checkbox"] {
-    margin: 0;
-    cursor: pointer;
-    transform: scale(1.1);
-    accent-color: var(--accent-purple);
-    flex-shrink: 0;
-}
-
-.app-card .app-icon {
-    font-size: 1.1rem;
-    text-align: center;
-    min-width: 1.5rem;
-}
-
-.app-card .prop-warn {
-    color: var(--accent-red);
-    font-weight: bold;
-    font-size: 0.85rem;
-    cursor: help;
-}
-
-.gear-config-btn { 
-    display: none; 
-    cursor: pointer; 
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
-}
-
-.app-card a {
-    font-weight: 600;
-    color: var(--fg-color);
-    text-decoration: none;
-    white-space: nowrap;
-}
-.app-card a:hover { color: var(--accent-cyan); }
-
-.app-card .info-tooltip-icon {
-    opacity: 0.6;
-    cursor: help;
-}
-
-.app-desc {
-    color: #8b949e;
-    font-size: 0.78rem;
-    margin-left: auto;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-

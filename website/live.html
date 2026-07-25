@@ -188,17 +188,17 @@
     </div>
     <nav style="display:flex; gap:0.75rem; flex-wrap:wrap;">
         <a href="index.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">⚙️ Generator</a>
+        <a href="security-tools.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">🦀 Security Tools</a>
         <a href="wiki.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">📖 Wiki</a>
-        <a href="releases.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">📦 Releases</a>
     </nav>
 </div>
 
 <!-- Load from Generator / Upload -->
 <div class="load-section" id="load-section">
     <h3 style="margin:0 0 0.5rem; color:var(--accent-cyan);">Load Generated Output</h3>
-    <p>Paste from the generator or upload a previously saved <code>.sh</code> / <code>.md</code> file to edit it here.</p>
+    <p>Load what you generated in this session, pick an earlier generation from the history below, or upload a saved <code>.sh</code> / <code>.md</code> file.</p>
     <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
-        <button class="btn-editor primary" onclick="loadFromGenerator()">📥 Load from Generator (this session)</button>
+        <button class="btn-editor primary" onclick="loadFromGenerator()">📥 Load Latest Generation</button>
         <label class="btn-editor" style="cursor:pointer;">
             📂 Upload .sh or .md File
             <input type="file" accept=".sh,.md,.txt" style="display:none;" id="upload-file-input" onchange="handleFileUpload(event)">
@@ -210,6 +210,19 @@
         <strong style="color:var(--fg-color);">Drop a .sh or .md file here</strong>
         <p>Or use the buttons above. Files are read locally — nothing is sent to any server.</p>
     </div>
+</div>
+
+<!-- Session history: every generation made in this tab, newest first -->
+<div class="load-section" id="history-section" style="text-align:left;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+        <h3 style="margin:0; color:var(--accent-purple);">🕓 This Session's History</h3>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="btn-editor" onclick="renderSessionHistory()">🔄 Refresh</button>
+            <button class="btn-editor danger" onclick="clearSessionHistory()">🗑️ Clear</button>
+        </div>
+    </div>
+    <p style="margin:0.5rem 0 1rem;">Session-only, held in <code>sessionStorage</code> — it disappears when you close this tab, and never leaves your browser.</p>
+    <div id="session-history-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
 </div>
 
 <!-- Confirm Download Bar -->
@@ -282,6 +295,28 @@ All edits are local — nothing is sent to any server."
         </div>
     </div>
 
+    <!-- Post-install script. The generator emits this separately; without a
+         pane for it the post-install half of every generation was silently
+         dropped when loading into this editor. -->
+    <div class="editor-panel" id="post-panel" style="display:none; grid-column:1 / -1;">
+        <div class="editor-panel-header">
+            <div class="editor-panel-title">
+                <span>🚀 Post-Install Script</span>
+                <span class="lang-badge badge-bash">BASH</span>
+                <span class="line-count" id="post-line-count">0 lines</span>
+            </div>
+            <div class="editor-actions">
+                <button class="btn-editor" onclick="copyToClipboard('post-editor')">📋 Copy</button>
+                <button class="btn-editor primary" onclick="downloadPost()">⬇️ .sh</button>
+            </div>
+        </div>
+        <textarea id="post-editor" class="editor-textarea" style="min-height:260px;"
+            placeholder="# Post-install steps run after the first boot..."
+            oninput="updateLineCount('post-editor','post-line-count'); showConfirmBar();"
+            spellcheck="false"
+        ></textarea>
+    </div>
+
 </div>
 
 <!-- Footer -->
@@ -293,6 +328,36 @@ All edits are local — nothing is sent to any server."
 </footer>
 
 <script>
+// ─── Storage contract ─────────────────────────────────────────────────────────
+// These key names must match stageForLiveEditor() in script.js. They did not
+// before: the generator wrote live_md / live_sh / live_post_sh while this page
+// read generated_script / generated_markdown, so "Load from Generator" and the
+// auto-load on open both found nothing and appeared broken.
+const LIVE_KEYS = { md: 'live_md', sh: 'live_sh', post: 'live_post_sh' };
+const HISTORY_KEY = 'arch_gen_history';
+
+function readStaged() {
+    const get = k => { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } };
+    return {
+        md: get(LIVE_KEYS.md),
+        sh: get(LIVE_KEYS.sh),
+        post: get(LIVE_KEYS.post),
+    };
+}
+
+function readHistory() {
+    try {
+        const raw = JSON.parse(sessionStorage.getItem(HISTORY_KEY));
+        return Array.isArray(raw) ? raw : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
 function updateLineCount(editorId, counterId) {
@@ -308,9 +373,30 @@ function showConfirmBar() {
     const bar = document.getElementById('confirm-bar');
     const sh = document.getElementById('script-editor').value.trim();
     const md = document.getElementById('markdown-editor').value.trim();
-    if (sh || md) {
+    const post = document.getElementById('post-editor').value.trim();
+    if (sh || md || post) {
         bar.classList.add('visible');
     }
+}
+
+// Applies a {md, sh, post} triple to the three editors.
+function applyContent({ md, sh, post }, { hideLoader = true } = {}) {
+    const set = (id, counter, val) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = val || '';
+        updateLineCount(id, counter);
+    };
+    set('markdown-editor', 'md-line-count', md);
+    set('script-editor', 'sh-line-count', sh);
+    set('post-editor', 'post-line-count', post);
+
+    // Only surface the post-install pane when there is something in it.
+    const postPanel = document.getElementById('post-panel');
+    if (postPanel) postPanel.style.display = (post && post.trim()) ? 'flex' : 'none';
+
+    showConfirmBar();
+    if (hideLoader) document.getElementById('load-section').style.display = 'none';
 }
 
 function copyToClipboard(id) {
@@ -349,9 +435,18 @@ function downloadMarkdown() {
     downloadFile(content, filename, 'text/markdown');
 }
 
+function downloadPost() {
+    const content = document.getElementById('post-editor').value;
+    if (!content.trim()) { alert('Post-install editor is empty!'); return; }
+    downloadFile(content, 'post_install.sh', 'text/x-sh');
+}
+
 function downloadBoth() {
     downloadScript();
     setTimeout(downloadMarkdown, 300);
+    if (document.getElementById('post-editor').value.trim()) {
+        setTimeout(downloadPost, 600);
+    }
 }
 
 function getFilenameFromContent(content, fallback, ext) {
@@ -366,27 +461,66 @@ function getFilenameFromContent(content, fallback, ext) {
 // ─── Load Functions ───────────────────────────────────────────────────────────
 
 function loadFromGenerator() {
-    // Check sessionStorage for generated content from the generator page
-    const script = sessionStorage.getItem('generated_script');
-    const markdown = sessionStorage.getItem('generated_markdown');
-    if (!script && !markdown) {
+    const staged = readStaged();
+    if (!staged.md && !staged.sh && !staged.post) {
+        // Fall back to the newest history entry before giving up.
+        const latest = readHistory()[0];
+        if (latest) {
+            applyContent(latest);
+            document.getElementById('editor-layout').scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
         if (confirm('No generated content found in this session.\n\nGo to the Generator to create one first?')) {
-            window.location.href = 'index.html#generate';
+            window.location.href = 'index.html';
         }
         return;
     }
-    if (script) {
-        document.getElementById('script-editor').value = script;
-        updateLineCount('script-editor', 'sh-line-count');
-    }
-    if (markdown) {
-        document.getElementById('markdown-editor').value = markdown;
-        updateLineCount('markdown-editor', 'md-line-count');
-    }
-    showConfirmBar();
-    document.getElementById('load-section').style.display = 'none';
-    // Smooth scroll to editors
+    applyContent(staged);
     document.getElementById('editor-layout').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── Session history ──────────────────────────────────────────────────────────
+
+function renderSessionHistory() {
+    const list = document.getElementById('session-history-list');
+    if (!list) return;
+    const entries = readHistory();
+
+    if (entries.length === 0) {
+        list.innerHTML = '<p style="color:#8b949e; margin:0;">Nothing yet. Generate a guide on the ' +
+            '<a href="index.html" style="color:var(--accent-blue);">Generator</a> page and it will appear here.</p>';
+        return;
+    }
+
+    list.innerHTML = entries.map((h, i) => {
+        const mdLines = (h.md || '').split('\n').length;
+        const shLines = (h.sh || '').split('\n').length;
+        return `
+        <div style="background:var(--bg-color); border:1px solid var(--editor-border); border-radius:8px; padding:0.85rem; display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;">
+            <div>
+                <strong style="color:var(--accent-blue);">${escapeHtml(h.timestamp || 'unknown time')}</strong>
+                <span style="color:#8b949e; font-size:0.8rem; margin-left:0.6rem;">
+                    guide ${mdLines} lines · script ${shLines} lines${h.post && h.post.trim() ? ' · has post-install' : ''}
+                </span>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button class="btn-editor primary" onclick="loadHistoryEntry(${i})">📥 Load</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function loadHistoryEntry(idx) {
+    const entry = readHistory()[idx];
+    if (!entry) return;
+    applyContent(entry);
+    document.getElementById('editor-layout').scrollIntoView({ behavior: 'smooth' });
+}
+
+function clearSessionHistory() {
+    if (!confirm('Clear this session\'s generation history? The editors keep their current contents.')) return;
+    try { sessionStorage.removeItem(HISTORY_KEY); } catch (e) { /* nothing to do */ }
+    renderSessionHistory();
 }
 
 function handleFileUpload(event) {
@@ -406,7 +540,17 @@ function readFile(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         const content = e.target.result;
-        if (file.name.endsWith('.sh') || file.name.endsWith('.bash')) {
+        const name = file.name.toLowerCase();
+        // A file named like a post-install script goes to that pane rather than
+        // overwriting the main install script.
+        const isShell = name.endsWith('.sh') || name.endsWith('.bash');
+        const isPost = isShell && /post/.test(name);
+
+        if (isPost) {
+            document.getElementById('post-editor').value = content;
+            updateLineCount('post-editor', 'post-line-count');
+            document.getElementById('post-panel').style.display = 'flex';
+        } else if (isShell) {
             document.getElementById('script-editor').value = content;
             updateLineCount('script-editor', 'sh-line-count');
         } else {
@@ -538,35 +682,43 @@ function formatScript() {
 }
 
 function clearEditors() {
-    if (!confirm('Clear both editors? This cannot be undone.')) return;
-    document.getElementById('script-editor').value = '';
-    document.getElementById('markdown-editor').value = '';
-    document.getElementById('sh-line-count').textContent = '0 lines';
-    document.getElementById('md-line-count').textContent = '0 lines';
+    if (!confirm('Clear the editors? This cannot be undone. Your session history is kept.')) return;
+    ['script-editor', 'markdown-editor', 'post-editor'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    ['sh-line-count', 'md-line-count', 'post-line-count'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '0 lines';
+    });
+    document.getElementById('post-panel').style.display = 'none';
     document.getElementById('confirm-bar').classList.remove('visible');
     document.getElementById('load-section').style.display = '';
+    renderSessionHistory();
 }
 
 // ─── On Load: Check sessionStorage for content piped from generator ──────────
 
-document.addEventListener('DOMContentLoaded', () => {
-    const script = sessionStorage.getItem('generated_script');
-    const markdown = sessionStorage.getItem('generated_markdown');
+// Exposed as a named function so it can be exercised directly by the test
+// harness, which needs to seed sessionStorage before init runs.
+function initLiveEditor() {
+    // Always render the history list, even when nothing is staged.
+    renderSessionHistory();
 
-    if (script || markdown) {
-        // Auto-load silently
-        if (script) {
-            document.getElementById('script-editor').value = script;
-            updateLineCount('script-editor', 'sh-line-count');
-        }
-        if (markdown) {
-            document.getElementById('markdown-editor').value = markdown;
-            updateLineCount('markdown-editor', 'md-line-count');
-        }
-        showConfirmBar();
-        document.getElementById('load-section').style.display = 'none';
+    // sessionStorage is copied into a tab opened from the generator, so arriving
+    // here straight after a generation auto-loads it with no extra click.
+    const staged = readStaged();
+    if (staged.md || staged.sh || staged.post) {
+        applyContent(staged);
+        return;
     }
-});
+
+    // Nothing staged but there is history: load the most recent generation.
+    const latest = readHistory()[0];
+    if (latest) applyContent(latest);
+}
+
+document.addEventListener('DOMContentLoaded', initLiveEditor);
 </script>
 </body>
 </html>
