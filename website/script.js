@@ -435,6 +435,119 @@ window.updatePreview = function() {
     }
 };
 
+// ─── Per-app configuration defaults ──────────────────────────────────────────
+// Every app that exposes a settings dialog has a recommended value for each
+// field. If the user never opens the dialog, these are applied and reported
+// rather than blocking generation — an unopened dialog means "no opinion", not
+// an error. Anything with a security consequence is noted in `why` so the
+// summary can explain the choice instead of just asserting it.
+const APP_CONFIG_DEFAULTS = {
+    'git': {
+        label: 'Git',
+        fields: {
+            modal_git_user:  { value: '',  label: 'user.name',  optional: true },
+            modal_git_email: { value: '',  label: 'user.email', optional: true }
+        },
+        summary: 'left unset — the generated script prompts you on first use',
+        why: 'Committing with a wrong identity is harder to undo than setting it later.'
+    },
+    'snapper': {
+        label: 'Snapper',
+        fields: {
+            modal_snapper_timeline: { value: 'enabled', label: 'timeline snapshots' }
+        },
+        summary: 'pre/post pacman snapshots plus hourly timeline',
+        why: 'Snapshots before every package transaction are what let you roll back a bad update.'
+    },
+    'timeshift': {
+        label: 'Timeshift',
+        fields: {
+            modal_timeshift_mode:     { value: 'rsync', label: 'backup mode' },
+            modal_timeshift_schedule: { value: 'daily', label: 'schedule' }
+        },
+        summary: 'rsync mode, daily schedule',
+        why: 'rsync works on any filesystem; BTRFS mode needs a specific subvolume layout.'
+    },
+    'unattended-upgrades': {
+        label: 'Unattended upgrades',
+        fields: {
+            modal_upgrade_reboot: { value: 'false', label: 'automatic reboot' }
+        },
+        summary: 'automatic reboot disabled',
+        why: 'An unattended reboot can interrupt work and, with FDE, leaves the machine sitting at a passphrase prompt.'
+    },
+    'doas': {
+        label: 'Doas',
+        fields: {
+            modal_doas_mode: { value: 'both', label: 'sudo coexistence' }
+        },
+        summary: 'installed alongside sudo rather than replacing it',
+        why: 'Replacing sudo outright can break scripts and AUR helpers that call it by name.'
+    },
+    'aem': {
+        label: 'Anti-Evil Maid',
+        fields: {
+            modal_aem_decoy_mode:  { value: 'none', label: 'decoy password' },
+            modal_aem_duress_mode: { value: 'none', label: 'duress password' }
+        },
+        summary: 'boot verification only — no decoy or duress password',
+        why: 'The duress option destroys data irreversibly, so it is never enabled without an explicit choice.'
+    }
+};
+
+// Applies defaults for any checked app whose dialog was never completed.
+// Returns [{ app, summary, why }] describing what was decided.
+function applyRecommendedAppDefaults() {
+    const applied = [];
+
+    document.querySelectorAll('input[name="post_apps"]:checked').forEach(cb => {
+        const spec = APP_CONFIG_DEFAULTS[cb.value];
+        if (!spec) return;
+        if (cb.dataset.requiresConfig !== 'true') return;
+        if (cb.dataset.configured === 'true') return;   // user made a choice
+
+        // Fill any field the dialog would have set, without overwriting a value
+        // that is already there.
+        Object.entries(spec.fields).forEach(([id, field]) => {
+            const el = document.getElementById(id);
+            if (el && !el.value) el.value = field.value;
+        });
+
+        cb.dataset.configured = 'true';
+        cb.dataset.usedDefaults = 'true';
+        applied.push({ app: spec.label, summary: spec.summary, why: spec.why });
+    });
+
+    return applied;
+}
+
+// Tells the user which defaults were chosen, once, above the output.
+function reportAppDefaults(applied) {
+    const host = document.getElementById('defaults-notice');
+    if (!host) return;
+
+    if (!applied || applied.length === 0) {
+        host.style.display = 'none';
+        host.innerHTML = '';
+        return;
+    }
+
+    host.innerHTML =
+        `<strong>ℹ️ Recommended settings applied</strong>
+         <p style="margin:0.4rem 0;">You did not open the settings for
+         ${applied.length === 1 ? 'one app' : `${applied.length} apps`}, so the
+         recommended configuration was used. Everything below is already in your
+         generated script — adjust the ⚙️ settings and regenerate if you want
+         something different.</p>
+         <ul style="margin:0.4rem 0 0 1.1rem;">` +
+        applied.map(a =>
+            `<li><strong>${escapeHTML(a.app)}</strong>: ${escapeHTML(a.summary)}
+             <span style="color:var(--fg-dim);">— ${escapeHTML(a.why)}</span></li>`
+        ).join('') +
+        `</ul>`;
+    host.style.display = 'block';
+}
+
 // ─── Validation presentation ─────────────────────────────────────────────────
 // One red box, offenders outlined in red, and a single control that walks
 // through them. The previous version printed one list item per unset dropdown,
@@ -760,23 +873,19 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
         });
     }
 
-    // Apps that must be configured before they can be installed.
-    const unconfigured = [];
-    document.querySelectorAll('input[name="post_apps"]:checked').forEach(cb => {
-        if (cb.dataset.requiresConfig === "true" && cb.dataset.configured === "false") {
-            unconfigured.push({
-                el: cb,
-                name: cb.parentElement?.querySelector('a')?.textContent?.trim() || cb.value
-            });
-        }
-    });
+    // Apps with optional configuration the user never opened. These no longer
+    // block generation: an unopened settings dialog is not an error, it just
+    // means "I have no opinion". The recommended defaults are applied and the
+    // user is told exactly which ones and what was chosen, so the behaviour is
+    // never silent.
+    const defaulted = applyRecommendedAppDefaults();
 
     const nothingTouched = missing.length === requiredSelects.length && requiredSelects.length > 0;
-    const hasProblem = missing.length > 0 || conflicts.length > 0 || unconfigured.length > 0;
+    const hasProblem = missing.length > 0 || conflicts.length > 0;
 
     if (hasProblem) {
         if (auto) return;   // never nag during background regeneration
-        showValidationProblems({ missing, conflicts, unconfigured, nothingTouched });
+        showValidationProblems({ missing, conflicts, unconfigured: [], nothingTouched });
         return;
     }
     
@@ -1881,6 +1990,8 @@ run_with_progress() {
 
     stageForLiveEditor(mdOutput, mainSh, postSh);
     buildSshDeployCommands(mainSh, postSh);
+    // Say plainly which apps fell back to recommended settings.
+    reportAppDefaults(defaulted);
 
     if (!auto) {
         saveToHistory(mdOutput, scriptOutput, format, postSh, configJSONText);
@@ -3601,9 +3712,11 @@ function toggleGroup(checkboxes, btn, labels) {
 // never defined, so that button threw ReferenceError on click.
 function toggleAllPostApps() {
     const boxes = Array.from(document.querySelectorAll('input[name="post_apps"]'))
-        // Never mass-toggle something the user must configure first, or a
-        // disabled box that another selection is currently forcing.
-        .filter(cb => !cb.disabled && cb.dataset.requiresConfig !== 'true');
+        // Configurable apps are included now: an unopened dialog falls back to
+        // recommended settings and says so, so it no longer blocks anything.
+        // Disabled boxes are still skipped — those are being forced by another
+        // selection (the libre policy, or DuskyOS).
+        .filter(cb => !cb.disabled);
     toggleGroup(
         boxes,
         document.querySelector('.post-apps-enable-btn'),
