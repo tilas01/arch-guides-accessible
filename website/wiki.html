@@ -106,6 +106,164 @@
         </ul>
     </div>
 
+    <!-- ── Per-option reference ──
+         Every <select> in the generator right-clicks to wiki.html#<its id>, so
+         each id below must exist or the right-click lands at the top of the
+         page. 29 of 30 were missing before this section was added. -->
+    <div class="section" id="option-reference">
+        <h2><span class="icon">🔗</span> Generator Option Reference</h2>
+        <p>
+            Right-clicking any dropdown in the generator jumps straight to its entry
+            here. Each one explains what the setting does and how to configure it by
+            hand if you would rather not use the generator at all.
+        </p>
+
+        <h3 id="firmware">Firmware Interface</h3>
+        <p><strong>UEFI</strong> is required for Unified Kernel Images, systemd-boot and Secure Boot. <strong>Legacy BIOS</strong> can only use GRUB and cannot read a LUKS2 header at boot, so the generator restricts you to GRUB and LUKS1 when you pick it. Check which you booted with: <code>ls /sys/firmware/efi</code> — if that directory exists, you are on UEFI.</p>
+
+        <h3 id="filesystem">File System</h3>
+        <p><strong>BTRFS</strong> gives subvolumes, transparent zstd compression and instant snapshots (paired with Snapper). <strong>Ext4</strong> is the conservative, universally understood choice. <strong>XFS</strong> performs well on large sequential workloads but cannot shrink.</p>
+
+        <h3 id="target-disk">Target Disk</h3>
+        <p>The whole device is wiped. Run <code>lsblk -f</code> and match on size and existing partitions before committing. In VMs this is usually <code>/dev/sda</code>; on NVMe hardware, <code>/dev/nvme0n1</code>.</p>
+
+        <h3 id="partitioning">Layer 1: Base Disk Encryption</h3>
+        <p><strong>LUKS2</strong> with Argon2id is the recommended default — memory-hard key derivation makes brute force expensive. <strong>LUKS1</strong> exists only for legacy GRUB compatibility. <strong>LVM on LUKS2</strong> puts a volume group inside the encrypted container, so you can add or resize logical volumes later. <strong>Unencrypted</strong> offers no protection for a device that leaves your house.</p>
+
+        <h3 id="encryption_cipher">Layer 2: Cipher Algorithm</h3>
+        <p><strong>AES-256-XTS</strong> is the standard and is hardware-accelerated on essentially all modern CPUs (check <code>grep aes /proc/cpuinfo</code>). <strong>AES-256-GCM</strong> adds authentication but is unusual for full-disk use. <strong>Serpent-256-XTS</strong> has a larger security margin but no hardware acceleration, so expect a noticeable throughput cost.</p>
+
+        <h3 id="encryption_pq">Layer 3: Post-Quantum Overlay</h3>
+        <p><strong>Kyber-1024</strong> is a NIST-selected post-quantum KEM. Support in the Linux boot path is experimental and may prevent the system booting at all. Leave this at <strong>None</strong> unless you are specifically researching it, and test in a VM.</p>
+
+        <h3 id="luks_duress_action">Layer 4: LUKS Duress Password</h3>
+        <p>See the full <a href="#luks-duress">LUKS duress passphrase</a> section. The erasing options are irreversible.</p>
+
+        <h3 id="luks_duress_decoy">Duress Decoy Environment</h3>
+        <p>Which environment a duress boot presents. Requires a pre-created partition labelled <code>decoy</code> — see <a href="#luks-duress">setting up the decoy volume</a>.</p>
+
+        <h3 id="init_system">Init System</h3>
+        <p><strong>systemd</strong> is the Arch default and enables the <code>sd-encrypt</code> initramfs hook plus UKI support. <strong>busybox/udev</strong> is the traditional path using the <code>encrypt</code> hook. Note that choosing busybox while also selecting a systemd timer for auto-updates is contradictory; the generator warns about that.</p>
+
+        <h3 id="bootloader">Bootloader &amp; Secure Boot</h3>
+        <p><strong>UKI + Custom Keys</strong> enrols your own Secure Boot keys and signs a single EFI binary containing kernel, initramfs and cmdline — nothing unsigned on the ESP to tamper with. <strong>UKI + Shim</strong> uses the Microsoft-trusted shim so you need not enrol keys in firmware. <strong>systemd-boot</strong> is a minimal UEFI manager. <strong>GRUB</strong> is the only option under BIOS and leaves <code>/boot</code> unencrypted.</p>
+
+        <h3 id="kernel-main">Main Kernel</h3>
+        <p><strong>linux-hardened</strong> applies exploit-mitigation patches and stricter defaults at some performance cost. <strong>linux</strong> is the balanced mainline. <strong>linux-zen</strong> favours desktop latency. <strong>linux-lts</strong> favours stability.</p>
+
+        <h3 id="kernel-backup">Backup Kernel</h3>
+        <p>A second kernel to boot when an update leaves the main one unbootable. Strongly recommended — <code>linux-lts</code> is the usual choice. Selecting <strong>None</strong> means a bad kernel update leaves you reaching for install media.</p>
+
+        <h3 id="cpu_brand">CPU Brand</h3>
+        <p>Selects the microcode package: <code>amd-ucode</code> or <code>intel-ucode</code>. Microcode carries silicon errata and speculative-execution mitigations, so it matters for security, not just stability.</p>
+
+        <h3 id="gpu_brand">GPU Brand</h3>
+        <p>AMD and Intel use the libre Mesa stack. For NVIDIA the generator installs the proprietary driver unless your software type is Libre or Open Source, in which case it falls back to <code>nouveau</code> — which is considerably slower on recent cards.</p>
+
+        <h3 id="vm_guest">VM Guest Setup</h3>
+        <p>Installs and enables the matching guest agent for clipboard sharing, display resizing and clean shutdown: VirtualBox, VMware (open-vm-tools), or QEMU/KVM (qemu-guest-agent).</p>
+
+        <h3 id="software_type">Software Type</h3>
+        <p><strong>Fully Libre</strong> avoids proprietary blobs entirely and prefers <code>opendoas</code> and <code>pfetch</code>. <strong>Open Source + Firmware</strong> permits redistributable firmware. <strong>Open Source + Proprietary</strong> allows closed drivers such as NVIDIA. Picking Fully Libre while also selecting proprietary applications is flagged as a conflict — see <a href="#libre-policy">the libre policy</a>.</p>
+
+        <h3 id="swap_size">Swap Size</h3>
+        <p>Created as a swapfile (a BTRFS-native one on BTRFS). Hibernation needs swap at least the size of RAM; the generator blocks hibernation with no swap. <strong>0GB</strong> is viable on a machine with plenty of RAM that never hibernates.</p>
+
+        <h3 id="usb_kill">USB Kill Switch</h3>
+        <p>See the full <a href="#usb-kill">USB kill switch</a> section. Start with "lock session"; the shutdown actions fire without confirmation.</p>
+
+        <h3 id="usb_kill_trigger">USB Kill Trigger</h3>
+        <p>Whether to react to an unlisted device being connected, an allowlisted device being removed, or both.</p>
+
+        <h3 id="auto_updates">Automatic System Updates</h3>
+        <p><strong>Pacman hook</strong> runs on transactions; <strong>systemd timer</strong> runs on a schedule and requires systemd as your init. Unattended updates on a rolling release can pull in a broken package, so keep your <a href="#kernel-backup">backup kernel</a> and snapshots.</p>
+
+        <h3 id="root_ssh">Root SSH Access</h3>
+        <p>Leave at <strong>No</strong>. Root login over SSH is the single most attacked door on an internet-facing host; use a normal user with <code>doas</code>/<code>sudo</code>. If enabled, the generator sets <code>PermitRootLogin prohibit-password</code> so only keys work.</p>
+
+        <h3 id="cleanup">Post-Install Cleanup</h3>
+        <p>Clears the pacman cache and build dependencies after installation. Saves a few gigabytes; the trade-off is that downgrading a package later means re-downloading it.</p>
+
+        <h3 id="desktop">Desktop Environment</h3>
+        <p><strong>None</strong> leaves a pure TTY. <strong>GNOME</strong> and <strong>KDE</strong> are full environments. <strong>DWM</strong> is a minimal tiling WM requiring Xorg. <strong>Dusky OS</strong> is a pre-configured Hyprland setup by dusklinux and forces Wayland.</p>
+
+        <h3 id="display_server">Display Server</h3>
+        <p><strong>Wayland</strong> isolates clients from each other, so one window cannot read another's input or framebuffer — a real security improvement over <strong>Xorg</strong>, where any client can. Xorg is still needed for DWM and some older applications. <strong>Auto</strong> follows your desktop choice. See <a href="docs/xorg-vs-wayland.md">the full comparison</a>.</p>
+
+        <h3 id="firewall">Firewall Setup</h3>
+        <p><strong>UFW + Gufw</strong> is the recommended default-deny setup with a GUI. <strong>Firewalld</strong> suits zone-based configurations. <strong>iptables</strong> is for people who want to write their own rules. <strong>None</strong> leaves every listening service exposed on untrusted networks.</p>
+
+        <h3 id="dns">DNS Caching</h3>
+        <p><strong>systemd-resolved</strong> is built in and supports DNS-over-TLS. <strong>unbound</strong> is a full validating recursive resolver. <strong>dnscrypt-proxy</strong> encrypts queries to upstream resolvers. <strong>dnsmasq</strong> and <strong>BIND</strong> suit local network serving.</p>
+
+        <h3 id="libre_otp_mode">OTP Enforcement Mode</h3>
+        <p>Where <a href="#libre-otp">Libre OTP</a> is enforced: at login only, in the initramfs before the kernel hands over, or both.</p>
+
+        <h3 id="otp_sha">OTP Hash Algorithm</h3>
+        <p><strong>SHA-1</strong> is what essentially every authenticator app supports and is not a weakness in the HMAC construction TOTP uses. SHA-256 and SHA-512 are stronger but far fewer apps implement them.</p>
+
+        <h3 id="otp_double">Double OTP Verification</h3>
+        <p>Requires two consecutive valid codes, meaning a 30-second wait between them, or codes from two separate authenticators. Meaningful extra assurance, meaningful extra friction.</p>
+
+        <h3 id="otp_bypass">OTP Bypass Uses</h3>
+        <p>A limited-use password that skips OTP entirely. Every use is one fewer factor, so <strong>None</strong> is recommended.</p>
+
+        <h3 id="otp_recovery">OTP Recovery Codes</h3>
+        <p>Single-use codes for when you lose your authenticator. Print them and store them offline — not on the machine they unlock. Choosing <strong>None</strong> means a lost authenticator locks you out permanently.</p>
+    </div>
+
+    <div class="section" id="libre-policy">
+        <h2><span class="icon">🐧</span> 100% Libre Software Policy</h2>
+        <p>
+            Enabling <strong>Enforce 100% Libre Software Policy</strong> in the generator
+            highlights any proprietary selection in red and writes an explicit conflict
+            notice into the generated guide, so you cannot end up believing a system is
+            fully libre when it is not.
+        </p>
+        <h3>What counts as non-libre here</h3>
+        <ul>
+            <li><strong>Firefox</strong> — ships proprietary firmware blobs and closed telemetry components. <a href="https://librewolf.net/" target="_blank" rel="noopener">LibreWolf</a> is the hardened libre fork.</li>
+            <li><strong>Chromium</strong> — bundles proprietary codecs and Google service integrations.</li>
+            <li><strong>Signal Desktop</strong> — an Electron build distributing pre-compiled binaries you cannot reproduce.</li>
+            <li><strong>Flatpak</strong> — libre itself, but the default Flathub remote distributes proprietary applications.</li>
+            <li><strong>NVIDIA drivers</strong> — heavily proprietary. With Libre selected the generator uses <code>nouveau</code> instead, which is markedly slower.</li>
+            <li><strong>Discord, Steam, Spotify</strong> — closed-source clients, some with DRM.</li>
+        </ul>
+        <p>
+            A practical note: microcode updates (<code>amd-ucode</code>, <code>intel-ucode</code>)
+            are non-libre binary blobs, and they also carry the CPU vulnerability mitigations.
+            Excluding them on freedom grounds means accepting known silicon-level
+            vulnerabilities. That is a real trade-off, and worth making deliberately.
+        </p>
+    </div>
+
+    <div class="section" id="verification">
+        <h2><span class="icon">🔒</span> Verifying Downloads (GPG &amp; Hashes)</h2>
+        <p>
+            Every binary published by this project is SHA-512 hashed and, when the CI
+            signing key is configured, GPG-signed. Verify before running anything.
+        </p>
+        <pre><code class="language-bash"># 1. Import the public key (committed at the repository root)
+gpg --import tilas01.asc
+
+# 2. Verify the detached signature against the binary
+gpg --verify libre-otp.sig libre-otp
+
+# 3. Verify the hash
+sha512sum -c libre-otp.sha512</code></pre>
+        <p>
+            A <code>Good signature from "tilas01"</code> plus an <code>OK</code> from
+            <code>sha512sum</code> means the binary is what was built. If either check
+            fails, do not run the file.
+        </p>
+        <div style="border-left:4px solid var(--accent-orange); background:rgba(255,158,100,0.1); padding:1rem; margin-top:1rem;">
+            <strong>⚠️ A signature only proves the key holder signed it.</strong>
+            It says nothing about whether the key is still trustworthy. If the project's
+            signing key is ever exposed, treat every signature made with it as
+            meaningless until a new key is published and the old one revoked.
+        </div>
+    </div>
+
     <div class="section" id="memory-integrity">
         <h2><span class="icon">🧠</span> Memory Integrity Checker</h2>
         <p>If an advanced rootkit attempts to patch syscall tables in live memory or hide malicious kernel modules (Direct Kernel Object Manipulation - DKOM), the integrity checker will detect the checksum mismatch and alert you instantly.</p>
@@ -128,10 +286,27 @@
         <p>All tools can be compiled directly via Cargo or downloaded from the GitHub releases page below. Ensure you have the Rust toolchain installed (<code>pacman -S rust</code>) for compiling.</p>
         
         <div style="margin-bottom:1.5rem; padding:1rem; border-left:4px solid var(--accent-green); background:rgba(46, 160, 67, 0.1);">
-            <strong>🔒 100% Reproducible & GPG Signed</strong>
-            <p style="margin-top:0.5rem; font-size:0.95rem;">Every binary released in this repository is strictly <strong>100% Reproducible</strong>. Our GitHub Actions CI environment compiles the releases deterministically. Furthermore, every release is <strong>GPG Signed</strong> by the author to guarantee supply-chain integrity.</p>
+            <strong>🔒 Reproducible &amp; GPG Signed</strong>
+            <p style="margin-top:0.5rem; font-size:0.95rem;">Release binaries are built deterministically in GitHub Actions and published with SHA-256/512 hashes. When the CI signing key is configured they are also GPG-signed; if it is not, hashes are published alone rather than placeholder signature files. See <a href="#verification">Verifying Downloads</a>.</p>
         </div>
-        
+
+        <!-- Per-tool anchors. releases.html and security-tools.html link to each
+             of these by id, so they must exist here. -->
+        <h3 id="libre-otp">🔐 Libre OTP</h3>
+        <p>Native Rust TOTP/HOTP two-factor authentication for boot, login and SSH. Configurable SHA-1/256/512, optional double-OTP, single-use recovery codes and a limited-use bypass password. Enforced through PAM and, for boot mode, an initramfs hook. Configure it via the <a href="#libre_otp_mode">OTP options</a> in the generator.</p>
+
+        <h3 id="anti-ducky">🦆 Input Guard (Anti-Ducky)</h3>
+        <p>Monitors USB HID keystroke timing and sandboxes unknown input devices, blocking Rubber Ducky / BadUSB style automated keystroke injection before the payload can type. Requires approval from already-trusted inputs before a new keyboard is authorised. For a policy-based alternative at the kernel level, see <a href="#other-sec">USBGuard</a>; for a hard power-off response, see the <a href="#usb-kill">USB kill switch</a>.</p>
+
+        <h3 id="anti-evil-maid">🕵️ Anti-Evil Maid</h3>
+        <p>Verifies boot integrity by hashing the boot chain and comparing it across boots, and generates generic decoy kernel entries so the real encrypted target is not obvious. Supports a decoy password that boots a dummy environment and a duress password. Note that with GRUB plus LUKS, <code>/boot</code> is unencrypted on disk — a UKI bootloader removes that attack surface entirely. Related: <a href="#luks-duress">LUKS duress passphrase</a>.</p>
+
+        <h3 id="kernel-watcher">👁️ Kernel Watcher</h3>
+        <p>Asynchronous filesystem monitor that flags infostealers touching browser profiles, SSH keys and wallet files, and detects userland rootkit behaviour. A lightweight semi-EDR that runs as a systemd daemon and logs to <code>/var/log</code>.</p>
+
+        <h3 id="scarecrow">🦅 Scarecrow</h3>
+        <p>Plants canary tokens and spoofs sandbox/VM artefacts, so malware that checks whether it is being analysed decides to stay dormant. Includes an optional kernel module. Detection-oriented rather than preventive: it tells you something looked, and discourages execution.</p>
+
         <div style="background:var(--bg-lighter); padding:1rem; border-radius:8px; border:1px solid var(--border-color); margin-bottom:1.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                 <h3 style="margin:0;"><span class="icon">📦</span> Live GitHub Statistics & Releases</h3>
