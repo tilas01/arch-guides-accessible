@@ -20,6 +20,14 @@ const CONFIG_PATH: &str = "/etc/libre-otp/secret.json";
 const CONFIG_DISPLAY_PATH: &str = "/etc/libre-otp/config.json";
 const MAX_ATTEMPTS: u32 = 3;
 
+/// kernel-watcher's tamper-protection hash, read only to reject a bypass
+/// password that duplicates it. Must track kernel-watcher's TAMPER_HASH_FILE:
+/// this crate does not depend on that one, and reading the wrong path here
+/// fails open — the uniqueness check would silently never fire.
+const TAMPER_HASH_PATH: &str = "/etc/arch-security/kernel-watcher/tamper.hash";
+/// Pre-move location, for installs that have not re-run kernel-watcher --setup.
+const LEGACY_TAMPER_HASH_PATH: &str = "/etc/arch-rusty-security-suite/tamper.hash";
+
 // ── ANSI Escape Codes for TTY display modes ──────────────────────────────
 /// Discreet Mode: Password top-left in plain white, OTP bottom-left.
 /// Designed to be subtle — an attacker shoulder-surfing may not notice.
@@ -243,8 +251,8 @@ pub fn run() {
             let argon2 = Argon2::default();
 
             // Uniqueness check against Tamper Hash if exists
-            if let Ok(tamper_hash_str) =
-                fs::read_to_string("/etc/arch-rusty-security-suite/tamper.hash")
+            if let Ok(tamper_hash_str) = fs::read_to_string(TAMPER_HASH_PATH)
+                .or_else(|_| fs::read_to_string(LEGACY_TAMPER_HASH_PATH))
             {
                 if let Ok(parsed_tamper) = PasswordHash::new(tamper_hash_str.trim()) {
                     if argon2

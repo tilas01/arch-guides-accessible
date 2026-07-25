@@ -30,7 +30,6 @@ use sha2::{Digest, Sha256};
 use std::collections::{HashMap, VecDeque};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
-use std::path::Path;
 use std::process::Command;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -45,7 +44,19 @@ const APPROVAL_QUORUM: usize = 2;
 /// Log directory
 const LOG_DIR: &str = "/var/log/anti-ducky";
 /// Approved device registry (persisted JSON)
-const APPROVED_REGISTRY: &str = "/etc/anti-ducky/approved_devices.json";
+///
+/// Under /etc/arch-security like the rest of the suite — the same directory the
+/// installer provisions and the one main.rs already uses for unlock.hash. It
+/// previously lived in /etc/anti-ducky, which the installer never created and
+/// which the daemon's own systemd unit cannot write to: ProtectSystem=strict
+/// with ReadWritePaths=/etc/arch-security makes the rest of /etc read-only, so
+/// every approval this daemon recorded was silently discarded.
+const APPROVED_REGISTRY: &str = "/etc/arch-security/anti-ducky/approved_devices.json";
+/// Directory holding the registry, created on save.
+const REGISTRY_DIR: &str = "/etc/arch-security/anti-ducky";
+/// Pre-move location, read only so existing approvals survive the upgrade
+/// rather than every trusted keyboard reverting to pending.
+const LEGACY_APPROVED_REGISTRY: &str = "/etc/anti-ducky/approved_devices.json";
 /// SSH marker — if sshd is not running, startup will warn (not hard-fail,
 /// to allow testing), but the approval system notes SSH as required backup.
 const SSHD_SERVICE: &str = "sshd";
@@ -131,11 +142,19 @@ fn device_fingerprint(sys_path: &str, name: &str) -> String {
 }
 
 fn load_approved_registry() -> HashMap<String, DeviceRecord> {
-    let path = Path::new(APPROVED_REGISTRY);
-    if !path.exists() {
-        return HashMap::new();
-    }
-    let raw = fs::read_to_string(path).unwrap_or_default();
+    let raw = match fs::read_to_string(APPROVED_REGISTRY) {
+        Ok(raw) => raw,
+        Err(_) => match fs::read_to_string(LEGACY_APPROVED_REGISTRY) {
+            Ok(raw) => {
+                log(&format!(
+                    "loaded approvals from {} (pre-1.0 location); the next approval writes to {}",
+                    LEGACY_APPROVED_REGISTRY, APPROVED_REGISTRY
+                ));
+                raw
+            }
+            Err(_) => return HashMap::new(),
+        },
+    };
     serde_json::from_str::<Vec<DeviceRecord>>(&raw)
         .unwrap_or_default()
         .into_iter()
@@ -145,8 +164,7 @@ fn load_approved_registry() -> HashMap<String, DeviceRecord> {
 
 #[allow(dead_code)]
 fn save_approved_registry(registry: &HashMap<String, DeviceRecord>) {
-    let dir = Path::new("/etc/anti-ducky");
-    let _ = fs::create_dir_all(dir);
+    let _ = fs::create_dir_all(REGISTRY_DIR);
     let records: Vec<&DeviceRecord> = registry.values().collect();
     let json = serde_json::to_string_pretty(&records).unwrap_or_default();
     let _ = fs::write(APPROVED_REGISTRY, json);

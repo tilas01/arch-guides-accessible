@@ -167,6 +167,16 @@ do_uninstall() {
     dim "It may hold OTP secrets and duress hashes. Remove it deliberately:"
     dim "  rm -rf ${CONFIG_DIR}"
     echo
+    # Installs made before the state directories were unified may still have
+    # these. Listed rather than removed: they are the only copy of a tamper
+    # password hash or a boot baseline on a machine that has not re-run setup.
+    for legacy in /etc/arch-rusty-security-suite /etc/anti-ducky; do
+        if [[ -d "$legacy" ]]; then
+            warn "Pre-1.0 state also exists in ${legacy}."
+            dim "  rm -rf ${legacy}"
+        fi
+    done
+    echo
     warn "PAM was NOT modified automatically."
     dim "If you enabled OTP at login, remove the pam_exec lines from"
     dim "/etc/pam.d/system-auth BEFORE rebooting, or you may be locked out."
@@ -301,7 +311,19 @@ install_from_release() {
 }
 
 require_root
+
+# Every tool keeps its state in ${CONFIG_DIR}/<tool>. Create the subdirectory
+# for each selected tool here rather than leaving each binary to mkdir its own:
+# the daemons run with ProtectSystem=strict and ReadWritePaths=${CONFIG_DIR}, so
+# a tool writing anywhere else in /etc silently fails, and this is the file that
+# decides what ${CONFIG_DIR} means.
+#
+# 0700, not 0755. These hold password hashes and integrity baselines; the files
+# themselves are 0600, and there is no reason to let a local user enumerate them.
 run install -d -m 0755 "$CONFIG_DIR"
+for name in "${SELECTED[@]}"; do
+    run install -d -m 0700 "${CONFIG_DIR}/${name}"
+done
 
 if $FROM_SOURCE; then
     install_from_source

@@ -114,6 +114,51 @@ lockout deliberately.
 
 ---
 
+## MEDIUM — Tools and installer disagreed on where state lives · **Fixed**
+
+`kernel-watcher`, `anti-evil-maid`, `anti-ducky`, `scripts/install-security-suite.sh`
+
+```rust
+const TAMPER_HASH_FILE: &str = "/etc/arch-rusty-security-suite/tamper.hash";  // kernel-watcher
+const AEM_STATE_DIR:    &str = "/etc/arch-rusty-security-suite/aem";          // anti-evil-maid
+const APPROVED_REGISTRY:&str = "/etc/anti-ducky/approved_devices.json";       // anti-ducky
+```
+
+```sh
+readonly CONFIG_DIR="/etc/arch-security"    # the only directory the installer creates
+```
+
+Three different `/etc` roots for one suite, none of them agreeing with the
+installer. `anti-ducky` disagreed with *itself*: its unlock hash was already at
+`/etc/arch-security/anti-ducky/unlock.hash` while its device registry was not.
+
+The security consequence is in the systemd units the same installer writes:
+
+```ini
+ProtectSystem=strict
+ReadWritePaths=/var/log /etc/arch-security
+```
+
+`ProtectSystem=strict` mounts the rest of `/etc` read-only for that daemon. So
+every write outside `/etc/arch-security` failed — and each of these call sites
+discards the error (`let _ = fs::write(...)`, `unwrap_or_default()`). The
+`anti-ducky` daemon therefore appeared to record device approvals and lost them
+on restart, and `anti-evil-maid --daemon` could not re-baseline after an
+authorised change. A tool that silently forgets what you approved is one users
+learn to work around, which is the whole value of it gone.
+
+**Fixed:** everything is under `/etc/arch-security/<tool>/`, matching the
+directory the installer provisions and the convention `anti-ducky` already half
+followed. Reads fall back to the old paths — writes never do — so an existing
+install keeps verifying against its current baseline instead of failing closed
+on upgrade, which for `check_evil_maid_hash()` would be indistinguishable from
+tampering. Setup runs print where the stale copy is so it can be retired
+deliberately. The installer now creates each per-tool directory at `0700`, and
+`write_private()` creates any directory it needs at `0700` rather than inheriting
+`0755` from the umask.
+
+---
+
 ## LOW — Argon2 parameters were the bare minimum · **Fixed**
 
 `Argon2::default()` is m=19 MiB, t=2, p=1 — the OWASP *floor*. For a password
@@ -156,6 +201,17 @@ it is not mistaken for an oversight.
 
 **Plain `!=` between a password and its confirmation.** Both values are supplied
 by the same person in the same prompt. There is no secret to leak to anyone.
+
+**`libre-otp` still stores its secret in `/etc/libre-otp/`, not under
+`/etc/arch-security/`.** It is the one remaining tool outside the shared
+directory, and it stays there for now. `libre-otp` ships no daemon, so
+`ProtectSystem=strict` never applies to it and nothing is silently failing; the
+directory is referenced by the generated PAM and initramfs snippets in
+`website/script.js`, and it holds the one secret in the suite that cannot be
+regenerated — a user who loses `secret.json` and their recovery codes is locked
+out for good. Moving it is a migration with a real failure mode, not a rename,
+and deserves its own change. Note the installer's uninstall warning about
+`/etc/arch-security` holding "OTP secrets" is aspirational until then.
 
 ---
 

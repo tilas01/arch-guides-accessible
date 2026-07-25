@@ -6,7 +6,35 @@ use std::path::Path;
 use std::process::Command;
 use walkdir::WalkDir;
 
-const AEM_STATE_DIR: &str = "/etc/arch-rusty-security-suite/aem";
+// Same move as kernel-watcher: state belongs under the directory the installer
+// provisions (/etc/arch-security, one subdirectory per tool), not under
+// /etc/arch-rusty-security-suite, which nothing ever created and which the
+// systemd unit's ReadWritePaths does not cover.
+const AEM_STATE_DIR: &str = "/etc/arch-security/anti-evil-maid";
+
+/// Pre-move location. Read-only: a baseline recorded before the move must keep
+/// verifying, because to this tool a missing baseline and a tampered boot chain
+/// look the same, and the wrong one of those triggers a lockout.
+const LEGACY_AEM_STATE_DIR: &str = "/etc/arch-rusty-security-suite/aem";
+
+/// Reads one baseline file, falling back to the pre-move directory.
+///
+/// Returns an empty string when neither exists, which is what the callers
+/// already treat as "no baseline recorded".
+fn read_state_file(name: &str) -> String {
+    let path = format!("{}/{}", AEM_STATE_DIR, name);
+    if let Ok(contents) = fs::read_to_string(&path) {
+        return contents;
+    }
+    let legacy = format!("{}/{}", LEGACY_AEM_STATE_DIR, name);
+    match fs::read_to_string(&legacy) {
+        Ok(contents) => {
+            eprintln!("note: read {legacy} (pre-1.0 location). Re-run --setup to move it to {path}.");
+            contents
+        }
+        Err(_) => String::new(),
+    }
+}
 
 pub fn run(
     setup: bool,
@@ -16,7 +44,6 @@ pub fn run(
     decoy_count: Option<String>,
     fs_hash_check: bool,
 ) {
-    fs::create_dir_all(AEM_STATE_DIR).unwrap_or_default();
     fs::create_dir_all(AEM_STATE_DIR).unwrap_or_default();
 
     if setup {
@@ -123,17 +150,23 @@ fn setup_aem(
         }
     }
 
-    println!("Anti-Evil Maid setup complete! System state recorded.");
+    println!("Anti-Evil Maid setup complete! System state recorded in {AEM_STATE_DIR}.");
+
+    if Path::new(LEGACY_AEM_STATE_DIR).exists() {
+        println!();
+        println!("Baselines from the previous location are still on disk. Once you have");
+        println!("confirmed this one verifies, remove them:");
+        println!("  rm -rf {LEGACY_AEM_STATE_DIR}");
+    }
 }
 
 fn run_boot_check() {
     println!(">> AEM Boot Check Initiated");
 
-    let saved_efi =
-        fs::read_to_string(format!("{}/efivars.hash", AEM_STATE_DIR)).unwrap_or_default();
-    let saved_boot = fs::read_to_string(format!("{}/boot.hash", AEM_STATE_DIR)).unwrap_or_default();
-    let saved_hwid = fs::read_to_string(format!("{}/hwid.hash", AEM_STATE_DIR)).unwrap_or_default();
-    let saved_tpm = fs::read_to_string(format!("{}/tpm.hash", AEM_STATE_DIR)).unwrap_or_default();
+    let saved_efi = read_state_file("efivars.hash");
+    let saved_boot = read_state_file("boot.hash");
+    let saved_hwid = read_state_file("hwid.hash");
+    let saved_tpm = read_state_file("tpm.hash");
 
     let current_efi = hash_directory("/sys/firmware/efi/efivars");
     let current_boot = hash_directory("/boot");
