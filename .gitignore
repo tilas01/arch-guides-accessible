@@ -22,6 +22,9 @@ p[0-9]*_*.txt
 audit_*.txt
 transcript*.txt
 prompt*.txt
+debug_*.txt
+handoff*.md
+HANDOFF*.md
 
 # Old/archived snapshots kept only as working references
 *_index.html

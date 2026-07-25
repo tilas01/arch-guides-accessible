@@ -37,6 +37,20 @@ set -Eeuo pipefail
 
 readonly REPO="tilas01/arch-guides-dynamic"
 readonly KEY_URL="https://raw.githubusercontent.com/${REPO}/main/tilas01.asc"
+
+# The signing key is pinned by fingerprint, not merely downloaded.
+#
+# Without this pin, the key and the binaries both come from the same host: an
+# attacker who can serve you a different tilas01.asc can also serve you binaries
+# signed with it, and every check would pass. Pinning means a swapped key is a
+# hard failure. Verify this value against the fingerprint in README.md, which
+# you should read over a connection you did not get from this script.
+#
+# 4C0383A168D0EA1DD6F1ACB5A13118E03A7D55A0 was the previous key. Its private
+# half was published in this repository's git history and it is REVOKED. Never
+# accept it.
+readonly SIGNING_FPR="745F82B41AFD945636859C922F43352EC307EF09"
+readonly REVOKED_FPRS=("4C0383A168D0EA1DD6F1ACB5A13118E03A7D55A0")
 readonly INSTALL_DIR="/usr/local/bin"
 readonly CONFIG_DIR="/etc/arch-security"
 readonly SYSTEMD_DIR="/etc/systemd/system"
@@ -221,13 +235,30 @@ install_from_release() {
     if ! curl -fsSL "$KEY_URL" -o "${stage}/tilas01.asc"; then
         die "Could not fetch the signing key from ${KEY_URL}"
     fi
+    # Check the fingerprint BEFORE importing. Importing first would seed the
+    # user's keyring with an attacker's key even if we then refuse to use it.
+    local fprs
+    fprs="$(gpg --show-keys --with-colons "${stage}/tilas01.asc" 2>/dev/null \
+            | awk -F: '$1=="fpr"{print $10}')" || true
+    if [[ -z "$fprs" ]]; then
+        die "The downloaded tilas01.asc is not a parseable OpenPGP key."
+    fi
+    for bad in "${REVOKED_FPRS[@]}"; do
+        if grep -qx "$bad" <<<"$fprs"; then
+            die "The served key includes REVOKED fingerprint ${bad}. Refusing to continue."
+        fi
+    done
+    if ! grep -qx "$SIGNING_FPR" <<<"$fprs"; then
+        err "Signing key fingerprint mismatch."
+        dim "  expected: ${SIGNING_FPR}"
+        dim "  served:   $(tr '\n' ' ' <<<"$fprs")"
+        die "Refusing to install. Either this script is out of date or the key was swapped."
+    fi
+
     if ! gpg --quiet --import "${stage}/tilas01.asc" 2>/dev/null; then
         die "Could not import the signing key."
     fi
-    ok "signing key imported"
-    dim "Confirm this fingerprint matches the one published in the repository:"
-    gpg --show-keys --with-fingerprint "${stage}/tilas01.asc" 2>/dev/null \
-        | grep -iA1 fingerprint | sed 's/^/      /' || true
+    ok "signing key imported and pinned to ${SIGNING_FPR}"
     echo
 
     local base="https://github.com/${REPO}/releases/latest/download"
