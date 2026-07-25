@@ -1,0 +1,10 @@
+# Pinned so a rebuild years from now produces the same bytes. A floating
+# "stable" would change under you and break reproducibility silently.
+#
+# When bumping this: rebuild every tool, re-publish hashes, and note the
+# toolchain version in the release, so anyone verifying knows which to use.
+[toolchain]
+channel = "1.90.0"
+components = ["rustfmt", "clippy"]
+targets = ["x86_64-unknown-linux-gnu"]
+profile = "minimal"

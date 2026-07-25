@@ -13,20 +13,50 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     strategy:
+      # fail-fast off: one crate failing should not hide whether the others are
+      # fine. With it on, a single error cancelled the rest and the failing job
+      # appeared to move between runs, which made diagnosis harder than it needed
+      # to be.
+      fail-fast: false
       matrix:
-        tool: [libre-otp, anti-ducky, anti-evil-maid, kernel-watcher, scarecrow]
-    
+        tool:
+          - libre-otp
+          - anti-ducky
+          - anti-evil-maid
+          - kernel-watcher
+          - scarecrow
+          # All five linked into one binary, for people who want the whole suite.
+          - arch-security-suite
+
     steps:
       - uses: actions/checkout@v4
 
+      # Pinned by security-tools/rust-toolchain.toml. Reproducibility needs a
+      # fixed toolchain: "stable" moves and the bytes change with it.
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.90.0"
 
       - name: Install Ubuntu Dependencies
         run: sudo apt-get update && sudo apt-get install -y pkg-config libudev-dev
 
+      # Derived from the commit, so a rebuild of the same commit gets the same
+      # timestamp and therefore the same bytes.
+      - name: Set SOURCE_DATE_EPOCH for reproducible builds
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)" >> "$GITHUB_ENV"
+
+      - name: Check formatting and lints
+        continue-on-error: true
+        run: |
+          cargo fmt --check || echo "::warning::cargo fmt reported differences"
+          cargo clippy --release -- -D warnings || echo "::warning::clippy reported findings"
+        working-directory: security-tools/${{ matrix.tool }}
+
+      # --locked so the committed Cargo.lock is honoured exactly; without it a
+      # dependency could resolve differently and the build would not reproduce.
       - name: Build Release
-        run: cargo build --release
+        run: cargo build --release --locked
         working-directory: security-tools/${{ matrix.tool }}
 
       - name: Generate Hashes
@@ -34,6 +64,8 @@ jobs:
           cd security-tools/${{ matrix.tool }}/target/release
           sha512sum ${{ matrix.tool }} > ${{ matrix.tool }}.sha512
           sha256sum ${{ matrix.tool }} > ${{ matrix.tool }}.sha256
+          echo "Built with $(rustc --version), SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH"
+          echo "Reproduce with: SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH cargo build --release --locked"
 
       # Signing is all-or-nothing on purpose. This step used to fall back to
       # writing the literal text "DUMMY SIG" into <tool>.sig and <tool>.asc when

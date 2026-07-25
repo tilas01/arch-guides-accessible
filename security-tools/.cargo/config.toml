@@ -1,0 +1,49 @@
+# Reproducible builds for every crate under security-tools/.
+#
+# The goal: two people building the same tag on different machines get
+# bit-for-bit identical binaries, so a published hash can be independently
+# confirmed rather than merely trusted.
+#
+# What breaks reproducibility, and what handles each:
+#   * Absolute paths baked into panic messages -> --remap-path-prefix below.
+#   * Build timestamps                          -> SOURCE_DATE_EPOCH, set in CI.
+#   * Parallel codegen non-determinism          -> codegen-units = 1 (Cargo.toml).
+#   * Incremental artefacts                     -> incremental = false.
+#   * Dependency drift                          -> cargo build --locked in CI.
+#   * Toolchain drift                           -> rust-toolchain.toml pins it.
+#
+# Verify a published binary yourself:
+#   SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) \
+#     cargo build --release --locked -p arch-security-suite
+#   sha512sum target/release/arch-security-suite
+# and compare against the .sha512 on the release.
+
+[build]
+rustflags = [
+    # Strip the build machine's paths out of the binary. Without this, panic
+    # messages and debug strings contain /home/<whoever>/... and no two builds
+    # can ever match.
+    "--remap-path-prefix=/home/runner/work/arch-guides-dynamic/arch-guides-dynamic=.",
+    "--remap-path-prefix=/build=.",
+
+    # Deterministic symbol mangling.
+    "-Csymbol-mangling-version=v0",
+
+    # Security hardening. These cost almost nothing and are the defaults a
+    # security tool should be built with:
+    #   full RELRO + immediate binding, so the GOT is read-only after startup
+    "-Clink-arg=-Wl,-z,relro,-z,now",
+    #   non-executable stack
+    "-Clink-arg=-Wl,-z,noexecstack",
+    #   position-independent executable, so ASLR applies to the binary itself
+    "-Crelocation-model=pic",
+]
+
+# Note: target-cpu is deliberately NOT set to "native". It would produce a
+# faster binary for the build machine and an illegal-instruction crash on
+# anyone else's, and it would make the output unreproducible. The release
+# profile in each Cargo.toml already sets opt-level 3 and fat LTO, which is
+# where the real performance is.
+
+[term]
+verbose = false

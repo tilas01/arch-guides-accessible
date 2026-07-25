@@ -993,7 +993,37 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                             <span class="my-tools-title">🦀 tilas01's Security Suite (Rust)</span>
                             <button type="button" class="my-tools-enable-btn" onclick="enableAllTilas()">✅ Enable All Suite</button>
                         </div>
-                        <div class="app-grid-container">
+
+                        <!-- All-in-one option. Ticking this greys out the five
+                             individual tools, because the suite binary already
+                             contains them — selecting both would install the same
+                             code twice. -->
+                        <label class="app-card suite-card" oncontextmenu="window.open('wiki.html#suite-installer', '_blank'); return false;">
+                            <input type="checkbox" name="post_apps" value="arch-security-suite" id="suite_all_in_one">
+                            <span class="app-icon">📦</span>
+                            <a href="wiki.html#suite-installer">All-in-One Suite</a>
+                            <span class="info-tooltip-icon" title="arch-security-suite
+--
+All five tools linked into a single binary, dispatched by subcommand:
+  arch-security-suite otp | ducky | aem | watch | scarecrow
+
+Every subcommand also takes --gui, and falls back to the interactive CLI when no display server is available — so it works on Wayland, Xorg and a bare TTY.
+
+One file to install, verify and update instead of five.
+
+Build Integrity: Reproducible (pinned toolchain, locked deps, SOURCE_DATE_EPOCH)
+Source: 📁 security-tools/arch-security-suite">ℹ️</span>
+                            <span class="app-desc">All five, one binary</span>
+                        </label>
+
+                        <p id="suite-lock-note" style="display:none; font-size:0.78rem; color:var(--accent-cyan); margin:0.5rem 0 0.8rem; padding:0.5rem 0.7rem; background:var(--tint-cyan); border-left:3px solid var(--accent-cyan); border-radius:4px;">
+                            📦 <strong>All-in-One Suite selected.</strong> The five tools below are
+                            greyed out because the suite binary already contains all of them —
+                            installing both would put the same code on your system twice.
+                            Untick the suite to choose tools individually instead.
+                        </p>
+
+                        <div class="app-grid-container" id="tilas-tools-grid">
                             <label class="app-card tilas-tool" oncontextmenu="window.open('wiki.html#security-suite', '_blank'); return false;">
                                 <input type="checkbox" name="post_apps" value="libre-otp">
                                 <span class="app-icon">🔐</span> <a href="wiki.html#security-suite" target="_blank">Libre OTP</a> <span class="app-desc">Double OTP</span>
