@@ -1,0 +1,728 @@
+/* ============================================================================
+   manual-data.js — the question set behind the manual walkthrough.
+   ----------------------------------------------------------------------------
+   Declarative on purpose. Every question is data: what it asks, when it applies,
+   what each answer means, which wiki section explains it, and what it
+   contributes to the generated guide. The renderer in manual.js knows nothing
+   about Arch; it only knows how to draw a question and collect an answer.
+
+   That split is what keeps this at parity with the dynamic generator. Adding an
+   option means adding it here once, and it appears in the walkthrough, in the
+   markdown guide, in the shell script and in the exported JSON together —
+   rather than in three places that drift.
+
+   Field reference
+     id        state key
+     title     the question
+     help      tooltip body; every question has one
+     wiki      anchor in wiki.html, reached by right-click as well
+     type      'choice' | 'multi' | 'text' | 'bool'
+     when      (s) => boolean; omit for "always"
+     options   [{ value, label, desc, note?, recommended?, danger?, locks? }]
+     validate  (value, s) => null | 'message'
+     section   heading the emitted guide steps are filed under
+   ========================================================================= */
+
+'use strict';
+
+/* Values DuskyOS fixes for you. Selecting it locks these rather than silently
+   overriding them, so you can see what the choice costs before you make it. */
+const DUSKY_LOCKS = {
+    display_server: 'wayland',
+    desktop_extra: 'hyprland',
+    shell: 'zsh',
+    font: 'jetbrains-mono-nerd',
+    palette: 'tokyo-night'
+};
+
+const DUSKY_VIDEO = 'https://www.youtube.com/watch?v=6bnLBs_j8Kk';
+
+const STEPS = [
+
+/* ── Architecture ──────────────────────────────────────────────────────── */
+{
+    id: 'arch',
+    section: 'Before you start',
+    title: 'Which CPU architecture are you installing on?',
+    help: 'Everything downstream depends on this. x86_64 is any Intel or AMD ' +
+          'desktop or laptop. aarch64 is 64-bit ARM: Raspberry Pi, Pine64, ' +
+          'most ARM servers. Run "uname -m" on the machine if you are unsure. ' +
+          'Getting this wrong does not produce a slightly worse install, it ' +
+          'produces a script that cannot work.',
+    wiki: 'architecture',
+    type: 'choice',
+    options: [
+        { value: 'x86_64', label: 'x86_64 (Intel / AMD)', recommended: true,
+          desc: 'Standard PC. UEFI firmware, an EFI system partition, CPU ' +
+                'microcode, and Secure Boot available.' },
+        { value: 'aarch64', label: 'aarch64 (64-bit ARM)',
+          desc: 'Raspberry Pi, Pine64, ARM servers. Uses Arch Linux ARM — a ' +
+                'different project with different mirrors and signing keys — ' +
+                'and boots via a device tree rather than an EFI executable.' }
+    ]
+},
+{
+    id: 'board',
+    section: 'Before you start',
+    title: 'Which ARM board?',
+    help: 'ARM boards do not share a boot path the way PCs do. The board ' +
+          'decides whether you get UEFI, U-Boot, or vendor firmware in an ' +
+          'EEPROM, and which device tree the kernel needs.',
+    wiki: 'arch-arm',
+    when: s => s.arch === 'aarch64',
+    type: 'choice',
+    options: [
+        { value: 'rpi', label: 'Raspberry Pi 4 / 5',
+          desc: 'Bootloader lives in an on-board EEPROM that runs before ' +
+                'anything you control. No UEFI Secure Boot.' },
+        { value: 'uefi-arm', label: 'ARM board with UEFI (EDK2)', recommended: true,
+          desc: 'Ampere, some Rockchip boards, ARM VMs. Closest to the x86 ' +
+                'path: an ESP and an EFI bootloader.' },
+        { value: 'uboot', label: 'Generic U-Boot SBC',
+          desc: 'Pine64, Odroid, most SBCs. Boots via extlinux.conf or ' +
+                'boot.scr plus a device tree.' }
+    ]
+},
+
+{
+    id: 'libre',
+    section: 'Before you start',
+    title: 'Enforce a strictly libre software policy?',
+    help: 'On, the guide refuses anything with proprietary or closed-source ' +
+          'components: no microcode, no proprietary graphics drivers, no ' +
+          'Discord, no Steam. Off, you get microcode and the drivers your ' +
+          'hardware actually needs.',
+    wiki: 'libre-policy',
+    type: 'bool',
+    options: [
+        { value: 'yes', label: 'Yes, libre only',
+          desc: 'Anything with a proprietary component is excluded and the ' +
+                'guide says what you are giving up.' },
+        { value: 'no', label: 'No', recommended: true,
+          desc: 'Microcode and proprietary drivers permitted.' }
+    ]
+},
+
+/* ── Dual boot ─────────────────────────────────────────────────────────── */
+{
+    id: 'dualboot',
+    section: 'Before you start',
+    title: 'Is anything else staying on this machine?',
+    help: 'Dual booting is the most common way people lose data during an ' +
+          'Arch install. What you pick here changes the partitioning, whether ' +
+          'the EFI system partition is created or reused, and which warnings ' +
+          'the guide gives you.',
+    wiki: 'dual-boot',
+    type: 'choice',
+    options: [
+        { value: 'none', label: 'No — this disk is only for Arch', recommended: true,
+          desc: 'The whole disk gets repartitioned. Simplest, and nothing ' +
+                'else can be broken by it.',
+          danger: 'Everything currently on the target disk is destroyed.' },
+        { value: 'windows', label: 'Windows 10 or 11',
+          desc: 'Shares the existing EFI system partition. Adds the Fast ' +
+                'Startup, BitLocker and RTC steps, and the guide will refuse ' +
+                'to format the ESP.' },
+        { value: 'linux', label: 'Another Linux distribution',
+          desc: 'Shares the ESP and, usually, the bootloader. Adds os-prober ' +
+                'or a manual loader entry.' },
+        { value: 'arch', label: 'An existing Arch install',
+          desc: 'Reuses the ESP; you choose whether to share /home.' }
+    ]
+},
+{
+    id: 'dualboot_esp',
+    section: 'Before you start',
+    title: 'Where is the existing EFI system partition?',
+    help: 'Run "lsblk -f" on the running system. The ESP is the small FAT32 ' +
+          'partition, usually 100-500 MiB, with partition type EF00. This ' +
+          'partition is mounted, never formatted — formatting it deletes the ' +
+          'other operating system\'s bootloader.',
+    wiki: 'dual-boot-esp',
+    when: s => s.dualboot && s.dualboot !== 'none',
+    type: 'text',
+    placeholder: '/dev/nvme0n1p1',
+    validate: v => /^\/dev\/[a-z0-9]+p?\d+$/.test(v.trim())
+        ? null
+        : 'Needs a partition path such as /dev/nvme0n1p1 or /dev/sda1.'
+},
+
+/* ── Disk ──────────────────────────────────────────────────────────────── */
+{
+    id: 'disk',
+    section: 'Disk',
+    title: 'Which disk are you installing to?',
+    help: 'Run "lsblk" and identify the disk by its size and model, not by ' +
+          'the name you expect. This is the single most destructive value in ' +
+          'the whole guide: every partitioning command below is aimed at it.',
+    wiki: 'disk',
+    type: 'text',
+    placeholder: '/dev/nvme0n1',
+    validate: v => /^\/dev\/[a-z0-9]+$/.test(v.trim())
+        ? null
+        : 'Needs a whole-disk path such as /dev/nvme0n1, /dev/sda or /dev/mmcblk0 — not a partition.'
+},
+{
+    id: 'encryption',
+    section: 'Disk',
+    title: 'Encrypt the disk?',
+    help: 'Full-disk encryption is what makes a stolen laptop a stolen laptop ' +
+          'rather than a data breach. It costs you a passphrase at every boot ' +
+          'and nothing else. LUKS2 with Argon2id is the current default and ' +
+          'resists GPU brute-forcing far better than LUKS1.',
+    wiki: 'partitioning',
+    type: 'choice',
+    options: [
+        { value: 'luks2', label: 'LUKS2 with Argon2id', recommended: true,
+          desc: 'Modern defaults, memory-hard key derivation. Requires a ' +
+                'bootloader that can read a LUKS2 header, so not Legacy BIOS ' +
+                'GRUB.' },
+        { value: 'luks1', label: 'LUKS1',
+          desc: 'Only if you are constrained to Legacy BIOS with GRUB. PBKDF2 ' +
+                'rather than Argon2id, so a weak passphrase falls much faster.' },
+        { value: 'none', label: 'No encryption',
+          desc: 'Reasonable for a desktop that never leaves a room you ' +
+                'control. Anyone who picks the machine up reads everything.',
+          danger: 'Anyone with physical access reads every file, including ' +
+                  'your saved passwords and SSH keys.' }
+    ]
+},
+{
+    id: 'filesystem',
+    section: 'Disk',
+    title: 'Which filesystem?',
+    help: 'Btrfs gives you snapshots, so a bad update is one rollback away, ' +
+          'at the cost of subvolumes to lay out and its own tooling. ext4 is ' +
+          'the fewest moving parts and is extremely well understood.',
+    wiki: 'filesystem',
+    type: 'choice',
+    options: [
+        { value: 'btrfs', label: 'Btrfs with subvolumes', recommended: true,
+          desc: 'Snapshots, compression, and rollback. The guide lays out ' +
+                '@, @home, @log, @pkg and @snapshots so a rollback does not ' +
+                'also roll back your logs or re-download the package cache.' },
+        { value: 'ext4', label: 'ext4',
+          desc: 'Format and forget. No snapshots.' },
+        { value: 'xfs', label: 'XFS',
+          desc: 'Good with large files. No snapshots; cannot be shrunk.' }
+    ]
+},
+{
+    id: 'swap',
+    section: 'Disk',
+    title: 'Swap?',
+    help: 'zram compresses swap in RAM and is the sensible default on almost ' +
+          'any modern machine. A swap file or partition is only needed if you ' +
+          'want hibernation, which needs swap at least as large as RAM.',
+    wiki: 'swap',
+    type: 'choice',
+    options: [
+        { value: 'zram', label: 'zram (compressed, in RAM)', recommended: true,
+          desc: 'No disk space used, no plaintext of your memory written to ' +
+                'disk. Cannot hibernate.' },
+        { value: 'swapfile', label: 'Swap file on disk',
+          desc: 'Resizable later. Inside the encrypted volume, so hibernation ' +
+                'images stay encrypted.' },
+        { value: 'partition', label: 'Dedicated swap partition',
+          desc: 'Traditional. Fixed size.' },
+        { value: 'none', label: 'None',
+          desc: 'Fine with plenty of RAM. The OOM killer becomes your memory ' +
+                'management strategy.' }
+    ]
+},
+
+/* ── Boot ──────────────────────────────────────────────────────────────── */
+{
+    id: 'firmware',
+    section: 'Boot',
+    title: 'Firmware mode',
+    help: 'Check with "ls /sys/firmware/efi" from the live environment — if ' +
+          'that directory exists you booted UEFI. Legacy BIOS restricts you ' +
+          'to GRUB and LUKS1 and rules out Secure Boot entirely.',
+    wiki: 'firmware',
+    when: s => s.arch === 'x86_64',
+    type: 'choice',
+    options: [
+        { value: 'uefi', label: 'UEFI', recommended: true,
+          desc: 'Required for unified kernel images, systemd-boot and Secure ' +
+                'Boot.' },
+        { value: 'bios', label: 'Legacy BIOS / CSM',
+          desc: 'GRUB only, LUKS1 only, no Secure Boot.',
+          note: 'Selecting this restricts encryption to LUKS1 and the ' +
+                'bootloader to GRUB.' }
+    ]
+},
+{
+    id: 'bootloader',
+    section: 'Boot',
+    title: 'Which bootloader?',
+    help: 'A unified kernel image bundles kernel, initramfs and command line ' +
+          'into one signed EFI file, which is what makes Secure Boot with ' +
+          'your own keys meaningful. systemd-boot is the simplest thing that ' +
+          'works on UEFI. GRUB is the only option on Legacy BIOS.',
+    wiki: 'bootloader',
+    when: s => s.arch === 'x86_64',
+    type: 'choice',
+    options: [
+        { value: 'uki', label: 'Unified Kernel Image + your own Secure Boot keys',
+          recommended: true,
+          desc: 'Strongest boot chain. Kernel, initramfs and cmdline in one ' +
+                'signed file, so the command line cannot be edited at the ' +
+                'boot menu.',
+          note: 'Needs a 1 GiB ESP — two UKIs plus a fallback do not fit in 512 MiB.' },
+        { value: 'systemd-boot', label: 'systemd-boot',
+          desc: 'Small, no configuration language, reads loader entries from ' +
+                'the ESP.' },
+        { value: 'grub', label: 'GRUB',
+          desc: 'Most features, most configuration, works on BIOS and with ' +
+                'many operating systems side by side.' }
+    ]
+},
+{
+    id: 'arm_boot',
+    section: 'Boot',
+    title: 'How does this board boot?',
+    help: 'ARM boards do not agree on a boot mechanism. This decides whether ' +
+          'the guide writes an EFI loader entry, an extlinux.conf, or the ' +
+          'Raspberry Pi config.txt and cmdline.txt.',
+    wiki: 'arch-arm',
+    when: s => s.arch === 'aarch64',
+    type: 'choice',
+    options: [
+        { value: 'rpi-firmware', label: 'Raspberry Pi firmware (config.txt)',
+          when: s => s.board === 'rpi',
+          desc: 'The EEPROM bootloader loads start.elf, which loads the ' +
+                'kernel and device tree from a FAT partition.' },
+        { value: 'extlinux', label: 'U-Boot / extlinux.conf', recommended: true,
+          desc: 'The common SBC path. A text file listing kernel, initramfs ' +
+                'and device tree.' },
+        { value: 'efi-arm', label: 'UEFI bootloader (systemd-boot or GRUB)',
+          desc: 'For boards whose firmware implements UEFI.' }
+    ]
+},
+{
+    id: 'secureboot',
+    section: 'Boot',
+    title: 'Secure Boot',
+    help: 'Secure Boot stops the firmware executing an unsigned bootloader. ' +
+          'Enrolling your own keys means you decide what may boot, rather ' +
+          'than a third-party certificate authority. Turning it off for Arch ' +
+          'also lowers the bar for any other operating system on the machine.',
+    wiki: 'secure-boot',
+    when: s => s.arch === 'x86_64' && s.firmware === 'uefi',
+    type: 'choice',
+    options: [
+        { value: 'own-keys', label: 'Enrol my own keys', recommended: true,
+          desc: 'Generate PK, KEK and db, sign the bootloader and the UKI, ' +
+                'enrol them in firmware setup mode.',
+          note: 'Back up the existing keys first, and know how to clear them ' +
+                'from firmware setup before you start.' },
+        { value: 'shim', label: 'shim with the Microsoft-signed chain',
+          desc: 'Works without touching firmware keys. You are trusting ' +
+                'Microsoft\'s CA.' },
+        { value: 'off', label: 'Leave Secure Boot off',
+          desc: 'Simplest. Anything that can write to the ESP can replace ' +
+                'your bootloader.' }
+    ]
+},
+{
+    id: 'kernels',
+    section: 'Boot',
+    title: 'Which kernels? (pick at least one)',
+    help: 'Installing two is cheap insurance: if an update breaks the main ' +
+          'kernel you can boot the other one and fix it. linux-hardened ' +
+          'trades some performance and some out-of-tree driver compatibility ' +
+          'for exploit mitigations.',
+    wiki: 'kernel',
+    type: 'multi',
+    options: [
+        { value: 'linux', label: 'linux (mainline)', recommended: true,
+          desc: 'Current stable. What most guidance assumes.' },
+        { value: 'linux-lts', label: 'linux-lts', recommended: true,
+          desc: 'Long-term support. The one you boot when an update breaks ' +
+                'the other.' },
+        { value: 'linux-hardened', label: 'linux-hardened',
+          desc: 'Upstream hardening patches and stricter defaults. Some ' +
+                'proprietary and out-of-tree modules will not build.' },
+        { value: 'linux-zen', label: 'linux-zen',
+          desc: 'Desktop responsiveness tuning.' }
+    ],
+    validate: v => (v && v.length) ? null : 'Pick at least one kernel — the system needs something to boot.'
+},
+{
+    id: 'microcode',
+    section: 'Boot',
+    title: 'CPU microcode',
+    help: 'Microcode updates fix CPU errata, including the ones behind ' +
+          'speculative-execution vulnerabilities. Loaded early by the ' +
+          'initramfs. There is no equivalent on ARM — firmware comes from the ' +
+          'board vendor.',
+    wiki: 'microcode',
+    // Not asked under a libre policy: microcode is a proprietary blob, so the
+    // answer is already decided and offering it produced a summary that
+    // disagreed with the packages actually installed.
+    when: s => s.arch === 'x86_64' && s.libre !== 'yes',
+    type: 'choice',
+    options: [
+        { value: 'intel-ucode', label: 'Intel', desc: 'Installs intel-ucode.' },
+        { value: 'amd-ucode', label: 'AMD', desc: 'Installs amd-ucode.' },
+        { value: 'none', label: 'Skip',
+          desc: 'Only if you are enforcing a strictly libre policy — microcode ' +
+                'is a proprietary blob.',
+          note: 'Skipping leaves known CPU errata unmitigated.' }
+    ]
+},
+
+/* ── System ────────────────────────────────────────────────────────────── */
+{
+    id: 'hostname',
+    section: 'System',
+    title: 'Hostname',
+    help: 'The machine\'s name on your network. Letters, digits and hyphens.',
+    wiki: 'hostname',
+    type: 'text',
+    placeholder: 'archbox',
+    validate: v => /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/.test(v.trim())
+        ? null
+        : 'Letters, digits and hyphens only, and it cannot start or end with a hyphen.'
+},
+{
+    id: 'username',
+    section: 'System',
+    title: 'Your username',
+    help: 'The everyday account. It goes in the wheel group so it can use ' +
+          'sudo; you should not be logging in as root.',
+    wiki: 'users',
+    type: 'text',
+    placeholder: 'you',
+    validate: v => /^[a-z_][a-z0-9_-]{0,31}$/.test(v.trim())
+        ? null
+        : 'Lower-case letters, digits, underscore and hyphen, starting with a letter or underscore.'
+},
+{
+    id: 'timezone',
+    section: 'System',
+    title: 'Time zone',
+    help: 'An IANA zone name. "timedatectl list-timezones" lists them all. ' +
+          'The clock is kept in UTC; if you dual boot Windows the guide adds ' +
+          'the step that stops the two disagreeing.',
+    wiki: 'locale',
+    type: 'text',
+    placeholder: 'Europe/London',
+    validate: v => /^[A-Za-z]+\/[A-Za-z_+-]+(\/[A-Za-z_+-]+)?$/.test(v.trim())
+        ? null
+        : 'Needs a zone such as Europe/London, America/New_York or Australia/Sydney.'
+},
+{
+    id: 'locale',
+    section: 'System',
+    title: 'Locale',
+    help: 'Sets language, date format, sort order and currency. UTF-8 ' +
+          'variants only — anything else will bite you the first time a ' +
+          'filename has an accent in it.',
+    wiki: 'locale',
+    type: 'choice',
+    options: [
+        { value: 'en_GB.UTF-8', label: 'en_GB.UTF-8', desc: 'British English.' },
+        { value: 'en_US.UTF-8', label: 'en_US.UTF-8', recommended: true,
+          desc: 'US English. What most documentation assumes.' },
+        { value: 'de_DE.UTF-8', label: 'de_DE.UTF-8', desc: 'German.' },
+        { value: 'fr_FR.UTF-8', label: 'fr_FR.UTF-8', desc: 'French.' }
+    ]
+},
+{
+    id: 'keymap',
+    section: 'System',
+    title: 'Console keymap',
+    help: 'The console layout, used before any desktop starts. Get this ' +
+          'wrong and your disk passphrase will not type the way you expect ' +
+          'at the boot prompt.',
+    wiki: 'locale',
+    type: 'choice',
+    options: [
+        { value: 'us', label: 'us', recommended: true, desc: 'US QWERTY.' },
+        { value: 'uk', label: 'uk', desc: 'UK QWERTY.' },
+        { value: 'de', label: 'de', desc: 'German QWERTZ.' },
+        { value: 'fr', label: 'fr', desc: 'French AZERTY.' }
+    ]
+},
+/* ── Desktop ───────────────────────────────────────────────────────────── */
+{
+    id: 'desktop',
+    section: 'Desktop',
+    title: 'Desktop environment',
+    help: 'Nothing here is required to have a working system. Get the base ' +
+          'system booting first — debugging a desktop is much easier from ' +
+          'something you know boots.',
+    wiki: 'desktop',
+    type: 'choice',
+    options: [
+        { value: 'dusky', label: 'DuskyOS (preconfigured Hyprland rice)',
+          desc: 'The only preconfigured desktop this project installs ' +
+                'automatically. It decides your compositor, shell, font and ' +
+                'colour scheme for you — those questions will lock, and each ' +
+                'one will say what DuskyOS set it to.',
+          note: 'Locks display server, shell, font and palette. Video walkthrough: ' + DUSKY_VIDEO,
+          locks: DUSKY_LOCKS },
+        { value: 'hyprland', label: 'Hyprland (unconfigured)', recommended: true,
+          desc: 'The compositor, with none of the rice. You configure it.' },
+        { value: 'dwm', label: 'dwm',
+          desc: 'Suckless tiling window manager on Xorg. Configured by ' +
+                'recompiling it.' },
+        { value: 'gnome', label: 'GNOME', desc: 'Full desktop, Wayland by default.' },
+        { value: 'kde', label: 'KDE Plasma', desc: 'Full desktop, very configurable.' },
+        { value: 'none', label: 'No GUI',
+          desc: 'A console. Correct for a server, and the fastest way to a ' +
+                'system you understand.' }
+    ]
+},
+{
+    id: 'display_server',
+    section: 'Desktop',
+    title: 'Display server',
+    help: 'Wayland isolates clients from each other, so one window cannot ' +
+          'read another\'s keystrokes or screen. Xorg cannot make that ' +
+          'guarantee, but some older applications and some accessibility ' +
+          'tools still need it.',
+    wiki: 'display-server',
+    when: s => s.desktop && s.desktop !== 'none',
+    type: 'choice',
+    options: [
+        { value: 'wayland', label: 'Wayland', recommended: true,
+          desc: 'Client isolation by design. The default for Hyprland, GNOME ' +
+                'and Plasma.' },
+        { value: 'xorg', label: 'Xorg',
+          desc: 'Required by dwm and some legacy applications. Any X client ' +
+                'can read any other X client\'s input.' }
+    ]
+},
+{
+    id: 'font',
+    section: 'Desktop',
+    title: 'Monospace font',
+    help: 'The font your terminal and editor use. Nerd Font variants include ' +
+          'the glyphs that status bars and shell prompts expect; without ' +
+          'them you get boxes.',
+    wiki: 'theming',
+    when: s => s.desktop && s.desktop !== 'none',
+    type: 'choice',
+    options: [
+        { value: 'jetbrains-mono-nerd', label: 'JetBrains Mono Nerd Font', recommended: true,
+          desc: 'ttf-jetbrains-mono-nerd. Wide, very legible, full glyph coverage.' },
+        { value: 'fira-code-nerd', label: 'FiraCode Nerd Font',
+          desc: 'ttf-firacode-nerd. Programming ligatures.' },
+        { value: 'cascadia-code', label: 'Cascadia Code',
+          desc: 'ttf-cascadia-code-nerd. Microsoft\'s terminal font.' },
+        { value: 'iosevka', label: 'Iosevka',
+          desc: 'ttc-iosevka. Narrow — fits more columns on a small screen.' },
+        { value: 'hack', label: 'Hack',
+          desc: 'ttf-hack-nerd. Plain and dependable.' }
+    ]
+},
+{
+    id: 'palette',
+    section: 'Desktop',
+    title: 'Colour palette',
+    help: 'Applied to the terminal, the editor and the shell prompt so they ' +
+          'agree with each other. All of these are dark schemes designed for ' +
+          'long sessions.',
+    wiki: 'theming',
+    when: s => s.desktop && s.desktop !== 'none',
+    type: 'choice',
+    options: [
+        { value: 'tokyo-night', label: 'Tokyo Night', recommended: true,
+          desc: 'What this site uses. Deep blue-grey with magenta and cyan accents.' },
+        { value: 'catppuccin-mocha', label: 'Catppuccin Mocha', desc: 'Soft, low contrast, pastel.' },
+        { value: 'gruvbox-dark', label: 'Gruvbox Dark', desc: 'Warm, retro, high contrast.' },
+        { value: 'nord', label: 'Nord', desc: 'Cool arctic blues, deliberately muted.' },
+        { value: 'dracula', label: 'Dracula', desc: 'Purple and pink on near-black.' },
+        { value: 'rose-pine', label: 'Rosé Pine', desc: 'Muted rose and pine, low glare.' },
+        { value: 'everforest', label: 'Everforest', desc: 'Green, soft, easy on the eyes.' }
+    ]
+},
+{
+    id: 'shell',
+    section: 'Desktop',
+    title: 'Login shell',
+    help: 'bash is what every guide on the internet assumes. zsh with a ' +
+          'prompt framework is the common upgrade. fish is friendlier out of ' +
+          'the box but is not POSIX, so pasted shell snippets can fail.',
+    wiki: 'shell',
+    type: 'choice',
+    options: [
+        { value: 'bash', label: 'bash', recommended: true, desc: 'Default. Nothing to install.' },
+        { value: 'zsh', label: 'zsh', desc: 'Completion and prompt customisation.' },
+        { value: 'fish', label: 'fish', desc: 'Good defaults, not POSIX-compatible.' }
+    ]
+},
+
+/* ── Services ──────────────────────────────────────────────────────────── */
+{
+    id: 'network',
+    section: 'Services',
+    title: 'Network management',
+    help: 'Pick exactly one. Two network managers fighting over the same ' +
+          'interface is a classic way to end up with no network at all.',
+    wiki: 'network',
+    type: 'choice',
+    options: [
+        { value: 'networkmanager', label: 'NetworkManager', recommended: true,
+          desc: 'Works with every desktop, handles wifi roaming and VPNs.' },
+        { value: 'systemd-networkd', label: 'systemd-networkd + iwd',
+          desc: 'Lighter, declarative, no daemon beyond systemd. Better on a server.' },
+        { value: 'iwd', label: 'iwd alone',
+          desc: 'Wireless only, minimal. You configure addressing yourself.' }
+    ]
+},
+{
+    id: 'audio',
+    section: 'Services',
+    title: 'Audio',
+    help: 'PipeWire replaced PulseAudio and JACK and is what Arch ships now. ' +
+          'Choose none for a server.',
+    wiki: 'audio',
+    when: s => s.desktop && s.desktop !== 'none',
+    type: 'choice',
+    options: [
+        { value: 'pipewire', label: 'PipeWire', recommended: true,
+          desc: 'pipewire, pipewire-pulse, wireplumber.' },
+        { value: 'none', label: 'No audio', desc: 'Server, or you will set it up later.' }
+    ]
+},
+{
+    id: 'firewall',
+    section: 'Services',
+    title: 'Firewall',
+    help: 'A default-deny inbound policy closes everything you did not ' +
+          'deliberately open. Two commands, and it is the highest ' +
+          'security-per-effort item in this whole guide.',
+    wiki: 'firewall-profiles',
+    type: 'choice',
+    options: [
+        { value: 'ufw', label: 'UFW, default deny inbound', recommended: true,
+          desc: 'Simple front end to nftables. Easy to reason about.' },
+        { value: 'nftables', label: 'nftables directly',
+          desc: 'No abstraction layer. You write the ruleset.' },
+        { value: 'none', label: 'No firewall',
+          desc: 'Everything you run that listens is reachable from your network.',
+          danger: 'Any service that binds a port is exposed to your whole network.' }
+    ]
+},
+{
+    id: 'snapshots',
+    section: 'Services',
+    title: 'Snapshots',
+    help: 'A snapshot taken automatically before every pacman transaction ' +
+          'turns a broken update into a reboot. Only useful on Btrfs.',
+    wiki: 'snapshots',
+    when: s => s.filesystem === 'btrfs',
+    type: 'choice',
+    options: [
+        { value: 'snapper', label: 'Snapper + snap-pac', recommended: true,
+          desc: 'Automatic pre/post snapshots around every pacman run.' },
+        { value: 'timeshift', label: 'Timeshift', desc: 'Simpler, GUI-driven.' },
+        { value: 'none', label: 'None', desc: 'You can add it later.' }
+    ]
+},
+
+/* ── Security ──────────────────────────────────────────────────────────── */
+{
+    id: 'security_tools',
+    section: 'Security',
+    title: 'Which security tools?',
+    help: 'Read what each one does before enabling it. Several can lock you ' +
+          'out of your own machine, which is the point of them, and the ' +
+          'reason none are enabled automatically.',
+    wiki: 'security-suite',
+    type: 'multi',
+    optional: true,
+    options: [
+        { value: 'libre-otp', label: 'Libre OTP',
+          desc: 'TOTP/HOTP second factor with no cloud account and no blobs.' },
+        { value: 'anti-ducky', label: 'Input Guard (anti-ducky)',
+          desc: 'Blocks BadUSB keystroke injection by watching HID timing.',
+          note: 'Its timing thresholds have never been measured on real ' +
+                'hardware. Test it before trusting it with your only keyboard.' },
+        { value: 'anti-evil-maid', label: 'Anti-Evil Maid',
+          desc: 'Hashes /boot so you know if it changed while the machine ' +
+                'was out of your hands.' },
+        { value: 'kernel-watcher', label: 'Kernel Watcher',
+          desc: 'Watches SSH keys, browser profiles and wallet directories ' +
+                'for readers.' },
+        { value: 'scarecrow', label: 'Scarecrow',
+          desc: 'Canary files and sandbox spoofing.',
+          danger: 'Its duress mode can destroy data. Off by default and gated ' +
+                  'behind typed confirmation.' },
+        { value: 'aur-guard', label: 'AUR Guard',
+          desc: 'Audits a PKGBUILD for malicious patterns before makepkg ' +
+                'runs it. Read-only; it cannot lock you out.' }
+    ]
+},
+{
+    id: 'apps',
+    section: 'Software',
+    title: 'Post-install software',
+    help: 'Installed and configured after the first boot, not during the ' +
+          'base install. Anything needing a decision from you is asked at ' +
+          'that point rather than guessed.',
+    wiki: 'advanced-config',
+    optional: true,
+    type: 'multi',
+    options: [
+        { value: 'git', label: 'git', recommended: true, desc: 'Asks for your name and email.' },
+        { value: 'neovim', label: 'neovim', desc: 'Editor. Themed to match your palette.' },
+        { value: 'kitty', label: 'kitty', desc: 'GPU terminal. Themed to match your palette.' },
+        { value: 'alacritty', label: 'alacritty', desc: 'GPU terminal, minimal.' },
+        { value: 'firefox', label: 'firefox', desc: 'Browser.' },
+        { value: 'chromium', label: 'chromium', desc: 'Browser.' },
+        { value: 'thunar', label: 'thunar', desc: 'File manager.' },
+        { value: 'mpv', label: 'mpv', desc: 'Media player.' },
+        { value: 'btop', label: 'btop', desc: 'Process monitor.' },
+        { value: 'openssh', label: 'openssh', desc: 'Asks whether to permit root login and password auth.' },
+        { value: 'docker', label: 'docker', desc: 'Asks whether to add you to the docker group, which is root-equivalent.' },
+        { value: 'steam', label: 'steam', desc: 'Proprietary. Excluded under a libre policy.' },
+        { value: 'discord', label: 'discord', desc: 'Proprietary. Excluded under a libre policy.' }
+    ]
+},
+{
+    id: 'buskill',
+    section: 'Security',
+    title: 'BusKill dead-man switch?',
+    help: 'BusKill is a magnetic USB cable. Pull the laptop away — or have ' +
+          'it pulled away — and the magnet separates, the USB device ' +
+          'disappears, and udev fires a rule. It turns physical separation ' +
+          'from the machine into an event you can act on.',
+    wiki: 'usb-kill',
+    optional: true,
+    type: 'choice',
+    options: [
+        { value: 'none', label: 'No', recommended: true, desc: 'Skip it.' },
+        { value: 'lock', label: 'Yes — lock the session',
+          desc: 'Non-destructive. Locks the screen on disconnect. You can ' +
+                'always get back in.' },
+        { value: 'shutdown', label: 'Yes — shut down',
+          desc: 'Cuts power, so the encryption keys leave RAM.',
+          danger: 'Unsaved work is lost on every accidental disconnect. ' +
+                  'Rehearse it before relying on it.' }
+    ]
+},
+{
+    id: 'verbosity',
+    section: 'Output',
+    title: 'How much should the generated script say?',
+    help: 'Debug injects "set -x", so bash prints every command with its ' +
+          'arguments before running it. That is what you want the first time ' +
+          'something fails.',
+    wiki: 'advanced-config-verbosity',
+    type: 'choice',
+    options: [
+        { value: 'normal', label: 'Normal', recommended: true, desc: 'Standard pacman and configuration output.' },
+        { value: 'quiet', label: 'Quiet', desc: 'Errors only.' },
+        { value: 'debug', label: 'Debug (set -x)', desc: 'Every command echoed before it runs.' }
+    ]
+}
+];
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { STEPS, DUSKY_LOCKS, DUSKY_VIDEO };
+}
