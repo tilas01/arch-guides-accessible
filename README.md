@@ -29,13 +29,50 @@
 
 ---
 
-## 🌐 Public Hosted Resources
-*   **[Interactive Dynamic Install Generator](https://tilas01.github.io/arch-guides-dynamic/)** - Dynamically generates an installation guide tailored exactly to your hardware and security needs.
-*   **[Static Arch Guides Wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html)** - A comprehensive, modular documentation repository aggregating the best guides.
-*   **[OS Shortcut & Command cheatsheet for dusky 2026 os release](docs/dusky-cheatsheet.md)** - A full cheatsheet to use the entire Dusky OS and its tools (if you selected it in the auto-installer).
-*   **[Arch Command Cheatsheet](docs/helpful-commands.md)** - General Arch Linux command cheatsheet for maintenance and pacman.
+## 🚦 Three ways to use this — pick one
 
-> **Note:** The auto script generator is completely optional and is just a tool to make installation much easier. You can use the native tools manually and follow the Wiki directly to reduce downloads and learn the process yourself!
+There is no wrong answer here. All three end at the same system; they differ in
+how much you want automated versus how much you want to understand.
+
+| | Route | Best for | Start here |
+|---|---|---|---|
+| **1** | **Dynamic generator** — answer questions, get a script | You want it working, with sane security defaults | **[Open the generator →](https://tilas01.github.io/arch-guides-dynamic/)** |
+| **2** | **Choose-your-own-path wiki** — same options, explained, done by hand | You want to learn what each step does | **[Open the wiki →](https://tilas01.github.io/arch-guides-dynamic/wiki.html#choose-your-path)** |
+| **3** | **Manual guides in this repo** — plain markdown, no website | You are offline, or prefer reading on GitHub | [Start at 01-pre-installation](docs/01-pre-installation.md) |
+
+Every option in route 1 has a matching explanation in route 2: right-click any
+dropdown in the generator and it opens that option's wiki entry. Routes 2 and 3
+cover the same ground — the wiki is the navigable version, `docs/` is the flat
+version that reads well on GitHub.
+
+> The generator is entirely optional. It writes a shell script; it does not do
+> anything you could not do by hand from the Arch Wiki. If you would rather
+> learn the process, route 2 or 3 is the better use of your time.
+
+---
+
+## 🌐 Hosted resources
+
+*   **[Interactive install generator](https://tilas01.github.io/arch-guides-dynamic/)** — builds an install script and a markdown guide from your hardware and security choices.
+*   **[Wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html)** — every generator option explained, plus the choose-your-own-path setup guide.
+*   **[Security tools](https://tilas01.github.io/arch-guides-dynamic/security-tools.html)** — all the tools in one place, with live release stats.
+*   **[Live editor](https://tilas01.github.io/arch-guides-dynamic/live.html)** — edit a generated script and guide side by side before downloading.
+
+### Reference
+
+*   **[Arch command cheatsheet](docs/helpful-commands.md)** — pacman, systemd, LUKS, BTRFS/Snapper, networking, recovery.
+*   **[DuskyOS / Hyprland keybinds](docs/dusky-cheatsheet.md)** — every shortcut, if you chose Dusky in the generator.
+*   **[Xorg vs Wayland](docs/xorg-vs-wayland.md)** — what actually differs and which you need.
+*   **[Maintenance](docs/maintenance.md)** — keeping a rolling-release install healthy.
+*   **[Architecture](docs/architecture.md)** — how the generator, the guides and the tools fit together.
+
+### Hardware security (not automatable — read before buying anything)
+
+The generator runs *after* your firmware. If someone can modify the firmware,
+none of it helps. **[Hardware & Firmware Security in the wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html#hardware-security)**
+covers locking down the firmware you already have (free, and do this first),
+BusKill as the recommended physical measure, and what measured boot with
+coreboot + Heads actually buys you versus libreboot's stricter no-blobs policy.
 
 ---
 
@@ -92,6 +129,37 @@ If you prefer to install manually, every selection in the generator has a corres
 </p>
 
 The security tools in this repository are standalone modules. They are open-source Rust tools built to enhance Linux security and integrate deeply with Arch Linux.
+
+### Install all of them in one step
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/install-security-suite.sh
+
+# Read it before running it as root
+less install-security-suite.sh
+
+sudo bash install-security-suite.sh --all
+```
+
+[`install-security-suite.sh`](scripts/install-security-suite.sh) downloads each
+binary, verifies its SHA-512 hash **and** GPG signature, installs it, and writes
+hardened systemd units.
+
+It **fails closed** — anything that does not verify aborts the whole run, and
+there is no `--skip-verify` flag. Everything is verified before anything is
+installed, so a failure part-way cannot leave you with half a suite. Daemons are
+installed but left **stopped**: Input Guard can reject a keyboard and OTP can
+block login, so enabling them is a decision you make after reading the config.
+
+```bash
+--all / --only libre-otp,scarecrow   # everything, or a subset
+--dry-run                            # show what would happen, change nothing
+--from-source                        # build with cargo from this repo
+--enable                             # also start the daemons now
+--uninstall                          # remove binaries and units
+```
+
+Full detail: [Installing the Suite in One Step](https://tilas01.github.io/arch-guides-dynamic/wiki.html#suite-installer)
 
 <div align="center">
 

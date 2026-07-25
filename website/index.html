@@ -1090,6 +1090,11 @@ Website: https://github.com/hephaest0s/usbkill">ℹ️</span> <span class="app-d
                     </div>
                 </form>
 
+                <!-- Reports any app that fell back to its recommended settings
+                     because the user never opened its ⚙️ dialog. Populated by
+                     reportAppDefaults(); hidden when nothing was defaulted. -->
+                <div id="defaults-notice" class="alert info" style="display:none; margin-top:1.5rem; text-align:left; font-size:0.82rem;"></div>
+
                 <!-- ── Upload / Live Editor Section ── -->
                 <section id="live-editor" style="display:none; margin-top:1.5rem; background:var(--bg-darker); border:1px solid var(--bg-lighter); border-radius:12px; padding:1.2rem;">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
