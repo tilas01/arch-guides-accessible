@@ -68,6 +68,22 @@ Or open the dashboard:
 kernel-watcher --interactive
 ```
 
+## Where state lives
+
+```
+/etc/arch-security/kernel-watcher/tamper.hash        # Argon2id master password hash, 0600
+/etc/arch-security/kernel-watcher/evil_maid.hash     # /boot baseline, 0600
+/etc/arch-security/kernel-watcher/ntfy_topic.conf    # optional ntfy.sh alert topic
+```
+
+That is the directory the suite installer provisions, one subdirectory per tool.
+
+Versions before 1.0 wrote to `/etc/arch-rusty-security-suite/`, which the
+installer never created. Those files are still **read** when the new ones are
+missing, so an upgrade does not turn an existing baseline into a RED ALERT.
+Nothing writes there any more — run `kernel-watcher --setup` to record state in
+the new location, and it will point at the stale copy so you can remove it.
+
 ## Verifying a release binary
 
 ```bash

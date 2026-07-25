@@ -21,9 +21,54 @@ use std::time::Duration;
 use walkdir::WalkDir;
 use zeroize::Zeroize;
 
-const TAMPER_HASH_FILE: &str = "/etc/arch-rusty-security-suite/tamper.hash";
-const EVIL_MAID_HASH_FILE: &str = "/etc/arch-rusty-security-suite/evil_maid.hash";
+// State lives under the directory the suite installer provisions — CONFIG_DIR
+// in scripts/install-security-suite.sh, which is /etc/arch-security — with one
+// subdirectory per tool, matching anti-ducky's /etc/arch-security/anti-ducky/.
+//
+// Earlier builds wrote to /etc/arch-rusty-security-suite/, which the installer
+// never created and which the systemd unit's ReadWritePaths does not cover, so
+// the installer provisioned one directory and the tool used another.
+const TAMPER_HASH_FILE: &str = "/etc/arch-security/kernel-watcher/tamper.hash";
+const EVIL_MAID_HASH_FILE: &str = "/etc/arch-security/kernel-watcher/evil_maid.hash";
+const NTFY_TOPIC_FILE: &str = "/etc/arch-security/kernel-watcher/ntfy_topic.conf";
+
+// Pre-move locations. Read-only fallbacks: an install made before the move keeps
+// verifying against its existing baseline instead of failing closed on the next
+// upgrade, which for check_evil_maid_hash would look exactly like tampering.
+const LEGACY_TAMPER_HASH_FILE: &str = "/etc/arch-rusty-security-suite/tamper.hash";
+const LEGACY_EVIL_MAID_HASH_FILE: &str = "/etc/arch-rusty-security-suite/evil_maid.hash";
+const LEGACY_NTFY_TOPIC_FILE: &str = "/etc/arch-rusty-security-suite/ntfy_topic.conf";
+
 const QUARANTINE_DIR: &str = "/var/quarantine/arss";
+
+/// Reads a state file, falling back to the pre-move location.
+///
+/// Nothing ever *writes* to the legacy path: a setup run always lands in
+/// /etc/arch-security, so the fallback drains as installs are re-baselined. The
+/// notice is deliberate — state being read from a path neither the installer nor
+/// the unit's ReadWritePaths manages is worth surfacing rather than papering
+/// over, since the next `--setup` will silently stop consulting it.
+fn read_state(path: &str, legacy: &str) -> std::io::Result<String> {
+    match fs::read_to_string(path) {
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            let contents = fs::read_to_string(legacy)?;
+            eprintln!("note: read {legacy} (pre-1.0 location). Re-run setup to move it to {path}.");
+            Ok(contents)
+        }
+        other => other,
+    }
+}
+
+/// Points at the old copy of a file once the new one has been written, so the
+/// user can retire it deliberately rather than leaving a stale hash on disk.
+fn note_legacy_leftover(legacy: &str) {
+    if Path::new(legacy).exists() {
+        println!();
+        println!("A copy from the previous location is still on disk. Once you have");
+        println!("confirmed the new one works, remove it:");
+        println!("  rm {legacy}");
+    }
+}
 
 pub fn run_setup() {
     println!("=== Kernel Watcher Tamper Protection Setup ===");
@@ -54,6 +99,7 @@ pub fn run_setup() {
     write_private(TAMPER_HASH_FILE, &password_hash)
         .expect("Failed to write tamper protection hash. Are you root?");
     println!("Tamper Protection password successfully set!");
+    note_legacy_leftover(LEGACY_TAMPER_HASH_FILE);
 }
 
 /// Argon2id parameters for the tamper-protection master password.
@@ -74,8 +120,8 @@ fn tamper_argon2() -> Argon2<'static> {
 }
 
 pub fn verify_tamper_password() -> bool {
-    let hash_str = fs::read_to_string(TAMPER_HASH_FILE).unwrap_or_else(|_| {
-        eprintln!("Tamper Protection hash not found. Did you run setup?");
+    let hash_str = read_state(TAMPER_HASH_FILE, LEGACY_TAMPER_HASH_FILE).unwrap_or_else(|_| {
+        eprintln!("Tamper Protection hash not found at {TAMPER_HASH_FILE}. Did you run setup?");
         std::process::exit(1);
     });
 
@@ -150,8 +196,15 @@ fn write_private(path: &str, contents: &str) -> std::io::Result<()> {
     use std::io::Write;
     use std::os::unix::fs::OpenOptionsExt;
 
+    // 0700 on any directory this creates, for the same reason the file is 0600.
+    // recursive() leaves an existing /etc/arch-security alone, so this only
+    // tightens the per-tool subdirectory the installer may not have made yet.
     if let Some(parent) = Path::new(path).parent() {
-        fs::create_dir_all(parent)?;
+        use std::os::unix::fs::DirBuilderExt;
+        fs::DirBuilder::new()
+            .recursive(true)
+            .mode(0o700)
+            .create(parent)?;
     }
     // mode() on create means the file is never briefly world-readable.
     let mut f = fs::OpenOptions::new()
@@ -177,10 +230,12 @@ pub fn setup_evil_maid_hash() {
         "Anti-Evil-Maid baseline hash stored successfully: {}",
         &hash[..16.min(hash.len())]
     );
+    note_legacy_leftover(LEGACY_EVIL_MAID_HASH_FILE);
 }
 
 pub fn check_evil_maid_hash() -> bool {
-    let stored_hash = fs::read_to_string(EVIL_MAID_HASH_FILE).unwrap_or_default();
+    let stored_hash =
+        read_state(EVIL_MAID_HASH_FILE, LEGACY_EVIL_MAID_HASH_FILE).unwrap_or_default();
 
     // Fail CLOSED. This previously returned true ("integrity fine") whenever the
     // baseline was missing or empty, so deleting one file silently disabled the
@@ -190,7 +245,8 @@ pub fn check_evil_maid_hash() -> bool {
         eprintln!("\n=======================================================");
         eprintln!("            [ANTI-EVIL-MAID: NO BASELINE]              ");
         eprintln!("=======================================================");
-        eprintln!("No integrity baseline was found at {EVIL_MAID_HASH_FILE}.");
+        eprintln!("No integrity baseline was found at {EVIL_MAID_HASH_FILE}");
+        eprintln!("(nor at the pre-1.0 location {LEGACY_EVIL_MAID_HASH_FILE}).");
         eprintln!();
         eprintln!("Either this has never been set up, or the baseline was deleted.");
         eprintln!("A missing baseline is NOT treated as a pass: an attacker who can");
@@ -351,7 +407,7 @@ fn handle_event(event: Event) {
 }
 
 fn send_ntfy_alert(message: &str) {
-    let topic = fs::read_to_string("/etc/arch-rusty-security-suite/ntfy_topic.conf")
+    let topic = read_state(NTFY_TOPIC_FILE, LEGACY_NTFY_TOPIC_FILE)
         .unwrap_or_else(|_| String::from("arch_rusty_security_alerts_default"));
 
     let topic = topic.trim();

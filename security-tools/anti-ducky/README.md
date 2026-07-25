@@ -23,6 +23,14 @@ a new keyboard. It is guarded by a PIN stored as an Argon2id hash at
 `/etc/arch-security/anti-ducky/unlock.hash` (0600) and it **fails closed**: if
 no PIN has been configured, nothing is unlocked.
 
+Approved devices are recorded alongside it, in
+`/etc/arch-security/anti-ducky/approved_devices.json`. Before 1.0 that registry
+lived in `/etc/anti-ducky/`, which is outside the only `/etc` path the daemon's
+systemd unit can write to (`ProtectSystem=strict` with
+`ReadWritePaths=/etc/arch-security`), so approvals were being discarded on
+restart. The old file is still read if the new one is absent — the next approval
+writes to the new location, after which `/etc/anti-ducky/` can be removed.
+
 ## Install
 
 The suite installer verifies the SHA-512 hash *and* the GPG signature, pins the

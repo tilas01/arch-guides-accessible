@@ -83,8 +83,9 @@
             border-color: var(--accent-green);
             background: var(--tint-green);
         }
-        #dropzone .dz-title { color: var(--heading-color); font-weight: bold; }
-        #dropzone .dz-sub { color: var(--fg-dim); font-size: 0.82rem; margin-top: 0.4rem; }
+        #dropzone { width: 100%; font-family: var(--font-mono); font-size: 1em; }
+        #dropzone .dz-title { display: block; color: var(--heading-color); font-weight: bold; }
+        #dropzone .dz-sub { display: block; color: var(--fg-dim); font-size: 0.82rem; margin-top: 0.4rem; }
 
         #progress-wrap { margin-top: 1rem; }
         .bar-track {
@@ -200,7 +201,7 @@
     <a href="https://github.com/tilas01/arch-guides-dynamic" class="banner-link" target="_blank" rel="noopener">
         <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
     </a>
-    <nav class="main-nav">
+    <nav class="main-nav" aria-label="Site">
         <a href="index.html" class="nav-link">⚙️ Generator</a>
         <span class="nav-sep">|</span>
         <a href="iso-verify.html" class="nav-link" style="color:var(--accent-green);">💿 Verify ISO</a>
@@ -284,21 +285,20 @@
         </p>
 <pre class="cmd">curl -O https://&lt;mirror-a&gt;/iso/latest/sha256sums.txt
 curl -O https://&lt;mirror-b&gt;/iso/latest/sha256sums.txt -o sha256sums.b.txt
-diff sha256sums.txt sha256sums.b.txt && sha256sum -c sha256sums.txt --ignore-missing</pre>
+diff sha256sums.txt sha256sums.b.txt &amp;&amp; sha256sum -c sha256sums.txt --ignore-missing</pre>
     </section>
 
     <!-- ── Step 3 ───────────────────────────────────────────────────────── -->
     <section class="step" id="step-verify">
         <h2><span class="step-num">3</span>Hash your file and compare</h2>
 
-        <div id="dropzone" tabindex="0" role="button"
-             aria-describedby="dz-help" aria-label="Choose or drop an ISO file to hash">
-            <div class="dz-title">Drop your <code>.iso</code> here, or click to choose</div>
-            <div class="dz-sub" id="dz-help">
+        <button type="button" id="dropzone" aria-describedby="dz-help">
+            <span class="dz-title">Drop your <code>.iso</code> here, or click to choose</span>
+            <span class="dz-sub" id="dz-help">
                 Read locally in 8&nbsp;MiB pieces. It is never uploaded, and nothing
                 about it is sent anywhere. Expect roughly a minute for a full ISO.
-            </div>
-        </div>
+            </span>
+        </button>
         <input type="file" id="iso-file" accept=".iso,application/x-iso9660-image" hidden>
 
         <div id="progress-wrap" hidden>
