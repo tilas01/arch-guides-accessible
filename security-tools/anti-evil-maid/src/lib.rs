@@ -29,7 +29,9 @@ fn read_state_file(name: &str) -> String {
     let legacy = format!("{}/{}", LEGACY_AEM_STATE_DIR, name);
     match fs::read_to_string(&legacy) {
         Ok(contents) => {
-            eprintln!("note: read {legacy} (pre-1.0 location). Re-run --setup to move it to {path}.");
+            eprintln!(
+                "note: read {legacy} (pre-1.0 location). Re-run --setup to move it to {path}."
+            );
             contents
         }
         Err(_) => String::new(),
@@ -54,7 +56,11 @@ pub fn run(
     } else if fs_hash_check {
         run_fs_hash_check();
     } else {
-        println!("Usage: arch-rusty-security-suite aem [--setup | --daemon | --fs-hash-check]");
+        // Both spellings work: the standalone binary and the `aem` subcommand of
+        // the unified arch-security-suite binary. The old name printed here,
+        // arch-rusty-security-suite, is not either of them.
+        println!("Usage: anti-evil-maid [--setup | --daemon | --fs-hash-check]");
+        println!("   or: arch-security-suite aem [--setup | --daemon | --fs-hash-check]");
     }
 }
 
