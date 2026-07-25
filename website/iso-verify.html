@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify an Arch ISO — Arch Guides Dynamic</title>
+    <meta name="description" content="Verify an Arch Linux ISO before you install from it. Hashing happens in your browser and the file never leaves your machine, and the checksum is sourced from mirrors other than the one that served the image.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="stylesheet" href="style.css">
+    <link rel="prefetch" href="index.html">
+    <link rel="prefetch" href="wiki.html">
+    <style>
+        /* ── Page-local layout. Palette and shared components come from
+           style.css; only what is unique to this page lives here. ── */
+        .iso-head { text-align: center; margin-bottom: 1.5rem; }
+        .iso-head h1 { color: var(--accent-green); margin-bottom: 0.4rem; }
+        .iso-head p { color: var(--fg-dim); max-width: 74ch; margin: 0 auto; }
+
+        .step {
+            background: var(--bg-lighter);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-green);
+            border-radius: 10px;
+            padding: 1.2rem 1.4rem;
+            margin-bottom: 1.5rem;
+        }
+        .step > h2 {
+            font-size: 1.15rem;
+            color: var(--accent-green);
+            margin-bottom: 0.7rem;
+        }
+        .step-num {
+            display: inline-block;
+            min-width: 1.9rem;
+            padding: 0 0.35rem;
+            margin-right: 0.5rem;
+            text-align: center;
+            background: var(--accent-green);
+            color: var(--bg-dark);
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .step.warn { border-left-color: var(--accent-orange); }
+        .step.warn > h2 { color: var(--accent-orange); }
+        .step.warn .step-num { background: var(--accent-orange); }
+
+        .why {
+            background: var(--tint-purple);
+            border-left: 3px solid var(--accent-purple);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0 6px 6px 0;
+            margin: 0.9rem 0;
+            font-size: 0.88rem;
+        }
+        .why strong { color: var(--accent-purple); }
+
+        .mirror-list { list-style: none; margin: 0.8rem 0; padding: 0; }
+        .mirror-list li {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.7rem 0.9rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.88rem;
+        }
+
+        /* Drop target. Chunky border, no gradient, hard edges — same pixel-art
+           language as the tool tiles on the security page. */
+        #dropzone {
+            border: 3px dashed var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-dark);
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.15s, background-color 0.15s;
+            min-height: var(--tap-target);
+        }
+        #dropzone:hover,
+        #dropzone:focus-visible { border-color: var(--accent-green); }
+        #dropzone.dragging {
+            border-color: var(--accent-green);
+            background: var(--tint-green);
+        }
+        #dropzone .dz-title { color: var(--heading-color); font-weight: bold; }
+        #dropzone .dz-sub { color: var(--fg-dim); font-size: 0.82rem; margin-top: 0.4rem; }
+
+        #progress-wrap { margin-top: 1rem; }
+        .bar-track {
+            height: 18px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            width: 0;
+            background: var(--accent-green);
+            transition: width 0.15s linear;
+        }
+        #progress-text { font-size: 0.8rem; color: var(--fg-dim); margin-top: 0.35rem; }
+
+        .hash-out {
+            display: block;
+            word-break: break-all;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            margin-top: 0.8rem;
+            min-height: 1.2rem;
+        }
+
+        .sum-input {
+            width: 100%;
+            min-height: 5.5rem;
+            resize: vertical;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            background: var(--bg-dark);
+            color: var(--fg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.6rem;
+        }
+        .sum-input:focus-visible { border-color: var(--accent-cyan); }
+        .sum-label {
+            display: block;
+            margin: 0.9rem 0 0.3rem;
+            font-size: 0.85rem;
+            color: var(--heading-color);
+        }
+        .name-input {
+            width: 100%;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            background: var(--bg-dark);
+            color: var(--fg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem 0.6rem;
+            min-height: var(--tap-target);
+        }
+
+        .verdict {
+            margin-top: 1rem;
+            padding: 0.9rem 1.1rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+        .verdict code { word-break: break-all; }
+        .verdict-good { border-color: var(--accent-green);  background: var(--tint-green);  color: var(--fg-color); }
+        .verdict-bad  { border-color: var(--accent-red);    background: var(--tint-red);    color: var(--fg-color); }
+        .verdict-warn { border-color: var(--accent-orange); background: var(--tint-orange); color: var(--fg-color); }
+        .verdict-info { border-color: var(--accent-blue);   background: var(--tint-blue);   color: var(--fg-color); }
+        .verdict-good strong { color: var(--accent-green); }
+        .verdict-bad strong  { color: var(--accent-red); }
+        .verdict-warn strong { color: var(--accent-orange); }
+        .verdict-info strong { color: var(--accent-blue); }
+
+        pre.cmd {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.8rem;
+            overflow-x: auto;
+            font-size: 0.82rem;
+            color: var(--heading-color);
+            margin: 0.6rem 0;
+        }
+        .fpr {
+            display: inline-block;
+            background: var(--bg-dark);
+            border: 1px solid var(--accent-yellow);
+            border-radius: 4px;
+            padding: 0.3rem 0.55rem;
+            color: var(--accent-yellow);
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+<noscript>
+    <div class="alert warning">
+        JavaScript is off, so the in-browser hashing and the mirror picker below
+        cannot run. Everything this page does can be done from a terminal — the
+        commands are all shown, and none of them need this page.
+    </div>
+</noscript>
+
+<header>
+    <a href="https://github.com/tilas01/arch-guides-dynamic" class="banner-link" target="_blank" rel="noopener">
+        <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
+    </a>
+    <nav class="main-nav">
+        <a href="index.html" class="nav-link">⚙️ Generator</a>
+        <span class="nav-sep">|</span>
+        <a href="iso-verify.html" class="nav-link" style="color:var(--accent-green);">💿 Verify ISO</a>
+        <span class="nav-sep">|</span>
+        <a href="security-tools.html" class="nav-link">🦀 Security Tools</a>
+        <span class="nav-sep">|</span>
+        <a href="wiki.html" class="nav-link">📖 Wiki</a>
+        <span class="nav-sep">|</span>
+        <a href="live.html" class="nav-link" target="_blank">📝 Live Editor</a>
+    </nav>
+</header>
+
+<main>
+    <div class="iso-head">
+        <h1>💿 Verify an Arch ISO before you install it</h1>
+        <p>
+            An installer image is the most trusted thing you will ever run: it
+            partitions your disk and it writes your bootloader. Check it before it
+            gets that chance. Nothing here is uploaded — this site is static files
+            with no server to upload to, and the hashing happens in your browser.
+        </p>
+    </div>
+
+    <div class="why">
+        <strong>The one rule this page is built around.</strong> Never take the
+        image and its checksum from the same host. If one server gives you both,
+        a server that lies about the image can hand you a checksum that matches
+        the lie, and every check you run will pass. So: one mirror for the image,
+        two <em>different</em> mirrors for the checksum, and the two have to agree
+        with each other before either is believed.
+    </div>
+
+    <!-- ── Step 1 ───────────────────────────────────────────────────────── -->
+    <section class="step" id="step-download">
+        <h2><span class="step-num">1</span>Download the image</h2>
+        <p>
+            The authority for what Arch has released is
+            <a href="https://archlinux.org/download/" target="_blank" rel="noopener">archlinux.org/download</a>.
+            Start there. Everything below is a convenience, not a replacement.
+        </p>
+        <p style="margin-top:0.7rem;">
+            Your randomly selected image mirror, nearest tier first
+            (guessed region: <strong id="region-guess">—</strong>):
+        </p>
+        <ul class="mirror-list">
+            <li>
+                <strong>Image mirror</strong> — <span id="image-mirror-country">—</span>
+                (<a id="image-mirror-link" href="https://archlinux.org/download/" target="_blank" rel="noopener">—</a>)<br>
+                Download <code>archlinux-x86_64.iso</code> and its <code>.sig</code>
+                from here.
+            </li>
+        </ul>
+        <button type="button" class="btn" id="reshuffle">🎲 Pick different mirrors</button>
+        <div class="why">
+            <strong>What "closest" means here.</strong> Continent, inferred from
+            your browser's time zone. It is not a latency measurement — a static
+            page is not allowed to time a cross-origin request it cannot read, so
+            claiming to have measured one would be a lie. Continent is a good
+            enough proxy for picking a nearby mirror.
+        </div>
+    </section>
+
+    <!-- ── Step 2 ───────────────────────────────────────────────────────── -->
+    <section class="step" id="step-checksums">
+        <h2><span class="step-num">2</span>Get the checksums from somewhere else</h2>
+        <p>
+            Two mirrors, neither of them the one that gave you the image, and
+            where possible in different countries. Open both, copy the contents,
+            and paste them into step 3.
+        </p>
+        <ul class="mirror-list" id="checksum-mirrors"></ul>
+        <div class="why">
+            <strong>Why two and not one.</strong> One alternative source protects
+            you against a single compromised or misconfigured mirror. Two lets the
+            page detect the case where the sources <em>disagree</em>, which is the
+            signal that something is actually wrong rather than merely
+            unverifiable.
+        </div>
+        <p style="font-size:0.85rem;color:var(--fg-dim);">
+            Prefer the terminal? Same idea, three commands:
+        </p>
+<pre class="cmd">curl -O https://&lt;mirror-a&gt;/iso/latest/sha256sums.txt
+curl -O https://&lt;mirror-b&gt;/iso/latest/sha256sums.txt -o sha256sums.b.txt
+diff sha256sums.txt sha256sums.b.txt && sha256sum -c sha256sums.txt --ignore-missing</pre>
+    </section>
+
+    <!-- ── Step 3 ───────────────────────────────────────────────────────── -->
+    <section class="step" id="step-verify">
+        <h2><span class="step-num">3</span>Hash your file and compare</h2>
+
+        <div id="dropzone" tabindex="0" role="button"
+             aria-describedby="dz-help" aria-label="Choose or drop an ISO file to hash">
+            <div class="dz-title">Drop your <code>.iso</code> here, or click to choose</div>
+            <div class="dz-sub" id="dz-help">
+                Read locally in 8&nbsp;MiB pieces. It is never uploaded, and nothing
+                about it is sent anywhere. Expect roughly a minute for a full ISO.
+            </div>
+        </div>
+        <input type="file" id="iso-file" accept=".iso,application/x-iso9660-image" hidden>
+
+        <div id="progress-wrap" hidden>
+            <div class="bar-track">
+                <div class="bar-fill" id="progress-bar" role="progressbar"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                     aria-label="Hashing progress"></div>
+            </div>
+            <div id="progress-text"></div>
+            <button type="button" class="btn" id="cancel-hash" hidden
+                    style="margin-top:0.6rem;background:var(--accent-red);">Cancel</button>
+        </div>
+
+        <code class="hash-out" id="hash-out" aria-live="polite"></code>
+
+        <label class="sum-label" for="iso-name">Filename to look for in the checksum lists</label>
+        <input type="text" class="name-input" id="iso-name" spellcheck="false"
+               autocomplete="off" aria-describedby="name-help">
+        <div class="dz-sub" id="name-help" style="color:var(--fg-dim);font-size:0.78rem;">
+            Filled in from the file you pick. Change it if the release you
+            downloaded differs from the one the list names.
+        </div>
+
+        <label class="sum-label" for="sums-a">Paste <code>sha256sums.txt</code> from source 1</label>
+        <textarea class="sum-input" id="sums-a" spellcheck="false" autocomplete="off"
+                  placeholder="Paste the whole file, or just the 64-character hash."></textarea>
+
+        <label class="sum-label" for="sums-b">Paste <code>sha256sums.txt</code> from source 2</label>
+        <textarea class="sum-input" id="sums-b" spellcheck="false" autocomplete="off"
+                  placeholder="From the other mirror. Both must agree."></textarea>
+
+        <div class="verdict" id="verdict" hidden aria-live="polite"></div>
+    </section>
+
+    <!-- ── Step 4 ───────────────────────────────────────────────────────── -->
+    <section class="step warn" id="step-gpg">
+        <h2><span class="step-num">4</span>Check the signature. Do not skip this.</h2>
+        <p>
+            A matching hash proves your file is what those mirrors serve. It does
+            not prove Arch published it. Only the GPG signature does that, because
+            only the release engineer holds the key that makes one.
+        </p>
+        <p style="margin-top:0.7rem;">Arch release signing key:</p>
+        <p><span class="fpr" id="fpr">—</span></p>
+        <p style="font-size:0.85rem;color:var(--fg-dim);margin-top:0.4rem;">
+            Compare that against
+            <a href="https://archlinux.org/download/" target="_blank" rel="noopener">archlinux.org/download</a>
+            as well. A fingerprint you only ever saw on one website is a
+            fingerprint you have not really checked.
+        </p>
+<pre class="cmd"># fetch the key from Arch's own web key directory, not from a mirror
+gpg --auto-key-locate clear,wkd -v --locate-external-key pierre@archlinux.org
+
+# verify
+gpg --verify archlinux-x86_64.iso.sig archlinux-x86_64.iso</pre>
+        <p style="font-size:0.85rem;">
+            Or with Sequoia, if you prefer it:
+        </p>
+<pre class="cmd">sq network wkd search pierre@archlinux.org --output release-key.pgp
+sq verify --signer-file release-key.pgp \
+          --signature-file archlinux-x86_64.iso.sig archlinux-x86_64.iso</pre>
+        <div class="why">
+            <strong>What a good signature does and does not tell you.</strong> It
+            says the holder of that key signed this exact file. It says nothing
+            about whether the key is still trustworthy — which is why the
+            fingerprint matters, and why it is worth checking in more than one
+            place.
+        </div>
+    </section>
+
+    <!-- ── Step 5 ───────────────────────────────────────────────────────── -->
+    <section class="step" id="step-write">
+        <h2><span class="step-num">5</span>Write it, and mind the dual boot</h2>
+        <p>
+            Verify <em>before</em> writing. Writing an image you have not checked
+            and verifying the USB afterwards tells you the copy succeeded, not
+            that the original was genuine.
+        </p>
+<pre class="cmd">lsblk                       # find the device. Get this wrong and you lose a disk.
+sudo dd if=archlinux-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync</pre>
+        <p style="font-size:0.85rem;color:var(--accent-red);">
+            <strong>/dev/sdX is not a real device name.</strong> Substitute the
+            one <code>lsblk</code> showed you, and check it twice. <code>dd</code>
+            will not ask.
+        </p>
+
+        <h3 style="margin-top:1.2rem;color:var(--accent-cyan);">Dual booting</h3>
+        <ul style="margin-left:1.2rem;font-size:0.9rem;">
+            <li>
+                <strong>Do not let the installer touch the existing ESP.</strong>
+                Windows and Arch can share one EFI system partition, but only if
+                you mount it and install to it rather than reformatting it.
+                Formatting the ESP removes the Windows boot entry.
+            </li>
+            <li>
+                <strong>Turn off Windows Fast Startup before you shrink anything.</strong>
+                Fast Startup leaves NTFS in a hibernated state; resizing or
+                mounting it read-write from Linux in that state corrupts it.
+            </li>
+            <li>
+                <strong>Secure Boot stays on if you enrol your own keys.</strong>
+                Disabling it for Arch also lowers the bar for the Windows install
+                sitting next to it. The
+                <a href="wiki.html#secure-boot">Secure Boot section</a> covers
+                enrolling your own keys with a signed UKI.
+            </li>
+            <li>
+                <strong>BitLocker will demand a recovery key.</strong> Changing the
+                boot configuration changes the TPM measurements. Suspend BitLocker
+                before installing, and have the recovery key written down somewhere
+                that is not the machine you are about to repartition.
+            </li>
+            <li>
+                Full walkthrough: <a href="wiki.html#dual-boot">Dual boot in the wiki</a>
+                and <a href="docs/06-dual-boot/" target="_blank" rel="noopener">docs/06-dual-boot</a>.
+            </li>
+        </ul>
+
+        <h3 style="margin-top:1.2rem;color:var(--accent-cyan);">On ARM</h3>
+        <p style="font-size:0.9rem;">
+            There is no single Arch ISO for aarch64. Arch Linux ARM ships
+            per-board rootfs tarballs, and the boot path is U-Boot or the board's
+            own firmware rather than a UEFI ISO you write to a stick — so steps 1
+            to 3 do not apply in the same shape. Use the
+            <a href="https://archlinuxarm.org/" target="_blank" rel="noopener">Arch Linux ARM</a>
+            image for your board and verify its published checksum the same way:
+            from a host other than the one that served it. The generator's
+            <a href="wiki.html#architecture">architecture option</a> branches the
+            guide accordingly.
+        </p>
+    </section>
+
+    <div class="why" style="margin-top:2rem;">
+        <strong>Nothing here needs this page.</strong> Every check above is a
+        terminal command, and the commands are the authority. This page exists to
+        make the two-source rule easy to follow, not to become another thing you
+        have to trust.
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="legal-notice">
+        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
+        <p>
+            <strong>AI-assisted content, no warranty.</strong> This site and the scripts it
+            generates were built with AI assistance. Everything is provided
+            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
+            <strong>no liability</strong> for data loss, system damage, hardware failure or
+            security breaches arising from use of these tools.
+        </p>
+        <p>
+            <strong>You are responsible for your own machine.</strong> Always read a generated
+            script before running it. These scripts repartition disks, and some options here
+            deliberately destroy data. Test in a virtual machine and cross-check against the
+            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
+        </p>
+        <p>
+            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
+            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
+            Selling or monetising it is not permitted.
+        </p>
+        <p style="margin-bottom:0;">
+            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+            <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+            <a href="index.html">Generator</a> ·
+            <a href="wiki.html">Wiki</a> ·
+            <a href="iso-verify.html">Verify ISO</a> ·
+            <a href="security-tools.html">Security Tools</a> ·
+            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+        </p>
+    </div>
+</footer>
+
+<script src="iso-verify.js" defer></script>
+</body>
+</html>
