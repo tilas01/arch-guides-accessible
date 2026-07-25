@@ -1,9 +1,10 @@
 name: Deploy Website to GitHub Pages
 
 on:
-  # Deploy whenever the site itself changes on main. Previously the only
-  # automatic trigger was the release workflow completing, so a website-only
-  # commit never reached Pages on its own.
+  # Deploy directly when the site changes on main. The workflow_run chain below
+  # already covers the normal case, but it depends on "Release Security Tools"
+  # completing first; this makes a website-only change deploy even if the Rust
+  # release job fails.
   push:
     branches: ["main"]
     paths:
@@ -77,9 +78,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Artifact
-        # NOTE: upload-pages-artifact has no v4. This was pinned to @v4, which
-        # does not resolve, so the deploy failed before uploading anything.
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: './website'
 
