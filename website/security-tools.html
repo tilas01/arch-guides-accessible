@@ -227,6 +227,37 @@
         </p>
     </section>
 
+    <!-- ── One-shot suite installer ── -->
+    <section style="margin-bottom:2rem; border:1px solid var(--accent-green); background:var(--tint-green);">
+        <h2 style="color:var(--accent-green); margin-top:0;">📦 Install the Whole Suite at Once</h2>
+        <p>
+            Rather than fetching and verifying five tools by hand, one installer does the lot:
+            it downloads each binary, checks its SHA-512 hash <em>and</em> GPG signature,
+            installs them, and writes hardened systemd units.
+        </p>
+        <p style="font-size:0.85rem; color:var(--fg-dim);">
+            It <strong>fails closed</strong> — anything that does not verify aborts the whole
+            run and nothing gets installed. There is no skip-verification flag. Daemons are
+            installed but left <strong>stopped</strong>, so nothing starts watching or blocking
+            until you have read its configuration and enabled it yourself.
+        </p>
+        <pre class="output-box oneliner"><code class="language-bash">curl -fsSLO https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/install-security-suite.sh
+
+# Always read a script before running it as root
+less install-security-suite.sh
+
+sudo bash install-security-suite.sh --all          # everything, daemons left stopped
+sudo bash install-security-suite.sh --dry-run --all # show what it would do
+sudo bash install-security-suite.sh --only libre-otp,anti-ducky
+sudo bash install-security-suite.sh --from-source   # build with cargo instead
+sudo bash install-security-suite.sh --uninstall</code></pre>
+        <p style="font-size:0.82rem;">
+            <a href="https://github.com/tilas01/arch-guides-dynamic/blob/main/scripts/install-security-suite.sh" target="_blank" rel="noopener">Read the installer on GitHub →</a>
+            ·
+            <a href="wiki.html#suite-installer">How it works →</a>
+        </p>
+    </section>
+
     <!-- ── tilas01's Rust suite ── -->
     <section class="my-tools-box" style="margin-bottom:2rem;">
         <div class="group-bar">

@@ -190,6 +190,22 @@
         <h3 id="cleanup">Post-Install Cleanup</h3>
         <p>Clears the pacman cache and build dependencies after installation. Saves a few gigabytes; the trade-off is that downgrading a package later means re-downloading it.</p>
 
+        <h3 id="dusky_setup">DuskyOS Automated Setup</h3>
+        <p id="duskyos">
+            A single yes/no. <strong>Yes</strong> installs
+            <a href="https://github.com/dusklinux/dusky" target="_blank" rel="noopener">DuskyOS</a>
+            by dusklinux: a pre-configured Hyprland desktop with dotfiles, theming and a full
+            Wayland environment. Because Dusky brings its own answers, choosing Yes also sets
+            your desktop and forces Wayland — Hyprland cannot run on Xorg — and hides those two
+            questions rather than letting you contradict it.
+        </p>
+        <p>
+            Watch the <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" rel="noopener">setup video</a>
+            and keep the <a href="docs/dusky-cheatsheet.md">keybind cheatsheet</a> to hand: a
+            tiling WM is unusable until you know the shortcuts. Answer <strong>No</strong> if you
+            want GNOME, KDE, DWM or a plain TTY, and pick those yourself.
+        </p>
+
         <h3 id="desktop">Desktop Environment</h3>
         <p><strong>None</strong> leaves a pure TTY. <strong>GNOME</strong> and <strong>KDE</strong> are full environments. <strong>DWM</strong> is a minimal tiling WM requiring Xorg. <strong>Dusky OS</strong> is a pre-configured Hyprland setup by dusklinux and forces Wayland.</p>
 
@@ -369,16 +385,71 @@ udevadm control --reload-rules</code></pre>
         </p>
     </div>
 
+    <div class="section" id="suite-installer">
+        <h2><span class="icon">📦</span> Installing the Suite in One Step</h2>
+        <p>
+            <code>scripts/install-security-suite.sh</code> installs all five tools at once,
+            so you do not have to fetch and verify each one by hand.
+        </p>
+        <pre><code class="language-bash">curl -fsSLO https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/install-security-suite.sh
+
+# Read it first. It runs as root; you should know what it does.
+less install-security-suite.sh
+
+sudo bash install-security-suite.sh --all</code></pre>
+
+        <h3>What it does, in order</h3>
+        <ol>
+            <li>Imports the <code>tilas01.asc</code> signing key and prints its fingerprint for you to check.</li>
+            <li>Downloads each selected binary plus its <code>.sha512</code> and <code>.sig</code>.</li>
+            <li>Verifies the hash, then the GPG signature, for <em>every</em> tool.</li>
+            <li>Only once all of them pass does it install anything.</li>
+            <li>Writes a hardened systemd unit per daemon and leaves it stopped.</li>
+            <li>Prints the specific setup command each tool still needs.</li>
+        </ol>
+
+        <h3>Why it behaves the way it does</h3>
+        <ul>
+            <li><strong>Fails closed.</strong> A bad hash or signature aborts the run. There is no <code>--skip-verify</code>, deliberately — a security tool you cannot verify is worse than none, because it gives false confidence.</li>
+            <li><strong>Verifies everything before installing anything.</strong> Binaries are staged in a temporary directory first, so a failure on the fifth tool cannot leave you with four installed and one missing.</li>
+            <li><strong>Enables nothing by default.</strong> Several of these can lock you out — Input Guard can reject a keyboard, OTP can block login. They install stopped, and you enable them once you have read the configuration.</li>
+            <li><strong>Units are hardened.</strong> Each service gets <code>NoNewPrivileges</code>, <code>ProtectSystem=strict</code>, <code>ProtectHome=read-only</code>, <code>MemoryDenyWriteExecute</code> and a narrow <code>ReadWritePaths</code>. A security daemon should not be the weakest thing on the box.</li>
+            <li><strong>Idempotent.</strong> Re-running upgrades in place.</li>
+        </ul>
+
+        <h3>Options</h3>
+        <pre><code class="language-bash">--all                    # every tool
+--only libre-otp,scarecrow  # just these
+--enable                 # also start the daemons now (understand them first)
+--from-source            # build with cargo from this repo instead of downloading
+--dry-run                # print what would happen, change nothing
+--uninstall              # remove binaries and units</code></pre>
+
+        <div class="alert">
+            <strong>Uninstall does not touch PAM or your config.</strong> If you enabled OTP at
+            login, remove the <code>pam_exec</code> lines from <code>/etc/pam.d/system-auth</code>
+            <em>before rebooting</em>, or you can be locked out. Config in
+            <code>/etc/arch-security</code> is left alone too, because it may hold OTP secrets
+            and duress hashes you did not mean to destroy.
+        </div>
+
+        <h3>Prefer to do it by hand?</h3>
+        <p>
+            Nothing here is magic. The generator's markdown output contains the equivalent
+            per-tool commands, and <a href="#verification">Verifying Downloads</a> covers doing
+            the hash and signature checks yourself.
+        </p>
+    </div>
+
     <div class="section" id="cheatsheets">
         <h2><span class="icon">📋</span> Cheatsheets</h2>
         <p>Quick references, kept outside the generator so you can reach them any time.</p>
         <ul>
             <li><a href="docs/helpful-commands.md">Arch command cheatsheet</a> — pacman, systemd, LUKS, BTRFS/Snapper, networking, journald and recovery.</li>
             <li><a href="docs/dusky-cheatsheet.md">DuskyOS / Hyprland keybinds</a> — every shortcut in the Dusky desktop, if you chose it in the generator.</li>
-            <li><a href="docs/cheatsheets/arch-commands.md">Condensed command list</a> — the short version, good for printing.</li>
-            <li><a href="docs/cheatsheets/duskyos-hyprland.md">DuskyOS keybind reference</a> — the printable version.</li>
             <li><a href="docs/xorg-vs-wayland.md">Xorg vs Wayland</a> — what actually differs, and which you need.</li>
             <li><a href="docs/maintenance.md">Maintenance</a> — keeping an Arch install healthy over time.</li>
+            <li><a href="docs/architecture.md">Architecture</a> — how the generator and the tools fit together.</li>
         </ul>
         <p style="font-size:0.85rem; color:var(--fg-dim);">
             The generator also drops the cheatsheets into <code>~/cheatsheets</code> on the
