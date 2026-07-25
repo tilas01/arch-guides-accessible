@@ -267,6 +267,7 @@ dependencies = [
  "anti-ducky",
  "anti-evil-maid",
  "clap",
+ "eframe",
  "kernel-watcher",
  "libre-otp",
  "scarecrow",
