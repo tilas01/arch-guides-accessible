@@ -10,7 +10,7 @@
     "test": "npm run permutations && npm run responsive && npm run html"
   },
   "devDependencies": {
-    "html-validate": "^8.24.1",
-    "jsdom": "^24.1.0"
+    "html-validate": "^11.5.6",
+    "jsdom": "^29.1.1"
   }
 }

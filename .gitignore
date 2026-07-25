@@ -52,6 +52,10 @@ patch_cookies.py
 secring.*
 private-keys-v1.d/
 
+# Node dependencies for the test suite. package.json pins the versions;
+# node_modules is reproducible from it and does not belong in git.
+node_modules/
+
 # Misc
 *.pyc
 __pycache__/
