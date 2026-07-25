@@ -39,15 +39,22 @@
     
     <header class="header">
         <a href="https://github.com/tilas01/arch-guides-dynamic" class="nav-tooltip banner-link" data-title="Arch Guides by tilas01" data-desc="Click to visit the GitHub repository containing this website, all tilas01-authored scripts, Arch installation guides, ." target="_blank"><img src="img/banner.png" alt="Arch Guides Banner" class="banner"></a>
-        <!-- Emoji header controls: absolute top-right, always visible -->
+        <!-- Emoji header controls: absolute top-right.
+             History uses .nav-tooltip so it respects the global tooltip setting.
+             Only the tooltip toggle itself is .tooltip-always — otherwise, once
+             you turned tooltips off, nothing would tell you how to turn them
+             back on. -->
         <div id="header-controls" class="js-only">
-            <button id="history-btn" type="button" class="tooltip-always"
-                data-title="🕓 Generation History"
-                data-desc="View and restore previous generations from this session. Session-only — no cookies, resets when tab closes."
-                onclick="toggleHistoryModal()">&#x1F553;</button>
+            <button id="history-btn" type="button" class="nav-tooltip"
+                aria-label="Generation history"
+                data-title="🕘 Generation History"
+                data-desc="View and reload previous generations from this session. Session-only — no cookies, and it resets when you close the tab."
+                onclick="toggleHistoryModal()">🕘</button>
             <button id="toggle-tooltips-btn" type="button" class="tooltip-always"
-                data-title=" Tooltips: ON"
-                data-desc="Tooltips are ON. Hover any element for details. Tap to disable. This button always shows regardless of toggle.">&#x2139;️</button>
+                aria-label="Toggle tooltips"
+                aria-pressed="true"
+                data-title="ℹ️ Tooltips: ON"
+                data-desc="Tooltips are ON. Hover on desktop, or tap on mobile, for an explanation of any control. Click to turn them off — this button keeps its own tooltip either way.">ℹ️</button>
         </div>
         <h1>Arch Guides Wiki &amp; Generator</h1>
         <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
@@ -102,7 +109,11 @@
                     </label>
                 </div>
                 
-                <form id="install-form">
+                <!-- Not a submitting form: this is a static site with no backend,
+                     and everything is generated in the browser. onsubmit is
+                     blocked so pressing Enter in a field runs the generator
+                     rather than reloading the page and losing every selection. -->
+                <form id="install-form" onsubmit="event.preventDefault(); generateOutput(false); return false;">
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Firmware Selection" data-desc="UEFI is modern and supports Secure Boot/UKI. BIOS is legacy and requires GRUB.">
                         <label>Firmware Interface:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="firmware">
@@ -133,43 +144,59 @@
                     </div>
                     
                     
-<div class="form-group form-step" data-title="⚙️ Encryption Layering (Cyber Chef)" oncontextmenu="window.open('wiki.html#layer-encryption', '_blank'); return false;" data-desc="Mix and match encryption protocols. Layer Post-Quantum Kyber on top of LUKS2 AES-GCM for maximum theoretical security, or stick to standard LUKS1 for legacy bootloaders.">
-    <label>⚙️ Encryption Layers:</label>
-    <div style="background:var(--bg-darker); border:1px solid var(--border-color); border-radius:8px; padding:1rem; margin-top:0.5rem;">
-        <p style="font-size:0.85rem; color:var(--fg-color); margin-top:0; margin-bottom:1rem;">Select your base layer and optional post-quantum overlays. Stacked from bottom to top.</p>
-        
-        <!-- Base Layer -->
-        <div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
-            <strong style="color:var(--accent-purple);">Layer 1: Base Disk Encryption</strong>
-            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="partitioning" style="margin-top:0.5rem; width:100%;">
-                <option value="" disabled selected hidden>No Selection Provided</option>
-                <option value="unencrypted">Unencrypted (No Security)</option>
-                <option value="luks1">LUKS1 (Legacy GRUB Compatible)</option>
-                <option value="luks2">LUKS2 (Argon2id - Recommended)</option>
-                <option value="lvm-on-luks2">LVM on LUKS2 (Flexible Volumes)</option>
-            </select>
-        </div>
+<div class="form-group form-step" data-title="⚙️ Disk Encryption" oncontextmenu="window.open('wiki.html#partitioning', '_blank'); return false;" data-desc="Your encryption is built up in layers: the container type, the cipher inside it, an optional post-quantum overlay, and an optional duress passphrase. Defaults are the recommended choice.">
+    <label>🔐 Disk Encryption</label>
+    <div class="enc-stack">
+        <p class="enc-intro">
+            Built up in layers, bottom to top. The defaults are the recommended
+            setup — you can leave every one of these alone.
+        </p>
 
-        <!-- Cipher Layer -->
-        <div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
-            <strong style="color:var(--accent-blue);">Layer 2: Cipher Algorithm</strong>
-            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="encryption_cipher" style="margin-top:0.5rem; width:100%;">
-                <option value="aes-xts-plain64" selected>AES-256-XTS (Standard)</option>
-                <option value="aes-gcm-random">AES-256-GCM (Authenticated)</option>
-                <option value="serpent-xts-plain64">Serpent-256-XTS (High Margin of Security)</option>
-            </select>
-        </div>
-
-        <!-- Post-Quantum Overlay -->
-        <div>
-            <strong style="color:var(--accent-cyan);">Layer 3: Post-Quantum Overlay</strong>
-            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="encryption_pq" style="margin-top:0.5rem; width:100%;">
-                <option value="none" selected>None (Standard Classical Security)</option>
-                <option value="kyber1024">Kyber-1024 Hybrid (Experimental NIST PQ)</option>
-            </select>
-            <div style="font-size:0.75rem; color:var(--accent-red); margin-top:0.5rem;">
-                ⚠️ <strong>WARNING:</strong> Post-Quantum overlays (Kyber) are highly experimental in early Linux kernels. May cause boot failure.
+        <!-- Layer 1 -->
+        <div class="enc-layer">
+            <div class="enc-layer-head">
+                <span class="enc-badge" style="background:var(--accent-purple);">1</span>
+                <span class="enc-layer-title">Container</span>
+                <span class="enc-hint">LUKS2 recommended</span>
             </div>
+            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="partitioning">
+                <option value="" disabled selected hidden>No Selection Provided</option>
+                <option value="unencrypted">Unencrypted — no protection at all</option>
+                <option value="luks1">LUKS1 — only for legacy GRUB on BIOS</option>
+                <option value="luks2">LUKS2 with Argon2id ⭐ Recommended</option>
+                <option value="lvm-on-luks2">LVM on LUKS2 — resizable volumes</option>
+            </select>
+        </div>
+
+        <!-- Layer 2 -->
+        <div class="enc-layer">
+            <div class="enc-layer-head">
+                <span class="enc-badge" style="background:var(--accent-blue);">2</span>
+                <span class="enc-layer-title">Cipher</span>
+                <span class="enc-hint">AES is hardware-accelerated</span>
+            </div>
+            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="encryption_cipher">
+                <option value="aes-xts-plain64" selected>AES-256-XTS ⭐ Recommended</option>
+                <option value="aes-gcm-random">AES-256-GCM — authenticated</option>
+                <option value="serpent-xts-plain64">Serpent-256-XTS — no HW acceleration, slower</option>
+            </select>
+        </div>
+
+        <!-- Layer 3 -->
+        <div class="enc-layer">
+            <div class="enc-layer-head">
+                <span class="enc-badge" style="background:var(--accent-cyan);">3</span>
+                <span class="enc-layer-title">Post-quantum overlay</span>
+                <span class="enc-hint">optional, experimental</span>
+            </div>
+            <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="encryption_pq">
+                <option value="none" selected>None ⭐ Recommended</option>
+                <option value="kyber1024">Kyber-1024 hybrid — experimental</option>
+            </select>
+            <p class="enc-warn" id="pq-warn" style="display:none;">
+                ⚠️ Post-quantum overlays are experimental in current Linux kernels and
+                <strong>may leave the system unbootable</strong>. Test in a VM first.
+            </p>
         </div>
 
         <!-- Layer 4: Duress response -->
@@ -319,10 +346,31 @@
 
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html', '_blank'); return false;" data-title="Post-Install Apps &amp; Scripts" data-desc="Select the applications to install after the base system is up. Use Enable All to select the whole list, then untick what you don't want.">
                         <div class="group-header">
-                            <label for="post_apps_container">Post-Install Apps:</label>
+                            <!-- A <div> is not a labelable control, so this is a
+                                 styled span rather than a <label for=...>. -->
+                            <span class="group-label">Post-Install Apps:</span>
                             <button type="button" class="post-apps-enable-btn" onclick="toggleAllPostApps()">✅ Enable All</button>
                         </div>
-                        <p style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;">⚠️ <strong>Proprietary / Non-Libre Warning:</strong> Apps highlighted with <span style="color:var(--accent-red);font-weight:bold;">[!]</span> (e.g., Firefox firmware blobs, Signal Electron build, Chromium, Flatpak) contain proprietary code or conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
+
+                        <!-- Reminder shown when the libre policy is NOT being
+                             enforced: informational, apps stay selectable. -->
+                        <p id="prop-reminder" style="font-size:0.8rem;color:var(--accent-red);margin-bottom:0.8rem;">
+                            ⚠️ <strong>Proprietary / non-libre software:</strong> anything marked
+                            <span style="color:var(--accent-red);font-weight:bold;">[!]</span> contains closed-source
+                            code or conflicts with strict libre principles — Firefox firmware blobs, the Signal
+                            Electron build, Chromium, Flatpak's default remote. They still install normally;
+                            this is just so you know what you are getting.
+                            <a href="wiki.html#libre-policy" style="color:var(--accent-red)">What counts as non-libre →</a>
+                        </p>
+
+                        <!-- Shown instead when the policy IS enforced: those apps
+                             are disabled, and this explains why. -->
+                        <p id="prop-enforced" class="alert warning" style="display:none; font-size:0.8rem; margin-bottom:0.8rem;">
+                            🔒 <strong>100% Libre policy is enforced.</strong> Proprietary apps below are
+                            greyed out and cannot be selected. Untick
+                            <em>Enforce 100% Libre Software Policy</em> above if you want them back.
+                            <a href="wiki.html#libre-policy" style="color:var(--accent-red)">Why these are excluded →</a>
+                        </p>
                         <div class="app-grid-container" id="post_apps_container">
                             <div class="app-category-header nav-tooltip" style="grid-column: 1 / -1; margin-top: 0.5rem; cursor: help;" data-title="Arch User Repository (AUR)" data-desc="The AUR contains community-maintained packages. You cannot install external apps (like Librewolf, Tor Browser) via pacman without an AUR helper like paru. Right-click to read the Wiki." oncontextmenu="window.open('wiki.html#aur', '_blank'); return false;">📦 AUR <span style="font-size: 0.8em; color: var(--accent-red);">(Requires AUR Helper)</span></div>
                             <label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
@@ -462,7 +510,7 @@ OpenDoas privilege escalation (sudo alternative)
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/Duncaen/OpenDoas">ℹ️</span> <span class="app-desc">Privilege</span> <button type="button" class="btn-configure" data-app="doas" style="background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
+Website: https://github.com/Duncaen/OpenDoas">ℹ️</span> <span class="app-desc">Privilege</span> <span class="btn-configure" role="button" tabindex="0" data-app="doas" style="background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</span>
                              
 </label>
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">💻 Dev / Terminal</div>
@@ -735,7 +783,7 @@ BTRFS/LVM snapshot manager — automated filesystem restore points before and af
 
 Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
 Source: 📁 Arch Extra
-Website: https://github.com/openSUSE/snapper">ℹ️</span> <span class="app-desc">Snapshots</span> <button type="button" class="btn-configure" data-app="snapper" style="background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</button>
+Website: https://github.com/openSUSE/snapper">ℹ️</span> <span class="app-desc">Snapshots</span> <span class="btn-configure" role="button" tabindex="0" data-app="snapper" style="background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('snapper')" title="Configure this app">⚙️</span>
 </label>
                             <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🎨 Dusky OS</div>
@@ -828,9 +876,26 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         </select>
                     </div>
 
+                    <!-- Straight yes/no. Answering Yes ticks the Dusky setup app,
+                         forces Wayland and skips the questions that no longer
+                         apply, because Dusky brings its own answers. -->
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#duskyos', '_blank'); return false;" data-title="DuskyOS Automated Setup" data-desc="DuskyOS is a pre-configured Hyprland desktop by dusklinux: dotfiles, theming and a full Wayland environment installed for you. Choosing Yes sets the desktop and display server automatically.">
+                        <label for="dusky_setup">Install DuskyOS (automated Hyprland desktop)?</label>
+                        <select oncontextmenu="window.open('wiki.html#duskyos', '_blank'); return false;" id="dusky_setup">
+                            <option value="no" selected>No — I'll choose my own desktop</option>
+                            <option value="yes">Yes — set up DuskyOS for me</option>
+                        </select>
+                        <p id="dusky-note" style="display:none; font-size:0.78rem; color:var(--accent-cyan); margin-top:0.4rem;">
+                            🌙 DuskyOS selected. Desktop and display server are set for you
+                            (Hyprland on Wayland) and those two questions are hidden. Watch the
+                            <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" rel="noopener">setup video</a>
+                            and read the <a href="docs/dusky-cheatsheet.md">keybind cheatsheet</a> before first boot.
+                        </p>
+                    </div>
+
                     <div class="form-step" data-title="Display Server" data-desc="Wayland is modern and secure. Xorg is legacy but required for DWM/Dusky.">
                         <div class="form-group" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
-                            <label>Display Server:</label>
+                            <label for="display_server">Display Server:</label>
                             <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="display_server">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
                                     <option value="auto">Auto (Depends on DE)</option>
@@ -975,7 +1040,25 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                             </label>
                             <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#other-sec', '_blank'); return false;">
                                 <input type="checkbox" name="other_sec_tools" value="auditd">
-                                <span class="app-icon">📋</span> auditd <span class="app-desc">Audit daemon</span>
+                                <span class="app-icon">📋</span> auditd <span class="info-tooltip-icon" title="auditd
+--
+The Linux kernel audit daemon. Records security-relevant events to /var/log/audit; preconfigured here to watch /etc/passwd and /etc/sudoers for changes.
+
+Build Integrity: 100% Reproducible (Verifiable from source)
+Source: 📁 Arch Core (audit)
+Website: https://github.com/linux-audit/audit-userspace">ℹ️</span> <span class="app-desc">Audit daemon</span>
+                            </label>
+                            <label class="app-card other-sec-tool" oncontextmenu="window.open('wiki.html#usb-kill', '_blank'); return false;">
+                                <input type="checkbox" name="other_sec_tools" value="usbkill">
+                                <span class="app-icon">🔴</span> <a href="https://github.com/hephaest0s/usbkill" target="_blank" rel="noopener">usbkill</a> <span class="prop-warn" title="Destructive: powers the machine off without warning">[!]</span> <span class="info-tooltip-icon" title="usbkill (upstream project)
+--
+The original anti-forensic USB kill switch. Watches for USB changes and powers the machine off immediately.
+
+WARNING: Shuts down without confirmation. Unsaved work is lost. Prefer the generator's built-in USB Kill Switch option set to 'lock session' unless you specifically need this.
+
+Build Integrity: 100% Reproducible (Python, auditable)
+Source: 📁 AUR (usbkill)
+Website: https://github.com/hephaest0s/usbkill">ℹ️</span> <span class="app-desc">Anti-forensic</span>
                             </label>
                         </div>
                     </div>
@@ -985,10 +1068,17 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         <ul id="error-list" style="margin-top: 0.5rem; margin-bottom: 0;"></ul>
                         <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-red); font-weight: bold;">Click anywhere here to teleport to the first invalid field.</div>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; gap:1.5rem; margin-top: 0.8rem; flex-wrap:wrap; position:sticky; bottom:0; padding:1rem; background:var(--bg-darker); border-top:1px solid var(--accent-cyan); z-index:100; border-radius:8px; width:100%;">
-                        <div class="btn-container" style="width: 100%; justify-content: center;">
-                            <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Generate a custom Arch Linux install script and/or markdown guide based on your selections above. Will open in the Live Editor." style="width:100%; max-width:500px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
+                    <!-- Generate sits at the end of the form, not stuck to the
+                         viewport: this is the last thing you do, after working
+                         down every option above. -->
+                    <div class="generate-row">
+                        <div class="btn-container" style="width: 100%; justify-content: center; margin-top: 0;">
+                            <button type="button" id="generate-btn" class="btn form-step btn-tooltip" data-title="Generate Custom Guide" data-desc="Builds your install script and markdown guide from the selections above, then opens them in the Live Editor so you can review and edit before downloading." style="width:100%; max-width:500px; text-align:center; font-size:1.1rem; padding:0.8rem; font-weight:bold;">⚙️ Generate Custom Guide</button>
                         </div>
+                        <p style="font-size:0.78rem; color:var(--fg-dim); text-align:center; margin:0.6rem 0 0;">
+                            Nothing is uploaded — generation happens entirely in your browser.
+                            Review the output before running any of it.
+                        </p>
                     </div>
                 </form>
 
@@ -1021,7 +1111,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
             </div>
         </div>
         
-        <button class="btn nav-tooltip" data-title="Confirm & Save" data-desc="Finalizes your edits, pushes them to History, and moves to the Static Output view." style="background:var(--accent-green); color:var(--bg-darker); font-weight:bold; padding:0.5rem 1.2rem;" onclick="confirmAndSaveLiveEditor()">
+        <button type="button" class="btn nav-tooltip" data-title="Confirm & Save" data-desc="Finalizes your edits, pushes them to History, and moves to the Static Output view." style="background:var(--accent-green); color:var(--bg-darker); font-weight:bold; padding:0.5rem 1.2rem;" onclick="confirmAndSaveLiveEditor()">
             ✅ Confirm & Save
         </button>
     </div>
@@ -1057,13 +1147,13 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem;">
         <h2 style="color:var(--accent-green); margin:0;">✅ Finalized Output</h2>
         <div style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; align-items:center; width:100%;">
-            <button class="btn nav-tooltip" data-title="Download All" data-desc="Downloads a .zip containing the MD guide, SH scripts, and your .sc configuration." style="flex:1; min-width:150px; max-width:250px; background:var(--accent-purple); color:var(--bg-darker); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="downloadAllOutput()">
+            <button type="button" class="btn nav-tooltip" data-title="Download All" data-desc="Downloads a .zip containing the MD guide, SH scripts, and your .sc configuration." style="flex:1; min-width:150px; max-width:250px; background:var(--accent-purple); color:var(--bg-darker); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="downloadAllOutput()">
                 📦 Download All
             </button>
-            <button class="btn nav-tooltip" data-title="Deploy Configuration" data-desc="Right-click or click this button to instantly execute the deployment." style="flex:1; min-width:150px; max-width:250px; background:var(--accent-green); color:var(--bg-darker); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="deployOutput()" oncontextmenu="deployOutput(); return false;">
+            <button type="button" class="btn nav-tooltip" data-title="Deploy Configuration" data-desc="Right-click or click this button to instantly execute the deployment." style="flex:1; min-width:150px; max-width:250px; background:var(--accent-green); color:var(--bg-darker); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="deployOutput()" oncontextmenu="deployOutput(); return false;">
                 🚀 Deploy
             </button>
-            <button class="btn nav-tooltip" data-title="Back to Generator" data-desc="Return to the main configuration menu." style="flex:1; min-width:150px; max-width:250px; background:var(--bg-lighter); color:var(--accent-blue); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="location.reload()">
+            <button type="button" class="btn nav-tooltip" data-title="Back to Generator" data-desc="Return to the main configuration menu." style="flex:1; min-width:150px; max-width:250px; background:var(--bg-lighter); color:var(--accent-blue); font-weight:bold; padding:0.8rem 1rem; text-align:center; font-size:1.05rem;" onclick="location.reload()">
                 🔄 Start Over
             </button>
         </div>
@@ -1091,7 +1181,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
     <div style="margin-bottom:2.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-darker); padding:1rem; border-top-left-radius:8px; border-top-right-radius:8px; border:1px solid var(--border-color); border-bottom:none;">
             <h3 style="color:var(--accent-purple); margin:0;">📄 Markdown Guide (.md)</h3>
-            <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-md', 'arch_guide.md')">Download</button>
+            <button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-md', 'arch_guide.md')">Download</button>
         </div>
         <pre id="static-md" style="width:100%; max-height:500px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:2rem; border:1px solid var(--border-color); border-bottom-left-radius:8px; border-bottom-right-radius:8px; overflow-y:auto; overflow-x:auto;"><code class="language-markdown"></code></pre>
     </div>
@@ -1100,7 +1190,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
     <div style="margin-bottom:2.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-darker); padding:1rem; border-top-left-radius:8px; border-top-right-radius:8px; border:1px solid var(--border-color); border-bottom:none;">
             <h3 style="color:var(--accent-cyan); margin:0;" id="static-title-install">⚙️ Install Script (.sh)</h3>
-            <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-install', 'install.sh')">Download</button>
+            <button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-install', 'install.sh')">Download</button>
         </div>
         <pre id="static-install" style="width:100%; max-height:400px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:2rem; border:1px solid var(--border-color); border-bottom-left-radius:8px; border-bottom-right-radius:8px; overflow-y:auto; overflow-x:auto;"><code class="language-bash"></code></pre>
     </div>
@@ -1109,7 +1199,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
     <div id="static-post-container" style="margin-bottom:2.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-darker); padding:1rem; border-top-left-radius:8px; border-top-right-radius:8px; border:1px solid var(--border-color); border-bottom:none;">
             <h3 style="color:var(--accent-blue); margin:0;">🚀 Post-Install Script (.sh)</h3>
-            <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-post', 'post_install.sh')">Download</button>
+            <button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadContentStatic('static-post', 'post_install.sh')">Download</button>
         </div>
         <pre id="static-post" style="width:100%; max-height:300px; background:var(--bg-color); color:var(--fg-color); font-family:var(--font-mono); font-size:0.85rem; padding:2rem; border:1px solid var(--border-color); border-bottom-left-radius:8px; border-bottom-right-radius:8px; overflow-y:auto; overflow-x:auto;"><code class="language-bash"></code></pre>
     </div>
@@ -1126,10 +1216,133 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
             <!-- History Items Injected Here -->
         </div>
         <div style="padding:1rem; border-top:1px solid var(--border-color); text-align:center;">
-            <button class="btn" style="background:transparent; border:1px solid var(--accent-red); color:var(--accent-red); padding:0.4rem 1rem;" onclick="clearHistory()">🗑️ Clear History</button>
+            <button type="button" class="btn" style="background:transparent; border:1px solid var(--accent-red); color:var(--accent-red); padding:0.4rem 1rem;" onclick="clearHistory()">🗑️ Clear History</button>
         </div>
     </div>
 </div>
+
+<!-- ═══ Credits ═══════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+    <!-- Author: tilas01 | Main Developer & Maintainer -->
+    <h3 style="color: var(--accent-purple); margin-bottom: 1rem;">Credits &amp; Acknowledgements</h3>
+    <div class="credits-grid">
+        <!-- tilas01: main author -->
+        <div class="credit-card nav-tooltip"
+             data-title="tilas01 — Main Author"
+             data-desc="Main author, developer and maintainer of Arch Guides: all scripts, the website, the security tooling and the documentation."
+             style="border-color:var(--accent-purple); cursor:pointer; order:-1;"
+             onclick="window.open('https://github.com/tilas01','_blank','noopener')">
+            <img src="https://github.com/tilas01.png?size=80" alt="tilas01" loading="lazy"
+                 style="border-color:var(--accent-purple); width:48px; height:48px;">
+            <div class="credit-info">
+                <span class="credit-name" style="font-size:1.05rem; color:var(--accent-purple);">tilas01</span>
+                <span class="credit-role">
+                    Main Author, Developer &amp; Maintainer<br>
+                    <a href="https://github.com/tilas01" target="_blank" rel="noopener"
+                       style="color:var(--accent-purple);font-size:0.75rem;" onclick="event.stopPropagation()">GitHub</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- dusklinux: Dusky OS -->
+        <div class="credit-card nav-tooltip"
+             data-title="dusklinux — Dusky OS"
+             data-desc="Creator of Dusky OS, a minimal Arch-based setup with automated Hyprland, custom dotfiles and theming. The basis for the Dusky desktop option and cheatsheet here."
+             style="border-color:var(--accent-blue); cursor:pointer;"
+             onclick="window.open('https://github.com/dusklinux/dusky','_blank','noopener')">
+            <img src="https://github.com/dusklinux.png?size=80" alt="dusklinux" loading="lazy"
+                 style="border-color:var(--accent-blue); width:48px; height:48px;">
+            <div class="credit-info">
+                <span class="credit-name" style="color:var(--accent-blue);">dusklinux</span>
+                <span class="credit-role">
+                    Creator of Dusky OS 🎨 — Arch + Hyprland<br>
+                    <a href="https://github.com/dusklinux" target="_blank" rel="noopener"
+                       style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">GitHub</a>
+                    · <a href="https://github.com/dusklinux/dusky" target="_blank" rel="noopener"
+                       style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">dusky repo</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Arch Wiki / community -->
+        <div class="credit-card nav-tooltip"
+             data-title="Arch Linux Wiki &amp; Community"
+             data-desc="Every procedure here follows the Arch Wiki. It is the authoritative reference — when this site and the Arch Wiki disagree, the Arch Wiki is right."
+             style="border-color:var(--accent-orange); cursor:pointer;"
+             onclick="window.open('https://wiki.archlinux.org/','_blank','noopener')">
+            <div style="width:48px; height:48px; border:2px solid var(--accent-orange); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:rgba(255,158,100,0.1);">📚</div>
+            <div class="credit-info">
+                <span class="credit-name" style="color:var(--accent-orange);">Arch Wiki</span>
+                <span class="credit-role">
+                    Authoritative reference for every procedure<br>
+                    <a href="https://wiki.archlinux.org/title/Installation_guide" target="_blank" rel="noopener"
+                       style="color:var(--accent-orange);font-size:0.75rem;" onclick="event.stopPropagation()">Installation guide</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Integrated tools -->
+        <div class="credit-card nav-tooltip"
+             data-title="Integrated Security Tools"
+             data-desc="External tools integrated into the generator: arch-secure-boot (UKI / Secure Boot) by max-baz, and Snapper for BTRFS rollbacks."
+             style="border-color:var(--accent-green);">
+            <div style="width:48px; height:48px; border:2px solid var(--accent-green); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:rgba(158,206,106,0.1);">🛠️</div>
+            <div class="credit-info">
+                <span class="credit-name" style="color:var(--accent-green);">Integrated Tools</span>
+                <span class="credit-role">
+                    <a href="https://github.com/max-baz/arch-secure-boot" target="_blank" rel="noopener"
+                       style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">arch-secure-boot (max-baz)</a><br>
+                    <a href="https://github.com/openSUSE/snapper" target="_blank" rel="noopener"
+                       style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">Snapper</a>
+                    · <a href="https://github.com/hephaest0s/usbkill" target="_blank" rel="noopener"
+                       style="color:var(--accent-green);font-size:0.75rem;" onclick="event.stopPropagation()">usbkill</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- AI assistance -->
+        <div class="credit-card nav-tooltip"
+             data-title="AI Assistance — Co-development"
+             data-desc="Multiple AI models were used during development. All output is reviewed, tested and curated by tilas01; nothing ships unreviewed."
+             style="border-color:var(--accent-cyan);">
+            <div style="width:48px; height:48px; border:2px solid var(--accent-cyan); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:rgba(125,207,255,0.1);">🤖</div>
+            <div class="credit-info">
+                <span class="credit-name" style="color:var(--accent-cyan);">AI Assistance</span>
+                <span class="credit-role">Co-development<br>All output reviewed &amp; curated by tilas01</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Legal ═══ -->
+    <div class="legal-notice">
+        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
+        <p>
+            <strong>AI-assisted content, no warranty.</strong> This site and the scripts it
+            generates were built with AI assistance. Everything is provided
+            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
+            <strong>no liability</strong> for data loss, system damage, hardware failure or
+            security breaches arising from use of these tools.
+        </p>
+        <p>
+            <strong>You are responsible for your own machine.</strong> Always read a generated
+            script before running it. These scripts repartition disks, and some options here
+            deliberately destroy data. Test in a virtual machine and cross-check against the
+            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
+        </p>
+        <p>
+            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
+            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
+            Selling or monetising it is not permitted.
+        </p>
+        <p style="margin-bottom:0;">
+            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> ·
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+            <a href="wiki.html">Wiki</a> ·
+            <a href="security-tools.html">Security Tools</a> ·
+            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+        </p>
+    </div>
+</footer>
 
 
     </main>
@@ -1141,7 +1354,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
 <!-- App Configurer Modal Overlay -->
 <div id="app-config-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
     <div style="background:var(--bg-darker); border:1px solid var(--accent-blue); border-radius:12px; padding:2rem; width:90%; max-width:500px; box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative;">
-        <button id="close-modal-btn" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-color); font-size:1.5rem; cursor:pointer;">&times;</button>
+        <button type="button" id="close-modal-btn" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-color); font-size:1.5rem; cursor:pointer;">&times;</button>
         
         <h3 id="modal-title" style="color:var(--accent-cyan); margin-top:0;">⚙️ App Configurer</h3>
         <p id="modal-desc" style="font-size:0.85rem; color:#8b949e; margin-bottom:1.5rem;"></p>
@@ -1150,7 +1363,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
             <!-- Dynamic Content Injected Here -->
         </div>
 
-        <button id="save-modal-btn" class="btn" style="margin-top:1.5rem; width:100%;">Save Configuration</button>
+        <button type="button" id="save-modal-btn" class="btn" style="margin-top:1.5rem; width:100%;">Save Configuration</button>
     </div>
 </div>
 

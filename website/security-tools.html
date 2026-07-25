@@ -67,7 +67,7 @@
         }
         .pixel-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 0 rgba(125, 207, 255, 0.35); }
         .pixel-card:has(input:checked) {
-            background: rgba(125, 207, 255, 0.12);
+            background: var(--tint-cyan);
             box-shadow: inset 0 0 0 2px var(--accent-cyan), 4px 4px 0 0 rgba(125, 207, 255, 0.4);
         }
         .pixel-card.third-party { border-color: var(--accent-orange); box-shadow: 4px 4px 0 0 rgba(255, 158, 100, 0.25); }
@@ -212,7 +212,7 @@
         <div class="table-scroll">
             <table class="rel-table" id="releases-table">
                 <thead>
-                    <tr><th>Tag</th><th>Published</th><th>Assets</th><th>Downloads</th><th></th></tr>
+                    <tr><th scope="col">Tag</th><th scope="col">Published</th><th scope="col">Assets</th><th scope="col">Downloads</th><th scope="col"></th></tr>
                 </thead>
                 <tbody id="releases-body">
                     <tr><td colspan="5" style="color:var(--fg-dim);">Loading releases…</td></tr>
@@ -317,7 +317,8 @@ const THIRD_PARTY = [
     { value: 'ufw', icon: '🧱', name: 'UFW', desc: 'A readable front end to netfilter. Configured default-deny inbound, allow outbound — the sane baseline for a desktop.', url: 'https://launchpad.net/ufw', pkg: 'ufw' },
     { value: 'lynis', icon: '🔍', name: 'Lynis', desc: 'Security auditing tool that scores your installed system against hardening benchmarks and writes an actionable report.', url: 'https://cisofy.com/lynis/', pkg: 'lynis' },
     { value: 'usbguard', icon: '🔌', name: 'USBGuard', desc: 'Device authorisation policy for USB. Generates an allowlist from what is currently attached and rejects anything else at the kernel level.', url: 'https://usbguard.github.io/', pkg: 'usbguard' },
-    { value: 'auditd', icon: '📋', name: 'auditd', desc: 'The Linux kernel audit daemon. Records security-relevant events; preconfigured here to watch /etc/passwd and /etc/sudoers for changes.', url: 'https://github.com/linux-audit/audit-userspace', pkg: 'audit' }
+    { value: 'auditd', icon: '📋', name: 'auditd', desc: 'The Linux kernel audit daemon. Records security-relevant events; preconfigured here to watch /etc/passwd and /etc/sudoers for changes.', url: 'https://github.com/linux-audit/audit-userspace', pkg: 'audit' },
+    { value: 'usbkill', icon: '🔴', name: 'usbkill', destructive: true, desc: 'The original anti-forensic USB kill switch: watches for USB changes and powers the machine off immediately, with no confirmation. Unsaved work is lost. Prefer the generator’s built-in USB Kill Switch set to "lock session" unless you specifically need a hard power-off.', url: 'https://github.com/hephaest0s/usbkill', pkg: 'usbkill' }
 ];
 
 const REPO = 'tilas01/arch-guides-dynamic';
@@ -366,6 +367,7 @@ function renderThirdParty() {
                 <span class="pixel-lang" style="background:rgba(158,206,106,0.18); color:var(--accent-green);">REPO</span>
             </div>
             <p class="pixel-desc">${escapeHtml(t.desc)}</p>
+            ${t.destructive ? '<p class="pixel-desc" style="color:var(--accent-red);"><strong>⚠️ Destructive: powers the machine off with no confirmation.</strong></p>' : ''}
             <div class="pixel-meta"><span>📦 pacman -S ${escapeHtml(t.pkg)}</span></div>
             <div class="pixel-links">
                 <a href="${escapeHtml(t.url)}" target="_blank" rel="noopener"
@@ -535,5 +537,39 @@ function initSecurityToolsPage() {
 
 document.addEventListener('DOMContentLoaded', initSecurityToolsPage);
 </script>
+<div class="site-footer">
+
+    <div class="legal-notice">
+        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
+        <p>
+            <strong>AI-assisted content, no warranty.</strong> This site and the scripts it
+            generates were built with AI assistance. Everything is provided
+            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
+            <strong>no liability</strong> for data loss, system damage, hardware failure or
+            security breaches arising from use of these tools.
+        </p>
+        <p>
+            <strong>You are responsible for your own machine.</strong> Always read a generated
+            script before running it. These scripts repartition disks, and some options here
+            deliberately destroy data. Test in a virtual machine and cross-check against the
+            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
+        </p>
+        <p>
+            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
+            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
+            Selling or monetising it is not permitted.
+        </p>
+        <p style="margin-bottom:0;">
+            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+            <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+            <a href="index.html">Generator</a> ·
+            <a href="wiki.html">Wiki</a> ·
+            <a href="security-tools.html">Security Tools</a> ·
+            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+        </p>
+    </div>
+
+</div>
 </body>
 </html>

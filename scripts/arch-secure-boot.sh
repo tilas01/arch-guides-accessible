@@ -1,7 +1,9 @@
 #!/bin/bash
-# Adapted from max-baz's arch-secure-boot script.
+# Adapted from max-baz's arch-secure-boot script, whose guide covers running
+# LUKS with a Unified Kernel Image instead of GRUB — the same approach used here.
 # https://github.com/max-baz/arch-secure-boot
-# This script has been modified for this guide by Gemini AI.
+#
+# Modified for this guide, with AI assistance. All changes reviewed by tilas01.
 
 set -e
 

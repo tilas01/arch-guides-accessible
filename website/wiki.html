@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arch Guides — Official Wiki</title>
+    <meta name="description" content="The Arch Guides wiki: every generator option explained, a choose-your-own-path setup guide, the security tool suite, hardware security (BusKill, coreboot, Heads), and command cheatsheets.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Shared stylesheet first, so the palette, nav, credits and legal-notice
+         components are available. The page-specific block below then overrides
+         only what this page needs. -->
+    <link rel="stylesheet" href="style.css">
     <style>
         :root {
             --bg-color: #1a1b26;
@@ -495,7 +501,7 @@ udevadm control --reload-rules</code></pre>
         </ul>
     </div>
 
-    <div class="section" id="firewall">
+    <div class="section" id="firewall-profiles">
         <h2><span class="icon">🛡️</span> UFW Firewall Profiles</h2>
         <p>The Generator allows you to configure Uncomplicated Firewall (UFW) dynamically during installation.</p>
         <ul>
@@ -661,6 +667,40 @@ udevadm control --reload-rules</code></pre>
         <p>🛠️ Arch Rusty Security Suite by tilas01. Licensed under GNU AGPLv3.</p>
     </footer>
 
+<div class="site-footer">
+
+    <div class="legal-notice">
+        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
+        <p>
+            <strong>AI-assisted content, no warranty.</strong> This site and the scripts it
+            generates were built with AI assistance. Everything is provided
+            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
+            <strong>no liability</strong> for data loss, system damage, hardware failure or
+            security breaches arising from use of these tools.
+        </p>
+        <p>
+            <strong>You are responsible for your own machine.</strong> Always read a generated
+            script before running it. These scripts repartition disks, and some options here
+            deliberately destroy data. Test in a virtual machine and cross-check against the
+            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
+        </p>
+        <p>
+            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
+            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
+            Selling or monetising it is not permitted.
+        </p>
+        <p style="margin-bottom:0;">
+            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+            <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+            <a href="index.html">Generator</a> ·
+            <a href="wiki.html">Wiki</a> ·
+            <a href="security-tools.html">Security Tools</a> ·
+            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+        </p>
+    </div>
+
+</div>
 </body>
 </html>
 <script>
