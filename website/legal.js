@@ -60,12 +60,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <!-- Blurb -->
       <div style="background:var(--bg-lighter,#24283b); border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.5rem; font-size:0.85rem; line-height:1.65;">
+        <p style="margin:0 0 0.7rem;">
+          <strong style="color:var(--accent-green,#9ece6a);">Start by verifying your ISO.</strong>
+          That comes before everything else, and the
+          <a href="iso-verify.html" style="color:var(--accent-green,#9ece6a);">Verify Arch ISO</a>
+          page does it in your browser — the file never leaves your machine, and the
+          checksum is taken from mirrors other than the one that served the image, so
+          a host that lies about the image cannot also hand you a matching checksum.
+        </p>
+        <p style="margin:0 0 0.7rem;">
+          Then pick whichever suits you. All three cover the same options and produce
+          the same install:
+        </p>
+        <ul style="margin:0 0 0.7rem 1.1rem; padding:0;">
+          <li><a href="manual.html" style="color:var(--accent-purple,#bb9af7);"><strong>Manual walkthrough</strong></a>
+              — one question at a time, each explaining what it does and what it costs,
+              with the guide building itself as you answer. <em>Recommended on a phone.</em></li>
+          <li><a href="index.html" style="color:var(--accent-blue,#7aa2f7);"><strong>Generator</strong></a>
+              — one form, every option at once, straight to a script and a guide.
+              <em>Fastest on a desktop when you already know what you want.</em></li>
+          <li><a href="wiki.html" style="color:var(--accent-cyan,#7dcfff);"><strong>Wiki</strong></a>
+              — the same install written out longhand, with the decision points as
+              branches you choose between. Also in the repository as markdown.</li>
+        </ul>
         <p style="margin:0;">
-          Arch Guides Dynamic is an interactive, fully customisable Arch Linux installation guide generator.
-          Use the <strong style="color:var(--accent-cyan,#7dcfff);">Generator</strong> to create a personalised install script and markdown guide,
-          follow the <strong style="color:var(--accent-cyan,#7dcfff);">Wiki</strong> for manual configuration,
-          or download the <strong style="color:var(--accent-purple,#bb9af7);">Arch Rusty Security Suite</strong> binaries to harden your system.
-          Hover (or tap) any labelled element for a detailed tooltip.
+          <a href="site-index.html" style="color:var(--accent-cyan,#7dcfff);"><strong>Index</strong></a>
+          searches all of it at once. The
+          <a href="security-tools.html" style="color:var(--accent-red,#f7768e);"><strong>security tools</strong></a>
+          are optional and several can lock you out — read what each does first.
+          Hover, or tap, any labelled element for an explanation; the
+          <strong>ℹ️</strong> button top right turns those off and back on.
         </p>
       </div>
 
