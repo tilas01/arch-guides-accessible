@@ -1,0 +1,78 @@
+tn:hover {
+    transform: scale(1.1) rotate(15deg);
+}
+
+/* ─── My Tools (tilas01) Special Box ─── */
+.my-tools-box {
+    border: 2px solid var(--accent-cyan);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(125,207,255,0.06) 0%, rgba(122,162,247,0.04) 100%);
+    padding: 0.8rem;
+    margin-top: 1rem;
+}
+.my-tools-box .app-grid-container {
+    border: 1px solid rgba(125,207,255,0.3);
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+.my-tools-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+.my-tools-title {
+    color: var(--accent-cyan);
+    font-weight: bold;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+.my-tools-enable-btn {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    border: none;
+    border-radius: 6px;
+    color: var(--bg-darker);
+    font-weight: bold;
+    font-size: 0.78rem;
+    padding: 0.25rem 0.7rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    font-family: inherit;
+}
+.my-tools-enable-btn:hover { opacity: 0.88; transform: scale(1.03); }
+.app-item.tilas-tool {
+    border-left: 3px solid var(--accent-cyan) !important;
+}
+.app-item.tilas-tool input:checked ~ span.app-icon { color: var(--accent-cyan); }
+
+/* ─── Other Security Tools Special Box ─── */
+.other-sec-box {
+    border: 2px solid var(--accent-orange);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(255,158,100,0.06) 0%, rgba(247,118,142,0.04) 100%);
+    padding: 0.8rem;
+    margin-top: 1rem;
+}
+.other-sec-box .app-grid-container {
+    border: 1px solid rgba(255,158,100,0.3);
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+.other-sec-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+.other-sec-title {
+    color: var(--accent-orange);
+    font-weight: bold;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+.other-sec-enable-btn {
+    background: linear-gradient(135deg, var(--
