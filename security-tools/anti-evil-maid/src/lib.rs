@@ -199,10 +199,51 @@ fn handle_tamper() {
 
 fn enforce_lockout() {
     println!("Locking out system to prevent further compromise.");
-    // Trigger Libre-OTP lockout
-    let _ = fs::write("/etc/libre-otp/secret.json", "LOCKOUT_TRIGGERED_BY_AEM");
-    // Lockout user accounts by modifying PAM or simply shutting down
-    Command::new("shutdown").arg("now").spawn().ok();
+
+    // Set a lockout FLAG. This deliberately does not touch
+    // /etc/libre-otp/secret.json, which is what the previous version overwrote
+    // with a sentinel string — destroying the user's OTP secret and their
+    // recovery codes along with it. That is unrecoverable data loss, and it
+    // could be triggered by a false positive, which the non-deterministic /boot
+    // hash made entirely possible. A flag conveys the same "refuse to proceed"
+    // state and can be cleared once the machine is known good.
+    let flag_dir = "/etc/arch-security";
+    let _ = fs::create_dir_all(flag_dir);
+
+    let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S");
+    let note = format!(
+        "LOCKED_OUT_BY_ANTI_EVIL_MAID\n\
+         timestamp={timestamp}\n\
+         reason=boot integrity verification failed and was not authorised\n\
+         \n\
+         Your OTP secret and recovery codes are intact and untouched.\n\
+         \n\
+         Before clearing this, verify the machine from a live medium: compare\n\
+         /boot against a known-good backup and check firmware settings.\n\
+         Once satisfied, clear the lockout with:\n\
+           rm {flag_dir}/lockout\n\
+           anti-evil-maid --setup      # re-baseline\n"
+    );
+
+    // 0600 on create: no window where it is world-readable.
+    use std::os::unix::fs::OpenOptionsExt;
+    if let Ok(mut f) = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .open(format!("{flag_dir}/lockout"))
+    {
+        use std::io::Write;
+        let _ = f.write_all(note.as_bytes());
+    }
+
+    eprintln!("{note}");
+
+    // Shut down rather than continue. `shutdown now` is spawned, so give it a
+    // moment before exiting, otherwise the exit can race the request.
+    let _ = Command::new("shutdown").arg("now").spawn();
+    std::thread::sleep(std::time::Duration::from_secs(5));
     std::process::exit(1);
 }
 

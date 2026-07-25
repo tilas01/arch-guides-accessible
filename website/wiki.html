@@ -385,6 +385,38 @@ udevadm control --reload-rules</code></pre>
         </p>
     </div>
 
+    <div class="section" id="audit">
+        <h2><span class="icon">🔎</span> Security Audit of These Tools</h2>
+        <p>
+            A tool you are asked to trust with your boot chain should be able to show
+            its own review. <a href="docs/security-audit.md">docs/security-audit.md</a>
+            is a source-level audit of all five crates, including what it found
+            <em>wrong</em>.
+        </p>
+        <h3>What it found, and fixed</h3>
+        <ul>
+            <li><strong>The integrity check failed open.</strong> Deleting one file in <code>/etc</code> made the evil-maid check report success and boot normally — easier for an attacker than modifying <code>/boot</code>, so the defence could be removed by a weaker attacker than it was built to stop. It now fails closed.</li>
+            <li><strong>The baseline hash was not deterministic.</strong> Directory traversal order is not stable, and only file contents were hashed — not paths. That produced <em>false</em> "do not enter your passphrase" alerts, which is worse than none, because an alarm that cries wolf gets ignored when it is finally right.</li>
+            <li><strong>The master-password hash was world-readable.</strong> Written with the default umask, so any local user could copy it and brute-force offline — defeating the point of a memory-hard KDF. Now <code>0600</code>, set at creation.</li>
+            <li><strong>Lockout destroyed your OTP secret.</strong> It overwrote <code>secret.json</code> and your recovery codes with a sentinel string, so a lockout — possibly from a false positive — permanently cost you your OTP enrolment. It now writes a separate flag and leaves your secret alone.</li>
+            <li><strong>Argon2 was at the bare minimum.</strong> Raised to m=64 MiB, t=3, p=4; old hashes still verify.</li>
+        </ul>
+        <h3>What it has not covered</h3>
+        <p>
+            Stated plainly, because a partial audit presented as complete is its own
+            problem: nothing was <em>run</em>, only read. <code>anti-ducky</code>'s
+            keystroke-timing thresholds have not been measured on real hardware, so its
+            false-positive rate is unknown — worth knowing before you let it guard the
+            keyboard you log in with. Scarecrow's kernel module and the eBPF paths in
+            Kernel Watcher have not been reviewed. Dependency scanning has now been added
+            to CI.
+        </p>
+        <p style="font-size:0.85rem; color:var(--fg-dim);">
+            Build and verify them yourself: <a href="docs/building-from-source.md">building from source</a>
+            includes the exact commands to reproduce a published hash bit-for-bit.
+        </p>
+    </div>
+
     <div class="section" id="suite-installer">
         <h2><span class="icon">📦</span> Installing the Suite in One Step</h2>
         <p>
