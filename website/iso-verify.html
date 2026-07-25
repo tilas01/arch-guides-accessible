@@ -227,7 +227,7 @@
         <span class="nav-sep">|</span>
         <a href="manual.html" class="nav-link nav-tooltip" data-title="🧭 Manual" data-desc="One question at a time, with an explanation of every option and the commands appearing as you answer. The recommended path on mobile.">🧭 Manual</a>
         <span class="nav-sep">|</span>
-        <a href="iso-verify.html" class="nav-link" style="color:var(--accent-green);">💿 Verify ISO</a>
+        <a href="iso-verify.html" class="nav-link" style="color:var(--accent-green);">💿 Verify Arch ISO</a>
         <span class="nav-sep">|</span>
         <a href="security-tools.html" class="nav-link">🦀 Security Tools</a>
         <span class="nav-sep">|</span>
@@ -239,6 +239,16 @@
 
 <main>
     <div class="iso-head">
+        <!-- The Arch mark with a verification tick. A status readout, not a
+             control: it turns green only once a hash has matched two
+             independent mirrors in this session. -->
+        <div id="iso-verified-badge" class="iso-badge nav-tooltip"
+             data-title="Verification status"
+             data-desc="Grey until a hash you computed here has matched the checksum published by two independent mirrors. It resets when you close the tab, because the claim should not outlive the session that earned it.">
+            <img src="img/icons/arch-guides-64.png" alt="" width="32" height="32">
+            <span class="iso-badge-tick" aria-hidden="true">✓</span>
+            <span class="iso-badge-label">Not verified yet</span>
+        </div>
         <h1>💿 Verify an Arch ISO before you install it</h1>
         <p>
             An installer image is the most trusted thing you will ever run: it
@@ -508,7 +518,7 @@ sudo dd if=archlinux-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync</pr
             <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
             <a href="index.html">Generator</a> ·
             <a href="wiki.html">Wiki</a> ·
-            <a href="iso-verify.html">Verify ISO</a> ·
+            <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a> ·
             <a href="docs/helpful-commands.md">Command Cheatsheet</a>
         </p>

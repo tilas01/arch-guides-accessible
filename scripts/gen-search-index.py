@@ -175,6 +175,14 @@ def index_docs(root: str) -> list[dict]:
 
 
 def main() -> int:
+    # Section names contain emoji, and a Windows console defaults to cp1252,
+    # which cannot encode them — the summary at the end would crash the script
+    # after it had already written its output. Reconfigure rather than strip.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     web = os.path.join(root, "website")
 

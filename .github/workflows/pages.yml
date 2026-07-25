@@ -55,17 +55,46 @@ jobs:
           set -euo pipefail
           cd website
           # Every page the nav links to must exist, or we publish 404s.
-          for page in index.html wiki.html live.html security-tools.html \
-                      style.css script.js tooltip.js legal.js; do
+          for page in index.html site-index.html manual.html wiki.html \
+                      iso-verify.html live.html security-tools.html \
+                      releases.html repo.html \
+                      style.css script.js tooltip.js legal.js shared-ui.js \
+                      manual-data.js manual-guide.js manual.js \
+                      iso-verify.js site-index.js search-index.json; do
             test -f "$page" || { echo "FATAL: website/$page is missing"; exit 1; }
           done
           # A SyntaxError in a classic <script> stops the whole file executing,
           # which is exactly how this site shipped broken for 12 commits. Refuse
-          # to publish one.
-          for js in script.js tooltip.js legal.js; do
+          # to publish one. Every script, not a hand-maintained list that new
+          # files get forgotten from.
+          for js in *.js; do
             node --check "$js" || { echo "FATAL: $js does not parse"; exit 1; }
           done
+          # The search index is generated; a malformed one silently disables
+          # search on the page the site tells people to start from.
+          node -e "
+            const d = require('./search-index.json');
+            if (!Array.isArray(d) || d.length < 100) {
+              throw new Error('search-index.json has ' + (d.length ?? '?') + ' entries');
+            }
+            for (const e of d) {
+              if (!e.t || !e.u) throw new Error('index entry missing t or u: ' + JSON.stringify(e));
+            }
+            console.log('search index: ' + d.length + ' entries');
+          "
           echo "Pre-publish checks passed."
+
+      # node --check catches a file that cannot parse. It says nothing about a
+      # file that parses and produces the wrong thing, which is the layer these
+      # catch: 578 permutations of the walkthrough asserted on content, every
+      # generated script through `bash -n`, structural responsive checks, and
+      # html-validate on all nine pages.
+      - name: Run the test suite
+        run: |
+          set -euo pipefail
+          cd tests
+          npm install --no-audit --no-fund
+          npm test
 
       - name: Download Static Latest Release
         if: github.event_name == 'workflow_run'

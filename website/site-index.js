@@ -60,6 +60,47 @@
         return n;
     }
 
+    /* Human-readable location instead of a raw href.
+       "wiki.html#bios-lockdown" says less at a glance than
+       "Wiki → Bios lockdown", and "docs/05-secure-boot/shim-grub.md#signing"
+       says much less than "Docs → 05 secure boot → Shim grub → Signing". */
+    var PAGE_NAMES = {
+        'index.html': 'Generator',
+        'manual.html': 'Manual walkthrough',
+        'wiki.html': 'Wiki',
+        'iso-verify.html': 'Verify Arch ISO',
+        'security-tools.html': 'Security tools',
+        'live.html': 'Live editor',
+        'releases.html': 'Releases',
+        'repo.html': 'Repository',
+        'site-index.html': 'Index'
+    };
+
+    function titleCase(s) {
+        s = String(s).replace(/\.(html|md)$/i, '').replace(/[-_]+/g, ' ').trim();
+        return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+    }
+
+    function breadcrumb(href) {
+        var hash = '';
+        var path = String(href);
+        var at = path.indexOf('#');
+        if (at !== -1) { hash = path.slice(at + 1); path = path.slice(0, at); }
+
+        var parts = path.split('/').filter(Boolean);
+        var crumbs;
+        if (parts.length === 1 && PAGE_NAMES[parts[0]]) {
+            crumbs = [PAGE_NAMES[parts[0]]];
+        } else {
+            crumbs = parts.map(function (p, i) {
+                if (i === 0 && p === 'docs') return 'Docs';
+                return titleCase(p);
+            });
+        }
+        if (hash) crumbs.push(titleCase(hash.replace(/^q-/, '')));
+        return crumbs.join(' → ');
+    }
+
     function highlight(text, words) {
         var out = document.createDocumentFragment();
         var lower = String(text).toLowerCase();
@@ -113,6 +154,9 @@
             var a = document.createElement('a');
             a.className = 'result';
             a.href = r.u;
+            // Drives the colour coding: one accent per place a result can
+            // come from, matching the wiki sidebar.
+            a.setAttribute('data-src', r.s);
             var head = document.createElement('span');
             head.className = 'result-title';
             head.appendChild(highlight(r.t, words));
@@ -124,7 +168,7 @@
             desc.appendChild(highlight(r.d || '', words));
             var url = document.createElement('span');
             url.className = 'result-url';
-            url.textContent = r.u;
+            url.textContent = breadcrumb(r.u);
             a.appendChild(head);
             a.appendChild(sec);
             if (r.d) a.appendChild(desc);

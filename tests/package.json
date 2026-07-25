@@ -1,0 +1,16 @@
+{
+  "name": "arch-guides-tests",
+  "private": true,
+  "type": "module",
+  "description": "Checks that run against website/ in CI. No build step, no framework.",
+  "scripts": {
+    "permutations": "node permutations.mjs ../website",
+    "responsive": "node responsive.mjs ../website",
+    "html": "html-validate ../website/*.html",
+    "test": "npm run permutations && npm run responsive && npm run html"
+  },
+  "devDependencies": {
+    "html-validate": "^8.24.1",
+    "jsdom": "^24.1.0"
+  }
+}

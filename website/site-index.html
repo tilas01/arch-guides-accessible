@@ -79,6 +79,30 @@
         .result-url { display: block; font-size: 0.7rem; color: var(--border-color); margin-top: 0.25rem; word-break: break-all; }
         mark { background: rgba(224, 175, 104, 0.28); color: var(--accent-yellow); border-radius: 2px; padding: 0 1px; }
 
+        /* Colour-coded by where a result lives, using the Tokyo Night accents.
+           The same colour means the same place everywhere on this page and in
+           the wiki sidebar, so you learn it once. */
+        .result[data-src="Wiki"]                { border-left-color: var(--accent-purple); }
+        .result[data-src="Wiki"] .result-section { color: var(--accent-purple); }
+        .result[data-src="Manual walkthrough"]                { border-left-color: var(--accent-green); }
+        .result[data-src="Manual walkthrough"] .result-section { color: var(--accent-green); }
+        .result[data-src="Generator"]                { border-left-color: var(--accent-blue); }
+        .result[data-src="Generator"] .result-section { color: var(--accent-blue); }
+        .result[data-src="Verify an ISO"]                { border-left-color: var(--accent-green); }
+        .result[data-src="Verify an ISO"] .result-section { color: var(--accent-green); }
+        .result[data-src="Security tools"]                { border-left-color: var(--accent-red); }
+        .result[data-src="Security tools"] .result-section { color: var(--accent-red); }
+        .result[data-src="Page"]                { border-left-color: var(--accent-yellow); }
+        .result[data-src="Page"] .result-section { color: var(--accent-yellow); }
+        .result[data-src^="Docs"]                { border-left-color: var(--accent-orange); }
+        .result[data-src^="Docs"] .result-section { color: var(--accent-orange); }
+
+        /* Legend under the search box, so the colours are stated rather than
+           left to be inferred. */
+        .src-legend { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; margin-top: 0.6rem; font-size: 0.72rem; }
+        .src-legend span { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--fg-dim); }
+        .src-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
         /* Contents */
         .contents-grid {
             display: grid;
@@ -145,7 +169,7 @@
         <span class="nav-sep">|</span>
         <a href="manual.html" class="nav-link nav-tooltip" data-title="🧭 Manual" data-desc="One question at a time, with an explanation of every option and the commands appearing as you answer. The recommended path on mobile.">🧭 Manual</a>
         <span class="nav-sep">|</span>
-        <a href="iso-verify.html" class="nav-link nav-tooltip" data-title="💿 Verify ISO" data-desc="Hash an Arch ISO in your browser and check it against mirrors other than the one that served it.">💿 Verify ISO</a>
+        <a href="iso-verify.html" class="nav-link nav-tooltip" data-title="💿 Verify Arch ISO" data-desc="Hash an Arch ISO in your browser and check it against mirrors other than the one that served it.">💿 Verify Arch ISO</a>
         <span class="nav-sep">|</span>
         <a href="security-tools.html" class="nav-link nav-tooltip" data-title="🦀 Security Tools" data-desc="The Rust security suite and the vetted third-party hardening tools.">🦀 Security Tools</a>
         <span class="nav-sep">|</span>
@@ -172,6 +196,14 @@
         <div class="search-meta">
             <span id="search-status">Loading the search index…</span>
             <span><kbd>/</kbd> to focus · <kbd>↓</kbd> to walk results · <kbd>Enter</kbd> opens the first · <span id="result-count"></span></span>
+        </div>
+        <div class="src-legend" aria-hidden="true">
+            <span><i style="background:var(--accent-purple)"></i>Wiki</span>
+            <span><i style="background:var(--accent-green)"></i>Walkthrough &amp; ISO</span>
+            <span><i style="background:var(--accent-blue)"></i>Generator</span>
+            <span><i style="background:var(--accent-red)"></i>Security tools</span>
+            <span><i style="background:var(--accent-orange)"></i>Docs</span>
+            <span><i style="background:var(--accent-yellow)"></i>Whole pages</span>
         </div>
     </div>
 
@@ -333,7 +365,7 @@
             <a href="index.html">Generator</a> ·
             <a href="manual.html">Manual</a> ·
             <a href="wiki.html">Wiki</a> ·
-            <a href="iso-verify.html">Verify ISO</a> ·
+            <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a>
         </p>
     </div>

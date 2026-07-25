@@ -3,10 +3,12 @@
    ----------------------------------------------------------------------------
    Loaded by every page. Three jobs:
 
-     1. The persistent control cluster, top-left: verify-ISO, repository,
-        history, tooltips. Built here rather than copied into eight HTML files,
-        because a control that exists on seven pages and not the eighth is the
-        one a user goes looking for on the eighth.
+     1. The persistent control cluster, top right. Built here rather than
+        copied into nine HTML files, because a control that exists on eight
+        pages and not the ninth is the one a user goes looking for on the ninth.
+        Order is fixed: the tooltip switch first, because it is the control that
+        explains all the others; then the source repository; then this session's
+        generation history.
 
      2. A warning before you close the tab with unsaved generation history.
         History is sessionStorage, so closing the tab is the moment it is gone
@@ -80,50 +82,48 @@
             bar.className = 'js-only';
             header.insertBefore(bar, header.firstChild);
         }
-        bar.classList.add('header-controls-left');
-
         var here = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
 
-        /* Verify-ISO. First in the row, before history, as requested: it is the
-           step that comes before everything else chronologically too. The tick
-           reflects whether a verification actually passed in this session — it
-           is a status readout, not a checkbox you can tick yourself. */
-        if (!document.getElementById('iso-verify-btn')) {
-            var iso = document.createElement('a');
-            iso.id = 'iso-verify-btn';
-            iso.href = 'iso-verify.html';
-            iso.className = 'ctrl-icon nav-tooltip';
-            iso.setAttribute('aria-label', 'Verify an Arch ISO');
-            iso.setAttribute('data-title', '💿 Verify Arch ISO');
-            iso.setAttribute('data-desc',
-                'Hash an Arch ISO in your browser and check it against two mirrors ' +
-                'other than the one that served it. Download the image, its signature ' +
-                'and the checksums straight from here. The tick lights up once a ' +
-                'verification has passed in this session.');
-            iso.innerHTML =
-                '<img src="img/icons/arch-guides-32.png" alt="" width="22" height="22" ' +
-                'class="ctrl-arch-logo">' +
-                '<span class="ctrl-tick" aria-hidden="true">✓</span>';
-            bar.insertBefore(iso, bar.firstChild);
+        /* Tooltip master toggle, first in the row. tooltip.js owns the
+           behaviour; this only guarantees the control exists on pages that
+           never declared one. It is the one control that must always be
+           reachable, because it is the one that explains all the others. */
+        var tt = document.getElementById('toggle-tooltips-btn');
+        if (!tt) {
+            tt = document.createElement('button');
+            tt.id = 'toggle-tooltips-btn';
+            tt.type = 'button';
+            tt.className = 'ctrl-icon tooltip-always';
+            tt.setAttribute('aria-label', 'Toggle tooltips');
+            tt.setAttribute('aria-pressed', 'true');
+            tt.setAttribute('data-title', 'ℹ️ Tooltips: ON');
+            tt.setAttribute('data-desc',
+                'Tooltips are ON. Hover on desktop, or tap on mobile, for an ' +
+                'explanation of any control. Click to turn them off — this button ' +
+                'keeps its own tooltip either way, so you can always find your way back.');
+            tt.textContent = 'ℹ️';
         }
+        bar.appendChild(tt);
 
-        /* Repository. */
-        if (!document.getElementById('repo-link-btn')) {
-            var gh = document.createElement('a');
+        /* Source repository. A drawn octopus rather than the GitHub mark: that
+           logo is a trademark, and a pixel one matches the rest of the set. */
+        var gh = document.getElementById('repo-link-btn');
+        if (!gh) {
+            gh = document.createElement('a');
             gh.id = 'repo-link-btn';
             gh.href = REPO_URL;
             gh.target = '_blank';
             gh.rel = 'noopener';
             gh.className = 'ctrl-icon nav-tooltip';
-            gh.setAttribute('aria-label', 'GitHub repository');
+            gh.setAttribute('aria-label', 'Source repository');
             gh.setAttribute('data-title', '🐙 Source repository');
             gh.setAttribute('data-desc',
                 'Every page here, every generated script, the Rust security tools and ' +
                 'the manual guides, in one public repository. Opens in a new tab.');
-            gh.textContent = '🐙';
-            var isoEl = document.getElementById('iso-verify-btn');
-            bar.insertBefore(gh, isoEl ? isoEl.nextSibling : bar.firstChild);
+            gh.innerHTML = '<img src="img/icons/source-repo-32.png" alt="" ' +
+                           'width="22" height="22" class="ctrl-pixel">';
         }
+        bar.appendChild(gh);
 
         /* History, only where the page can actually show it. A button that
            opens nothing is worse than no button. */
@@ -141,28 +141,9 @@
                 'want to keep.');
             hist.textContent = '🕘';
             hist.addEventListener('click', function () { window.toggleHistoryModal(); });
-            bar.appendChild(hist);
         }
+        if (hist) bar.appendChild(hist);
 
-        /* Tooltip master toggle. tooltip.js owns the behaviour; this only
-           guarantees the control exists on pages that never declared one. */
-        if (!document.getElementById('toggle-tooltips-btn')) {
-            var tt = document.createElement('button');
-            tt.id = 'toggle-tooltips-btn';
-            tt.type = 'button';
-            tt.className = 'ctrl-icon tooltip-always';
-            tt.setAttribute('aria-label', 'Toggle tooltips');
-            tt.setAttribute('aria-pressed', 'true');
-            tt.setAttribute('data-title', 'ℹ️ Tooltips: ON');
-            tt.setAttribute('data-desc',
-                'Tooltips are ON. Hover on desktop, or tap on mobile, for an ' +
-                'explanation of any control. Click to turn them off — this button ' +
-                'keeps its own tooltip either way, so you can always find your way back.');
-            tt.textContent = 'ℹ️';
-            bar.appendChild(tt);
-        }
-
-        refreshIsoBadge();
         refreshHistoryBadge();
 
         /* Do not link the page to itself. */
@@ -172,13 +153,21 @@
         });
     }
 
+    /* The verified badge lives on the ISO page itself, not in the navigation.
+       A tick in a nav bar has to be explained; a tick next to the Arch mark on
+       the page that does the verifying explains itself. It is a status readout,
+       lit only after a hash has matched two independent mirrors in this
+       session, so it is not something you can tick yourself. */
     function refreshIsoBadge() {
-        var el = document.getElementById('iso-verify-btn');
-        if (!el) return;
+        var badge = document.getElementById('iso-verified-badge');
+        if (!badge) return;
         var done = isoVerified();
-        el.classList.toggle('ctrl-verified', done);
-        if (done) {
-            el.setAttribute('data-title', '💿 Verify Arch ISO — verified');
+        badge.classList.toggle('is-verified', done);
+        var label = badge.querySelector('.iso-badge-label');
+        if (label) {
+            label.textContent = done
+                ? 'Verified this session'
+                : 'Not verified yet';
         }
     }
 
@@ -224,6 +213,7 @@
 
     function init() {
         try { buildControls(); } catch (err) { console.error('shared-ui: controls', err); }
+        try { refreshIsoBadge(); } catch (err) { console.error('shared-ui: iso badge', err); }
         try { wireUnloadGuard(); } catch (err) { console.error('shared-ui: unload', err); }
         try { ensureTooltips(); } catch (err) { console.error('shared-ui: tooltips', err); }
     }

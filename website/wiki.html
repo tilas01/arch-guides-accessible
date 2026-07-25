@@ -154,6 +154,28 @@
             white-space: nowrap;
         }
 
+
+        /* Colour-coded groups. The same accent means the same kind of section
+           here, in the index card below, and in the site-wide search results —
+           learned once, then readable at a glance. */
+        .wiki-sidebar h3.g-start { color: var(--accent-green);  border-bottom-color: var(--accent-green); }
+        .wiki-sidebar h3.g-gen   { color: var(--accent-blue);   border-bottom-color: var(--accent-blue); }
+        .wiki-sidebar h3.g-sec   { color: var(--accent-red);    border-bottom-color: var(--accent-red); }
+        .wiki-sidebar h3.g-hard  { color: var(--accent-orange); border-bottom-color: var(--accent-orange); }
+        .wiki-sidebar h3.g-ref   { color: var(--accent-cyan);   border-bottom-color: var(--accent-cyan); }
+
+        .wiki-sidebar a.g-start:hover { color: var(--accent-green);  background: rgba(158,206,106,0.10); }
+        .wiki-sidebar a.g-gen:hover   { color: var(--accent-blue);   background: rgba(122,162,247,0.10); }
+        .wiki-sidebar a.g-sec:hover   { color: var(--accent-red);    background: rgba(247,118,142,0.10); }
+        .wiki-sidebar a.g-hard:hover  { color: var(--accent-orange); background: rgba(255,158,100,0.10); }
+        .wiki-sidebar a.g-ref:hover   { color: var(--accent-cyan);   background: rgba(125,207,255,0.10); }
+
+        .wiki-sidebar a.g-start.active { border-left-color: var(--accent-green);  color: var(--accent-green);  background: rgba(158,206,106,0.14); }
+        .wiki-sidebar a.g-gen.active   { border-left-color: var(--accent-blue);   color: var(--accent-blue);   background: rgba(122,162,247,0.14); }
+        .wiki-sidebar a.g-sec.active   { border-left-color: var(--accent-red);    color: var(--accent-red);    background: rgba(247,118,142,0.14); }
+        .wiki-sidebar a.g-hard.active  { border-left-color: var(--accent-orange); color: var(--accent-orange); background: rgba(255,158,100,0.14); }
+        .wiki-sidebar a.g-ref.active   { border-left-color: var(--accent-cyan);   color: var(--accent-cyan);   background: rgba(125,207,255,0.14); }
+
         .wiki-toc-toggle { display: none; }
 
         /* Section index printed at the top of the content column, so the page
@@ -253,7 +275,7 @@
             <span class="nav-sep">|</span>
             <a href="manual.html" class="nav-link nav-tooltip" data-title="🧭 Manual" data-desc="One question at a time, with an explanation of every option and the commands appearing as you answer. The recommended path on mobile.">🧭 Manual</a>
             <span class="nav-sep">|</span>
-            <a href="iso-verify.html" class="nav-link">💿 Verify ISO</a>
+            <a href="iso-verify.html" class="nav-link">💿 Verify Arch ISO</a>
         <span class="nav-sep">|</span>
         <a href="security-tools.html" class="nav-link">🦀 Security Tools</a>
             <span class="nav-sep">|</span>
@@ -278,36 +300,36 @@
                autocomplete="off" spellcheck="false">
         <div id="wiki-filter-empty" hidden>No section matches that.</div>
         <nav id="wiki-nav" aria-label="Wiki sections">
-            <h3>Start here</h3>
-            <a href="#architecture">CPU Architecture: x86_64 or aarch64</a>
-            <a href="#bios-lockdown">Firmware Setup and Lockdown</a>
-            <a href="#manual-install">Manual Install — Choose Your Own Path</a>
-            <a href="#choose-your-path">Choose Your Own Path</a>
-            <a href="#dual-boot">Dual Booting with Windows</a>
-            <h3>The generator</h3>
-            <a href="#generator-steps">Generator Configuration Steps</a>
-            <a href="#option-reference">Generator Option Reference</a>
-            <a href="#advanced-config">Advanced App Configuration</a>
-            <a href="#libre-policy">100% Libre Software Policy</a>
-            <h3>Security suite</h3>
-            <a href="#security-suite">Security Suite &amp; Live Releases</a>
-            <a href="#suite-installer">Installing the Suite in One Step</a>
-            <a href="#audit">Security Audit of These Tools</a>
-            <a href="#memory-integrity">Memory Integrity Checker</a>
-            <a href="#reproducible-builds">Build Integrity &amp; Reproducible Builds</a>
-            <a href="#verification">Verifying Downloads (GPG &amp; Hashes)</a>
-            <h3>Hardening</h3>
-            <a href="#luks-duress">LUKS Duress Passphrase</a>
-            <a href="#usb-kill">USB Kill Switch</a>
-            <a href="#firewall-profiles">UFW Firewall Profiles</a>
-            <a href="#fail2ban">Fail2ban Intrusion Prevention</a>
-            <a href="#endlessh">Endlessh (SSH Tarpit)</a>
-            <a href="#yubikey">Hardware Security Key (FIDO2 / U2F)</a>
-            <a href="#other-sec">Third-Party Security Tools</a>
-            <h3>Hardware &amp; other</h3>
-            <a href="#hardware-security">Hardware &amp; Firmware Security</a>
-            <a href="#aur-safety">The AUR, and How Not to Get Owned by It</a>
-            <a href="#cheatsheets">Cheatsheets</a>
+            <h3 class="g-start">Start here</h3>
+            <a class="g-start" href="#architecture">CPU Architecture: x86_64 or aarch64</a>
+            <a class="g-start" href="#bios-lockdown">Firmware Setup and Lockdown</a>
+            <a class="g-start" href="#manual-install">Manual Install — Choose Your Own Path</a>
+            <a class="g-start" href="#choose-your-path">Choose Your Own Path</a>
+            <a class="g-start" href="#dual-boot">Dual Booting with Windows</a>
+            <h3 class="g-gen">The generator</h3>
+            <a class="g-gen" href="#generator-steps">Generator Configuration Steps</a>
+            <a class="g-gen" href="#option-reference">Generator Option Reference</a>
+            <a class="g-gen" href="#advanced-config">Advanced App Configuration</a>
+            <a class="g-gen" href="#libre-policy">100% Libre Software Policy</a>
+            <h3 class="g-sec">Security suite</h3>
+            <a class="g-sec" href="#security-suite">Security Suite &amp; Live Releases</a>
+            <a class="g-sec" href="#suite-installer">Installing the Suite in One Step</a>
+            <a class="g-sec" href="#audit">Security Audit of These Tools</a>
+            <a class="g-sec" href="#memory-integrity">Memory Integrity Checker</a>
+            <a class="g-sec" href="#reproducible-builds">Build Integrity &amp; Reproducible Builds</a>
+            <a class="g-sec" href="#verification">Verifying Downloads (GPG &amp; Hashes)</a>
+            <h3 class="g-hard">Hardening</h3>
+            <a class="g-hard" href="#luks-duress">LUKS Duress Passphrase</a>
+            <a class="g-hard" href="#usb-kill">USB Kill Switch</a>
+            <a class="g-hard" href="#firewall-profiles">UFW Firewall Profiles</a>
+            <a class="g-hard" href="#fail2ban">Fail2ban Intrusion Prevention</a>
+            <a class="g-hard" href="#endlessh">Endlessh (SSH Tarpit)</a>
+            <a class="g-hard" href="#yubikey">Hardware Security Key (FIDO2 / U2F)</a>
+            <a class="g-hard" href="#other-sec">Third-Party Security Tools</a>
+            <h3 class="g-ref">Hardware &amp; other</h3>
+            <a class="g-ref" href="#hardware-security">Hardware &amp; Firmware Security</a>
+            <a class="g-ref" href="#aur-safety">The AUR, and How Not to Get Owned by It</a>
+            <a class="g-ref" href="#cheatsheets">Cheatsheets</a>
         </nav>
     </aside>
 
@@ -1938,7 +1960,7 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
             <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
             <a href="index.html">Generator</a> ·
             <a href="wiki.html">Wiki</a> ·
-            <a href="iso-verify.html">Verify ISO</a> ·
+            <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a> ·
             <a href="docs/helpful-commands.md">Command Cheatsheet</a>
         </p>

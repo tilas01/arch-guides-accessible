@@ -241,7 +241,7 @@ function renderHistory() {
                 <button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadHistoryItem(${i}, 'md')">📄 Guide</button>
                 <button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadHistoryItem(${i}, 'sh')">⚙️ Install</button>
                 ${h.post ? `<button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem;" onclick="downloadHistoryItem(${i}, 'post')">🚀 Post</button>` : ''}
-                ${h.sc ? `<button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem; background:var(--bg-lighter);" onclick="downloadHistoryItem(${i}, 'sc')">📦 Config</button>` : ''}
+                ${h.sc ? `<button type="button" class="btn" style="padding:0.3rem 0.8rem; font-size:0.8rem; background:var(--bg-lighter);" onclick="downloadHistoryItem(${i}, 'sc')">📦 .json</button>` : ''}
             </div>
         </div>
     `).join('');
@@ -257,7 +257,7 @@ window.downloadHistoryItem = function(idx, which) {
         md:   ['arch_guide.md',     entry.md],
         sh:   ['install.sh',        entry.sh],
         post: ['post_install.sh',   entry.post],
-        sc:   ['arch-config.sc',    entry.sc]
+        sc:   ['arch-config.json',  entry.sc]
     };
     const [name, content] = files[which] || [];
     if (name && content) window.downloadFile(content, name);
@@ -346,11 +346,11 @@ function showOutputPage(mdContent, shContent, format, scContent) {
         if (scContent) {
             const b = document.createElement('button');
             b.className = 'btn btn-tooltip';
-            b.setAttribute('data-title', 'Download Selection Config (.sc)');
-            b.setAttribute('data-desc', 'Download your exact form selections as a .sc JSON file so you can restore them later.');
+            b.setAttribute('data-title', 'Download your selections as JSON');
+            b.setAttribute('data-desc', 'Saves every choice you have made as a .json file. Load it back here, or in the manual walkthrough, to pick up where you left off. Plain JSON, so you can read and edit it in any editor.');
             b.style.cssText = 'width:auto;padding:0.5rem 1.2rem;background:var(--accent-purple);color:var(--bg-color);font-size:0.88rem;';
-            b.textContent = '⬇ Download .sc';
-            b.onclick = () => downloadFile(scContent, 'arch-config.sc');
+            b.textContent = '⬇ Download .json';
+            b.onclick = () => downloadFile(scContent, 'arch-config.json');
             dlContainer.appendChild(b);
         }
         if (window.refreshTooltips) window.refreshTooltips();
@@ -2365,8 +2365,9 @@ function buildSshDeployCommands(mainSh, postSh) {
 // ── Form Serialization & Preview Logic ──
 window.getFormValues = function() {
     const data = {
-        version: 1,
+        version: 2,
         generator: "arch-guides-dynamic",
+        schema: "arch-guides-dynamic/config",
         selects: {},
         inputs: {},
         checkboxes: {}
@@ -2750,7 +2751,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle .sc upload
+    // Handle config upload (.json, and the legacy .sc)
     const scInput = document.getElementById('upload-sc-input');
     if (scInput) {
         scInput.addEventListener('change', (e) => {
@@ -2760,7 +2761,14 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    if (data.generator !== "arch-guides-dynamic") throw new Error("Invalid format");
+                    // Accept both the generator's own export and the manual
+                    // walkthrough's, which nests the answers one level down.
+                    if (data.generator !== "arch-guides-dynamic" &&
+                        data.schema !== "arch-guides-dynamic/config") {
+                        throw new Error(
+                            "This is valid JSON, but it is not an Arch Guides config: " +
+                            "it has no \"generator\" or \"schema\" field.");
+                    }
                     
                     // Restore Selects.
                     // Applied in two passes: set every value first, then fire the
@@ -2799,7 +2807,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.querySelectorAll('#install-form input[type="checkbox"]').forEach(cb => cb.dispatchEvent(new Event('change')));
                     alert('Configuration restored successfully.');
                 } catch (err) {
-                    alert('Error parsing .sc config file. Is it valid JSON?');
+                    // Say what actually went wrong. "Is it valid JSON?" was
+                    // unhelpful when the file was valid JSON of the wrong shape.
+                    alert('Could not load that config file.\n\n' + err.message);
                 }
             };
             reader.readAsText(file);
