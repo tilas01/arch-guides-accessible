@@ -96,6 +96,42 @@ function stageForLiveEditor(mdContent, shContent, postContent) {
 }
 window.stageForLiveEditor = stageForLiveEditor;
 
+// ─── Shared config envelope ─────────────────────────────────────────────────
+// The Manual Walkthrough and this generator are separate implementations, but
+// they read and write the SAME JSON envelope, so a config saved from one loads
+// in the other. The envelope wraps whatever answers/form values the producing
+// tool uses under `answers`; each importer applies the keys it recognises and
+// ignores the rest, which is what lets two different option sets share a format.
+const CONFIG_SCHEMA = 'arch-guides-dynamic/config';
+const CONFIG_VERSION = 2;
+
+function wrapConfig(answers, source) {
+    return {
+        schema: CONFIG_SCHEMA,
+        version: CONFIG_VERSION,
+        source: source || 'dynamic-generator',
+        created: new Date().toISOString(),
+        answers: answers || {}
+    };
+}
+window.wrapConfig = wrapConfig;
+
+// Accept the envelope, a bare answers object (legacy .sc/.json), or the
+// walkthrough's file — always return the flat answers object, never null.
+function unwrapConfig(parsed) {
+    if (parsed && typeof parsed === 'object') {
+        if (parsed.answers && typeof parsed.answers === 'object') return parsed.answers;
+        return parsed; // legacy bare object
+    }
+    return {};
+}
+window.unwrapConfig = unwrapConfig;
+
+function configJSONString(answers, source) {
+    return JSON.stringify(wrapConfig(answers, source), null, 2);
+}
+window.configJSONString = configJSONString;
+
 // Called from generate button — adds "Open in Live Editor" button to output
 window.injectLiveEditorLink = function() {
     let outputSection = document.getElementById('output-section');
@@ -208,6 +244,9 @@ function saveToHistory(mdContent, shContent, format, postContent, scContent) {
     const entries = readHistory();
     entries.unshift({
         timestamp: timestampNow(),
+        // Which front end produced this, so the live editor and history can
+        // label entries. The walkthrough writes 'manual-walkthrough'.
+        source: 'dynamic-generator',
         format,
         md: mdContent || '',
         sh: shContent || '',
@@ -842,7 +881,7 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     const aem_main = gv('aem-kernel-main','linux');
     const aem_backup = gv('aem-kernel-backup','none');
 
-    const configJSON = JSON.stringify(getFormValues(), null, 2);
+    const configJSON = configJSONString(getFormValues(), 'dynamic-generator');
 
     // ─── Validation ─────────────────────────────────────────────────────────
     // Kept deliberately quiet. Rather than listing every unset field, the offenders
@@ -949,7 +988,7 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
         let o = "";
         // Hidden config (only in raw source, stripped from preview)
         const configObj = getFormValues();
-        o += '<!-- CONFIG_START\n' + JSON.stringify(configObj) + '\nCONFIG_END -->\n\n';
+        o += '<!-- CONFIG_START\n' + JSON.stringify(wrapConfig(configObj, 'dynamic-generator')) + '\nCONFIG_END -->\n\n';
 
         if (!cmdOnly) {
             o += `# Your Custom Arch Linux Installation Guide\n\n`;
@@ -2054,7 +2093,7 @@ run_with_progress() {
     // view. (This block used to render into a #generated-guide container that no
     // longer exists in index.html, so generation produced nothing visible.)
     const { mainSh, postSh } = splitInstallScript(scriptOutput);
-    const configJSONText = JSON.stringify(window.getFormValues(), null, 2);
+    const configJSONText = configJSONString(window.getFormValues(), 'dynamic-generator');
     try { sessionStorage.setItem('last_generated_sc', configJSONText); } catch (e) { /* non-fatal */ }
 
     const mdBox   = document.getElementById('live-editor-textarea-md');
@@ -3097,10 +3136,10 @@ updateHistoryTooltip();
     function tryParseConfig(text) {
         // Look for embedded config comment block
         const m1 = text.match(/<!--\s*CONFIG_START\s*([\s\S]*?)\s*CONFIG_END\s*-->/);
-        if (m1) { try { return JSON.parse(m1[1]); } catch(e) {} }
+        if (m1) { try { return unwrapConfig(JSON.parse(m1[1])); } catch(e) {} }
         // Shell script config block
         const m2 = text.match(/###\s*CONFIG_START\s*([\s\S]*?)\s*###\s*CONFIG_END/);
-        if (m2) { try { return JSON.parse(m2[1]); } catch(e) {} }
+        if (m2) { try { return unwrapConfig(JSON.parse(m2[1])); } catch(e) {} }
         return null;
     }
 
