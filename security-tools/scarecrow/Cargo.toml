@@ -12,3 +12,9 @@ clap = { version = "4.5.4", features = ["derive"] }
 
 zeroize = { version = "1.8", features = ["zeroize_derive"] }
 rpassword = "7.2"
+
+# The duress password is stored as an Argon2id hash, not compared against a
+# constant in the source. Versions match the rest of the suite so the workspace
+# resolves a single copy of each.
+argon2 = "0.5.3"
+rand_core = { version = "0.6.4", features = ["getrandom"] }

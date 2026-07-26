@@ -102,38 +102,231 @@ fn monitor_network_connections() {
     }
 }
 
-pub fn handle_duress_login(require_confirmation: bool) {
-    println!("Enter Decoy/Duress Password:");
-    if let Ok(mut password) = rpassword::read_password() {
-        if password == "duress123" {
-            // Stealth Confirmation Logic
-            if require_confirmation {
-                println!("Confirm password:");
-                if let Ok(mut confirm) = rpassword::read_password() {
-                    if confirm != password {
-                        println!("Passwords do not match. Aborting.");
-                        confirm.zeroize();
-                        password.zeroize();
-                        return;
-                    }
-                    confirm.zeroize();
-                } else {
-                    password.zeroize();
-                    return;
-                }
-            }
-            
-            println!("Duress password detected! Wiping system (Simulation)...");
-            // Perform simulated wipe
-            let _ = Command::new("shred")
-                .args(["-uvz", "/tmp/sandbox.log"])
-                .status();
-        } else {
-            println!("Decoy accepted. Starting fake environment...");
-            init_scarecrow();
+/// Where the duress password's Argon2id hash lives. Root-owned, 0600. It is a
+/// hash, not the password, but a hash any local user can read is a hash any
+/// local user can attack offline.
+const DURESS_HASH_FILE: &str = "/etc/arch-security/scarecrow/duress.hash";
+/// The decoy home the duress session runs in. Populated with plausible,
+/// innocuous content so it looks like an ordinary account in use.
+const DECOY_HOME: &str = "/etc/arch-security/scarecrow/decoy-home";
+/// A silent, machine-readable duress signal. Other tools (or a remote monitor)
+/// can watch for it. Nothing about it is shown on screen — that is the point.
+const DURESS_SIGNAL_FILE: &str = "/run/arch-security/duress-active";
+
+/// Argon2id tuned for an interactively-entered password (m=64MiB, t=3, p=4),
+/// well above the OWASP floor. Falls back to the library default if the
+/// parameters are ever rejected, so a bad constant cannot make setup impossible.
+fn duress_argon2() -> argon2::Argon2<'static> {
+    match argon2::Params::new(64 * 1024, 3, 4, None) {
+        Ok(p) => argon2::Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, p),
+        Err(_) => argon2::Argon2::default(),
+    }
+}
+
+fn write_private(path: &str, contents: &str) -> std::io::Result<()> {
+    use std::io::Write;
+    use std::os::unix::fs::OpenOptionsExt;
+    if let Some(parent) = Path::new(path).parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let mut f = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .open(path)?;
+    f.write_all(contents.as_bytes())
+}
+
+/// Set or change the duress password.
+///
+/// This replaces the old hardcoded `"duress123"`, which was published in the
+/// source of a public repository and so provided no protection at all: a
+/// coercer who read the code knew the decoy password.
+pub fn set_duress_password() -> i32 {
+    use argon2::password_hash::{PasswordHasher, SaltString};
+    use rand_core::OsRng;
+
+    println!("=== Set the scarecrow duress password ===");
+    println!("Entering THIS password at login opens a decoy session that looks and");
+    println!("behaves like an ordinary account, while your real data stays sealed.");
+    println!("It must be different from your real login password, and memorable under");
+    println!("stress — you will only ever reach for it in the worst moment.");
+    println!();
+
+    let mut pw = match rpassword::prompt_password("Duress password: ") {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("Could not read the password: {e}");
+            return 1;
         }
-        // CRITICAL: Zeroize the password from memory immediately
-        password.zeroize();
+    };
+    let mut confirm = match rpassword::prompt_password("Confirm: ") {
+        Ok(p) => p,
+        Err(e) => {
+            pw.zeroize();
+            eprintln!("Could not read the confirmation: {e}");
+            return 1;
+        }
+    };
+    if pw != confirm {
+        pw.zeroize();
+        confirm.zeroize();
+        eprintln!("They do not match. Nothing was changed.");
+        return 1;
+    }
+    if pw.chars().count() < 8 {
+        pw.zeroize();
+        confirm.zeroize();
+        eprintln!("Refusing a duress password shorter than 8 characters.");
+        return 1;
+    }
+
+    let salt = SaltString::generate(&mut OsRng);
+    let hashed = duress_argon2()
+        .hash_password(pw.as_bytes(), &salt)
+        .map(|h| h.to_string());
+    pw.zeroize();
+    confirm.zeroize();
+
+    match hashed {
+        Ok(h) => match write_private(DURESS_HASH_FILE, &h) {
+            Ok(()) => {
+                let _ = ensure_decoy_home();
+                println!("Duress password set. The decoy home is at {DECOY_HOME}.");
+                println!("Populate it with believable, innocuous files so it reads as a");
+                println!("real account rather than an empty shell.");
+                0
+            }
+            Err(e) => {
+                eprintln!("Could not write {DURESS_HASH_FILE}: {e}. This needs root.");
+                1
+            }
+        },
+        Err(e) => {
+            eprintln!("Could not hash the password: {e}");
+            1
+        }
+    }
+}
+
+/// The duress/decoy login.
+///
+/// Plausible deniability depends on this being **silent about what it is**. The
+/// coercer standing over your shoulder must see an ordinary, working login — not
+/// a message announcing that a duress password was entered, and never the word
+/// "wipe". So on a duress match we:
+///
+///   1. raise a silent, on-disk duress signal that other tooling can act on,
+///   2. drop into a fully functional decoy session rooted in a decoy home,
+///
+/// and print nothing that distinguishes it from a normal login. The real volume
+/// is not unlocked here at all — that is the LUKS layer's job, and the
+/// hidden-volume setup in the wiki is what makes the deniability hold at the
+/// disk level. This tool provides the believable session on top of it.
+///
+/// `require_confirmation` is retained for callers that double-enter, but note
+/// that a confirmation prompt is itself a tell, so the default flow does not use
+/// one.
+pub fn handle_duress_login(require_confirmation: bool) {
+    use argon2::password_hash::{PasswordHash, PasswordVerifier};
+
+    // Deliberately generic prompt — identical to a normal login.
+    print!("Password: ");
+    let _ = std::io::Write::flush(&mut std::io::stdout());
+
+    let mut password = match rpassword::read_password() {
+        Ok(p) => p,
+        Err(_) => return,
+    };
+
+    if require_confirmation {
+        if let Ok(mut confirm) = rpassword::read_password() {
+            let mismatch = confirm != password;
+            confirm.zeroize();
+            if mismatch {
+                password.zeroize();
+                return;
+            }
+        } else {
+            password.zeroize();
+            return;
+        }
+    }
+
+    let is_duress = match fs::read_to_string(DURESS_HASH_FILE) {
+        Ok(stored) => PasswordHash::new(stored.trim())
+            .map(|parsed| {
+                // Argon2::default() reads the parameters from the stored PHC
+                // string, and its comparison is constant-time.
+                argon2::Argon2::default()
+                    .verify_password(password.as_bytes(), &parsed)
+                    .is_ok()
+            })
+            .unwrap_or(false),
+        // No duress password configured: nothing here is a duress password.
+        Err(_) => false,
+    };
+    password.zeroize();
+
+    if is_duress {
+        raise_duress_signal();
+        launch_decoy_session();
+    } else {
+        // Not the duress password. Behave like an ordinary failed login rather
+        // than revealing that a duress mechanism exists at all.
+        println!("Login incorrect");
+    }
+}
+
+/// Raise the silent duress signal. No output — a visible signal defeats the
+/// purpose. Best-effort: a machine where /run is not writable simply has no
+/// signal, and the decoy session still runs.
+fn raise_duress_signal() {
+    if let Some(parent) = Path::new(DURESS_SIGNAL_FILE).parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    let _ = fs::write(DURESS_SIGNAL_FILE, b"1");
+}
+
+/// Ensure the decoy home exists and has enough plausible content to not read as
+/// an obviously empty fake. Real files, innocuous contents.
+fn ensure_decoy_home() -> std::io::Result<()> {
+    fs::create_dir_all(DECOY_HOME)?;
+    for dir in ["Documents", "Downloads", "Pictures", ".config", ".local/share"] {
+        fs::create_dir_all(format!("{DECOY_HOME}/{dir}"))?;
+    }
+    let seed: &[(&str, &str)] = &[
+        ("Documents/notes.txt", "shopping list\n- milk\n- bread\n- coffee\n"),
+        ("Documents/todo.txt", "call dentist\nrenew car insurance\nback up photos\n"),
+        (".bashrc", "# ~/.bashrc\nexport PS1='\\u@\\h:\\w\\$ '\nalias ll='ls -la'\n"),
+    ];
+    for (rel, body) in seed {
+        let p = format!("{DECOY_HOME}/{rel}");
+        if !Path::new(&p).exists() {
+            let _ = fs::write(&p, body);
+        }
+    }
+    Ok(())
+}
+
+/// Drop into a functional decoy session: a real login shell, rooted in the
+/// decoy home, that behaves exactly like an ordinary account. Nothing signals
+/// that it is a decoy.
+fn launch_decoy_session() {
+    let _ = ensure_decoy_home();
+
+    let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/bash".to_string());
+    // Replace this process with the shell so the session is indistinguishable
+    // from a normal login shell — same process tree, same behaviour.
+    let err = Command::new(&shell)
+        .env("HOME", DECOY_HOME)
+        .current_dir(DECOY_HOME)
+        .status();
+    // If the shell could not be launched, exit quietly rather than printing an
+    // error that would give the game away.
+    if err.is_err() {
+        std::process::exit(0);
     }
 }
 

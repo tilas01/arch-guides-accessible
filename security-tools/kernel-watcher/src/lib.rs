@@ -1,4 +1,5 @@
 #![allow(clippy::collapsible_if)]
+pub mod connection_monitor;
 pub mod gui;
 pub mod process_monitor;
 use argon2::{
@@ -287,6 +288,10 @@ pub fn check_evil_maid_hash() -> bool {
 pub fn start_watcher() {
     println!("Starting Kernel Watcher (Semi-EDR File Monitor)...");
     process_monitor::start_process_monitor();
+
+    // Outbound connection monitor. The TTY prompter works on a bare console and
+    // over SSH; the GUI supplies its own prompter when launched with -i.
+    connection_monitor::start_connection_monitor(Box::new(connection_monitor::TtyPrompter));
 
     // Start background rootkit scanner
     thread::spawn(|| {
