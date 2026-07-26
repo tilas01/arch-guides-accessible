@@ -49,7 +49,7 @@ readonly KEY_URL="https://raw.githubusercontent.com/${REPO}/main/tilas01.asc"
 # 4C0383A168D0EA1DD6F1ACB5A13118E03A7D55A0 was the previous key. Its private
 # half was published in this repository's git history and it is REVOKED. Never
 # accept it.
-readonly SIGNING_FPR="745F82B41AFD945636859C922F43352EC307EF09"
+readonly SIGNING_FPR="69D77707109F4152646AB850669F4E9A22A8A316"
 readonly REVOKED_FPRS=("4C0383A168D0EA1DD6F1ACB5A13118E03A7D55A0")
 readonly INSTALL_DIR="/usr/local/bin"
 readonly CONFIG_DIR="/etc/arch-security"

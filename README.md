@@ -178,19 +178,19 @@ GPG-signed. The public key (`tilas01.asc`) is committed at the repository root.
 **Current signing key — trust this one:**
 
 ```
-745F 82B4 1AFD 9456 3685  9C92 2F43 352E C307 EF09
-tilas01 (Arch Guides Dynamic release signing) <recordtrack32@gmail.com>
-ed25519, created 2026-07-25, expires 2028-07-24
+69D7 7707 109F 4152 646A  B850 669F 4E9A 22A8 A316
+tilas01
+ed25519, created 2026-07-26, expires 2028-07-25
 ```
 
 ```bash
 gpg --import tilas01.asc                                  # 1. import the key
-gpg --fingerprint 745F82B41AFD945636859C922F43352EC307EF09  # 2. compare against the block above
+gpg --fingerprint 69D77707109F4152646AB850669F4E9A22A8A316  # 2. compare against the block above
 gpg --verify libre-otp.sig libre-otp                      # 3. verify the signature
 sha512sum -c libre-otp.sha512                             # 4. verify the hash
 ```
 
-A `Good signature from "tilas01 (Arch Guides Dynamic release signing)"` plus an
+A `Good signature from "tilas01"` plus an
 `OK` means the binary is what was built. If either check fails, do not run it.
 
 You can also use [`scripts/verify-integrity.sh`](scripts/verify-integrity.sh),
@@ -207,7 +207,13 @@ this repo can sign anything as `tilas01` with it.
 |---|---|
 | **Compromised key** | `4C03 83A1 68D0 EA1D D6F1  ACB5 A131 18E0 3A7D 55A0` |
 | **Status** | **Revoked.** Revocation published as [`tilas01-revoked-2026-06.asc`](tilas01-revoked-2026-06.asc) |
-| **Replaced by** | `745F 82B4 1AFD 9456 3685  9C92 2F43 352E C307 EF09` |
+| **Replaced by** | `69D7 7707 109F 4152 646A  B850 669F 4E9A 22A8 A316` |
+
+> An interim key `745F82B4…` existed briefly on 2026-07-25. It was never
+> published, never used to sign a release, and was discarded because its user
+> ID carried an email address that does not belong in a public key. It needs
+> no revocation because nothing was ever signed with it. If you somehow have
+> it, delete it.
 
 If you imported the old key at any point, import the revocation so GnuPG stops
 trusting it:
