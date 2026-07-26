@@ -155,7 +155,7 @@ const STEPS = [
     help: 'Run "lsblk" and identify the disk by its size and model, not by ' +
           'the name you expect. This is the single most destructive value in ' +
           'the whole guide: every partitioning command below is aimed at it.',
-    wiki: 'disk',
+    wiki: 'target-disk',
     type: 'text',
     placeholder: '/dev/nvme0n1',
     validate: v => /^\/dev\/[a-z0-9]+$/.test(v.trim())
@@ -214,7 +214,7 @@ const STEPS = [
     help: 'zram compresses swap in RAM and is the sensible default on almost ' +
           'any modern machine. A swap file or partition is only needed if you ' +
           'want hibernation, which needs swap at least as large as RAM.',
-    wiki: 'swap',
+    wiki: 'swap_size',
     type: 'choice',
     options: [
         { value: 'zram', label: 'zram (compressed, in RAM)', recommended: true,
@@ -308,7 +308,7 @@ const STEPS = [
           'Enrolling your own keys means you decide what may boot, rather ' +
           'than a third-party certificate authority. Turning it off for Arch ' +
           'also lowers the bar for any other operating system on the machine.',
-    wiki: 'secure-boot',
+    wiki: 'bootloader',
     when: s => s.arch === 'x86_64' && s.firmware === 'uefi',
     type: 'choice',
     options: [
@@ -333,7 +333,7 @@ const STEPS = [
           'kernel you can boot the other one and fix it. linux-hardened ' +
           'trades some performance and some out-of-tree driver compatibility ' +
           'for exploit mitigations.',
-    wiki: 'kernel',
+    wiki: 'kernel-main',
     type: 'multi',
     options: [
         { value: 'linux', label: 'linux (mainline)', recommended: true,
@@ -357,7 +357,7 @@ const STEPS = [
           'speculative-execution vulnerabilities. Loaded early by the ' +
           'initramfs. There is no equivalent on ARM — firmware comes from the ' +
           'board vendor.',
-    wiki: 'microcode',
+    wiki: 'cpu_brand',
     // Not asked under a libre policy: microcode is a proprietary blob, so the
     // answer is already decided and offering it produced a summary that
     // disagreed with the packages actually installed.
@@ -379,7 +379,7 @@ const STEPS = [
     section: 'System',
     title: 'Hostname',
     help: 'The machine\'s name on your network. Letters, digits and hyphens.',
-    wiki: 'hostname',
+    wiki: 'manual-install',
     type: 'text',
     placeholder: 'archbox',
     validate: v => /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/.test(v.trim())
@@ -392,7 +392,7 @@ const STEPS = [
     title: 'Your username',
     help: 'The everyday account. It goes in the wheel group so it can use ' +
           'sudo; you should not be logging in as root.',
-    wiki: 'users',
+    wiki: 'manual-install',
     type: 'text',
     placeholder: 'you',
     validate: v => /^[a-z_][a-z0-9_-]{0,31}$/.test(v.trim())
@@ -406,7 +406,7 @@ const STEPS = [
     help: 'An IANA zone name. "timedatectl list-timezones" lists them all. ' +
           'The clock is kept in UTC; if you dual boot Windows the guide adds ' +
           'the step that stops the two disagreeing.',
-    wiki: 'locale',
+    wiki: 'manual-install',
     type: 'text',
     placeholder: 'Europe/London',
     validate: v => /^[A-Za-z]+\/[A-Za-z_+-]+(\/[A-Za-z_+-]+)?$/.test(v.trim())
@@ -420,7 +420,7 @@ const STEPS = [
     help: 'Sets language, date format, sort order and currency. UTF-8 ' +
           'variants only — anything else will bite you the first time a ' +
           'filename has an accent in it.',
-    wiki: 'locale',
+    wiki: 'manual-install',
     type: 'choice',
     options: [
         { value: 'en_GB.UTF-8', label: 'en_GB.UTF-8', desc: 'British English.' },
@@ -437,7 +437,7 @@ const STEPS = [
     help: 'The console layout, used before any desktop starts. Get this ' +
           'wrong and your disk passphrase will not type the way you expect ' +
           'at the boot prompt.',
-    wiki: 'locale',
+    wiki: 'manual-install',
     type: 'choice',
     options: [
         { value: 'us', label: 'us', recommended: true, desc: 'US QWERTY.' },
@@ -484,7 +484,7 @@ const STEPS = [
           'read another\'s keystrokes or screen. Xorg cannot make that ' +
           'guarantee, but some older applications and some accessibility ' +
           'tools still need it.',
-    wiki: 'display-server',
+    wiki: 'display_server',
     when: s => s.desktop && s.desktop !== 'none',
     type: 'choice',
     options: [
@@ -503,7 +503,7 @@ const STEPS = [
     help: 'The font your terminal and editor use. Nerd Font variants include ' +
           'the glyphs that status bars and shell prompts expect; without ' +
           'them you get boxes.',
-    wiki: 'theming',
+    wiki: 'desktop',
     when: s => s.desktop && s.desktop !== 'none',
     type: 'choice',
     options: [
@@ -526,7 +526,7 @@ const STEPS = [
     help: 'Applied to the terminal, the editor and the shell prompt so they ' +
           'agree with each other. All of these are dark schemes designed for ' +
           'long sessions.',
-    wiki: 'theming',
+    wiki: 'desktop',
     when: s => s.desktop && s.desktop !== 'none',
     type: 'choice',
     options: [
@@ -547,7 +547,7 @@ const STEPS = [
     help: 'bash is what every guide on the internet assumes. zsh with a ' +
           'prompt framework is the common upgrade. fish is friendlier out of ' +
           'the box but is not POSIX, so pasted shell snippets can fail.',
-    wiki: 'shell',
+    wiki: 'desktop',
     type: 'choice',
     options: [
         { value: 'bash', label: 'bash', recommended: true, desc: 'Default. Nothing to install.' },
@@ -563,7 +563,7 @@ const STEPS = [
     title: 'Network management',
     help: 'Pick exactly one. Two network managers fighting over the same ' +
           'interface is a classic way to end up with no network at all.',
-    wiki: 'network',
+    wiki: 'firewall',
     type: 'choice',
     options: [
         { value: 'networkmanager', label: 'NetworkManager', recommended: true,
@@ -580,7 +580,7 @@ const STEPS = [
     title: 'Audio',
     help: 'PipeWire replaced PulseAudio and JACK and is what Arch ships now. ' +
           'Choose none for a server.',
-    wiki: 'audio',
+    wiki: 'desktop',
     when: s => s.desktop && s.desktop !== 'none',
     type: 'choice',
     options: [
@@ -614,7 +614,7 @@ const STEPS = [
     title: 'Snapshots',
     help: 'A snapshot taken automatically before every pacman transaction ' +
           'turns a broken update into a reboot. Only useful on Btrfs.',
-    wiki: 'snapshots',
+    wiki: 'filesystem',
     when: s => s.filesystem === 'btrfs',
     type: 'choice',
     options: [
