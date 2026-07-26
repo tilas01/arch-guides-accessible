@@ -19,6 +19,11 @@
     var INDEX_URL = 'search-index.json';
     var entries = [];
     var loaded = false;
+    var sortMode = 'relevance';   // 'relevance' | 'az' | 'section'
+    var lastResults = [];         // scored+sorted, for re-sorting without re-scoring
+    var lastWords = [];
+    var reducedMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function el(id) { return document.getElementById(id); }
 
@@ -134,25 +139,57 @@
         return out;
     }
 
+    /* Re-order already-scored results for the current sort mode. Relevance is
+       the order they arrive in (highest score first); the others are stable
+       alphabetical, so toggling sort never reshuffles equal items at random. */
+    function applySort(results) {
+        if (sortMode === 'az') {
+            return results.slice().sort(function (a, b) {
+                return normalise(a.t).localeCompare(normalise(b.t));
+            });
+        }
+        if (sortMode === 'section') {
+            return results.slice().sort(function (a, b) {
+                return normalise(a.s).localeCompare(normalise(b.s)) ||
+                       normalise(a.t).localeCompare(normalise(b.t));
+            });
+        }
+        return results; // relevance: leave as scored
+    }
+
     function render(results, words) {
         var host = el('search-results');
         var contents = el('site-contents');
         var count = el('result-count');
+        var sortWrap = el('sort-wrap');
         host.innerHTML = '';
+
+        lastResults = results;
+        lastWords = words;
 
         if (!results.length) {
             contents.hidden = false;
             host.hidden = true;
             count.textContent = '';
+            if (sortWrap) sortWrap.hidden = true;
             return;
         }
         contents.hidden = true;
         host.hidden = false;
+        if (sortWrap) sortWrap.hidden = false;
         count.textContent = results.length + (results.length === 1 ? ' result' : ' results');
 
-        results.forEach(function (r) {
+        var ordered = applySort(results);
+        ordered.forEach(function (r, i) {
             var a = document.createElement('a');
             a.className = 'result';
+            // Staggered entrance: each card starts a beat after the one above,
+            // capped so a 60-result view finishes settling quickly. Pure
+            // transform/opacity, and skipped entirely under reduced-motion.
+            if (!reducedMotion) {
+                a.classList.add('result-enter');
+                a.style.animationDelay = Math.min(i * 22, 400) + 'ms';
+            }
             a.href = r.u;
             // Drives the colour coding: one accent per place a result can
             // come from, matching the wiki sidebar.
@@ -234,6 +271,15 @@
             if (next) next.focus();
             else if (e.key === 'ArrowUp') el('site-search').focus();
         });
+
+        // Sort control: re-orders the current results without re-scoring.
+        var sortSel = el('sort-mode');
+        if (sortSel) {
+            sortSel.addEventListener('change', function () {
+                sortMode = sortSel.value;
+                if (lastResults.length) render(lastResults, lastWords);
+            });
+        }
 
         // A query in the URL makes a search shareable: site-index.html?q=luks
         var params = new URLSearchParams(location.search);

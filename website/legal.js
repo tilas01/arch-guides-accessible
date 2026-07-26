@@ -122,6 +122,18 @@ document.addEventListener('DOMContentLoaded', () => {
         </p>
       </div>
 
+      <!-- Optional: jump straight to a generator after agreeing. Off by
+           default so the plain flow is unchanged; ticking it is a shortcut,
+           aimed mainly at mobile where scrolling to find the link is friction. -->
+      <label id="legal-jump-toggle" style="
+        display:flex; align-items:center; gap:0.6rem; cursor:pointer;
+        background:var(--bg-darker,#16161e); border:1px solid var(--border-color,#2f3450);
+        border-radius:8px; padding:0.7rem 0.85rem; margin-bottom:0.9rem;
+        font-size:0.85rem; color:var(--fg-color,#a9b1d6);">
+        <input type="checkbox" id="legal-jump-check" style="width:18px; height:18px; flex:0 0 auto; accent-color:var(--accent-cyan,#7dcfff);">
+        <span>Take me straight to a generator after this — I want to build an install now.</span>
+      </label>
+
       <!-- Two Action Buttons -->
       <div style="display:flex; flex-direction:column; gap:0.75rem;">
         <button id="legal-agree-btn" class="btn" style="
@@ -148,16 +160,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    modal.querySelector('#legal-agree-btn').addEventListener('click', () => {
+    const wantsJump = () => {
+      const c = modal.querySelector('#legal-jump-check');
+      return c && c.checked;
+    };
+
+    const dismiss = () => {
       overlay.remove();
-      document.body.style.overflow = '';
-    });
+      if (wantsJump()) showGeneratorJump();
+      else document.body.style.overflow = '';
+    };
+
+    modal.querySelector('#legal-agree-btn').addEventListener('click', dismiss);
 
     modal.querySelector('#legal-agree-persist-btn').addEventListener('click', () => {
       localStorage.setItem(LEGAL_KEY, 'true');
       localStorage.setItem(WELCOME_KEY, 'true');
-      overlay.remove();
-      document.body.style.overflow = '';
+      dismiss();
     });
 
     // Hover effect
@@ -166,6 +185,72 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('mouseenter', () => btn.style.filter = 'brightness(1.12)');
         btn.addEventListener('mouseleave', () => btn.style.filter = '');
       });
+  }
+
+  // ─── Generator jump overlay ─────────────────────────────────────────────────
+  // Shown only when the user ticked the shortcut box. Two plain choices, each
+  // saying who it is for, so a first-time visitor picks the right one rather
+  // than guessing. Right-clicking either card opens its wiki explainer, matching
+  // the rest of the site.
+  function showGeneratorJump() {
+    const overlay = makeOverlay();
+    const modal = makeModal();
+    modal.style.maxWidth = '620px';
+    modal.innerHTML = `
+      <h2 style="color:var(--accent-cyan,#7dcfff); text-align:center; margin:0 0 0.4rem;">
+        Which way in?
+      </h2>
+      <p style="color:#8b949e; text-align:center; font-size:0.88rem; margin:0 0 1.3rem;">
+        Both produce the same install — a bash script and a matching markdown
+        guide. They differ only in how much you decide up front.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:0.8rem;">
+        <a href="index.html" id="jump-dynamic" class="nav-tooltip" data-title="⚙️ Dynamic Generator"
+           data-desc="A single form. Set every option and generate. Fastest when you already know what you want, and most comfortable on a desktop."
+           style="display:block; text-decoration:none; background:var(--bg-darker,#16161e);
+           border:1px solid var(--accent-blue,#7aa2f7); border-radius:10px; padding:1rem 1.1rem;">
+          <span style="display:block; font-weight:700; color:var(--accent-blue,#7aa2f7); font-size:1.05rem;">
+            ⚙️ Dynamic Generator <span style="font-size:0.72rem; color:var(--accent-green,#9ece6a);">— recommended on a PC</span>
+          </span>
+          <span style="display:block; color:var(--fg-color,#a9b1d6); font-size:0.85rem; margin-top:0.3rem;">
+            One form, every option at once. Best if you already know what you want.
+          </span>
+        </a>
+        <a href="manual.html" id="jump-manual" class="nav-tooltip" data-title="🧭 Manual Walkthrough"
+           data-desc="One question at a time, each explained, with the guide building as you answer. Best on mobile, or if you are not yet sure what you want."
+           style="display:block; text-decoration:none; background:var(--bg-darker,#16161e);
+           border:1px solid var(--accent-purple,#bb9af7); border-radius:10px; padding:1rem 1.1rem;">
+          <span style="display:block; font-weight:700; color:var(--accent-purple,#bb9af7); font-size:1.05rem;">
+            🧭 Manual Walkthrough <span style="font-size:0.72rem; color:var(--accent-green,#9ece6a);">— recommended on mobile</span>
+          </span>
+          <span style="display:block; color:var(--fg-color,#a9b1d6); font-size:0.85rem; margin-top:0.3rem;">
+            One step at a time, everything explained. Best on a phone, or if you
+            are not sure yet — it walks you through each choice.
+          </span>
+        </a>
+      </div>
+      <button id="jump-skip" style="
+        display:block; margin:1.1rem auto 0; background:none; border:none;
+        color:#8b949e; font-family:var(--font-mono); font-size:0.82rem;
+        text-decoration:underline; cursor:pointer;">
+        Not now — take me to the site index
+      </button>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    const leave = (href) => {
+      document.body.style.overflow = '';
+      if (href) window.location.href = href;
+      else overlay.remove();
+    };
+    modal.querySelector('#jump-skip').addEventListener('click', () => leave('site-index.html'));
+    // The two cards are real links; let them navigate, but restore scroll first.
+    modal.querySelectorAll('a[href]').forEach(a =>
+      a.addEventListener('click', () => { document.body.style.overflow = ''; }));
+
+    if (typeof window.refreshTooltips === 'function') window.refreshTooltips();
   }
 
   // Show if not dismissed

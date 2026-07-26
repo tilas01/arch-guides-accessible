@@ -65,7 +65,41 @@
             border-left-color: var(--accent-purple);
             background: var(--tint-purple);
             text-decoration: none;
+            transform: translateX(2px);
         }
+        /* Buttery entrance: fade up a few pixels, once, on a short curve. Only
+           transform and opacity, so it composites on the GPU and never touches
+           layout. The stagger (per-card animation-delay) is set in JS. */
+        .result {
+            transition: transform 0.14s ease, background-color 0.14s ease,
+                        border-left-color 0.14s ease;
+        }
+        .result-enter {
+            animation: result-in 0.32s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+        }
+        @keyframes result-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .result-enter { animation: none; }
+            .result:hover, .result:focus-visible { transform: none; }
+        }
+
+        /* Sort control sits in the meta row, right-aligned. */
+        .sort-wrap { display: inline-flex; align-items: center; gap: 0.4rem; }
+        .sort-wrap label { font-size: 0.74rem; color: var(--fg-dim); }
+        #sort-mode {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            background: var(--bg-dark);
+            color: var(--fg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.25rem 0.4rem;
+            min-height: 32px;
+        }
+        #sort-mode:focus-visible { border-color: var(--accent-cyan); outline: none; }
         .result-title { display: block; font-weight: bold; color: var(--heading-color); }
         .result-section {
             display: inline-block;
@@ -168,8 +202,6 @@
         <span class="nav-sep">|</span>
         <a href="index.html" class="nav-link nav-tooltip" data-title="⚙️ Generator" data-desc="Fill in a form, get a script and a guide. Fastest when you already know what you want.">⚙️ Generator</a>
         <span class="nav-sep">|</span>
-        <a href="manual.html" class="nav-link nav-tooltip" data-title="🧭 Manual" data-desc="One question at a time, with an explanation of every option and the commands appearing as you answer. The recommended path on mobile.">🧭 Manual</a>
-        <span class="nav-sep">|</span>
         <a href="iso-verify.html" class="nav-link nav-tooltip" data-title="💿 Verify Arch ISO" data-desc="Hash an Arch ISO in your browser and check it against mirrors other than the one that served it.">💿 Verify Arch ISO</a>
         <span class="nav-sep">|</span>
         <a href="security-tools.html" class="nav-link nav-tooltip" data-title="🦀 Security Tools" data-desc="The Rust security suite and the vetted third-party hardening tools.">🦀 Security Tools</a>
@@ -196,6 +228,14 @@
                aria-describedby="search-status">
         <div class="search-meta">
             <span id="search-status">Loading the search index…</span>
+            <span class="sort-wrap" id="sort-wrap" hidden>
+                <label for="sort-mode">Sort</label>
+                <select id="sort-mode">
+                    <option value="relevance">Best match</option>
+                    <option value="az">A → Z</option>
+                    <option value="section">By section</option>
+                </select>
+            </span>
             <span><kbd>/</kbd> to focus · <kbd>↓</kbd> to walk results · <kbd>Enter</kbd> opens the first · <span id="result-count"></span></span>
         </div>
         <div class="src-legend" aria-hidden="true">
