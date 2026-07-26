@@ -75,7 +75,7 @@ scarecrow --interactive
 
 ```bash
 gpg --import tilas01.asc
-gpg --fingerprint 745F82B41AFD945636859C922F43352EC307EF09   # compare against the root README
+gpg --fingerprint 69D77707109F4152646AB850669F4E9A22A8A316   # compare against the root README
 gpg --verify scarecrow.sig scarecrow
 sha512sum -c scarecrow.sha512
 ```

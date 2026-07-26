@@ -125,6 +125,19 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 #toggle-tooltips-btn.disabled { color: var(--accent-red); }
 
 
+/* Byline under the banner. Green, small, and in the empty space below the
+   logo rather than beside it, so the mark itself is untouched. */
+#site-byline {
+    display: block;
+    text-align: center;
+    margin: -0.2rem auto 0.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    color: var(--accent-green);
+    text-decoration: none;
+}
+#site-byline:hover { color: var(--accent-cyan); text-decoration: underline; }
+
 /* Anchors in the cluster need the same box as its buttons. */
 #header-controls .ctrl-icon {
     background: transparent;

@@ -144,6 +144,18 @@
         }
         if (hist) bar.appendChild(hist);
 
+        /* Fixed left-to-right order, applied after building so it does not
+           depend on which controls a page already declared in its own HTML:
+           verify-ISO, history, tooltips, repository. The octopus sits furthest
+           right, with the tooltip switch immediately to its left. */
+        ['iso-verify-btn', 'history-btn', 'toggle-tooltips-btn', 'repo-link-btn']
+            .forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el && el.parentNode === bar) bar.appendChild(el);
+            });
+
+        buildByline(header);
+
         refreshHistoryBadge();
 
         /* Do not link the page to itself. */
@@ -177,6 +189,27 @@
         var n = historyCount();
         el.classList.toggle('ctrl-unsaved', n > 0 && !historySaved());
         el.setAttribute('data-count', String(n));
+    }
+
+    /* "by tilas01 on GitHub" beneath the banner, linking where the octopus
+       links. Added here rather than in each page's HTML so it cannot end up on
+       some pages and not others. */
+    function buildByline(header) {
+        if (document.getElementById('site-byline')) return;
+        var banner = header.querySelector('.banner-link');
+        if (!banner) return;
+        var a = document.createElement('a');
+        a.id = 'site-byline';
+        a.href = REPO_URL;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.className = 'nav-tooltip';
+        a.textContent = 'by tilas01 on GitHub';
+        a.setAttribute('data-title', 'by tilas01 on GitHub');
+        a.setAttribute('data-desc',
+            'Written and maintained by tilas01. Opens the source repository — ' +
+            'the same place the octopus goes.');
+        banner.parentNode.insertBefore(a, banner.nextSibling);
     }
 
     /* ── 2. Do not lose the history by closing the tab ──────────────────── */
