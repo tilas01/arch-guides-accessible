@@ -106,6 +106,24 @@
         if (s.display_server === 'xorg' && s.desktop !== 'dwm') p.push('xorg-server');
         if (s.audio === 'pipewire') p.push('pipewire', 'pipewire-pulse', 'pipewire-alsa', 'wireplumber');
         if (s.font && FONT_PKG[s.font]) p.push(FONT_PKG[s.font]);
+        // Ricing toolkit. Each choice maps to the Wayland or Xorg package
+        // depending on the display server, so the guide never tells a Wayland
+        // user to install an X-only tool.
+        const wl = s.display_server !== 'xorg';
+        const RICE = {
+            rofi:       wl ? 'wofi' : 'rofi',
+            waybar:     wl ? 'waybar' : 'polybar',
+            dunst:      wl ? 'mako' : 'dunst',
+            wallpaper:  wl ? 'hyprpaper' : 'feh',
+            picom:      'picom',
+            lockscreen: wl ? 'hyprlock' : 'swaylock',
+            idle:       wl ? 'hypridle' : 'swayidle',
+            clipboard:  wl ? 'cliphist' : 'clipman',
+            screenshot: wl ? 'grim slurp' : 'flameshot'
+        };
+        (s.ricing || []).forEach(r => {
+            if (RICE[r]) RICE[r].split(' ').forEach(pkg => p.push(pkg));
+        });
         return p;
     }
 
@@ -163,8 +181,11 @@
         row('Secure Boot', s.secureboot);
         row('Kernels', s.kernels);
         row('Microcode', s.microcode);
+        row('Mirror country', s.mirror_country === 'auto' ? 'auto (fastest worldwide)' : s.mirror_country);
+        row('Mirror protocol', s.mirror_https === 'no' ? 'HTTP + HTTPS' : 'HTTPS only');
         row('Desktop', s.desktop);
         row('Display server', s.display_server);
+        row('Ricing toolkit', s.ricing);
         row('Font', s.font);
         row('Palette', s.palette);
         row('Shell', s.shell);
@@ -232,8 +253,43 @@
             L.push('> installer ISO. You prepare the storage from another machine and');
             L.push('> extract a per-board rootfs tarball onto it, then boot into the');
             L.push('> installed system. Steps 2 and 3 below run on the *other* machine.');
-            L.push('> See <https://archlinuxarm.org/platforms> for your board.');
+            L.push('> Mirror selection below is Arch-proper only; Arch Linux ARM uses its');
+            L.push('> own mirror list at /etc/pacman.d/mirrorlist. See');
+            L.push('> <https://archlinuxarm.org/platforms> for your board.');
             L.push('');
+        } else {
+            // Mirror selection with reflector. Only on Arch-proper (x86_64):
+            // Arch Linux ARM has a separate mirror system.
+            const httpsOnly = s.mirror_https !== 'no';
+            const country = s.mirror_country && s.mirror_country !== 'auto'
+                ? s.mirror_country : null;
+            L.push('### Pick fast package mirrors');
+            L.push('');
+            L.push('```bash');
+            L.push('pacman -Sy --noconfirm reflector');
+            const parts = ['reflector'];
+            if (country) parts.push('--country ' + country);
+            parts.push('--age 12');            // synced in the last 12 hours
+            parts.push('--latest 20');         // the 20 most-recently-synced
+            if (httpsOnly) parts.push('--protocol https');
+            parts.push('--sort rate');         // then rank those by download speed
+            parts.push('--save /etc/pacman.d/mirrorlist');
+            // Wrap the reflector line for readability rather than one long line.
+            L.push(parts.join(' \\\n    '));
+            L.push('');
+            L.push('# --sort rate downloads from each candidate to measure real speed,');
+            L.push('# so this takes a minute. --age 12 and --latest 20 keep only mirrors');
+            L.push('# that are both fresh and fast.' +
+                   (httpsOnly ? ' --protocol https keeps it to encrypted mirrors.' : ''));
+            L.push('```');
+            L.push('');
+            if (!httpsOnly) {
+                L.push('> You allowed HTTP mirrors. Package **contents** are still verified');
+                L.push('> by pacman\'s signatures, so this is not an integrity risk — but');
+                L.push('> anyone on the path can see which packages you install. HTTPS');
+                L.push('> hides that.');
+                L.push('');
+            }
         }
 
         /* ── 2. Partition ── */
