@@ -21,6 +21,7 @@
 //! IMPORTANT: This daemon must run as root (or with CAP_INPUT_RAW).
 //! Install as systemd service: see /etc/systemd/system/anti-ducky.service
 
+pub mod defence;
 pub mod gui;
 
 #[cfg(target_os = "linux")]
@@ -376,12 +377,30 @@ fn handle_payload_detected(
             dump_payload(&device.record.name, &device.payload_buf);
             device.state = DeviceState::Quarantined;
             device.rapid_count = 0;
+
+            // Active response: capture is done above; now deauthorize the
+            // device at the kernel so it cannot deliver another keystroke, even
+            // if it is spoofing an approved keyboard's identity. Reversible,
+            // and a no-op for built-in devices that have no USB authorized node.
+            let deauth = defence::deauthorize(&device.record.sys_path, &device.record.name);
+            log(&deauth);
+
             alert_wall(&format!(
                 "[anti-ducky] CRITICAL: RubberDucky/BadUSB payload detected and QUARANTINED \
-                 from device '{}'. Payload logged to {}/payload_*.log. \
+                 from device '{}'. Payload logged to {}/payload_*.log. {}\n\
                  DO NOT approve this device. Disconnect it immediately.",
-                device.record.name, LOG_DIR
+                device.record.name, LOG_DIR, deauth
             ));
+
+            // Opt-in, off by default: hard-power-off so the disk-encryption keys
+            // leave RAM before anyone can extract them. Only fires if the
+            // operator explicitly enabled it with --arm-kill-switch.
+            if defence::kill_on_attack_enabled() {
+                defence::hard_poweroff(&format!(
+                    "confirmed BadUSB payload from '{}'; clearing RAM keys",
+                    device.record.name
+                ));
+            }
         }
         DeviceState::Quarantined => {
             // Already quarantined, just keep logging

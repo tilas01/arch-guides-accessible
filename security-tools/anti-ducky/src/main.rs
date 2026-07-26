@@ -34,6 +34,16 @@ struct Args {
     /// Set or change the unlock PIN, then exit
     #[arg(long)]
     set_unlock_pin: bool,
+
+    /// Arm the hard-shutdown-on-attack switch. When armed, a confirmed BadUSB
+    /// payload triggers an immediate power-off to clear disk-encryption keys
+    /// from RAM. Destructive to unsaved work; off until you arm it.
+    #[arg(long)]
+    arm_kill_switch: bool,
+
+    /// Disarm the hard-shutdown-on-attack switch.
+    #[arg(long)]
+    disarm_kill_switch: bool,
 }
 
 /// Argon2id parameters for the unlock PIN.
@@ -181,10 +191,58 @@ fn handle_unlock() -> u8 {
     }
 }
 
+/// Arm or disarm the hard-shutdown-on-attack switch.
+///
+/// Arming is destructive-by-consequence — a confirmed attack will then power the
+/// machine off with no clean shutdown — so it requires typed confirmation, the
+/// same gate the suite uses for every irreversible option. Disarming is always
+/// allowed without ceremony.
+fn arm_kill_switch(enable: bool) -> u8 {
+    use anti_ducky::defence;
+
+    if enable {
+        println!("=== Arm the anti-ducky hard-shutdown switch ===");
+        println!("Once armed, a CONFIRMED BadUSB/Rubber Ducky payload will trigger an");
+        println!("immediate hard power-off. The point is to clear disk-encryption keys");
+        println!("from RAM before an attacker can extract them — but it also means any");
+        println!("unsaved work is lost the instant an attack is detected, and a");
+        println!("false positive shuts the machine down.");
+        println!();
+        print!("Type ARM to enable this: ");
+        use std::io::Write;
+        let _ = std::io::stdout().flush();
+        let mut line = String::new();
+        if std::io::stdin().read_line(&mut line).is_err() || line.trim() != "ARM" {
+            eprintln!("Not confirmed. The kill switch stays disarmed.");
+            return 1;
+        }
+    }
+
+    match defence::set_kill_on_attack(enable) {
+        Ok(()) => {
+            if enable {
+                println!("Kill switch ARMED. Disarm with: anti-ducky --disarm-kill-switch");
+            } else {
+                println!("Kill switch disarmed.");
+            }
+            0
+        }
+        Err(e) => {
+            eprintln!("Could not update the kill-switch flag: {e}");
+            eprintln!("This needs root.");
+            1
+        }
+    }
+}
+
 fn main() -> ExitCode {
     let args = Args::parse();
 
-    let code = if args.set_unlock_pin {
+    let code = if args.arm_kill_switch {
+        arm_kill_switch(true)
+    } else if args.disarm_kill_switch {
+        arm_kill_switch(false)
+    } else if args.set_unlock_pin {
         set_unlock_pin()
     } else if args.unlock {
         handle_unlock()
