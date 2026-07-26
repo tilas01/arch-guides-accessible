@@ -58,7 +58,7 @@ else
     # downloaded-and-trusted key proves nothing on its own: whoever can swap the
     # binary can swap the key that signs it. Compare this against the value
     # printed in README.md before trusting anything below.
-    EXPECTED_FPR="69D77707109F4152646AB850669F4E9A22A8A316"
+    EXPECTED_FPR="5CC1B2BED4D05F65E9E965423AA74BEC12F3D5ED"
     # Previous key. Its private half was committed to public git history; it is
     # revoked and every signature it made is worthless.
     REVOKED_FPR="4C0383A168D0EA1DD6F1ACB5A13118E03A7D55A0"

@@ -178,14 +178,18 @@ GPG-signed. The public key (`tilas01.asc`) is committed at the repository root.
 **Current signing key — trust this one:**
 
 ```
-69D7 7707 109F 4152 646A  B850 669F 4E9A 22A8 A316
+5CC1 B2BE D4D0 5F65 E9E9  6542 3AA7 4BEC 12F3 D5ED
 tilas01
 ed25519, created 2026-07-26, expires 2028-07-25
 ```
 
+The user ID is the bare name `tilas01` — no email address, by design. An email
+in a key's user ID is published forever in every copy of it and cannot be taken
+back.
+
 ```bash
 gpg --import tilas01.asc                                  # 1. import the key
-gpg --fingerprint 69D77707109F4152646AB850669F4E9A22A8A316  # 2. compare against the block above
+gpg --fingerprint 5CC1B2BED4D05F65E9E965423AA74BEC12F3D5ED  # 2. compare against the block above
 gpg --verify libre-otp.sig libre-otp                      # 3. verify the signature
 sha512sum -c libre-otp.sha512                             # 4. verify the hash
 ```
@@ -196,26 +200,30 @@ A `Good signature from "tilas01"` plus an
 You can also use [`scripts/verify-integrity.sh`](scripts/verify-integrity.sh),
 which does all three steps and refuses to pass if `gpg` is unavailable.
 
-### ⚠️ Key rotation — the first signing key was compromised
+### 🔑 Signing key history
 
-The original signing key was **exposed**. Its private key material
-(`.keys/private.key` and `.keys/private-keys-v1.d/*.key`) was committed to this
-public repository and remains recoverable from git history. Anyone who cloned
-this repo can sign anything as `tilas01` with it.
+The signing key has been rotated a few times. The full history is below so that
+anyone verifying an older release can tell which key was current when, and why
+each one was retired. **Only the current key at the top of this section should
+be trusted.**
 
-| | |
-|---|---|
-| **Compromised key** | `4C03 83A1 68D0 EA1D D6F1  ACB5 A131 18E0 3A7D 55A0` |
-| **Status** | **Revoked.** Revocation published as [`tilas01-revoked-2026-06.asc`](tilas01-revoked-2026-06.asc) |
-| **Replaced by** | `69D7 7707 109F 4152 646A  B850 669F 4E9A 22A8 A316` |
+| Key fingerprint | Period | Retired because |
+|---|---|---|
+| `5CC1 B2BE D4D0 5F65 E9E9  6542 3AA7 4BEC 12F3 D5ED` | 2026-07-26 → current | — (current) |
+| `69D7 7707 109F 4152 646A  B850 669F 4E9A 22A8 A316` | 2026-07-26 | Data loss — private key no longer available |
+| `745F 82B4 1AFD 9456 3685  9C92 2F43 352E C307 EF09` | 2026-07-25 | Withdrawn before use — never signed a release |
+| `4C03 83A1 68D0 EA1D D6F1  ACB5 A131 18E0 3A7D 55A0` | 2026-06-18 → 2026-07-25 | **Compromised** — private key was committed to public git history. **Revoked.** |
 
-> An interim key `745F82B4…` existed briefly on 2026-07-25. It was never
-> published, never used to sign a release, and was discarded because its user
-> ID carried an email address that does not belong in a public key. It needs
-> no revocation because nothing was ever signed with it. If you somehow have
-> it, delete it.
+Only one of these keys was ever *compromised*: `4C0383A1…`, whose private key
+material (`.keys/private.key`, `.keys/private-keys-v1.d/*.key`) was committed to
+this public repository and is still recoverable from git history. It is
+**revoked**, and the revocation is published as
+[`tilas01-revoked-2026-06.asc`](tilas01-revoked-2026-06.asc). The later
+retirements were housekeeping — a withdrawn key that never shipped, and a key
+whose private half was subsequently lost — not breaches, so those keys carry no
+revocation.
 
-If you imported the old key at any point, import the revocation so GnuPG stops
+If you ever imported the compromised key, import its revocation so GnuPG stops
 trusting it:
 
 ```bash
@@ -223,18 +231,13 @@ gpg --import tilas01-revoked-2026-06.asc
 gpg --list-keys 4C0383A168D0EA1DD6F1ACB5A13118E03A7D55A0   # must show "revoked"
 ```
 
-**Treat every signature made by `4C0383A1…` as meaningless**, including
-signatures on releases published before 2026-07-25. Re-verify anything you
-installed from those releases against the new key, or rebuild from source using
-[`docs/building-from-source.md`](docs/building-from-source.md) — the builds are
-reproducible, so a rebuild is an independent check that does not rely on any key
-at all.
+**Treat every signature made by `4C0383A1…` as meaningless.** Re-verify anything
+you installed from a release signed with it against the current key, or rebuild
+from source using [`docs/building-from-source.md`](docs/building-from-source.md)
+— the builds are reproducible, so a rebuild is an independent check that does
+not rely on any key at all.
 
-The old key file was additionally committed as UTF-16 text, which GnuPG cannot
-parse (`invalid packet`), so signature verification against it never actually
-worked. `tilas01.asc` is now plain ASCII armor with LF endings.
-
-Private key material for the new key is stored **outside this repository and
+Private key material for the current key is stored **outside this repository and
 outside any cloud-synced folder**, and `.keys/`, `*.key` and `*.gpg` are in
 [`.gitignore`](.gitignore). Nothing secret is committed.
 
