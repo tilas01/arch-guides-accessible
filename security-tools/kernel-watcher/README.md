@@ -88,7 +88,7 @@ the new location, and it will point at the stale copy so you can remove it.
 
 ```bash
 gpg --import tilas01.asc
-gpg --fingerprint 69D77707109F4152646AB850669F4E9A22A8A316   # compare against the root README
+gpg --fingerprint 5CC1B2BED4D05F65E9E965423AA74BEC12F3D5ED   # compare against the root README
 gpg --verify kernel-watcher.sig kernel-watcher
 sha512sum -c kernel-watcher.sha512
 ```
