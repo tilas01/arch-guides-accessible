@@ -23,13 +23,34 @@ a new keyboard. It is guarded by a PIN stored as an Argon2id hash at
 `/etc/arch-security/anti-ducky/unlock.hash` (0600) and it **fails closed**: if
 no PIN has been configured, nothing is unlocked.
 
-Approved devices are recorded alongside it, in
-`/etc/arch-security/anti-ducky/approved_devices.json`. Before 1.0 that registry
-lived in `/etc/anti-ducky/`, which is outside the only `/etc` path the daemon's
-systemd unit can write to (`ProtectSystem=strict` with
-`ReadWritePaths=/etc/arch-security`), so approvals were being discarded on
-restart. The old file is still read if the new one is absent — the next approval
-writes to the new location, after which `/etc/anti-ducky/` can be removed.
+### Active response — deauthorize and capture
+
+Detection is only half of it. On a confirmed payload — including the harder case
+where a ZeroTrace-style implant *spoofs an already-approved keyboard's
+identity* — the injected keystrokes are captured to a forensic log, then the
+device is **deauthorized at the kernel** via
+`/sys/bus/usb/devices/<dev>/authorized`. The kernel stops accepting its input;
+it can no longer type. This is the same mechanism `usbkill` and USBGuard use,
+and it is reversible (`echo 1` to the same node, or replug a device you trust).
+
+It deliberately does **not** try to damage or brick the attacking device. That
+would be retaliation rather than defence, it rarely works from the host anyway,
+and a misfire harms your own hardware. Deauthorizing stops the attack completely
+and leaves you the evidence, which is the objective.
+
+### Mouse-jiggler detection
+
+Flags a pointer device whose motion is too *regular* to be a hand — the
+signature of a jiggler plugged in to stop an unattended session from locking. A
+person's mouse movement is bursty; a jiggler's is metronomic, and that shows up
+as an unnaturally low variation in the gaps between movements.
+
+### Hard-shutdown kill switch (opt-in, off by default)
+
+`--arm-kill-switch` makes a confirmed payload trigger an immediate hard
+power-off, to clear disk-encryption keys from RAM before anyone can extract
+them. It requires typed confirmation to arm, because a false positive shuts the
+machine down and takes unsaved work with it.
 
 ## Install
 
@@ -60,11 +81,13 @@ byte-identical to the published binary.
 ## Usage
 
 ```
-  -i, --interactive      Launch the GUI dashboard (Wayland/Xorg)
-  -u, --unlock           Authenticate, then temporarily allow new USB input devices
-      --set-unlock-pin   Set or change the unlock PIN (needs root), then exit
-  -h, --help             Full argument list
-  -V, --version          Version
+  -i, --interactive          Launch the GUI dashboard (Wayland/Xorg)
+  -u, --unlock               Authenticate, then temporarily allow new USB input devices
+      --set-unlock-pin       Set or change the unlock PIN (needs root), then exit
+      --arm-kill-switch      Arm hard-shutdown-on-attack (typed confirmation; destructive)
+      --disarm-kill-switch   Disarm hard-shutdown-on-attack
+  -h, --help                 Full argument list
+  -V, --version              Version
 ```
 
 Run with no arguments to start the daemon:
@@ -98,7 +121,8 @@ committed to public git history. See
 Its false-positive rate is unknown, and this is the tool standing between you
 and the keyboard you log in with. Test it on a machine you can still reach by
 other means (SSH, a second keyboard, a live USB) before enabling the daemon on a
-machine you depend on.
+machine you depend on. The same caution applies doubly to `--arm-kill-switch`: a
+false positive there powers the machine off.
 
 A previous version compared the unlock PIN against the literal string `"1337"`
 hardcoded in `main.rs`. That was not authentication — the PIN was published in

@@ -23,6 +23,27 @@ Anything that opens one has announced itself.
 The duress login presents a plausible session while signalling that you are not
 entering it freely.
 
+### Duress login with real plausible deniability
+
+The duress login exists so that, under coercion, you can hand over *a* password
+that opens a believable, working environment while your real data stays sealed.
+For that to work it has to be **silent about being a decoy** — the person
+standing over your shoulder must see an ordinary login, not a message announcing
+that a duress password was entered.
+
+So: the duress password is an Argon2id hash you set with
+`--set-duress-password` (never a value baked into the source), the prompt is
+indistinguishable from a normal one, and a match silently raises an on-disk
+duress signal and drops you into a functional decoy session rooted in a
+populated decoy home. Nothing on screen says "duress", and the word "wipe"
+appears nowhere.
+
+This provides the believable *session*. Deniability at the *disk* level still
+needs the hidden-volume LUKS setup covered in the
+[wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html#luks-duress) —
+the two work together: the hidden volume keeps the real data unreachable, and
+this makes the decoy that is reachable look lived-in.
+
 ## Install
 
 The suite installer verifies the SHA-512 hash *and* the GPG signature, pins the
@@ -52,11 +73,12 @@ byte-identical to the published binary.
 ## Usage
 
 ```
-  -i, --interactive    Launch the GUI dashboard (Wayland/Xorg)
-  -l, --login          Trigger the duress / decoy login
-  -c, --confirm-wipe   Require an explicit [y/N] before any destructive duress action (default: true)
-  -h, --help           Full argument list
-  -V, --version        Version
+  -i, --interactive           Launch the GUI dashboard (Wayland/Xorg)
+  -l, --login                 Present the duress / decoy login prompt
+      --set-duress-password   Set or change the duress password, then exit
+      --confirm               Double-enter at the duress prompt (off by default; a confirm step is a tell)
+  -h, --help                  Full argument list
+  -V, --version               Version
 ```
 
 Run with no arguments to start the daemon:
@@ -86,9 +108,16 @@ committed to public git history. See
 
 ## Honest limitations
 
-**Duress mode can destroy data. That is the point of it, and it is why it is off
-by default and gated behind typed confirmation.** Do not enable the destructive
-path on a machine holding the only copy of anything.
+**Plausible deniability is only as good as the decoy you build.** An empty decoy
+home fools no one — populate it with believable, innocuous files so it reads as a
+real account in use. And the disk-level half is not this tool's job: without the
+hidden-volume LUKS setup, an examiner who images the disk can still see that a
+second, larger encrypted volume exists. This makes the *session* convincing; the
+wiki covers making the *disk* convincing.
+
+A previous version compared the duress password against the hardcoded string
+`"duress123"` and then printed "Duress password detected! Wiping system" — which
+told the coercer exactly what had happened. Both problems are fixed.
 
 Sandbox spoofing works against malware that bothers to check. It is a filter,
 not a wall. Targeted tooling will not be fooled and should not be assumed to be.

@@ -22,6 +22,25 @@ Destructive controls are behind a master password stored as an Argon2id hash
 (m=64MiB, t=3, p=4, well above the OWASP floor) written at 0600, so a stolen
 hash is expensive to attack offline.
 
+### Outbound connection monitor
+
+A Little Snitch-style prompt for Linux. It watches for *new* outbound
+connections, maps each back to the program that opened it, and asks once per
+program whether to allow it out. The decision is remembered
+(`connections.json`), so you are asked once, not on every connection. Deny kills
+the process and installs an nftables drop rule for the destination.
+
+The prompt works **anywhere** — a graphical session under Wayland or Xorg, or a
+bare TTY over SSH with no display server at all. On a machine with no terminal
+to ask on (an unattended daemon), it fails safe by denying: an unattended box
+should not be quietly letting new programs onto the network.
+
+It is honest about what it is: a userland monitor that reacts once the kernel
+has a socket, not an in-path firewall that holds the packet while you decide. A
+program that reconnects in the millisecond before the kill lands may get one
+packet out. For hard, before-the-fact blocking, pair it with an nftables policy
+or use opensnitch's kernel module.
+
 ## Install
 
 The suite installer verifies the SHA-512 hash *and* the GPG signature, pins the
@@ -68,22 +87,6 @@ Or open the dashboard:
 kernel-watcher --interactive
 ```
 
-## Where state lives
-
-```
-/etc/arch-security/kernel-watcher/tamper.hash        # Argon2id master password hash, 0600
-/etc/arch-security/kernel-watcher/evil_maid.hash     # /boot baseline, 0600
-/etc/arch-security/kernel-watcher/ntfy_topic.conf    # optional ntfy.sh alert topic
-```
-
-That is the directory the suite installer provisions, one subdirectory per tool.
-
-Versions before 1.0 wrote to `/etc/arch-rusty-security-suite/`, which the
-installer never created. Those files are still **read** when the new ones are
-missing, so an upgrade does not turn an existing baseline into a RED ALERT.
-Nothing writes there any more — run `kernel-watcher --setup` to record state in
-the new location, and it will point at the stale copy so you can remove it.
-
 ## Verifying a release binary
 
 ```bash
@@ -102,9 +105,11 @@ committed to public git history. See
 The eBPF paths have **not** been independently reviewed. Treat the filesystem
 monitoring as the part that has had attention.
 
-Monitoring is detection, not prevention. A process that has already read your
-SSH key has already read it; what this buys you is knowing, and knowing quickly.
-For prevention, look at AppArmor profiles — and at not running the thing.
+Monitoring is detection, not prevention — even the connection monitor above is a
+reaction to a socket that already exists, not a gate in front of it. A process
+that has already read your SSH key has already read it; what this buys you is
+knowing, and knowing quickly. For prevention, look at AppArmor profiles, an
+nftables default-deny policy — and at not running the thing.
 
 ## Licence
 

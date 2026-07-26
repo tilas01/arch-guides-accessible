@@ -70,27 +70,6 @@ Or open the dashboard:
 anti-evil-maid --interactive
 ```
 
-## Where state lives
-
-```
-/etc/arch-security/anti-evil-maid/efivars.hash   # EFI variable baseline
-/etc/arch-security/anti-evil-maid/boot.hash      # /boot baseline
-/etc/arch-security/anti-evil-maid/hwid.hash      # motherboard UUID + MAC profile
-/etc/arch-security/anti-evil-maid/tpm.hash       # TPM PCR profile
-/etc/arch-security/lockout                       # written only after a failed check
-```
-
-That is the directory the suite installer provisions and the only path under
-`/etc` this daemon's systemd unit can write to, since it runs with
-`ProtectSystem=strict`.
-
-Versions before 1.0 used `/etc/arch-rusty-security-suite/aem/`, which the
-installer never created and the daemon could not write to. Those files are still
-**read** when the new ones are missing — a baseline that vanished on upgrade
-would be reported as tampering and trigger a lockout. Re-run
-`anti-evil-maid --setup` to re-baseline in the new location; it will tell you
-which old directory to remove.
-
 ## Verifying a release binary
 
 ```bash
