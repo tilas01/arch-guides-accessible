@@ -42,25 +42,33 @@
 
 ---
 
-## 🚦 Three ways to use this — pick one
+## 🚦 Four ways to use this — pick one
 
-No wrong answer. All three end at the same system; they differ in how much is
-automated versus how much you understand at the end.
+No wrong answer. All four end at the same system with the same options; they
+differ only in how much is automated versus how much you read. **The website is
+the recommended way** — the two repo-only routes exist for when you cannot run
+it.
 
 | | Route | Best for | Start here |
 |---|---|---|---|
-| **1** | **Dynamic generator** — answer questions, get a script | You want it working, with sane security defaults | **[Open the generator →](https://tilas01.github.io/arch-guides-dynamic/)** |
-| **2** | **Choose-your-own-path wiki** — the same options, explained, done by hand | You want to understand each step | **[Open the wiki →](https://tilas01.github.io/arch-guides-dynamic/wiki.html#choose-your-path)** |
-| **3** | **Manual guides in this repo** — plain markdown, no website | You are offline, or prefer reading on GitHub | [Start at 01-pre-installation](docs/01-pre-installation.md) |
+| **1** | **Dynamic Generator** — one form, get a script | You know what you want, and you are on a PC | **[Open the generator →](https://tilas01.github.io/arch-guides-dynamic/)** |
+| **2** | **Manual Walkthrough** — one question at a time, each explained | You are on mobile, or not yet sure what you want | **[Open the walkthrough →](https://tilas01.github.io/arch-guides-dynamic/manual.html)** |
+| **3** | **Website wiki** — the same options, explained, done by hand, with hyperlinks | You want to understand each step and follow along in a browser | **[Open the wiki →](https://tilas01.github.io/arch-guides-dynamic/wiki.html#manual-install)** |
+| **4** | **This repo only** — plain markdown and README links, no website | Your machine is too slow for the site, has no JavaScript, or you prefer reading on GitHub | [Start at 01-pre-installation](docs/01-pre-installation.md) |
 
-Every option in route 1 has a matching explanation in route 2: **right-click any
-dropdown in the generator** and it opens that option's wiki entry. Routes 2 and 3
-cover the same ground — the wiki is the navigable version, `docs/` is the flat
-version that reads well on GitHub.
+Routes 1 and 2 cover the same install and both export a JSON config in the same
+format, so a config saved from one can be reloaded in the other. Route 3 is the
+same material as a navigable wiki; route 4 is the same material as flat markdown
+that reads well on GitHub and needs nothing but a browser that renders text.
+Every option in the generator right-clicks to its wiki explanation, which is how
+routes 1–2 stay tied to routes 3–4.
 
-> The generator is optional. It writes a shell script; it does nothing you could
-> not do by hand from the Arch Wiki. If you want to learn the process, route 2 or
-> 3 is the better use of your time.
+> **Route 4 is the fallback, not the recommendation.** It works — every option
+> is documented and cross-linked — but it is more work than letting the site
+> assemble the guide for you. Reach for it only if you cannot run the website.
+> The generator and walkthrough do nothing you could not do by hand from the
+> [Arch Wiki](https://wiki.archlinux.org/title/Installation_guide), which
+> remains the authority for all of it.
 
 ---
 

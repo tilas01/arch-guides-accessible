@@ -446,6 +446,56 @@ const STEPS = [
         { value: 'fr', label: 'fr', desc: 'French AZERTY.' }
     ]
 },
+{
+    id: 'mirror_country',
+    section: 'System',
+    title: 'Which country for package mirrors?',
+    help: 'reflector builds your pacman mirror list from the servers closest ' +
+          'to you and ranks them by download speed, so the install pulls ' +
+          'packages fast. Pick where you are — the guide fetches that country\'s ' +
+          'mirrors, ranks them, and writes the list.',
+    wiki: 'manual-install',
+    type: 'choice',
+    options: [
+        { value: 'auto', label: 'Detect from my location (worldwide, ranked by speed)',
+          recommended: true,
+          desc: 'reflector picks the fastest recently-synced mirrors regardless ' +
+                'of country. Safe default if you are unsure.' },
+        { value: 'US', label: 'United States', desc: 'US mirrors.' },
+        { value: 'GB', label: 'United Kingdom', desc: 'UK mirrors.' },
+        { value: 'DE', label: 'Germany', desc: 'German mirrors.' },
+        { value: 'FR', label: 'France', desc: 'French mirrors.' },
+        { value: 'CA', label: 'Canada', desc: 'Canadian mirrors.' },
+        { value: 'AU', label: 'Australia', desc: 'Australian mirrors.' },
+        { value: 'NZ', label: 'New Zealand', desc: 'New Zealand mirrors.' },
+        { value: 'JP', label: 'Japan', desc: 'Japanese mirrors.' },
+        { value: 'SG', label: 'Singapore', desc: 'Singapore mirrors.' },
+        { value: 'IN', label: 'India', desc: 'Indian mirrors.' },
+        { value: 'BR', label: 'Brazil', desc: 'Brazilian mirrors.' },
+        { value: 'NL', label: 'Netherlands', desc: 'Dutch mirrors.' },
+        { value: 'SE', label: 'Sweden', desc: 'Swedish mirrors.' }
+    ]
+},
+{
+    id: 'mirror_https',
+    section: 'System',
+    title: 'Restrict mirrors to HTTPS?',
+    help: 'HTTPS mirrors protect the package list and databases in transit. ' +
+          'Package contents are signed and verified by pacman regardless, so ' +
+          'plain HTTP is not a compromise of package integrity — but HTTPS ' +
+          'hides which packages you are installing from anyone watching the ' +
+          'connection, and is the safer default.',
+    wiki: 'manual-install',
+    type: 'bool',
+    options: [
+        { value: 'yes', label: 'HTTPS only', recommended: true,
+          desc: 'reflector is told --protocol https, so only encrypted mirrors ' +
+                'are used.' },
+        { value: 'no', label: 'Allow HTTP too',
+          desc: 'A larger mirror pool, occasionally faster. Package signatures ' +
+                'still verify, but observers can see what you install.' }
+    ]
+},
 /* ── Desktop ───────────────────────────────────────────────────────────── */
 {
     id: 'desktop',
@@ -553,6 +603,45 @@ const STEPS = [
         { value: 'bash', label: 'bash', recommended: true, desc: 'Default. Nothing to install.' },
         { value: 'zsh', label: 'zsh', desc: 'Completion and prompt customisation.' },
         { value: 'fish', label: 'fish', desc: 'Good defaults, not POSIX-compatible.' }
+    ]
+},
+{
+    id: 'ricing',
+    section: 'Desktop',
+    title: 'Ricing toolkit — the pieces that make a window manager usable',
+    help: 'A bare tiling window manager has no bar, no launcher, no notifications ' +
+          'and no wallpaper — you assemble those yourself. This is where a rice ' +
+          'comes from. Pick the pieces you want; the guide installs and points ' +
+          'you at configuring each. These are separate from ordinary apps ' +
+          'because they define the desktop rather than run on it. DuskyOS ships ' +
+          'its own set preconfigured, so this is skipped when you pick it.',
+    wiki: 'theming',
+    optional: true,
+    when: s => s.desktop && ['hyprland', 'dwm'].indexOf(s.desktop) !== -1,
+    type: 'multi',
+    options: [
+        { value: 'rofi', label: 'rofi / wofi — app launcher', recommended: true,
+          desc: 'The search-and-launch menu. wofi on Wayland, rofi on Xorg. ' +
+                'DuskyOS uses wofi.' },
+        { value: 'waybar', label: 'waybar / polybar — status bar', recommended: true,
+          desc: 'The top bar: workspaces, clock, battery, tray. waybar on ' +
+                'Wayland, polybar on Xorg.' },
+        { value: 'dunst', label: 'dunst / mako — notifications', recommended: true,
+          desc: 'Draws desktop notifications. mako on Wayland, dunst on Xorg.' },
+        { value: 'wallpaper', label: 'hyprpaper / feh — wallpaper',
+          desc: 'Sets the desktop background. hyprpaper on Wayland, feh on Xorg.' },
+        { value: 'picom', label: 'picom — compositor (Xorg only)',
+          when: s => s.display_server === 'xorg',
+          desc: 'Shadows, transparency and vsync on Xorg. Wayland compositors ' +
+                'do this themselves.' },
+        { value: 'lockscreen', label: 'hyprlock / swaylock — lock screen',
+          desc: 'Locks the session to a password prompt.' },
+        { value: 'idle', label: 'hypridle / swayidle — idle management',
+          desc: 'Locks or sleeps after inactivity.' },
+        { value: 'clipboard', label: 'cliphist / clipman — clipboard history',
+          desc: 'Keeps a searchable clipboard history.' },
+        { value: 'screenshot', label: 'grim + slurp / flameshot — screenshots',
+          desc: 'Region and window screenshots.' }
     ]
 },
 
