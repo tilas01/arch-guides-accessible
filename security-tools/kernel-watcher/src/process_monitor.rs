@@ -26,7 +26,7 @@ pub fn start_process_monitor() {
                         );
 
                         // SIGSTOP to freeze it
-                        if let Ok(_) = signal::kill(Pid::from_raw(native_pid), Signal::SIGSTOP) {
+                        if signal::kill(Pid::from_raw(native_pid), Signal::SIGSTOP).is_ok() {
                             println!(
                                 "[ACTION] Process suspended (SIGSTOP). Awaiting authorization..."
                             );

@@ -1,3 +1,8 @@
+// The network monitor nests `if let Ok(...)` where the inner arm uses the outer
+// binding, which cannot be flattened without let-chains. Allowed crate-wide,
+// matching kernel-watcher's convention.
+#![allow(clippy::collapsible_if)]
+
 pub mod gui;
 use std::collections::HashSet;
 use std::fs;
