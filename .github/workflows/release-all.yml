@@ -47,11 +47,18 @@ jobs:
       - name: Set SOURCE_DATE_EPOCH for reproducible builds
         run: echo "SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)" >> "$GITHUB_ENV"
 
-      - name: Check formatting and lints
+      # Formatting is advisory (whitespace should not block a security release),
+      # but clippy is a HARD gate: -D warnings means any lint finding fails the
+      # build, so a release can only be produced from clippy-clean code. This is
+      # the enforced answer to "audit all Rust errors and warnings" — a green run
+      # is proof, not a claim.
+      - name: Check formatting (advisory)
         continue-on-error: true
-        run: |
-          cargo fmt --check || echo "::warning::cargo fmt reported differences"
-          cargo clippy --release -- -D warnings || echo "::warning::clippy reported findings"
+        run: cargo fmt --check || echo "::warning::cargo fmt reported differences"
+        working-directory: security-tools/${{ matrix.tool }}
+
+      - name: Clippy (blocking, -D warnings)
+        run: cargo clippy --all-targets --release -- -D warnings
         working-directory: security-tools/${{ matrix.tool }}
 
       # Advisory rather than blocking: a newly published advisory in a transitive
