@@ -33,7 +33,6 @@ const LEGACY_TAMPER_HASH_PATH: &str = "/etc/arch-rusty-security-suite/tamper.has
 /// Designed to be subtle — an attacker shoulder-surfing may not notice.
 const ANSI_SAVE_CURSOR: &str = "\x1b[s";
 const ANSI_RESTORE_CURSOR: &str = "\x1b[u";
-const ANSI_TOP_LEFT: &str = "\x1b[1;1H"; // row 1, col 1
 const ANSI_BOTTOM_LEFT: &str = "\x1b[999;1H"; // far bottom, col 1
 const ANSI_WHITE: &str = "\x1b[97m"; // bright white
 const ANSI_RED_BOLD: &str = "\x1b[1;31m"; // bold red (Tokyo Night #f7768e)
@@ -66,21 +65,20 @@ pub fn display_otp_on_tty(otp_code: &str, display_mode: &str) {
     match display_mode {
         "discreet" => {
             // Move to the bottom-left corner, clear line, print OTP in white
-            print!(
-                "{}{}{}{}{}{}{}\n",
+            println!(
+                "{}{}{}{}{}{}",
                 ANSI_BOTTOM_LEFT,
                 ANSI_CLEAR_LINE,
                 ANSI_WHITE,
                 otp_code, // just the code, subtle
                 ANSI_RESET,
                 ANSI_RESTORE_CURSOR,
-                "",
             );
         }
         "visible" => {
             // Bold red at bottom-left with animated prefix
-            print!(
-                "{}{}{}...{} {}{}{}\n",
+            println!(
+                "{}{}{}...{} {}{}{}",
                 ANSI_BOTTOM_LEFT,
                 ANSI_CLEAR_LINE,
                 ANSI_RED_BOLD,

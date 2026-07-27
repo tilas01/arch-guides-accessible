@@ -6,8 +6,6 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
 };
-#[cfg(target_os = "linux")]
-use aya::Bpf;
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use rand_core::OsRng;
 use rpassword::prompt_password;
