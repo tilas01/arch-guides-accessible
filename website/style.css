@@ -247,6 +247,31 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 }
 .nav-link { font-size: 1.1rem; font-weight: bold; margin: 0 10px; }
 
+/* Touch targets.
+   On a touch screen the nav links measured 28px tall and the header control
+   icons 29px — below the 44px this project already defines as --tap-target, and
+   below the WCAG 2.5.8 / platform minimum. Anything smaller is a link people
+   miss and hit the neighbour instead.
+
+   Keyed on EITHER a coarse pointer OR a narrow viewport. pointer:coarse alone
+   is not enough: some devices and embedded webviews report a fine pointer at
+   phone width, and they need the larger targets just as much. Desktop mice at
+   full width keep the tighter, denser layout they can hit precisely. */
+@media (pointer: coarse), (max-width: 768px) {
+    .main-nav .nav-link,
+    .nav-bar .nav-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--tap-target);
+        padding: 0 0.35rem;
+    }
+    #header-controls .ctrl-icon,
+    #header-controls button {
+        min-width: var(--tap-target);
+        min-height: var(--tap-target);
+    }
+}
+
 section {
     background-color: var(--bg-darker);
     padding: 2rem;

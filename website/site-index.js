@@ -288,6 +288,20 @@
     }
 
     function load() {
+        // Feature-detect fetch so a browser without it takes the same graceful
+        // path as a failed request — the full contents list below still works —
+        // instead of throwing a ReferenceError that would leave the search box
+        // stuck on "Loading the search index…" forever.
+        if (typeof fetch !== 'function') {
+            var st = el('search-status');
+            if (st) {
+                st.innerHTML =
+                    '<strong style="color:var(--accent-orange);">Search needs a newer browser.</strong> ' +
+                    'Every destination is still listed below, and the ' +
+                    '<a href="wiki.html">wiki</a> has its own section filter.';
+            }
+            return;
+        }
         fetch(INDEX_URL, { cache: 'default' })
             .then(function (r) {
                 if (!r.ok) throw new Error('HTTP ' + r.status);

@@ -3265,6 +3265,12 @@ if (historyBtn) {
 document.addEventListener('DOMContentLoaded', () => {
     const steps = document.querySelectorAll('.form-step');
     if (!steps.length) return;
+    // Feature-detect rather than assume. IntersectionObserver is absent on
+    // older mobile engines (and in some embedded webviews); without this guard
+    // the ReferenceError aborts the rest of this DOMContentLoaded handler, so a
+    // cosmetic title effect would take working form logic down with it. Losing
+    // the scroll-updated title on those browsers is the correct trade.
+    if (typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {

@@ -2050,8 +2050,15 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
         });
     }
 
-    /* Narrow screens: the sidebar starts collapsed behind a disclosure. */
-    function narrow() { return window.matchMedia('(max-width: 1000px)').matches; }
+    /* Narrow screens: the sidebar starts collapsed behind a disclosure.
+       matchMedia is feature-detected and falls back to innerWidth, so a browser
+       without it still gets the right layout rather than throwing here and
+       leaving the sidebar permanently hidden. */
+    function narrow() {
+        return window.matchMedia
+            ? window.matchMedia('(max-width: 1000px)').matches
+            : (window.innerWidth || document.documentElement.clientWidth) <= 1000;
+    }
     function applyLayout() {
         if (narrow()) {
             sidebar.hidden = toggle.getAttribute('aria-expanded') !== 'true';
