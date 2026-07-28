@@ -122,18 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </p>
       </div>
 
-      <!-- Optional: jump straight to a generator after agreeing. Off by
-           default so the plain flow is unchanged; ticking it is a shortcut,
-           aimed mainly at mobile where scrolling to find the link is friction. -->
-      <label id="legal-jump-toggle" style="
-        display:flex; align-items:center; gap:0.6rem; cursor:pointer;
-        background:var(--bg-darker,#16161e); border:1px solid var(--border-color,#2f3450);
-        border-radius:8px; padding:0.7rem 0.85rem; margin-bottom:0.9rem;
-        font-size:0.85rem; color:var(--fg-color,#a9b1d6);">
-        <input type="checkbox" id="legal-jump-check" style="width:18px; height:18px; flex:0 0 auto; accent-color:var(--accent-cyan,#7dcfff);">
-        <span>Take me straight to a generator after this — I want to build an install now.</span>
-      </label>
-
       <!-- Two Action Buttons -->
       <div style="display:flex; flex-direction:column; gap:0.75rem;">
         <button id="legal-agree-btn" class="btn" style="
@@ -160,15 +148,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    const wantsJump = () => {
-      const c = modal.querySelector('#legal-jump-check');
-      return c && c.checked;
-    };
-
+    // After agreeing, always offer the two ways in. It is the first real
+    // decision a visitor has to make, and burying it behind an opt-in checkbox
+    // meant most people never saw it — they landed on whichever page happened
+    // to be open. The chooser has its own "not now" escape to the site index.
     const dismiss = () => {
       overlay.remove();
-      if (wantsJump()) showGeneratorJump();
-      else document.body.style.overflow = '';
+      showGeneratorJump();
     };
 
     modal.querySelector('#legal-agree-btn').addEventListener('click', dismiss);
@@ -196,6 +182,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const overlay = makeOverlay();
     const modal = makeModal();
     modal.style.maxWidth = '620px';
+    // Fullscreen on a phone: at 92% width inside a scrolling overlay the two
+    // cards ended up as a cramped strip with the page showing round the edges.
+    // A choice this consequential should fill the screen on the device where
+    // it is hardest to read.
+    if (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) {
+      Object.assign(modal.style, {
+        width: '100%', maxWidth: '100%', minHeight: '100vh',
+        borderRadius: '0', border: 'none', padding: '1.5rem 1.1rem',
+      });
+      Object.assign(overlay.style, { paddingTop: '0', paddingBottom: '0', alignItems: 'stretch' });
+    }
     modal.innerHTML = `
       <h2 style="color:var(--accent-cyan,#7dcfff); text-align:center; margin:0 0 0.4rem;">
         Which way in?
