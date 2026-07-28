@@ -1,4 +1,5 @@
 pub mod gui;
+pub mod hardening;
 use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
@@ -186,7 +187,20 @@ fn load_state() -> OtpState {
 }
 
 pub fn run() {
+    // Harden the process BEFORE any secret is read. Locks memory out of swap,
+    // disables core dumps and refuses same-user ptrace, so the TOTP seed cannot
+    // be recovered from a swap file, a crash dump, or a debugger attached by
+    // another process running as you. Best-effort and non-fatal: whatever the
+    // kernel refuses is reported rather than silently assumed.
+    let hardening = hardening::harden_process();
+
     let args: Vec<String> = env::args().collect();
+
+    if args.iter().any(|a| a == "--hardening") {
+        println!("Libre-OTP process hardening:");
+        println!("{}", hardening::hardening_report(&hardening));
+        return;
+    }
 
     if args.iter().any(|a| a == "--setup") {
         println!("Setting up new Libre-OTP secret...");
