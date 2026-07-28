@@ -47,8 +47,6 @@ static STATE: OnceLock<HardeningState> = OnceLock::new();
 #[cfg(target_os = "linux")]
 pub fn harden_process() -> HardeningState {
     *STATE.get_or_init(|| {
-        let mut st = HardeningState::default();
-
         // ── 1. Never swap this process's memory ──────────────────────────────
         // MCL_CURRENT locks what is mapped now, MCL_FUTURE everything mapped
         // later — the secret is read after this point, so FUTURE is the one that
@@ -56,7 +54,7 @@ pub fn harden_process() -> HardeningState {
         // failure is common for an unprivileged process and is not fatal.
         //
         // SAFETY: mlockall takes a flags bitmask and touches no memory we own.
-        st.mlock = unsafe { libc::mlockall(libc::MCL_CURRENT | libc::MCL_FUTURE) } == 0;
+        let mlock = unsafe { libc::mlockall(libc::MCL_CURRENT | libc::MCL_FUTURE) } == 0;
 
         // ── 2. No core dumps ─────────────────────────────────────────────────
         // Two independent mechanisms, because either alone can be overridden:
@@ -72,7 +70,6 @@ pub fn harden_process() -> HardeningState {
         let core_off = unsafe { libc::setrlimit(libc::RLIMIT_CORE, &rl) } == 0;
         // SAFETY: prctl with PR_SET_DUMPABLE takes an int and no pointers.
         let dumpable_off = unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0) } == 0;
-        st.no_dumps = core_off && dumpable_off;
 
         // ── 3. Refuse ptrace attach ──────────────────────────────────────────
         // PR_SET_DUMPABLE=0 already denies same-user ptrace. Where the Yama LSM
@@ -85,9 +82,12 @@ pub fn harden_process() -> HardeningState {
         const PR_SET_PTRACER: libc::c_int = 0x59616d61; // "Yama"
         // SAFETY: prctl with PR_SET_PTRACER takes an integer argument only.
         let _ = unsafe { libc::prctl(PR_SET_PTRACER, 0) };
-        st.no_ptrace = dumpable_off;
 
-        st
+        HardeningState {
+            mlock,
+            no_dumps: core_off && dumpable_off,
+            no_ptrace: dumpable_off,
+        }
     })
 }
 
