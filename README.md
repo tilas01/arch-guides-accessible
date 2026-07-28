@@ -56,10 +56,17 @@ it.
 | **3** | **Website wiki** — the same options, explained, done by hand, with hyperlinks | You want to understand each step and follow along in a browser | **[Open the wiki →](https://tilas01.github.io/arch-guides-dynamic/wiki.html#manual-install)** |
 | **4** | **This repo only** — plain markdown and README links, no website | Your machine is too slow for the site, has no JavaScript, or you prefer reading on GitHub | [Start at 01-pre-installation](docs/01-pre-installation.md) |
 
-Routes 1 and 2 cover the same install and both export a JSON config in the same
-format, so a config saved from one can be reloaded in the other. Route 3 is the
-same material as a navigable wiki; route 4 is the same material as flat markdown
-that reads well on GitHub and needs nothing but a browser that renders text.
+Routes 1 and 2 cover the same install and produce the same kind of output — a
+bash script and a matching markdown guide. Route 3 is the same material as a
+navigable wiki; route 4 is the same material as flat markdown that reads well on
+GitHub and needs nothing but a browser that renders text.
+
+> **Config files are not yet interchangeable between routes 1 and 2.** Both wrap
+> their answers in the same JSON envelope, but the answers inside are shaped
+> differently — the generator stores them per form control, the walkthrough
+> stores them per question — so a config exported from one does not currently
+> configure the other. A translation layer is the next planned change. Until it
+> lands, export and re-import within the same tool.
 Every option in the generator right-clicks to its wiki explanation, which is how
 routes 1–2 stay tied to routes 3–4.
 
