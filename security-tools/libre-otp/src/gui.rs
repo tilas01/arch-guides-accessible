@@ -57,7 +57,11 @@ impl eframe::App for LibreGuiOtp {
 fn app_icon() -> egui::IconData {
     const RGBA: &[u8] = include_bytes!("../assets/icon-64.rgba");
     debug_assert_eq!(RGBA.len(), 64 * 64 * 4);
-    egui::IconData { rgba: RGBA.to_vec(), width: 64, height: 64 }
+    egui::IconData {
+        rgba: RGBA.to_vec(),
+        width: 64,
+        height: 64,
+    }
 }
 
 pub fn start_gui() -> eframe::Result<()> {

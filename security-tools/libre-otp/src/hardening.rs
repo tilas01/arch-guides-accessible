@@ -65,7 +65,10 @@ pub fn harden_process() -> HardeningState {
         //   PR_SET_DUMPABLE = 0 additionally makes /proc/<pid>/mem
         //   root-owned and unreadable by the user, which is what also blocks
         //   the ptrace path below. This is the stronger of the two.
-        let rl = libc::rlimit { rlim_cur: 0, rlim_max: 0 };
+        let rl = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
         // SAFETY: setrlimit reads the rlimit struct we just initialised.
         let core_off = unsafe { libc::setrlimit(libc::RLIMIT_CORE, &rl) } == 0;
         // SAFETY: prctl with PR_SET_DUMPABLE takes an int and no pointers.
@@ -79,7 +82,8 @@ pub fn harden_process() -> HardeningState {
         //
         // Root can still attach. Nothing a process can do to itself prevents
         // that, and claiming otherwise would be dishonest.
-        const PR_SET_PTRACER: libc::c_int = 0x59616d61; // "Yama"
+        // "Yama" as a 4-byte magic — the LSM's own prctl option number.
+        const PR_SET_PTRACER: libc::c_int = 0x59616d61;
         // SAFETY: prctl with PR_SET_PTRACER takes an integer argument only.
         let _ = unsafe { libc::prctl(PR_SET_PTRACER, 0) };
 
