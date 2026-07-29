@@ -437,6 +437,23 @@
                     var parsed = JSON.parse(String(r.result));
                     var answers = parsed && parsed.answers ? parsed.answers : parsed;
                     if (!answers || typeof answers !== 'object') throw new Error('no answers object');
+                    // A config exported from the Dynamic Generator is shaped
+                    // differently. Translate it rather than silently importing
+                    // nothing, and say plainly what did not carry over.
+                    if (window.ConfigTranslate) {
+                        var t = window.ConfigTranslate.translateEnvelope(parsed, 'manual-walkthrough');
+                        answers = t.answers;
+                        if (t.translated) {
+                            var note = 'Imported a Dynamic Generator config. ' +
+                                t.mapped.length + ' settings carried over.';
+                            if (t.unmapped.length) {
+                                note += '\n\nThese had no equivalent here and were left ' +
+                                        'unanswered, so the walkthrough will ask:\n  ' +
+                                        t.unmapped.slice(0, 12).join(', ');
+                            }
+                            alert(note);
+                        }
+                    }
                     state = answers;
                     visited = activeSteps()
                         .filter(function (s) { return state[s.id] !== undefined; })

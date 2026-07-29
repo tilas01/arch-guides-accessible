@@ -119,11 +119,26 @@ window.wrapConfig = wrapConfig;
 // Accept the envelope, a bare answers object (legacy .sc/.json), or the
 // walkthrough's file — always return the flat answers object, never null.
 function unwrapConfig(parsed) {
-    if (parsed && typeof parsed === 'object') {
-        if (parsed.answers && typeof parsed.answers === 'object') return parsed.answers;
-        return parsed; // legacy bare object
+    if (!parsed || typeof parsed !== 'object') return {};
+    let answers = (parsed.answers && typeof parsed.answers === 'object')
+        ? parsed.answers
+        : parsed; // legacy bare object
+
+    // A config exported from the Manual Walkthrough is flat and keyed by
+    // question id, not by form control. Translate it so importing one here
+    // actually configures the form instead of quietly doing nothing.
+    if (window.ConfigTranslate && !window.ConfigTranslate.isGeneratorShape(answers)) {
+        const t = window.ConfigTranslate.translateEnvelope(
+            { answers: answers }, 'dynamic-generator');
+        if (t.translated) {
+            if (t.unmapped.length) {
+                console.info('[config] imported from the walkthrough; no equivalent here for:',
+                             t.unmapped.join(', '));
+            }
+            return t.answers;
+        }
     }
-    return {};
+    return answers;
 }
 window.unwrapConfig = unwrapConfig;
 
