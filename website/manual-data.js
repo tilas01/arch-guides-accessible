@@ -25,7 +25,7 @@
 
 'use strict';
 
-/* Values DuskyOS fixes for you. Selecting it locks these rather than silently
+/* Values Dusky fixes for you. Selecting it locks these rather than silently
    overriding them, so you can see what the choice costs before you make it. */
 const DUSKY_LOCKS = {
     display_server: 'wayland',
@@ -35,7 +35,13 @@ const DUSKY_LOCKS = {
     palette: 'tokyo-night'
 };
 
-const DUSKY_VIDEO = 'https://www.youtube.com/watch?v=6bnLBs_j8Kk';
+/* Dusky, by dusklinux. Worth being precise about what it is: a dotfiles and
+   install-script project for Hyprland on Wayland, not a separate operating
+   system and nothing to do with dwm. It ships Waybar, Rofi, Swaync, Wlogout and
+   SDDM. Links kept together so the credit stays correct everywhere it appears. */
+const DUSKY_REPO = 'https://github.com/dusklinux/dusky';
+const DUSKY_VIDEO = 'https://www.youtube.com/watch?v=JmgvSdEIK8c';
+const DUSKY_CHANNEL = 'https://www.youtube.com/@dusk_everyday';
 
 const STEPS = [
 
@@ -507,12 +513,15 @@ const STEPS = [
     wiki: 'desktop',
     type: 'choice',
     options: [
-        { value: 'dusky', label: 'DuskyOS (preconfigured Hyprland rice)',
-          desc: 'The only preconfigured desktop this project installs ' +
-                'automatically. It decides your compositor, shell, font and ' +
-                'colour scheme for you — those questions will lock, and each ' +
-                'one will say what DuskyOS set it to.',
-          note: 'Locks display server, shell, font and palette. Video walkthrough: ' + DUSKY_VIDEO,
+        { value: 'dusky', label: 'Dusky (preconfigured Hyprland rice)',
+          desc: 'A complete Hyprland-on-Wayland desktop by dusklinux, installed ' +
+                'from its own scripts. It is a dotfiles project, not a separate ' +
+                'operating system — you are still running Arch. It brings its ' +
+                'own Waybar, Rofi, Swaync and Wlogout, and decides your ' +
+                'compositor, shell, font and colour scheme, so those questions ' +
+                'lock and each one says what Dusky set it to.',
+          note: 'Locks display server, shell, font and palette. Repo: ' + DUSKY_REPO +
+                ' · Video: ' + DUSKY_VIDEO,
           locks: DUSKY_LOCKS },
         { value: 'hyprland', label: 'Hyprland (unconfigured)', recommended: true,
           desc: 'The compositor, with none of the rice. You configure it.' },
@@ -613,7 +622,7 @@ const STEPS = [
           'and no wallpaper — you assemble those yourself. This is where a rice ' +
           'comes from. Pick the pieces you want; the guide installs and points ' +
           'you at configuring each. These are separate from ordinary apps ' +
-          'because they define the desktop rather than run on it. DuskyOS ships ' +
+          'because they define the desktop rather than run on it. Dusky ships ' +
           'its own set preconfigured, so this is skipped when you pick it.',
     wiki: 'advanced-config-themes',
     optional: true,
@@ -621,8 +630,8 @@ const STEPS = [
     type: 'multi',
     options: [
         { value: 'rofi', label: 'rofi / wofi — app launcher', recommended: true,
-          desc: 'The search-and-launch menu. wofi on Wayland, rofi on Xorg. ' +
-                'DuskyOS uses wofi.' },
+          desc: 'The search-and-launch menu. wofi is the Wayland-native one; ' +
+                'rofi works on both and is what Dusky uses.' },
         { value: 'waybar', label: 'waybar / polybar — status bar', recommended: true,
           desc: 'The top bar: workspaces, clock, battery, tray. waybar on ' +
                 'Wayland, polybar on Xorg.' },

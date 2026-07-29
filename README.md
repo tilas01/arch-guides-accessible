@@ -273,6 +273,13 @@ Contributions and issue reports are welcome.
 ## 🙏 Credits
 
 * **[tilas01](https://github.com/tilas01)** — author, developer and maintainer of all project code, scripts, tooling and documentation.
+* **[arch-guides-all](https://github.com/tilas01/arch-guides-all)** — where this
+  started. A plain list of markdown guides with none of the machinery here: no
+  generator, no walkthrough, no Rust tools. It is also, quietly, the most
+  popular thing I have put on GitHub — eight stars, every one of which I can
+  account for personally, and which I remain unreasonably pleased about. It is
+  now deprecated in favour of this project, but the guides here are descended
+  from it and it earned the retirement.
 * **[dusklinux](https://github.com/dusklinux/dusky)** — creator of DuskyOS, the basis for the Dusky desktop option and its cheatsheet.
 * **[Arch Wiki](https://wiki.archlinux.org/)** — the authoritative reference every procedure here follows.
 * **[max-baz/arch-secure-boot](https://github.com/max-baz/arch-secure-boot)** — the Secure Boot / UKI approach, whose guide covers running LUKS with a Unified Kernel Image instead of GRUB, as used here. [`scripts/arch-secure-boot.sh`](scripts/arch-secure-boot.sh) is adapted from it.
