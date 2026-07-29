@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheatsheets — Arch Guides Dynamic</title>
+    <meta name="description" content="Every cheatsheet in one place: Arch commands, pacman and the AUR, systemd, Btrfs snapshots, the security suite, and the DuskyOS and Hyprland keybinds. Tabbed, searchable and copyable.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" href="img/icons/arch-guides-32.png" as="image">
+    <link rel="prefetch" href="wiki.html">
+    <link rel="prefetch" href="index.html">
+    <style>
+        /* ── Cheatsheets. Palette and shared components come from style.css. ── */
+        .cs-head { text-align: center; margin-bottom: 1.2rem; }
+        .cs-head h1 { color: var(--accent-yellow); margin-bottom: 0.4rem; }
+        .cs-head p { color: var(--fg-dim); max-width: 76ch; margin: 0 auto; }
+
+        /* Tab strip. Scrolls horizontally on a phone rather than wrapping into
+           a tall block that pushes the content off screen. */
+        .cs-tabs {
+            display: flex;
+            gap: 0.4rem;
+            overflow-x: auto;
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+            scrollbar-width: thin;
+        }
+        .cs-tab {
+            flex: 0 0 auto;
+            background: var(--bg-lighter);
+            color: var(--fg-color);
+            border: 1px solid var(--border-color);
+            border-bottom: 2px solid transparent;
+            border-radius: 8px 8px 0 0;
+            padding: 0.55rem 0.9rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            min-height: var(--tap-target);
+            transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .cs-tab:hover { background: var(--tint-yellow, rgba(224,175,104,0.08)); color: var(--accent-yellow); }
+        .cs-tab.active {
+            background: var(--bg-dark);
+            color: var(--accent-yellow);
+            border-bottom-color: var(--accent-yellow);
+            font-weight: bold;
+        }
+
+        .cs-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--fg-dim);
+            margin-bottom: 0.8rem;
+        }
+
+        /* Content pane. The entrance is a short fade-and-rise, transform and
+           opacity only so it composites on the GPU and never touches layout. */
+        #cs-content {
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        #cs-content.cs-in { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            #cs-content { transition: none; opacity: 1; transform: none; }
+        }
+
+        #cs-content h1, #cs-content h2, #cs-content h3, #cs-content h4 {
+            color: var(--accent-cyan);
+            margin: 1.4rem 0 0.5rem;
+            scroll-margin-top: 1rem;
+        }
+        #cs-content h1 { font-size: 1.35rem; color: var(--accent-yellow); }
+        #cs-content h2 { font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem; }
+        #cs-content h3 { font-size: 0.98rem; color: var(--accent-purple); }
+        #cs-content p { margin: 0.5rem 0; font-size: 0.9rem; }
+        #cs-content ul { margin: 0.5rem 0 0.5rem 1.2rem; font-size: 0.9rem; }
+        #cs-content li { margin-bottom: 0.25rem; }
+        #cs-content code {
+            background: var(--bg-dark);
+            color: var(--accent-green);
+            padding: 0.1rem 0.35rem;
+            border-radius: 4px;
+            font-size: 0.88em;
+        }
+
+        pre.cs-code {
+            position: relative;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            overflow-x: auto;
+            margin: 0.7rem 0;
+        }
+        pre.cs-code code {
+            background: none;
+            color: var(--heading-color);
+            padding: 0;
+            font-size: 0.84rem;
+            line-height: 1.65;
+        }
+        .cs-copy {
+            position: absolute;
+            top: 0.4rem;
+            right: 0.4rem;
+            background: var(--bg-lighter);
+            color: var(--fg-dim);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 0.18rem 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.15s, color 0.15s;
+        }
+        pre.cs-code:hover .cs-copy,
+        .cs-copy:focus-visible { opacity: 1; }
+        .cs-copy:hover { color: var(--accent-green); border-color: var(--accent-green); }
+        /* Touch devices have no hover, so the button must always be visible. */
+        @media (pointer: coarse) { .cs-copy { opacity: 1; } }
+
+        /* Tables scroll inside their own box rather than widening the page. */
+        .cs-tablewrap { overflow-x: auto; margin: 0.7rem 0; }
+        .cs-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .cs-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.45rem 0.6rem;
+            vertical-align: top;
+        }
+        .cs-table tr:first-child td {
+            background: var(--bg-dark);
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<noscript>
+    <div class="alert warning">
+        These cheatsheets are rendered from markdown in the repository, which
+        needs JavaScript. Every one is readable directly without it:
+        <a href="docs/cheatsheets/arch-commands.md">Arch commands</a> ·
+        <a href="docs/cheatsheets/duskyos-hyprland.md">DuskyOS / Hyprland</a> ·
+        <a href="docs/helpful-commands.md">Full command reference</a> ·
+        <a href="docs/dusky-cheatsheet.md">DuskyOS quick card</a>.
+    </div>
+</noscript>
+
+<header>
+    <a href="https://github.com/tilas01/arch-guides-dynamic" class="banner-link" target="_blank" rel="noopener">
+        <img src="img/banner.png" alt="Arch Guides Banner" class="banner">
+    </a>
+</header>
+
+<main>
+    <div class="cs-head">
+        <h1>📋 Cheatsheets</h1>
+        <p>
+            Every reference in one place — the Arch commands you will actually
+            reach for, the security suite, and every DuskyOS and Hyprland
+            keybind. These are rendered from the markdown in the repository, so
+            what you read here and what you read on GitHub are the same file.
+        </p>
+    </div>
+
+    <div class="cs-tabs" id="cs-tabs" role="tablist" aria-label="Cheatsheets"></div>
+
+    <div class="cs-meta">
+        <span id="cs-desc"></span>
+        <span>
+            <a id="cs-source" href="docs/helpful-commands.md" target="_blank" rel="noopener">View the markdown source ↗</a>
+        </span>
+    </div>
+
+    <div id="cs-status" aria-live="polite"></div>
+    <div id="cs-content"></div>
+
+    <div class="alert" style="margin-top:2rem; border-left:4px solid var(--accent-cyan); background:var(--tint-cyan);">
+        <strong style="color:var(--accent-cyan);">These are quick references, not the manual.</strong>
+        Anything here that repartitions a disk or changes your boot configuration
+        is explained properly in the <a href="wiki.html">wiki</a>, and the
+        <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>
+        is the authority for all of it. Read the explanation before you paste the
+        command.
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="legal-notice">
+        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
+        <p>
+            <strong>AI-assisted content, no warranty.</strong> This site and the guides it
+            generates were built with AI assistance. Everything is provided
+            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
+            <strong>no liability</strong> for data loss, system damage, hardware failure or
+            security breaches arising from use of these tools.
+        </p>
+        <p>
+            <strong>You are responsible for your own machine.</strong> Always read a command
+            before you run it. Some of these repartition disks or change your boot
+            configuration. Test in a virtual machine and cross-check against the
+            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
+        </p>
+        <p>
+            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
+            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
+            Selling or monetising it is not permitted.
+        </p>
+        <p style="margin-bottom:0;">
+            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
+            <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
+            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
+            <a href="index.html">Generator</a> ·
+            <a href="wiki.html">Wiki</a> ·
+            <a href="iso-verify.html">Verify ISO</a> ·
+            <a href="security-tools.html">Security Tools</a>
+        </p>
+    </div>
+</footer>
+
+<script src="cheatsheets.js" defer></script>
+<script src="tooltip.js" defer></script>
+<script src="shared-ui.js" defer></script>
+</body>
+</html>

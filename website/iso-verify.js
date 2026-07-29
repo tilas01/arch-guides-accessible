@@ -77,6 +77,32 @@ const REGION_ORDER = {
    constant only seeds the filename box. */
 const KNOWN_RELEASE = '2026.07.01';
 
+/* ── Arch Linux ARM ──────────────────────────────────────────────────────────
+   aarch64 is genuinely a different distribution with a different integrity
+   story, and the page says so rather than implying parity:
+
+     - There is no ISO. Arch Linux ARM ships per-board **rootfs tarballs** that
+       you extract onto prepared storage; there is nothing to write to a stick
+       and boot.
+     - They are served from a single host, os.archlinuxarm.org, over **HTTP**.
+       The split-mirror trick that protects the x86_64 download does not apply,
+       because there is no second mirror to cross-check against.
+     - Checksums published are **MD5**, which is not collision-resistant. MD5
+       still detects a corrupted download; it does not defend against a
+       deliberately crafted one. The GPG signature is what does that, so on ARM
+       the signature is not optional — it is the only real check.
+
+   Signing key per archlinuxarm.org/about/downloads. Verify it there too. */
+const ALARM_BASE = 'http://os.archlinuxarm.org/os/';
+const ALARM_KEY_FPR = '68B3 537F 39A3 13B3 E574  D067 7719 3F15 2BDB E6A6';
+const ALARM_BOARDS = [
+    { id: 'rpi-aarch64',      label: 'Raspberry Pi 3/4/5 (aarch64)',   file: 'ArchLinuxARM-rpi-aarch64-latest.tar.gz' },
+    { id: 'rpi-armv7',        label: 'Raspberry Pi 2/3 (armv7)',       file: 'ArchLinuxARM-rpi-armv7-latest.tar.gz' },
+    { id: 'aarch64-generic',  label: 'Generic aarch64 (UEFI / EDK2)',  file: 'ArchLinuxARM-aarch64-latest.tar.gz' },
+    { id: 'pine64',           label: 'Pine64',                         file: 'ArchLinuxARM-pine64-latest.tar.gz' },
+    { id: 'odroid-c2',        label: 'ODROID-C2',                      file: 'ArchLinuxARM-odroid-c2-latest.tar.gz' }
+];
+
 /* Fingerprint of the key that signs Arch release ISOs (Pierre Schmitz).
    Printed here so you have a second place to compare it against, but the
    authority is https://archlinux.org/download/ — check it there too. */
@@ -317,12 +343,76 @@ function setStatus(node, kind, html) {
     node.hidden = false;
 }
 
+/* Switch the page between the x86_64 ISO and the Arch Linux ARM tarballs.
+   The hashing engine below is architecture-agnostic — a SHA-256 of a file is a
+   SHA-256 of a file — so only the sourcing advice, the download links and the
+   default filename change. */
+function applyArch(arch, picked) {
+    const arm = arch === 'aarch64';
+    const armBox = el('arm-notice');
+    const x86Steps = document.querySelectorAll('[data-arch="x86_64"]');
+
+    x86Steps.forEach(n => { n.hidden = arm; });
+    if (armBox) armBox.hidden = !arm;
+
+    document.querySelectorAll('.arch-tab').forEach(b => {
+        const on = b.getAttribute('data-value') === arch;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-selected', String(on));
+    });
+
+    const nameBox = el('iso-name');
+    const dlIso = el('dl-iso');
+    const dlSig = el('dl-sig');
+    const dlDir = el('dl-dir');
+
+    if (arm) {
+        const board = ALARM_BOARDS.find(b => b.id === (el('arm-board') || {}).value)
+                    || ALARM_BOARDS[0];
+        if (nameBox) nameBox.value = board.file;
+        if (dlIso) { dlIso.href = ALARM_BASE + board.file; dlIso.textContent = '⬇️ Download the rootfs tarball'; }
+        if (dlSig) { dlSig.href = ALARM_BASE + board.file + '.sig'; }
+        if (dlDir) { dlDir.href = ALARM_BASE; }
+        const armFpr = el('arm-fpr');
+        if (armFpr) armFpr.textContent = ALARM_KEY_FPR;
+    } else {
+        const imgBase = picked.image.url.replace(/\/$/, '');
+        if (nameBox) nameBox.value = `archlinux-${KNOWN_RELEASE}-x86_64.iso`;
+        if (dlIso) { dlIso.href = `${imgBase}/iso/latest/archlinux-x86_64.iso`; dlIso.textContent = '⬇️ Download the ISO'; }
+        if (dlSig) { dlSig.href = `${imgBase}/iso/latest/archlinux-x86_64.iso.sig`; }
+        if (dlDir) { dlDir.href = `${imgBase}/iso/latest/`; }
+    }
+
+    try {
+        const u = new URL(location.href);
+        u.searchParams.set('arch', arch);
+        history.replaceState(null, '', u);
+    } catch (_) { /* file:// — not important */ }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const picked = chooseMirrors();
     const isoName = `archlinux-${KNOWN_RELEASE}-x86_64.iso`;
 
     el('region-guess').textContent = picked.region;
     el('fpr').textContent = ARCH_SIGNING_FPR;
+
+    /* Architecture tabs. The guides support aarch64, so the verifier must too —
+       otherwise someone following the ARM path has nothing to check their
+       download against. */
+    const boardSel = el('arm-board');
+    if (boardSel) {
+        ALARM_BOARDS.forEach(b => {
+            const o = document.createElement('option');
+            o.value = b.id;
+            o.textContent = b.label;
+            boardSel.appendChild(o);
+        });
+        boardSel.addEventListener('change', () => applyArch('aarch64', picked));
+    }
+    document.querySelectorAll('.arch-tab').forEach(btn => {
+        btn.addEventListener('click', () => applyArch(btn.getAttribute('data-value'), picked));
+    });
 
     /* Step 1 — the image mirror, with the download startable from here.
        The browser fetches straight from the mirror; nothing routes through this
@@ -336,9 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
     imgLink.textContent = hostOf(picked.image.url);
     el('image-mirror-country').textContent = picked.image.country;
 
-    el('dl-iso').href = `${imgBase}/iso/latest/archlinux-x86_64.iso`;
-    el('dl-sig').href = `${imgBase}/iso/latest/archlinux-x86_64.iso.sig`;
-    el('dl-dir').href = `${imgBase}/iso/latest/`;
 
     /* Step 2 — checksum mirrors, deliberately not the image mirror. */
     const list = el('checksum-mirrors');
@@ -492,4 +579,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ['sums-a', 'sums-b', 'iso-name'].forEach(id =>
         el(id).addEventListener('input', compare));
+
+    // Honour ?arch= so an ARM user can be linked straight to the right mode.
+    let wantArch = 'x86_64';
+    try {
+        const q = new URL(location.href).searchParams.get('arch');
+        if (q === 'aarch64' || q === 'x86_64') wantArch = q;
+    } catch (_) { /* ignore */ }
+    applyArch(wantArch, picked);
 });
