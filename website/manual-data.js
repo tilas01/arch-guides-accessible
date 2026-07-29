@@ -615,7 +615,7 @@ const STEPS = [
           'you at configuring each. These are separate from ordinary apps ' +
           'because they define the desktop rather than run on it. DuskyOS ships ' +
           'its own set preconfigured, so this is skipped when you pick it.',
-    wiki: 'theming',
+    wiki: 'advanced-config-themes',
     optional: true,
     when: s => s.desktop && ['hyprland', 'dwm'].indexOf(s.desktop) !== -1,
     type: 'multi',

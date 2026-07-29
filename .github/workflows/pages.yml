@@ -116,7 +116,14 @@ jobs:
         run: npm run parity
         working-directory: tests
 
-      # Every page loaded and checked for runtime errors, nav, tooltips.
+      # Every right-click-to-wiki target must resolve. Two handlers used to
+      # build anchors by slugifying a control's label; none of the 54 slugs
+      # matched a real id, so right-click silently went nowhere useful.
+      - name: "Test: wiki right-click targets"
+        run: npm run wiki
+        working-directory: tests
+
+      # Every page loaded and checked for runtime errors, nav and tooltips.
       - name: "Test: page runtime"
         run: npm run runtime
         working-directory: tests

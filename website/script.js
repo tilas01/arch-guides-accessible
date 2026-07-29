@@ -3802,21 +3802,9 @@ window.downloadAllOutput = function() {
 
 
 // Phase 4: Right-Click Teleport to Wiki
-document.addEventListener('contextmenu', function(e) {
-    let target = e.target.closest('.app-card, .app-card, .form-step label');
-    if (target) {
-        e.preventDefault();
-        let input = target.querySelector('input, select');
-        let id = input ? (input.id || input.name || input.value) : '';
-        if (id) {
-            window.open('wiki.html#' + id, '_blank');
-        } else {
-            // Fallback to text content
-            let text = target.innerText.split('\n')[0].replace(/[^a-zA-Z0-9-]/g, '').toLowerCase();
-            window.open('wiki.html#' + text, '_blank');
-        }
-    }
-});
+// Right-click on a generator control opens its wiki entry. Resolved by
+// tooltip.js against its curated map; see the note further down for why the two
+// slug-guessing handlers that used to be here were removed.
 
 // NOTE: closeAppConfigModal is defined once, near the top of this file, where
 // it also handles the discard-and-uncheck behaviour. A second plain-hide
@@ -3965,18 +3953,19 @@ function enableAllOtherSec() {
 }
 
 
-// ── Right-Click Wiki Links for All Elements ──
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.form-step, .app-category-header, label').forEach(el => {
-        el.addEventListener('contextmenu', (e) => {
-            const title = el.getAttribute('data-title') || el.innerText.trim();
-            if (title) {
-                e.preventDefault();
-                window.open('wiki.html#' + encodeURIComponent(title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()), '_blank');
-            }
-        });
-    });
-});
+// ── Right-click → wiki ───────────────────────────────────────────────────────
+// Handled entirely by tooltip.js, which resolves the target through a curated
+// map of control → wiki page.
+//
+// Two ad-hoc handlers used to live here as well and were removed. Both built an
+// anchor by slugifying the control's visible text — "Firmware Selection" became
+// `wiki.html#firmware-selection`. An audit of all 54 labelled controls found
+// that **none** of those 54 slugs matched an id that exists in wiki.html, so
+// every right-click through them dropped the user at the top of the wiki rather
+// than the section they asked for, silently. They also raced tooltip.js for the
+// same event, so which one won depended on binding order.
+//
+// One resolver, with a map that is checked against wiki.html by the link audit.
 
 
 // ── Dusky OS Locking Logic ──
