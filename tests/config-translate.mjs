@@ -1,7 +1,7 @@
 /* Translation layer: does a config from one front end configure the other? */
 import fs from 'node:fs';
 const T = (new Function('module','var window={};' +
-  fs.readFileSync('website/config-translate.js','utf8') +
+  fs.readFileSync('../website/config-translate.js','utf8') +
   ';return module.exports||window.ConfigTranslate;'))({exports:null});
 
 let pass=0, fail=0;

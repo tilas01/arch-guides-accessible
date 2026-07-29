@@ -103,6 +103,24 @@ jobs:
         run: npm run responsive
         working-directory: tests
 
+      # The two front ends are separate tools that share a config format. This
+      # asserts a config from either actually configures the other, and that the
+      # mapping never invents an answer or guesses a destructive setting.
+      - name: "Test: config translation between generators"
+        run: npm run translate
+        working-directory: tests
+
+      # Five deliberately different installs end to end: coherent guide, script
+      # bash accepts, and the Arch Wiki's canonical command order.
+      - name: "Test: five install guides"
+        run: npm run parity
+        working-directory: tests
+
+      # Every page loaded and checked for runtime errors, nav, tooltips.
+      - name: "Test: page runtime"
+        run: npm run runtime
+        working-directory: tests
+
       - name: "Test: HTML validity"
         run: npm run html
         working-directory: tests

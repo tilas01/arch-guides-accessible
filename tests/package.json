@@ -7,7 +7,10 @@
     "permutations": "node permutations.mjs ../website",
     "responsive": "node responsive.mjs ../website",
     "html": "html-validate ../website/*.html",
-    "test": "npm run permutations && npm run responsive && npm run html"
+    "test": "npm run permutations && npm run responsive && npm run translate && npm run parity && npm run runtime && npm run html",
+    "translate": "node config-translate.mjs",
+    "parity": "node parity-five-installs.mjs ../website",
+    "runtime": "node page-runtime-audit.mjs ../website"
   },
   "devDependencies": {
     "html-validate": "^11.5.6",
