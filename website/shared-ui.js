@@ -1,20 +1,23 @@
 /* ============================================================================
    shared-ui.js — the parts of the interface that must be identical everywhere.
    ----------------------------------------------------------------------------
-   Loaded by every page. Three jobs:
+   Loaded by every page. Four jobs:
 
-     1. The persistent control cluster, top right. Built here rather than
+     1. The canonical top navigation, so every page offers the same
+        destinations in the same order — hand-copied navs had already drifted.
+
+     2. The persistent control cluster, top right. Built here rather than
         copied into nine HTML files, because a control that exists on eight
         pages and not the ninth is the one a user goes looking for on the ninth.
         Order is fixed: the tooltip switch first, because it is the control that
         explains all the others; then the source repository; then this session's
         generation history.
 
-     2. A warning before you close the tab with unsaved generation history.
+     3. A warning before you close the tab with unsaved generation history.
         History is sessionStorage, so closing the tab is the moment it is gone
         for good.
 
-     3. Making sure tooltips are actually initialised. tooltip.js does the work;
+     4. Making sure tooltips are actually initialised. tooltip.js does the work;
         this only guarantees it gets a chance to on every page.
 
    No dependencies, no build step, and it degrades to "nothing happens" rather
@@ -25,6 +28,85 @@
 
 (function () {
     var REPO_URL = 'https://github.com/tilas01/arch-guides-dynamic';
+
+    /* ── The canonical top navigation ───────────────────────────────────────
+       One definition, applied to every page, because hand-copied navs drift:
+       an audit found manual.html labelled itself "Manual" instead of "Manual
+       Walkthrough" and omitted the Live Editor, site-index.html omitted it too,
+       releases.html had three extra entries nobody else had, and live.html,
+       repo.html and upload.html had no navigation at all — so the Live Editor
+       link appeared to vanish depending on which page you were standing on.
+
+       Rendered here rather than in ten HTML files so that can no longer happen.
+       A page that already has a .main-nav has it normalised in place; a page
+       with none gets one. */
+    var NAV = [
+        { href: 'site-index.html',    label: '🔎 Index',
+          title: '🔎 Index',
+          desc: 'The contents page for the whole project, with a search box that looks through the wiki, every generator and walkthrough question, the security tools, the cheatsheets and the docs at once.' },
+        { href: 'index.html',         label: '⚙️ Generator',
+          title: '⚙️ Dynamic Generator',
+          desc: 'Set every option in one form and generate a custom Arch install script and guide. Fastest on a desktop when you already know what you want.' },
+        { href: 'manual.html',        label: '🧭 Manual Walkthrough',
+          title: '🧭 Manual Walkthrough',
+          desc: 'One question at a time, every option explained, the guide building as you answer. Same output as the generator. Recommended on mobile, or if you are not yet sure what you want.' },
+        { href: 'iso-verify.html',    label: '💿 Verify Arch ISO',
+          title: '💿 Verify Arch ISO',
+          desc: 'Hash an Arch ISO in your browser and compare it against checksums from mirrors other than the one that served the image. Nothing is uploaded.' },
+        { href: 'security-tools.html', label: '🦀 Security Tools',
+          title: '🦀 Arch Security Tools',
+          desc: 'Every Rust security tool explained, with live release statistics, plus the vetted third-party hardening tools.' },
+        { href: 'wiki.html',          label: '📖 Wiki',
+          title: '📖 Wiki / Documentation',
+          desc: 'Every option explained in full, plus firmware lockdown, dual boot, ARM, AUR safety and the cheatsheets.' },
+        { href: 'live.html',          label: '📝 Live Editor',
+          title: '📝 Live Editor',
+          desc: 'Edit a generated script and guide side by side, browse this session\'s generation history, and download the results.' }
+    ];
+
+    function currentPage() {
+        return (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    }
+
+    function buildNav(header) {
+        var here = currentPage();
+        var nav = header.querySelector('nav.main-nav');
+        if (!nav) {
+            // Pages with no nav at all (live.html, repo.html, upload.html) get
+            // one, so every page reaches every other page.
+            nav = document.createElement('nav');
+            nav.className = 'main-nav';
+            var banner = header.querySelector('.banner-link');
+            var byline = document.getElementById('site-byline');
+            var after = byline || banner;
+            if (after && after.parentNode) after.parentNode.insertBefore(nav, after.nextSibling);
+            else header.appendChild(nav);
+        }
+        nav.setAttribute('aria-label', 'Site');
+        nav.innerHTML = '';
+
+        NAV.forEach(function (item, i) {
+            if (i) {
+                var sep = document.createElement('span');
+                sep.className = 'nav-sep';
+                sep.textContent = '|';
+                nav.appendChild(sep);
+            }
+            var a = document.createElement('a');
+            a.className = 'nav-link nav-tooltip';
+            a.href = item.href;
+            a.textContent = item.label;
+            a.setAttribute('data-title', item.title);
+            a.setAttribute('data-desc', item.desc);
+            // Mark, but do not disable, the page you are on: it stays clickable
+            // so it doubles as a reload, and the colour says where you are.
+            if (item.href.toLowerCase() === here) {
+                a.setAttribute('aria-current', 'page');
+                a.style.color = 'var(--accent-cyan)';
+            }
+            nav.appendChild(a);
+        });
+    }
 
     /* Set by iso-verify.js when a hash matches two independent mirrors. Session
        scoped on purpose: the claim "you verified an ISO" should not outlive the
@@ -73,7 +155,14 @@
 
     function buildControls() {
         var header = document.querySelector('header');
-        if (!header) return;
+        if (!header) {
+            // live.html, releases.html and repo.html were written without a
+            // <header>, which is exactly why they ended up with no navigation
+            // and the Live Editor link appeared to vanish on them. Create one
+            // rather than bailing, so every page gets the same header.
+            header = document.createElement('header');
+            document.body.insertBefore(header, document.body.firstChild);
+        }
 
         var bar = document.getElementById('header-controls');
         if (!bar) {
@@ -155,6 +244,7 @@
             });
 
         buildByline(header);
+        buildNav(header);
 
         refreshHistoryBadge();
 
