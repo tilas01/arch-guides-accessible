@@ -4,11 +4,25 @@
 document.addEventListener('DOMContentLoaded', () => {
   const LEGAL_KEY   = 'legal_accepted';
   const WELCOME_KEY = 'welcome_seen';
+  // Session-scoped acceptance. "I Agree" alone used to set nothing, so agreeing
+  // and then navigating anywhere — including via the chooser's own "take me to
+  // the index" link — showed the modal again on the next page, with no way out
+  // short of ticking "don't show again". Agreeing now holds for the session;
+  // "don't show again" is what makes it persist across sessions.
+  const SESSION_KEY = 'legal_accepted_session';
+
+  function sessionAccepted() {
+    try { return sessionStorage.getItem(SESSION_KEY) === 'true'; }
+    catch (_) { return false; }
+  }
+  function markSessionAccepted() {
+    try { sessionStorage.setItem(SESSION_KEY, 'true'); } catch (_) { /* private mode */ }
+  }
 
   const legalDone   = localStorage.getItem(LEGAL_KEY) === 'true';
   const welcomeDone = localStorage.getItem(WELCOME_KEY) === 'true';
 
-  if (legalDone && welcomeDone) return;
+  if ((legalDone && welcomeDone) || sessionAccepted()) return;
 
   // ─── Overlay & modal factory ────────────────────────────────────────────────
   function makeOverlay() {
@@ -153,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // meant most people never saw it — they landed on whichever page happened
     // to be open. The chooser has its own "not now" escape to the site index.
     const dismiss = () => {
+      markSessionAccepted();
       overlay.remove();
       showGeneratorJump();
     };
@@ -178,14 +193,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // saying who it is for, so a first-time visitor picks the right one rather
   // than guessing. Right-clicking either card opens its wiki explainer, matching
   // the rest of the site.
+  // ─── Where to next ──────────────────────────────────────────────────────────
+  // Shown once, after agreeing. Every destination on the site, grouped, each
+  // with its own description and tooltip, so a first-time visitor can tell them
+  // apart rather than guessing from a name. The two generators are grouped
+  // together under "Build an install" because that is the choice people
+  // actually have to make; the rest are separate because they are separate
+  // things, not variations of one.
   function showGeneratorJump() {
     const overlay = makeOverlay();
     const modal = makeModal();
-    modal.style.maxWidth = '620px';
-    // Fullscreen on a phone: at 92% width inside a scrolling overlay the two
-    // cards ended up as a cramped strip with the page showing round the edges.
-    // A choice this consequential should fill the screen on the device where
-    // it is hardest to read.
+    modal.style.maxWidth = '760px';
+    modal.style.borderColor = 'var(--accent-cyan,#7dcfff)';
+
+    // Fullscreen on a phone: at 92% width inside a scrolling overlay these
+    // cards became a cramped strip with the page showing round the edges.
     if (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) {
       Object.assign(modal.style, {
         width: '100%', maxWidth: '100%', minHeight: '100vh',
@@ -193,57 +215,109 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       Object.assign(overlay.style, { paddingTop: '0', paddingBottom: '0', alignItems: 'stretch' });
     }
-    modal.innerHTML = `
+
+    const GROUPS = [
+      {
+        heading: '🛠️ Build an install',
+        note: 'Both produce the same thing — a bash script and a matching markdown guide. They differ only in how much you decide up front.',
+        items: [
+          { href: 'index.html', icon: '⚙️', name: 'Dynamic Generator',
+            tag: 'recommended on a PC', colour: 'var(--accent-blue,#7aa2f7)',
+            desc: 'One form, every option at once. Best if you already know what you want.',
+            tip: 'Set every option in a single form and generate a custom Arch install script and guide. Fastest on a desktop.' },
+          { href: 'manual.html', icon: '🧭', name: 'Manual Walkthrough',
+            tag: 'recommended on mobile', colour: 'var(--accent-purple,#bb9af7)',
+            desc: 'One question at a time, everything explained, the guide building as you answer.',
+            tip: 'Best on a phone, or if you are not sure yet — it walks you through each choice and says what it costs.' }
+        ]
+      },
+      {
+        heading: '🔍 Before you install',
+        note: 'Do this first. It comes before everything else.',
+        items: [
+          { href: 'iso-verify.html', icon: '💿', name: 'Verify Arch ISO',
+            tag: 'x86_64 and ARM', colour: 'var(--accent-green,#9ece6a)',
+            desc: 'Hash your download in the browser and check it against mirrors other than the one that served it.',
+            tip: 'The file never leaves your machine. A host that lies about the image cannot also hand you a matching checksum.' }
+        ]
+      },
+      {
+        heading: '📚 Read and explore',
+        note: 'The same material, written out — useful whether or not you use a generator.',
+        items: [
+          { href: 'site-index.html', icon: '🔎', name: 'Index',
+            tag: 'search everything', colour: 'var(--accent-cyan,#7dcfff)',
+            desc: 'One search box across the wiki, every generator and walkthrough question, the tools and the docs.',
+            tip: 'The contents page for the whole project. Start here if you do not know what you are looking for.' },
+          { href: 'wiki.html', icon: '📖', name: 'Wiki',
+            tag: 'install by hand', colour: 'var(--accent-cyan,#7dcfff)',
+            desc: 'Every option explained in full, plus firmware lockdown, dual boot, ARM and AUR safety.',
+            tip: 'The install written out longhand, with the decision points as branches you choose between.' },
+          { href: 'security-tools.html', icon: '🦀', name: 'Security Tools',
+            tag: 'optional', colour: 'var(--accent-red,#f7768e)',
+            desc: 'The Rust suite and the vetted third-party hardening tools. Several can lock you out — read first.',
+            tip: 'Libre OTP, Input Guard, Anti-Evil Maid, Kernel Watcher and Scarecrow. Reproducible, GPG-signed builds.' },
+          { href: 'live.html', icon: '📝', name: 'Live Editor',
+            tag: 'edit and download', colour: 'var(--accent-orange,#ff9e64)',
+            desc: 'Edit a generated script and guide side by side, browse this session\'s history, and download.',
+            tip: 'Already have a generated script or a saved .json config? Load it here.' }
+        ]
+      }
+    ];
+
+    let html = `
       <h2 style="color:var(--accent-cyan,#7dcfff); text-align:center; margin:0 0 0.4rem;">
-        Which way in?
+        Where would you like to start?
       </h2>
-      <p style="color:#8b949e; text-align:center; font-size:0.88rem; margin:0 0 1.3rem;">
-        Both produce the same install — a bash script and a matching markdown
-        guide. They differ only in how much you decide up front.
-      </p>
-      <div style="display:flex; flex-direction:column; gap:0.8rem;">
-        <a href="index.html" id="jump-dynamic" class="nav-tooltip" data-title="⚙️ Dynamic Generator"
-           data-desc="A single form. Set every option and generate. Fastest when you already know what you want, and most comfortable on a desktop."
-           style="display:block; text-decoration:none; background:var(--bg-darker,#16161e);
-           border:1px solid var(--accent-blue,#7aa2f7); border-radius:10px; padding:1rem 1.1rem;">
-          <span style="display:block; font-weight:700; color:var(--accent-blue,#7aa2f7); font-size:1.05rem;">
-            ⚙️ Dynamic Generator <span style="font-size:0.72rem; color:var(--accent-green,#9ece6a);">— recommended on a PC</span>
-          </span>
-          <span style="display:block; color:var(--fg-color,#a9b1d6); font-size:0.85rem; margin-top:0.3rem;">
-            One form, every option at once. Best if you already know what you want.
-          </span>
-        </a>
-        <a href="manual.html" id="jump-manual" class="nav-tooltip" data-title="🧭 Manual Walkthrough"
-           data-desc="One question at a time, each explained, with the guide building as you answer. Best on mobile, or if you are not yet sure what you want."
-           style="display:block; text-decoration:none; background:var(--bg-darker,#16161e);
-           border:1px solid var(--accent-purple,#bb9af7); border-radius:10px; padding:1rem 1.1rem;">
-          <span style="display:block; font-weight:700; color:var(--accent-purple,#bb9af7); font-size:1.05rem;">
-            🧭 Manual Walkthrough <span style="font-size:0.72rem; color:var(--accent-green,#9ece6a);">— recommended on mobile</span>
-          </span>
-          <span style="display:block; color:var(--fg-color,#a9b1d6); font-size:0.85rem; margin-top:0.3rem;">
-            One step at a time, everything explained. Best on a phone, or if you
-            are not sure yet — it walks you through each choice.
-          </span>
-        </a>
-      </div>
+      <p style="color:#8b949e; text-align:center; font-size:0.85rem; margin:0 0 1.4rem;">
+        Everything here is optional and nothing is hidden — you can reach any of
+        these at any time from the header.
+      </p>`;
+
+    GROUPS.forEach(g => {
+      html += `
+        <div style="margin-bottom:1.3rem;">
+          <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.07em;
+                      color:var(--accent-cyan,#7dcfff); margin-bottom:0.2rem;">${g.heading}</div>
+          <div style="font-size:0.78rem; color:#8b949e; margin-bottom:0.6rem;">${g.note}</div>
+          <div style="display:flex; flex-direction:column; gap:0.55rem;">`;
+      g.items.forEach(it => {
+        html += `
+            <a href="${it.href}" class="jump-card nav-tooltip"
+               data-title="${it.icon} ${it.name}" data-desc="${it.tip}"
+               style="display:block; text-decoration:none; background:var(--bg-darker,#16161e);
+                      border:1px solid ${it.colour}; border-radius:10px; padding:0.8rem 0.95rem;">
+              <span style="display:block; font-weight:700; color:${it.colour}; font-size:0.98rem;">
+                ${it.icon} ${it.name}
+                <span style="font-size:0.7rem; color:var(--accent-green,#9ece6a); font-weight:400;">— ${it.tag}</span>
+              </span>
+              <span style="display:block; color:var(--fg-color,#a9b1d6); font-size:0.83rem; margin-top:0.25rem; line-height:1.55;">
+                ${it.desc}
+              </span>
+            </a>`;
+      });
+      html += `</div></div>`;
+    });
+
+    html += `
       <button id="jump-skip" style="
-        display:block; margin:1.1rem auto 0; background:none; border:none;
+        display:block; margin:0.6rem auto 0; background:none; border:none;
         color:#8b949e; font-family:var(--font-mono); font-size:0.82rem;
-        text-decoration:underline; cursor:pointer;">
-        Not now — take me to the site index
-      </button>
-    `;
+        text-decoration:underline; cursor:pointer; min-height:44px;">
+        Close and browse on my own
+      </button>`;
+
+    modal.innerHTML = html;
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    const leave = (href) => {
+    // Closing must never re-open the waiver. Acceptance is already recorded for
+    // the session by dismiss(), so this simply lets the page through.
+    modal.querySelector('#jump-skip').addEventListener('click', () => {
       document.body.style.overflow = '';
-      if (href) window.location.href = href;
-      else overlay.remove();
-    };
-    modal.querySelector('#jump-skip').addEventListener('click', () => leave('site-index.html'));
-    // The two cards are real links; let them navigate, but restore scroll first.
+      overlay.remove();
+    });
     modal.querySelectorAll('a[href]').forEach(a =>
       a.addEventListener('click', () => { document.body.style.overflow = ''; }));
 
