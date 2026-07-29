@@ -1970,6 +1970,33 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
 </div>
 
 <script>
+/* ?page= handler.
+   tooltip.js's right-click map sends 26 controls to `wiki.html?page=<doc>.md`,
+   meaning "open the deep-dive document for this option". Nothing here ever read
+   that parameter, so all 26 quietly loaded the wiki's front page instead — the
+   user right-clicked asking for a specific explanation and got the top of a
+   1200-line page.
+
+   Resolved here rather than by rewriting the map, because the documents really
+   are the better answer for those options. Anything unrecognised is ignored
+   rather than redirected, so a stray or hand-typed parameter cannot bounce
+   someone off the wiki entirely. */
+(function () {
+    'use strict';
+    var page;
+    try { page = new URLSearchParams(location.search).get('page'); }
+    catch (_) { return; }              // very old browser: just show the wiki
+    if (!page) return;
+
+    // Only relative markdown paths under docs/. No absolute URLs, no scheme,
+    // no parent traversal — this value comes from a query string, so it is
+    // treated as untrusted even though we generate it ourselves.
+    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.md$/.test(page) || page.indexOf('..') !== -1) return;
+
+    location.replace('docs/' + page);
+})();
+</script>
+<script>
 /* Wiki sidebar: scroll highlighting, filtering, and a self-check.
 
    The nav is static HTML so it survives JavaScript being off. This only adds

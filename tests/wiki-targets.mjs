@@ -46,7 +46,16 @@ for (const m of md.matchAll(/wiki:\s*'([a-z0-9_-]+)'/g)) {
   if (!ids.has(m[1])) bad.push(`manual-data.js: wiki:'${m[1]}' missing anchor in wiki.html`);
 }
 
-// 4. nothing may reintroduce slug-guessing
+// 4. if the map uses ?page=, wiki.html must actually act on it. It did not for
+//    a long time: 26 controls pointed at ?page=<doc>.md and every one silently
+//    loaded the wiki front page instead of the document asked for.
+if (/\?page=/.test(block)) {
+  if (!/URLSearchParams|location\.search/.test(wiki)) {
+    bad.push('tooltip.js uses ?page= targets but wiki.html never reads the parameter — they all land on the front page');
+  }
+}
+
+// 5. nothing may reintroduce slug-guessing
 const s = read('script.js');
 if (/window\.open\('wiki\.html#'\s*\+\s*(encodeURIComponent\()?[a-zA-Z]/.test(s)) {
   bad.push("script.js builds a wiki anchor from a variable — slug-guessing has returned");
