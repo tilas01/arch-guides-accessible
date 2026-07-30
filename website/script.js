@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ensure 'No Selection Provided' text is greyed out
     document.querySelectorAll('.generator-form select').forEach(sel => {
-        if (sel.value === "") sel.style.color = "var(--fg-dim, #888)";
+        if (sel.value === "") sel.style.color = "var(--fg-dim, #7f88ad)";
         
         // Trigger immediately on interaction to prevent iOS WebKit ghosting
         const removePlaceholder = function() {
@@ -483,9 +483,16 @@ window.updatePreview = function() {
     const previewEl = document.getElementById('preview');
     if (!mdEl || !previewEl) return;
     const clean = stripConfig(mdEl.innerText || "");
-    if (typeof marked !== 'undefined') {
-        previewEl.innerHTML = marked.parse(clean);
-        if (window.Prism) Prism.highlightAll();
+    // Was `marked` from jsdelivr. Two reasons that had to go: it sent every
+    // visitor's IP to a third party on a site whose subject is not leaking to
+    // third parties, and it ran unpinned remote script on the page that renders
+    // the install script people are told to read before executing. markdown.js
+    // ships with the site, so the preview also works offline from a live USB.
+    if (typeof window.renderMarkdown === 'function') {
+        previewEl.innerHTML = window.renderMarkdown(clean, { headingPrefix: 'gen-' }).html;
+        if (window.highlightAll) window.highlightAll(previewEl);
+    } else {
+        previewEl.textContent = clean;
     }
 };
 
@@ -955,7 +962,14 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
         document.querySelectorAll('input[name="other_sec_tools"]:checked').length > 0;
 
     if (!hasApps || !hasSec) {
-        if (!confirm("You have not selected any Apps or Security Tools. Default minimal profiles will be automatically applied. Proceed?")) {
+        // `auto` means this is a background regeneration — the preview being
+        // refreshed after a form change, or on load. A modal confirm() there is
+        // a dialog nobody asked for, appearing over a page they are still
+        // reading, and it fired on every keystroke that triggered a rebuild.
+        // The validation box above already returns early on `auto` for exactly
+        // this reason; this branch was missed. Defaults are applied either way
+        // and named in the summary, so nothing is applied silently.
+        if (!auto && !confirm("You have not selected any Apps or Security Tools. Default minimal profiles will be automatically applied. Proceed?")) {
             return;
         }
         // Auto-tick minimal defaults if they agreed
@@ -1448,13 +1462,20 @@ run_with_progress() {
             }
         }
 
-        // Desktop environments
-        const dsXorg = (displayServer === "auto" && (desktop === "dusky" || desktop === "dwm")) || displayServer === "xorg";
+        // Desktop environments.
+        // Dusky is Hyprland on Wayland — it is a dotfiles project, not a
+        // separate OS, and Hyprland has no Xorg backend at all. It used to be
+        // grouped with dwm here, so choosing Dusky on "Auto" emitted an Xorg
+        // install for a compositor that cannot use one. dwm is the Xorg case.
+        const dsXorg = (displayServer === "auto" && desktop === "dwm") || displayServer === "xorg";
         if (desktop === "gnome") { o += `pacman -S --noconfirm gnome gnome-tweaks ${dsXorg ? 'xorg-server' : 'wayland'}\nsystemctl enable gdm\n`; }
         else if (desktop === "kde") { o += `pacman -S --noconfirm plasma-desktop sddm ${dsXorg ? 'xorg-server' : 'wayland'}\nsystemctl enable sddm\n`; }
         else if (desktop === "dwm") { o += `pacman -S --noconfirm xorg-server xorg-xinit base-devel libx11 libxinerama libxft\ngit clone https://git.suckless.org/dwm /usr/local/src/dwm && cd /usr/local/src/dwm && make install\n`; }
         else if (desktop === "dusky") {
-            o += dsXorg ? `pacman -S --noconfirm git base-devel xorg-server xorg-xinit\n` : `pacman -S --noconfirm git base-devel wayland xorg-xwayland\n`;
+            // Not conditional on dsXorg: Dusky's own install.sh pulls Hyprland,
+            // Waybar, Rofi, Swaync, Wlogout and SDDM. All that is needed first
+            // is a Wayland base plus Xwayland for legacy X clients.
+            o += `pacman -S --noconfirm git base-devel wayland xorg-xwayland\n`;
             o += software_type === "libre"
                 ? `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && sed -i 's/sudo/doas/g' install.sh && ./install.sh"\n`
                 : `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && ./install.sh"\n`;
@@ -1564,10 +1585,10 @@ run_with_progress() {
             }
         });
 
-        // Dusky OS auto-setup
+        // Dusky auto-setup
         if (post_apps.includes('dusky-setup')) {
-            if (!cmdOnly) o += `\n### Dusky OS Auto-Setup\n> Watch the [YouTube guide](https://www.youtube.com/watch?v=JmgvSdEIK8c) and read the [dusky repo](https://github.com/dusklinux/dusky) cheatsheet before running.\n\n\`\`\`bash\n`;
-            else o += `\n# Dusky OS Auto-Setup (by dusklinux)\n# Watch: https://www.youtube.com/watch?v=JmgvSdEIK8c\n# Repo:  https://github.com/dusklinux/dusky\n`;
+            if (!cmdOnly) o += `\n### Dusky Auto-Setup\n> Watch the [YouTube guide](https://www.youtube.com/watch?v=JmgvSdEIK8c) and read the [dusky repo](https://github.com/dusklinux/dusky) cheatsheet before running.\n\n\`\`\`bash\n`;
+            else o += `\n# Dusky Auto-Setup (by dusklinux)\n# Watch: https://www.youtube.com/watch?v=JmgvSdEIK8c\n# Repo:  https://github.com/dusklinux/dusky\n`;
             o += `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && ./install.sh"\n`;
             if (!cmdOnly) o += `\`\`\`\n\n> 📋 **Cheatsheet**: \`/tmp/dusky/cheatsheet.md\` — Hyprland keybinds and workflow\n`;
         }
@@ -2410,9 +2431,11 @@ function buildSshDeployCommands(mainSh, postSh) {
         out += heredoc('Post-install script (run after first boot)', 'post_install.sh', postSh, 'var(--accent-blue)');
     }
     container.innerHTML = out || '<p style="color:var(--fg-color); opacity:0.7;">Generate a script to see the deploy command.</p>';
-    // Prism comes from a CDN; degrade to unhighlighted code if it didn't load.
-    if (window.Prism && typeof Prism.highlightAllUnder === 'function') {
-        Prism.highlightAllUnder(container);
+    // highlight.js ships with the site rather than coming from a CDN, but keep
+    // the guard: a page that fails to load it should render plain code, not
+    // throw and lose the whole handler.
+    if (typeof window.highlightAll === 'function') {
+        window.highlightAll(container);
     }
 }
 
@@ -2458,7 +2481,7 @@ document.addEventListener('DOMContentLoaded', () => {
         syncPq();
     }
 
-    // ── DuskyOS: one yes/no that answers the desktop questions for you ──
+    // ── Dusky: one yes/no that answers the desktop questions for you ──
     // Dusky ships its own Hyprland/Wayland configuration, so asking the user to
     // pick a desktop and display server as well is redundant and easy to get
     // wrong (Hyprland cannot run on Xorg). Answering Yes sets both and hides them.
@@ -2827,7 +2850,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Restore Selects.
                     // Applied in two passes: set every value first, then fire the
                     // change events. Otherwise a handler could run against a
-                    // half-restored form (DuskyOS reading a desktop value that has
+                    // half-restored form (Dusky reading a desktop value that has
                     // not been set yet) and force the wrong answer.
                     if (data.selects) {
                         for (const [id, val] of Object.entries(data.selects)) {
@@ -2975,9 +2998,14 @@ const wikiMap = {
     'Desktop Environment':          '?page=07-post-installation.md',
     'DNS Caching':                  '?page=07-post-installation.md',
     'Display Server':               '?page=xorg-vs-wayland.md',
-    '🦀 Arch Rusty Security Suite': '?page=security-suite.md',
-    'Anti-Evil Maid Decoys':        '?page=security-suite.md',
-    'Other Security Tools':         '?page=security-suite.md',
+    // These three pointed at ?page=security-suite.md, which does not exist and
+    // never has — so right-clicking any of them landed on a "could not load"
+    // rather than the explanation asked for. The wiki has real sections for all
+    // three; use those. tests/markdown-render.mjs now fails if a ?page= target
+    // names a document that is not in website/docs/.
+    '🦀 Arch Rusty Security Suite': '#security-suite',
+    'Anti-Evil Maid Decoys':        '#security-suite',
+    'Other Security Tools':         '#other-sec',
 };
 // Note: updateInfoPanel sidebar removed — unified tooltip.js handles all tooltips
 
@@ -3028,37 +3056,59 @@ function validateConfigurations() {
     const desktop = document.getElementById('desktop')?.value || 'none';
     const displayServer = document.getElementById('display_server')?.value || 'auto';
 
-    // DuskyOS Automation Lock
+    // ── Desktops that decide the display server for you ──────────────────────
+    // Two of these are not preferences. Hyprland (and therefore Dusky) has no
+    // Xorg backend; dwm has no Wayland one. Rather than let the pair be set to
+    // something impossible and then correct it behind an alert() — which fired
+    // on every keystroke that re-ran validation, and once contradicted itself
+    // by forcing Dusky to Wayland and then warning that Wayland breaks it —
+    // pin the select and say why, the same way the Manual Walkthrough locks it.
     const duskyAppCb = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
     const displayServerSelect = document.getElementById('display_server');
-    
-    if (desktop === 'dusky') {
-        if (duskyAppCb) {
-            duskyAppCb.checked = true;
-            duskyAppCb.disabled = true;
-            duskyAppCb.parentElement.style.opacity = '0.6';
-        }
-        if (displayServer === 'xorg') {
-            alert("Invalid Config: DuskyOS (Hyprland) requires Wayland. Automatically presetting to Wayland.");
-            if (displayServerSelect) displayServerSelect.value = 'wayland';
-        }
-    } else {
-        if (duskyAppCb) {
-            duskyAppCb.disabled = false;
-            duskyAppCb.parentElement.style.opacity = '1';
+    const DS_REQUIRED = { dusky: 'wayland', hyprland: 'wayland', dwm: 'xorg' };
+    const dsForced = DS_REQUIRED[desktop] || null;
+
+    if (duskyAppCb) {
+        const onDusky = desktop === 'dusky';
+        // Dusky is installed by its own script; with Dusky as the desktop the
+        // post-install entry is what runs it, so it is not optional.
+        if (onDusky) duskyAppCb.checked = true;
+        duskyAppCb.disabled = onDusky;
+        if (duskyAppCb.parentElement) {
+            duskyAppCb.parentElement.style.opacity = onDusky ? '0.6' : '1';
         }
     }
 
-    if (desktop === 'dwm') {
-        if (displayServer === 'wayland') {
-            alert("Invalid Config: DWM requires Xorg. Automatically presetting to Xorg.");
-            if (displayServerSelect) displayServerSelect.value = 'xorg';
+    if (displayServerSelect) {
+        if (dsForced) {
+            if (displayServerSelect.value !== dsForced) displayServerSelect.value = dsForced;
+            // Disabled, not hidden: the answer stays visible, and .value still
+            // reads back for generation.
+            displayServerSelect.disabled = true;
+            displayServerSelect.title = desktop + ' only runs on ' +
+                (dsForced === 'wayland' ? 'Wayland' : 'Xorg') + ', so this is fixed.';
+        } else {
+            displayServerSelect.disabled = false;
+            displayServerSelect.title = '';
+        }
+    }
+    const dsNote = document.getElementById('ds-forced-note');
+    if (dsNote) {
+        dsNote.style.display = dsForced ? 'block' : 'none';
+        if (dsForced) {
+            dsNote.textContent = '🔒 ' + (desktop === 'dusky' ? 'Dusky' : desktop) +
+                ' runs on ' + (dsForced === 'wayland' ? 'Wayland' : 'Xorg') +
+                ' only, so the display server is fixed. Change the desktop to choose it yourself.';
         }
     }
 
     if (part.value === 'unencrypted') warnings.push("⚠️ No encryption — physical access = full compromise.");
     if (gpuBrand === 'nvidia' && softwareType === 'libre') warnings.push("⚠️ Nvidia + Libre = Nouveau only. Limited performance.");
-    if (displayServer === 'wayland' && (desktop === 'dusky' || desktop === 'dwm')) warnings.push(`⚠️ ${desktop} requires X11/Xorg. Wayland will break it.`);
+    // dwm is Xorg-only. Dusky is not — it is Hyprland, which is Wayland-only.
+    // This line used to name both, so choosing Dusky pinned it to Wayland and
+    // then warned in the same breath that Wayland would break it.
+    if (displayServer === 'wayland' && desktop === 'dwm') warnings.push("⚠️ dwm requires X11/Xorg. Wayland will break it.");
+    if (displayServer === 'xorg' && (desktop === 'dusky' || desktop === 'hyprland')) warnings.push(`⚠️ ${desktop === 'dusky' ? 'Dusky' : 'Hyprland'} requires Wayland. Hyprland has no Xorg backend.`);
 
     window.smartAnalysisWarnings = warnings;
     const div = document.getElementById('global-warnings');
@@ -3104,7 +3154,7 @@ if (restoreConfig) {
             if (!el) return;
             el.value = c[k];
             // Setting .value does not fire change, so any dependent logic
-            // (DuskyOS forcing Wayland, the libre policy disabling apps, the
+            // (Dusky forcing Wayland, the libre policy disabling apps, the
             // duress and USB-kill sub-options) would not re-apply on restore.
             el.dispatchEvent(new Event('change', { bubbles: true }));
         });
@@ -3550,6 +3600,16 @@ window.toggleAppConfig = function(appId) {
     }
 };
 
+// One place that fills a static output block and highlights it. These are
+// rewritten on every generation, so they must be re-highlighted each time
+// rather than skipped as already-done.
+function setBlock(id, text, lang) {
+    const code = document.getElementById(id)?.querySelector('code');
+    if (!code) return;
+    if (window.setHighlightedCode) window.setHighlightedCode(code, text, lang);
+    else code.textContent = text;
+}
+
 // The staging editor has three panes (guide, install script, post-install
 // script), each with a textarea and a syntax-highlighted <pre> mirror. The
 // previous version addressed single #live-editor-textarea / -preview / -code
@@ -3561,7 +3621,7 @@ const LIVE_EDITOR_PANES = [
     { textarea: 'live-editor-textarea-post', preview: 'live-editor-preview-post' }
 ];
 
-// Copies textarea content into the highlighted mirrors and re-runs Prism.
+// Copies textarea content into the highlighted mirrors and re-highlights.
 window.refreshLiveEditorPreviews = function() {
     LIVE_EDITOR_PANES.forEach(pane => {
         const ta = document.getElementById(pane.textarea);
@@ -3569,8 +3629,11 @@ window.refreshLiveEditorPreviews = function() {
         if (!ta || !pre) return;
         const code = pre.querySelector('code');
         if (!code) return;
-        code.textContent = ta.value;
-        if (window.Prism) Prism.highlightElement(code);
+        // setHighlightedCode() clears the done-marker first. Plain
+        // highlightElement() would skip a pane that had already been rendered,
+        // so every edit after the first would show stale colours.
+        if (window.setHighlightedCode) window.setHighlightedCode(code, ta.value);
+        else code.textContent = ta.value;
     });
 };
 
@@ -3688,8 +3751,8 @@ window.confirmAndSaveLiveEditor = function() {
     outSec.style.display = 'block';
     
     // Populate static blocks
-    document.getElementById('static-md').querySelector('code').textContent = finalMd;
-    document.getElementById('static-install').querySelector('code').textContent = finalSh;
+    setBlock('static-md', finalMd, 'markdown');
+    setBlock('static-install', finalSh, 'bash');
     
     const postContainer = document.getElementById('static-post-container');
     if (!isSplit || !finalPost.trim()) {
@@ -3697,16 +3760,8 @@ window.confirmAndSaveLiveEditor = function() {
         document.getElementById('static-title-install').innerHTML = "⚙️ Unified Install Script (.sh)";
     } else {
         postContainer.style.display = 'block';
-        document.getElementById('static-post').querySelector('code').textContent = finalPost;
+        setBlock('static-post', finalPost, 'bash');
         document.getElementById('static-title-install').innerHTML = "⚙️ Install Script (.sh)";
-    }
-    
-    if (window.Prism) {
-        Prism.highlightElement(document.getElementById('static-md').querySelector('code'));
-        Prism.highlightElement(document.getElementById('static-install').querySelector('code'));
-        if (isSplit && finalPost.trim()) {
-            Prism.highlightElement(document.getElementById('static-post').querySelector('code'));
-        }
     }
     
     
@@ -3921,7 +3976,7 @@ function toggleAllPostApps() {
         // Configurable apps are included now: an unopened dialog falls back to
         // recommended settings and says so, so it no longer blocks anything.
         // Disabled boxes are still skipped — those are being forced by another
-        // selection (the libre policy, or DuskyOS).
+        // selection (the libre policy, or Dusky).
         .filter(cb => !cb.disabled);
     toggleGroup(
         boxes,
@@ -3968,7 +4023,7 @@ function enableAllOtherSec() {
 // One resolver, with a map that is checked against wiki.html by the link audit.
 
 
-// ── Dusky OS Locking Logic ──
+// ── Dusky Locking Logic ──
 document.addEventListener('DOMContentLoaded', () => {
     const duskyCheckbox = document.querySelector('input[value="duskyos"]');
     if (!duskyCheckbox) return;
@@ -3981,10 +4036,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (duskyCheckbox.checked) {
             // Lock and force required settings
-            if (initSys) { initSys.value = 'systemd'; initSys.disabled = true; initSys.title = "Locked by Dusky OS requirement"; }
-            if (displayServ) { displayServ.value = 'wayland'; displayServ.disabled = true; displayServ.title = "Locked by Dusky OS requirement"; }
-            if (networkMgr) { networkMgr.value = 'networkmanager'; networkMgr.disabled = true; networkMgr.title = "Locked by Dusky OS requirement"; }
-            if (bootloader) { bootloader.value = 'grub'; bootloader.disabled = true; bootloader.title = "Locked by Dusky OS requirement"; }
+            if (initSys) { initSys.value = 'systemd'; initSys.disabled = true; initSys.title = "Locked by Dusky requirement"; }
+            if (displayServ) { displayServ.value = 'wayland'; displayServ.disabled = true; displayServ.title = "Locked by Dusky requirement"; }
+            if (networkMgr) { networkMgr.value = 'networkmanager'; networkMgr.disabled = true; networkMgr.title = "Locked by Dusky requirement"; }
+            if (bootloader) { bootloader.value = 'grub'; bootloader.disabled = true; bootloader.title = "Locked by Dusky requirement"; }
         } else {
             // Unlock
             if (initSys) { initSys.disabled = false; initSys.title = ""; }

@@ -107,14 +107,19 @@
 | **None (TTY)** | N/A | N/A | N/A | No display server needed |
 | **GNOME** | ✅ Full | ✅ Full (Recommended) | Wayland | GDM auto-selects Wayland; Xorg session available |
 | **KDE Plasma** | ✅ Full | ✅ Full (Recommended) | Wayland | SDDM supports both; Wayland default since Plasma 6 |
-| **DWM** | ✅ Required | ❌ Not Supported | Xorg | X11 window manager — cannot run on Wayland |
-| **Dusky OS** | ✅ Required | ❌ Not Supported | Xorg | DWM-based — X11 only. [By dusklinux](https://github.com/dusklinux/dusky) |
+| **DWM** | ✅ Required | ❌ Not supported | Xorg | X11 window manager — cannot run on Wayland |
+| **Hyprland** | ❌ Not supported | ✅ Required | Wayland | Wayland compositor. It has no Xorg backend at all |
+| **Dusky** | ❌ Not supported | ✅ Required | Wayland | Hyprland plus dotfiles, so Wayland-only. [By dusklinux](https://github.com/dusklinux/dusky) |
 
-### Important Warnings
+### Important warnings
 
-- **DWM + Wayland = BROKEN** — DWM is an X11 window manager. It requires the X11 protocol.
-- **Dusky + Wayland = BROKEN** — Dusky is built on DWM and requires Xorg.
-- The generator will display a warning if you select Wayland with DWM or Dusky.
+- **DWM + Wayland = broken.** DWM is an X11 window manager and requires the X11 protocol.
+- **Dusky + Xorg = broken.** Dusky is Hyprland, and Hyprland is a Wayland
+  compositor with no Xorg backend. An earlier version of this table said the
+  opposite; it was wrong.
+- Both generators pin the display server when the desktop only runs on one of
+  them, and say which and why rather than letting you choose a pair that cannot
+  start.
 
 ---
 
@@ -274,11 +279,14 @@ loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type
 
 The generator's display server dropdown works as follows:
 
-| Setting | GNOME | KDE | DWM | Dusky | None |
-|---------|-------|-----|-----|-------|------|
-| **Auto** | Wayland | Wayland | Xorg | Xorg | N/A |
-| **Wayland** | Wayland | Wayland | ⚠️ BROKEN | ⚠️ BROKEN | N/A |
-| **Xorg** | Xorg | Xorg | Xorg | Xorg | N/A |
+| Setting | GNOME | KDE | DWM | Hyprland / Dusky | None |
+|---------|-------|-----|-----|------------------|------|
+| **Auto** | Wayland | Wayland | Xorg | Wayland | N/A |
+| **Wayland** | Wayland | Wayland | ⚠️ cannot start | Wayland | N/A |
+| **Xorg** | Xorg | Xorg | Xorg | ⚠️ cannot start | N/A |
+
+Where a desktop only runs on one of the two, both generators pin the dropdown to
+it and say so, rather than letting you build a pair that cannot start.
 
 ### Packages Installed by Display Server
 
@@ -293,8 +301,7 @@ pacman -S plasma-desktop sddm xorg-server
 # DWM
 pacman -S xorg-server xorg-xinit base-devel libx11 libxinerama libxft
 
-# Dusky
-pacman -S git base-devel xorg-server xorg-xinit
+# Dusky is not available in Xorg mode — it is Hyprland, which is Wayland-only.
 ```
 
 **Wayland mode:**
@@ -305,7 +312,8 @@ pacman -S gnome gnome-tweaks wayland
 # KDE
 pacman -S plasma-desktop sddm wayland
 
-# Dusky (if forced — NOT RECOMMENDED)
+# Dusky — the only mode it has. Hyprland and the rest of the desktop come
+# from Dusky's own installer; this is the base it needs first.
 pacman -S git base-devel wayland xorg-xwayland
 ```
 
@@ -315,7 +323,7 @@ pacman -S git base-devel wayland xorg-xwayland
 
 ### Choose Xorg When:
 
-- ✅ Using **DWM** or **Dusky OS** (required)
+- ✅ Using **DWM**, **i3** or another X11 window manager (required)
 - ✅ Running in a **Virtual Machine** (better VM graphics support)
 - ✅ Need **X11 forwarding** over SSH (`ssh -X`)
 - ✅ Using **Nvidia Nouveau** drivers (better X11 support)
@@ -336,7 +344,7 @@ pacman -S git base-devel wayland xorg-xwayland
 ### Choose Auto When:
 
 - ✅ You trust the generator to pick the best option
-- ✅ GNOME/KDE will get Wayland (optimal), DWM/Dusky will get Xorg (required)
+- ✅ GNOME, KDE and Dusky get Wayland; DWM gets Xorg. Each is the only thing that works
 
 ---
 
@@ -400,7 +408,7 @@ lspci -k | grep -A 2 VGA
 pacman -S mesa xf86-video-amdgpu  # or appropriate driver
 ```
 
-### DWM/Dusky Won't Start
+### DWM Won't Start
 
 ```bash
 # Verify Xorg is installed
@@ -420,4 +428,4 @@ ldd /usr/local/bin/dwm
 ---
 
 *Part of the [Arch Guides Dynamic](https://github.com/tilas01/arch-guides-dynamic) wiki by [tilas01](https://github.com/tilas01).*
-*Dusky OS by [dusklinux](https://github.com/dusklinux/dusky).*
+*Dusky by [dusklinux](https://github.com/dusklinux/dusky).*

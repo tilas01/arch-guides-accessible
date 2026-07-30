@@ -40,7 +40,7 @@ node scripts/gen-examples.mjs
 | [`05-luks1-legacy-bios`](05-luks1-legacy-bios.md) · [script](05-luks1-legacy-bios.sh) | Legacy BIOS with GRUB and LUKS1 — the constrained path, for firmware with no UEFI. |
 | [`06-headless-server`](06-headless-server.md) · [script](06-headless-server.sh) | No GUI, no audio, nftables, OpenSSH hardened. A server. |
 | [`07-libre-only`](07-libre-only.md) · [script](07-libre-only.sh) | Strictly libre: no microcode, no proprietary drivers, no proprietary applications. |
-| [`08-duskyos`](08-duskyos.md) · [script](08-duskyos.sh) | DuskyOS, the one preconfigured desktop this project installs. Shows which options it fixes for you. |
+| [`08-duskyos`](08-duskyos.md) · [script](08-duskyos.sh) | Dusky, the one preconfigured desktop this project installs. Shows which options it fixes for you. |
 | [`09-arm-raspberry-pi`](09-arm-raspberry-pi.md) · [script](09-arm-raspberry-pi.sh) | aarch64 on a Raspberry Pi: no ISO, no microcode, EEPROM firmware, config.txt instead of an EFI loader. |
 | [`10-arm-uboot-sbc`](10-arm-uboot-sbc.md) · [script](10-arm-uboot-sbc.sh) | aarch64 on a generic U-Boot single-board computer, booting via extlinux.conf and a device tree. |
 | [`11-arm-uefi`](11-arm-uefi.md) · [script](11-arm-uefi.sh) | aarch64 on a board whose firmware implements UEFI — the closest ARM gets to the x86 path. |

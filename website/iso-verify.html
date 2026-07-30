@@ -591,7 +591,7 @@ sudo dd if=archlinux-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync</pr
             <a href="wiki.html">Wiki</a> ·
             <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a> ·
-            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+            <a href="cheatsheets.html?sheet=full">Command Cheatsheet</a>
         </p>
     </div>
 </footer>
@@ -599,5 +599,10 @@ sudo dd if=archlinux-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync</pr
 <script src="iso-verify.js" defer></script>
 <script src="tooltip.js" defer></script>
 <script src="shared-ui.js" defer></script>
+<!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
+     nobody has to trust a third-party bundle to render scripts they are
+     being told to read before running. -->
+<script src="markdown.js" defer></script>
+<script src="highlight.js" defer></script>
 </body>
 </html>

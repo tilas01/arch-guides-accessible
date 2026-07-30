@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body { font-family: var(--font-mono); }
-        .repo-container { max-width: 900px; margin: 2rem auto; background: #24283b; border-radius: 12px; padding: 2rem; border: 1px solid #414868; }
+        .repo-container { max-width: 900px; margin: 2rem auto; background: var(--bg-lighter, #24283b); border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color, #2f3450); }
         .back-btn { color: #7aa2f7; text-decoration: none; font-weight: bold; margin-bottom: 1rem; display: inline-block; }
         .back-btn:hover { color: #bb9af7; text-decoration: underline; }
-        .tree-item { padding: 0.5rem; border-bottom: 1px solid #414868; cursor: pointer; }
-        .tree-item:hover { background: #1f2335; }
+        .tree-item { padding: 0.5rem; border-bottom: 1px solid var(--border-color, #2f3450); cursor: pointer; }
+        .tree-item:hover { background: var(--bg-darker, #16161e); }
         .folder { color: #7aa2f7; font-weight: bold; }
         .file { color: #a9b1d6; }
         #code-view { display: none; background: #1a1b26; padding: 1rem; border-radius: 8px; border: 1px solid #565f89; overflow-x: auto; white-space: pre-wrap; font-size: 0.9rem; }
@@ -155,5 +155,10 @@
 
 <script src="tooltip.js" defer></script>
 <script src="shared-ui.js" defer></script>
+<!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
+     nobody has to trust a third-party bundle to render scripts they are
+     being told to read before running. -->
+<script src="markdown.js" defer></script>
+<script src="highlight.js" defer></script>
 </body>
 </html>

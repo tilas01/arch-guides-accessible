@@ -23,7 +23,7 @@
             --accent-green: #9ece6a;
             --accent-orange: #ff9e64;
             --font-main: "JetBrains Mono", "Fira Code", Consolas, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            --border-color: #414868;
+            --border-color: #2f3450;
         }
         body {
             font-family: var(--font-main);
@@ -50,8 +50,8 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             scroll-margin-top: 40px;
         }
-        code { background: #010409; padding: 0.2rem 0.4rem; border-radius: 6px; font-family: monospace; color: var(--accent-orange); }
-        pre code { display: block; padding: 1rem; color: #e6edf3; overflow-x: auto; }
+        code { background: var(--bg-darker, #16161e); padding: 0.2rem 0.4rem; border-radius: 6px; font-family: monospace; color: var(--accent-orange); }
+        pre code { display: block; padding: 1rem; color: var(--fg-color, #a9b1d6); overflow-x: auto; }
         a { color: var(--accent-purple); text-decoration: none; }
         a:hover { text-decoration: underline; }
         .icon { font-size: 1.8rem; vertical-align: middle; margin-right: 0.5rem; }
@@ -65,7 +65,7 @@
             text-decoration: none;
             font-weight: bold;
         }
-        .home-btn:hover { background: #764ce0; text-decoration: none; }
+        .home-btn:hover { background: var(--accent-purple, #bb9af7); color: var(--bg-color, #1a1b26); text-decoration: none; }
 
         /* ── Wiki layout: persistent section index beside the content ──
            The sidebar is the navigation for the whole wiki. Every section has
@@ -392,7 +392,7 @@
         <h3>3. Desktop &amp; Software</h3>
         <ul>
             <li><strong>Software Type:</strong> 'Strictly Libre' installs only open-source software without proprietary blobs. Proprietary enables microcode and closed-source drivers (e.g., Nvidia).</li>
-            <li><strong>Desktop Environment:</strong> Choose DuskyOS (custom Hyprland/Wayland), standard Hyprland, DWM, or no GUI.</li>
+            <li><strong>Desktop Environment:</strong> Choose Dusky (custom Hyprland/Wayland), standard Hyprland, DWM, or no GUI.</li>
             <li><strong>Display Server:</strong> Wayland is modern and secure; Xorg is legacy but sometimes required for older apps/hardware.</li>
         </ul>
     </div>
@@ -475,10 +475,10 @@
         <h3 id="cleanup">Post-Install Cleanup</h3>
         <p>Clears the pacman cache and build dependencies after installation. Saves a few gigabytes; the trade-off is that downgrading a package later means re-downloading it.</p>
 
-        <h3 id="dusky_setup">DuskyOS Automated Setup</h3>
+        <h3 id="dusky_setup">Dusky Automated Setup</h3>
         <p id="duskyos">
             A single yes/no. <strong>Yes</strong> installs
-            <a href="https://github.com/dusklinux/dusky" target="_blank" rel="noopener">DuskyOS</a>
+            <a href="https://github.com/dusklinux/dusky" target="_blank" rel="noopener">Dusky</a>
             by dusklinux: a pre-configured Hyprland desktop with dotfiles, theming and a full
             Wayland environment. Because Dusky brings its own answers, choosing Yes also sets
             your desktop and forces Wayland — Hyprland cannot run on Xorg — and hides those two
@@ -486,16 +486,16 @@
         </p>
         <p>
             Watch the <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" rel="noopener">setup video</a>
-            and keep the <a href="docs/dusky-cheatsheet.md">keybind cheatsheet</a> to hand: a
+            and keep the <a href="cheatsheets.html?sheet=duskyq">keybind cheatsheet</a> to hand: a
             tiling WM is unusable until you know the shortcuts. Answer <strong>No</strong> if you
             want GNOME, KDE, DWM or a plain TTY, and pick those yourself.
         </p>
 
         <h3 id="desktop">Desktop Environment</h3>
-        <p><strong>None</strong> leaves a pure TTY. <strong>GNOME</strong> and <strong>KDE</strong> are full environments. <strong>DWM</strong> is a minimal tiling WM requiring Xorg. <strong>Dusky OS</strong> is a pre-configured Hyprland setup by dusklinux and forces Wayland.</p>
+        <p><strong>None</strong> leaves a pure TTY. <strong>GNOME</strong> and <strong>KDE</strong> are full environments. <strong>DWM</strong> is a minimal tiling WM requiring Xorg. <strong>Dusky</strong> is a pre-configured Hyprland setup by dusklinux and forces Wayland.</p>
 
         <h3 id="display_server">Display Server</h3>
-        <p><strong>Wayland</strong> isolates clients from each other, so one window cannot read another's input or framebuffer — a real security improvement over <strong>Xorg</strong>, where any client can. Xorg is still needed for DWM and some older applications. <strong>Auto</strong> follows your desktop choice. See <a href="docs/xorg-vs-wayland.md">the full comparison</a>.</p>
+        <p><strong>Wayland</strong> isolates clients from each other, so one window cannot read another's input or framebuffer — a real security improvement over <strong>Xorg</strong>, where any client can. Xorg is still needed for DWM and some older applications. <strong>Auto</strong> follows your desktop choice. See <a href="wiki.html?page=xorg-vs-wayland.md">the full comparison</a>.</p>
 
         <h3 id="firewall">Firewall Setup</h3>
         <p><strong>UFW + Gufw</strong> is the recommended default-deny setup with a GUI. <strong>Firewalld</strong> suits zone-based configurations. <strong>iptables</strong> is for people who want to write their own rules. <strong>None</strong> leaves every listening service exposed on untrusted networks.</p>
@@ -674,7 +674,7 @@ udevadm control --reload-rules</code></pre>
         <h2><span class="icon">🔎</span> Security Audit of These Tools</h2>
         <p>
             A tool you are asked to trust with your boot chain should be able to show
-            its own review. <a href="docs/security-audit.md">docs/security-audit.md</a>
+            its own review. <a href="wiki.html?page=security-audit.md">docs/security-audit.md</a>
             is a source-level audit of all five crates, including what it found
             <em>wrong</em>.
         </p>
@@ -697,7 +697,7 @@ udevadm control --reload-rules</code></pre>
             to CI.
         </p>
         <p style="font-size:0.85rem; color:var(--fg-dim);">
-            Build and verify them yourself: <a href="docs/building-from-source.md">building from source</a>
+            Build and verify them yourself: <a href="wiki.html?page=building-from-source.md">building from source</a>
             includes the exact commands to reproduce a published hash bit-for-bit.
         </p>
     </div>
@@ -762,11 +762,11 @@ sudo bash install-security-suite.sh --all</code></pre>
         <h2><span class="icon">📋</span> Cheatsheets</h2>
         <p>Quick references, kept outside the generator so you can reach them any time.</p>
         <ul>
-            <li><a href="docs/helpful-commands.md">Arch command cheatsheet</a> — pacman, systemd, LUKS, BTRFS/Snapper, networking, journald and recovery.</li>
-            <li><a href="docs/dusky-cheatsheet.md">DuskyOS / Hyprland keybinds</a> — every shortcut in the Dusky desktop, if you chose it in the generator.</li>
-            <li><a href="docs/xorg-vs-wayland.md">Xorg vs Wayland</a> — what actually differs, and which you need.</li>
-            <li><a href="docs/maintenance.md">Maintenance</a> — keeping an Arch install healthy over time.</li>
-            <li><a href="docs/architecture.md">Architecture</a> — how the generator and the tools fit together.</li>
+            <li><a href="cheatsheets.html?sheet=full">Arch command cheatsheet</a> — pacman, systemd, LUKS, BTRFS/Snapper, networking, journald and recovery.</li>
+            <li><a href="cheatsheets.html?sheet=duskyq">Dusky / Hyprland keybinds</a> — every shortcut in the Dusky desktop, if you chose it in the generator.</li>
+            <li><a href="wiki.html?page=xorg-vs-wayland.md">Xorg vs Wayland</a> — what actually differs, and which you need.</li>
+            <li><a href="wiki.html?page=maintenance.md">Maintenance</a> — keeping an Arch install healthy over time.</li>
+            <li><a href="wiki.html?page=architecture.md">Architecture</a> — how the generator and the tools fit together.</li>
         </ul>
         <p style="font-size:0.85rem; color:var(--fg-dim);">
             The generator also drops the cheatsheets into <code>~/cheatsheets</code> on the
@@ -1802,11 +1802,11 @@ EOF</code></pre>
         </p>
         <ul>
             <li><strong>Display server</strong> —
-                <a href="docs/xorg-vs-wayland.md" target="_blank" rel="noopener">Wayland or Xorg</a>.
+                <a href="wiki.html?page=xorg-vs-wayland.md" target="_blank" rel="noopener">Wayland or Xorg</a>.
                 Wayland isolates clients from each other, which matters if you
                 care about one window being unable to read another's keystrokes.</li>
-            <li><strong>Desktop</strong> — <a href="#desktop">DuskyOS, Hyprland,
-                DWM, or none</a>. DuskyOS is the only preconfigured rice this
+            <li><strong>Desktop</strong> — <a href="#desktop">Dusky, Hyprland,
+                DWM, or none</a>. Dusky is the only preconfigured rice this
                 project installs automatically.</li>
             <li><strong>Firewall</strong> — <a href="#firewall-profiles">UFW
                 default-deny</a>. Two commands, and it closes everything you did
@@ -1963,24 +1963,29 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
             <a href="wiki.html">Wiki</a> ·
             <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a> ·
-            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+            <a href="cheatsheets.html?sheet=full">Command Cheatsheet</a>
         </p>
     </div>
 
 </div>
 
 <script>
-/* ?page= handler.
-   tooltip.js's right-click map sends 26 controls to `wiki.html?page=<doc>.md`,
-   meaning "open the deep-dive document for this option". Nothing here ever read
-   that parameter, so all 26 quietly loaded the wiki's front page instead — the
-   user right-clicked asking for a specific explanation and got the top of a
-   1200-line page.
+/* ?page= handler — renders a deep-dive document inside the wiki.
 
-   Resolved here rather than by rewriting the map, because the documents really
-   are the better answer for those options. Anything unrecognised is ignored
-   rather than redirected, so a stray or hand-typed parameter cannot bounce
-   someone off the wiki entirely. */
+   tooltip.js's right-click map sends 26 controls to `wiki.html?page=<doc>.md`,
+   meaning "open the deep-dive document for this option". Two bugs, in sequence:
+   first nothing read the parameter at all, so every one of them quietly loaded
+   the wiki's front page. Then it was made to `location.replace('docs/' + page)`
+   — which fixed the wrong-destination problem by dumping the reader on a raw
+   .md file: unstyled, no navigation, no header, no way back, and nothing
+   resembling the site they had just been using.
+
+   So it renders in place. The document appears where the wiki's own content
+   would be, in the same typography, with the header and sidebar intact and a
+   clear way back. The wiki's sections are hidden rather than removed so the
+   sidebar's own scroll-spy has nothing to trip over.
+
+   The parameter is untrusted input even though we generate it ourselves. */
 (function () {
     'use strict';
     var page;
@@ -1988,12 +1993,88 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
     catch (_) { return; }              // very old browser: just show the wiki
     if (!page) return;
 
-    // Only relative markdown paths under docs/. No absolute URLs, no scheme,
-    // no parent traversal — this value comes from a query string, so it is
-    // treated as untrusted even though we generate it ourselves.
-    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.md$/.test(page) || page.indexOf('..') !== -1) return;
+    // Relative markdown paths under docs/ only. No scheme, no absolute URL, no
+    // parent traversal, no backslash — a crafted value must not be able to
+    // reach outside docs/ or turn into a scripting URL.
+    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.md$/.test(page) ||
+        page.indexOf('..') !== -1 || page.indexOf('\\') !== -1) return;
 
-    location.replace('docs/' + page);
+    var main = document.querySelector('.wiki-content');
+    if (!main) return;
+
+    var title = page.replace(/^.*\//, '').replace(/\.md$/, '')
+                    .replace(/^\d+-/, '').replace(/[-_]+/g, ' ')
+                    .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+
+    // Hide the wiki's own sections, and give the document its own area.
+    [].forEach.call(main.children, function (el) { el.hidden = true; });
+
+    var host = document.createElement('div');
+    host.className = 'wiki-doc';
+    host.innerHTML =
+        '<nav class="wiki-doc-crumbs">' +
+          '<a href="wiki.html">📖 Wiki</a>' +
+          '<span aria-hidden="true">›</span>' +
+          '<span class="wiki-doc-here">' + title.replace(/[<>&]/g, '') + '</span>' +
+        '</nav>' +
+        '<div class="wiki-doc-body" id="wiki-doc-body">' +
+          '<p class="wiki-doc-loading">Loading ' + title.replace(/[<>&]/g, '') + '…</p>' +
+        '</div>' +
+        '<p class="wiki-doc-foot">' +
+          '<a href="wiki.html">← Back to the wiki</a>' +
+          '<a href="docs/' + encodeURI(page) + '">View the markdown source</a>' +
+        '</p>';
+    main.appendChild(host);
+    document.title = title + ' · Arch Guides Wiki';
+
+    var body = host.querySelector('#wiki-doc-body');
+
+    function failed(reason, direct) {
+        // Never leave a blank page. Say what happened and hand over the link, so
+        // the reader is one click from the content either way.
+        body.innerHTML =
+            '<div class="md-alert md-warning">' +
+              '<span class="md-alert-head">⚠️ Could not render this document</span>' +
+              '<p>' + reason + '</p>' +
+              '<p><a href="' + direct + '">Open ' + page.replace(/[<>&"]/g, '') +
+              ' directly</a>, or <a href="wiki.html">go back to the wiki</a>.</p>' +
+            '</div>';
+    }
+
+    var url = 'docs/' + encodeURI(page);
+    if (typeof window.renderMarkdownInto !== 'function') {
+        failed('The markdown renderer did not load.', url);
+        return;
+    }
+
+    window.renderMarkdownInto(body, url, { headingPrefix: 'doc-' })
+        .then(function (headings) {
+            // Give the document its own contents list when it is long enough to
+            // need one. Below four headings a contents block is just noise.
+            if (!headings || headings.length < 4) return;
+            var toc = document.createElement('nav');
+            toc.className = 'wiki-doc-toc';
+            toc.innerHTML = '<strong>On this page</strong><ul>' +
+                headings.filter(function (h) { return h.level <= 3; })
+                        .map(function (h) {
+                            return '<li class="lvl-' + h.level + '"><a href="#' + h.id + '">' +
+                                   h.text.replace(/[<>&]/g, '') + '</a></li>';
+                        }).join('') + '</ul>';
+            body.insertBefore(toc, body.firstChild);
+
+            // Honour a fragment now that the headings it names exist.
+            if (location.hash.length > 1) {
+                var target = document.getElementById(location.hash.slice(1));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        })
+        .catch(function (err) {
+            failed(err && err.message === 'no-fetch'
+                ? 'This browser cannot fetch the document, which also happens when the ' +
+                  'site is opened directly from disk rather than served over HTTP.'
+                : 'The document could not be loaded (' +
+                  String(err && err.message || err).replace(/[<>&]/g, '') + ').', url);
+        });
 })();
 </script>
 <script>
@@ -2114,5 +2195,10 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
 </script>
 <script src="tooltip.js" defer></script>
 <script src="shared-ui.js" defer></script>
+<!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
+     nobody has to trust a third-party bundle to render scripts they are
+     being told to read before running. -->
+<script src="markdown.js" defer></script>
+<script src="highlight.js" defer></script>
 </body>
 </html>

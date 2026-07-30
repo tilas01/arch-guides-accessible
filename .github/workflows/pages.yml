@@ -53,6 +53,19 @@ jobs:
       - name: Verify the site is intact before publishing
         run: |
           set -euo pipefail
+          # The welcome dialog will not let anyone past without ticking two
+          # boxes that link to these. Publishing the site without them means
+          # every visitor is asked to agree to a 404.
+          for doc in LEGAL-WAIVER.txt LICENSE.txt LICENCE-PLAIN-ENGLISH.txt; do
+            test -s "website/user-agreements/$doc" \
+              || { echo "FATAL: website/user-agreements/$doc is missing or empty"; exit 1; }
+          done
+          # That LICENSE.txt is a copy, so the site can serve the licence as
+          # plain text from its own deployment. A copy that has drifted from the
+          # real one is worse than no copy: people would be ticking a box to
+          # agree to terms that are not the repository's terms.
+          diff -q LICENSE website/user-agreements/LICENSE.txt \
+            || { echo "FATAL: website/user-agreements/LICENSE.txt has drifted from LICENSE"; exit 1; }
           cd website
           # Every page the nav links to must exist, or we publish 404s.
           for page in index.html site-index.html manual.html wiki.html \
@@ -123,7 +136,47 @@ jobs:
         run: npm run wiki
         working-directory: tests
 
-      # Every page loaded and checked for runtime errors, nav and tooltips.
+      # Clicks the walkthrough through in jsdom with Dusky selected. The
+      # permutation harness drives the data model directly, so it proved the
+      # output was right while the page itself dead-ended: every option on a
+      # locked question was disabled and choice questions advance only by
+      # clicking one, leaving "← Back" as the only live control.
+      - name: "Test: Dusky is installable in both front ends"
+        run: npm run dusky
+        working-directory: tests
+
+      # The welcome dialog is a gate: Continue must be genuinely inert until
+      # both boxes are ticked, and every document it asks people to agree to
+      # must exist and match the repository licence.
+      - name: "Test: welcome dialog gate and user agreements"
+        run: npm run legal
+        working-directory: tests
+
+      # Emoji use has to be all-or-nothing within a list or card group. A
+      # section where four items carry an icon and three do not reads as an
+      # unfinished job rather than a design.
+      - name: "Test: emoji consistency within groups"
+        run: npm run emoji
+        working-directory: tests
+
+      # No hyperlink may land the reader on a raw .md file, the shared markdown
+      # renderer must not build a live element out of a fetched document, and
+      # every ?page= / ?sheet= target must resolve.
+      - name: "Test: markdown rendering and no raw-markdown links"
+        run: npm run markdown
+        working-directory: tests
+
+      # Every colour comes from the Tokyo Night palette, and no page redefines a
+      # palette variable to a different value. wiki.html used to redefine
+      # --border-color, so the same element was one colour there and another
+      # everywhere else.
+      - name: "Test: colour palette parity"
+        run: npm run palette
+        working-directory: tests
+
+      # Every page over real HTTP with every script actually executing. This
+      # previously used JSDOM.fromFile against a dead http:// URL, so no script
+      # loaded and a page running nothing reported "no runtime errors".
       - name: "Test: page runtime"
         run: npm run runtime
         working-directory: tests

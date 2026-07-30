@@ -490,6 +490,15 @@ function fmtNum(n) {
     return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n);
 }
 
+// Guarded writes throughout. Everything below happens after an await, so the
+// element may be gone (the reader navigated away), and one renamed id would
+// otherwise throw and abandon the whole render — leaving every other statistic
+// stuck on "Loading" with nothing saying why.
+function setStat(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
 async function loadStats() {
     const status = document.getElementById('stats-status');
     try {
@@ -502,10 +511,10 @@ async function loadStats() {
         if (!repoRes.ok) throw new Error('HTTP ' + repoRes.status);
 
         const repo = await repoRes.json();
-        document.getElementById('stat-stars').textContent = fmtNum(repo.stargazers_count);
-        document.getElementById('stat-forks').textContent = fmtNum(repo.forks_count);
-        document.getElementById('stat-watchers').textContent = fmtNum(repo.subscribers_count);
-        document.getElementById('stat-issues').textContent = fmtNum(repo.open_issues_count);
+        setStat('stat-stars', fmtNum(repo.stargazers_count));
+        setStat('stat-forks', fmtNum(repo.forks_count));
+        setStat('stat-watchers', fmtNum(repo.subscribers_count));
+        setStat('stat-issues', fmtNum(repo.open_issues_count));
 
         if (!relRes.ok) throw new Error('releases HTTP ' + relRes.status);
         const releases = await relRes.json();
@@ -537,31 +546,38 @@ async function loadStats() {
         });
 
         const latest = releases.find(r => !r.draft && !r.prerelease) || releases[0];
-        document.getElementById('stat-release').textContent = latest ? (latest.tag_name || '–') : 'none yet';
-        document.getElementById('stat-downloads').textContent = fmtNum(grandTotal);
+        setStat('stat-release', latest ? (latest.tag_name || '–') : 'none yet');
+        setStat('stat-downloads', fmtNum(grandTotal));
 
-        document.getElementById('releases-body').innerHTML = rows.length
-            ? rows.join('')
-            : '<tr><td colspan="5" style="color:var(--fg-dim);">No releases published yet.</td></tr>';
+        const body = document.getElementById('releases-body');
+        if (body) {
+            body.innerHTML = rows.length
+                ? rows.join('')
+                : '<tr><td colspan="5" style="color:var(--fg-dim);">No releases published yet.</td></tr>';
+        }
 
         MY_TOOLS.forEach(t => {
             const el = document.getElementById('dl-' + t.value);
             if (el) el.textContent = '⬇️ ' + (perTool[t.value] ? fmtNum(perTool[t.value]) : '–');
         });
 
-        status.textContent = 'Live from the GitHub API · updated ' + new Date().toLocaleTimeString();
+        if (status) status.textContent = 'Live from the GitHub API · updated ' + new Date().toLocaleTimeString();
     } catch (err) {
         // Unauthenticated GitHub API allows 60 requests/hour per IP, so a
         // failure here is expected sometimes and must not break the page.
         const rateLimited = /rate-limited|403/.test(String(err.message));
+        if (!status) return;      // navigated away mid-request
         status.innerHTML = rateLimited
             ? 'GitHub API rate limit reached (60 requests/hour for unauthenticated clients). ' +
               `Statistics will return shortly — meanwhile see <a href="https://github.com/${REPO}/releases" target="_blank" rel="noopener">the releases page</a>.`
             : `Could not reach the GitHub API (${escapeHtml(err.message)}). ` +
               `See <a href="https://github.com/${REPO}/releases" target="_blank" rel="noopener">the releases page</a> directly.`;
-        document.getElementById('releases-body').innerHTML =
-            `<tr><td colspan="5" style="color:var(--fg-dim);">Unavailable — ` +
-            `<a href="https://github.com/${REPO}/releases" target="_blank" rel="noopener">view on GitHub</a>.</td></tr>`;
+        const failBody = document.getElementById('releases-body');
+        if (failBody) {
+            failBody.innerHTML =
+                `<tr><td colspan="5" style="color:var(--fg-dim);">Unavailable — ` +
+                `<a href="https://github.com/${REPO}/releases" target="_blank" rel="noopener">view on GitHub</a>.</td></tr>`;
+        }
     }
 }
 
@@ -606,12 +622,17 @@ document.addEventListener('DOMContentLoaded', initSecurityToolsPage);
             <a href="wiki.html">Wiki</a> ·
             <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a> ·
-            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+            <a href="cheatsheets.html?sheet=full">Command Cheatsheet</a>
         </p>
     </div>
 
 </div>
 <script src="tooltip.js" defer></script>
 <script src="shared-ui.js" defer></script>
+<!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
+     nobody has to trust a third-party bundle to render scripts they are
+     being told to read before running. -->
+<script src="markdown.js" defer></script>
+<script src="highlight.js" defer></script>
 </body>
 </html>

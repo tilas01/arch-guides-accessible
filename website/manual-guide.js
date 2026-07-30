@@ -197,7 +197,7 @@
         L.push('');
 
         if (f.dusky) {
-            L.push('> **DuskyOS is preconfigured.** It fixes the compositor (Hyprland on');
+            L.push('> **Dusky is preconfigured.** It fixes the compositor (Hyprland on');
             L.push('> Wayland), the shell (zsh), the font (JetBrains Mono Nerd) and the');
             L.push('> palette (Tokyo Night). Those questions were locked rather than');
             L.push('> silently overridden, so you could see the cost of the choice.');

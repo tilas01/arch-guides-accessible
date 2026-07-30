@@ -6,8 +6,11 @@
     <title>Releases — Arch Rusty Security Suite</title>
     <meta name="description" content="Download the latest stable releases of the Arch Rusty Security Suite (ARSS) by tilas01. Direct GitHub download links, GPG verification, and full changelog.">
     <link rel="stylesheet" href="style.css">
+    <!-- No remote fonts, deliberately. This page used to pull its typeface from
+         Google Fonts, which sent every visitor's IP to a third party on a site
+         about not leaking to third parties, and left the page unstyled offline
+         from a live USB. style.css declares a full local fallback stack. -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', var(--font-mono), sans-serif; max-width: 1100px; margin: 0 auto; }
 
@@ -118,7 +121,7 @@
         .verify-box h3 { color: var(--accent-orange); margin-top: 0; }
         .code-block {
             background: #0d1117;
-            border: 1px solid #30363d;
+            border: 1px solid var(--border-color, #2f3450);
             border-radius: 6px;
             padding: 1rem 1.25rem;
             font-family: 'JetBrains Mono', Consolas, monospace;
@@ -156,18 +159,13 @@
     <p>Modular, open-source Rust security tools by <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple); text-decoration:none; font-weight:700;">tilas01</a>. Compiled with reproducible builds &amp; GPG-signed releases.</p>
 </div>
 
-<!-- Nav -->
-<nav class="nav-bar">
-    <a href="site-index.html" class="nav-link nav-tooltip" data-title="🔎 Index" data-desc="The contents page for the whole project, with a search box that looks through the wiki, every generator and walkthrough question, the security tools, the cheatsheets and the docs at once.">🔎 Index</a>
-    <a href="index.html" class="nav-link">⚙️ Generator</a>
-    <a href="manual.html" class="nav-link">🧭 Manual Walkthrough</a>
-    <a href="iso-verify.html" class="nav-link">💿 Verify Arch ISO</a>
-    <a href="releases.html" class="nav-link active">📦 Releases</a>
-    <a href="wiki.html#security-suite" class="nav-link">📖 Wiki &amp; Docs</a>
-    <a href="wiki.html" class="nav-link">📄 Full Wiki</a>
-    <a href="live.html" class="nav-link">📝 Live Editor</a>
-    <a href="https://github.com/tilas01/arch-guides-dynamic/releases" target="_blank" class="nav-link" style="border-color:var(--accent-cyan); color:var(--accent-cyan);">🔗 All Releases on GitHub ↗</a>
-</nav>
+<!-- Nav is built by shared-ui.js from one canonical list.
+     The hand-written one that was here had drifted: it was missing Security
+     Tools and Cheatsheets entirely, listed the wiki twice ("Wiki & Docs" and
+     "Full Wiki"), and — because it used .nav-bar rather than .main-nav — was not
+     normalised in place, so shared-ui.js appended a second nav below it and this
+     page carried 17 links where every other page had 8. -->
+<nav class="main-nav" aria-label="Site"></nav>
 
 <div class="page-content">
 
@@ -371,12 +369,17 @@ chmod +x verify-integrity.sh</div>
             <a href="wiki.html">Wiki</a> ·
             <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a> ·
-            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+            <a href="cheatsheets.html?sheet=full">Command Cheatsheet</a>
         </p>
     </div>
 
 </div>
 <script src="tooltip.js" defer></script>
 <script src="shared-ui.js" defer></script>
+<!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
+     nobody has to trust a third-party bundle to render scripts they are
+     being told to read before running. -->
+<script src="markdown.js" defer></script>
+<script src="highlight.js" defer></script>
 </body>
 </html>

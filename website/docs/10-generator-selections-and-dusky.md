@@ -31,7 +31,7 @@ This section explains every dropdown selection in the Auto Script Generator so y
 - **Multi-User Setup**: Set up multiple regular user accounts. Decide if `root` can login directly via SSH or if only `sudo`/`doas` is allowed.
 
 ## Desktop Environments & Applications
-- **Desktop Environment**: [GNOME](https://www.gnome.org/), [KDE Plasma](https://kde.org/plasma-desktop/), [DWM](https://dwm.suckless.org/), or **[Dusky OS](https://github.com/dusklinux/dusky)** (Highly customized and blazing fast).
+- **Desktop Environment**: [GNOME](https://www.gnome.org/), [KDE Plasma](https://kde.org/plasma-desktop/), [DWM](https://dwm.suckless.org/), or **[Dusky](https://github.com/dusklinux/dusky)** (Highly customized and blazing fast).
 - **Post-Install Apps**: 
   - [paru](https://github.com/Morganamilo/paru): A feature-rich AUR helper.
   - [Firefox](https://www.mozilla.org/firefox/): The standard privacy browser.
