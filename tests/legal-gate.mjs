@@ -135,8 +135,13 @@ if (waiver && licence && cont) {
 /* ── 3. The links point at the documents ───────────────────────────────────── */
 const legal = read('legal.js');
 for (const f of AGREEMENTS) {
-  ok(legal.includes('user-agreements/' + f),
-    `legal.js never links to user-agreements/${f}`);
+  // Through the renderer, not straight at the .txt. Ticking a box and then
+  // reading what you agreed to should not drop you on an unstyled plain-text
+  // file — the same complaint as the docs links, somewhere it matters more.
+  ok(legal.includes('wiki.html?page=user-agreements/' + f),
+    `legal.js does not link to ${f} through the wiki renderer`);
+  ok(!new RegExp(`["']user-agreements/${f.replace(/\./g, '\\.')}["']`).test(legal),
+    `legal.js still links straight at the raw ${f}`);
 }
 ok(/Both boxes below are required/.test(legal),
   'the dialog no longer says that both ticks are required');

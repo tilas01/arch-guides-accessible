@@ -43,6 +43,10 @@ const DUSKY_LOCKS = {
    system and nothing to do with dwm. It ships Waybar, Rofi, Swaync, Wlogout and
    SDDM. Links kept together so the credit stays correct everywhere it appears. */
 const DUSKY_REPO = 'https://github.com/dusklinux/dusky';
+/* The wallpapers are a separate repository from Dusky itself, which is why they
+   are offered to anyone with a desktop rather than only to Dusky users. Two
+   folders: dark/ 135 files, light/ 134 — 269 in total, ~40 MB. */
+const DUSKY_IMAGES = 'https://github.com/dusklinux/images';
 const DUSKY_VIDEO = 'https://www.youtube.com/watch?v=JmgvSdEIK8c';
 const DUSKY_CHANNEL = 'https://www.youtube.com/@dusk_everyday';
 
@@ -649,6 +653,73 @@ const STEPS = [
         { value: 'dracula', label: 'Dracula', desc: 'Purple and pink on near-black.' },
         { value: 'rose-pine', label: 'Rosé Pine', desc: 'Muted rose and pine, low glare.' },
         { value: 'everforest', label: 'Everforest', desc: 'Green, soft, easy on the eyes.' }
+    ]
+},
+/* ── Wallpapers ─────────────────────────────────────────────────────────────
+   dusklinux publishes a wallpaper collection separately from Dusky itself, so it
+   is offered to everyone with a desktop rather than only to Dusky users — the
+   images have nothing to do with the compositor.
+
+   Counts are real, checked against the repository: dark/ has 135 files and
+   light/ has 134, so 269 in total at roughly 65–285 KB each — about 40 MB for
+   the lot. That is why the count is a question rather than an assumption. */
+{
+    id: 'wallpapers',
+    section: 'Desktop',
+    title: 'Wallpapers',
+    help: 'dusklinux publishes 269 wallpapers — 135 dark and 134 light. This is ' +
+          'a separate collection from Dusky itself, so you can take the ' +
+          'wallpapers without the desktop or the desktop without the ' +
+          'wallpapers. Downloading all of them is about 40 MB.',
+    wiki: 'desktop',
+    when: s => s.desktop && s.desktop !== 'none',
+    type: 'choice',
+    options: [
+        { value: 'none', label: 'None', recommended: true,
+          desc: 'Skip it. Nothing is downloaded and no directory is created.' },
+        { value: 'dark', label: 'Dark only',
+          desc: '135 available. Matches every palette offered above, all of which are dark.' },
+        { value: 'light', label: 'Light only',
+          desc: '134 available. For a light desktop, or a bright room.' },
+        { value: 'mixed', label: 'A mix of both',
+          desc: 'Both folders, split by the percentage you choose next.' }
+    ]
+},
+{
+    id: 'wallpaper_count',
+    section: 'Desktop',
+    title: 'How many wallpapers?',
+    help: 'Picked at random from the collection each time the command runs, so ' +
+          'you get a different set rather than always the first N. All 269 is ' +
+          'about 40 MB; 50 is about 7 MB.',
+    wiki: 'desktop',
+    when: s => s.wallpapers && s.wallpapers !== 'none',
+    type: 'choice',
+    options: [
+        { value: '10',  label: '10',  desc: 'About 1.5 MB. Enough to try the look.' },
+        { value: '25',  label: '25',  desc: 'About 4 MB.' },
+        { value: '50',  label: '50',  recommended: true, desc: 'About 7 MB. Plenty for a rotation.' },
+        { value: '100', label: '100', desc: 'About 15 MB.' },
+        { value: 'all', label: 'Every one',
+          desc: 'All 269, about 40 MB. Capped at what the chosen folders actually hold.' }
+    ]
+},
+{
+    id: 'wallpaper_split',
+    section: 'Desktop',
+    title: 'How should the mix be split?',
+    help: 'The share taken from the dark folder; the rest comes from light. ' +
+          'Rounded to whole images, and capped at what each folder holds.',
+    wiki: 'desktop',
+    when: s => s.wallpapers === 'mixed',
+    type: 'choice',
+    options: [
+        { value: '90', label: '90% dark / 10% light', desc: 'Almost all dark, a few light.' },
+        { value: '75', label: '75% dark / 25% light', recommended: true,
+          desc: 'Mostly dark. Matches the palettes offered above.' },
+        { value: '50', label: '50% dark / 50% light', desc: 'An even split.' },
+        { value: '25', label: '25% dark / 75% light', desc: 'Mostly light.' },
+        { value: '10', label: '10% dark / 90% light', desc: 'Almost all light.' }
     ]
 },
 {

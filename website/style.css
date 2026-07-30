@@ -1502,3 +1502,256 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
     background: var(--tint-red);
     color: var(--fg-color);
 }
+
+/* ─── Walkthrough: suggested answers and "how do I find this out?" ────────────
+   The disk question used to say "run lsblk" and stop, which is no help if you
+   have not read lsblk output before. The time zone had to be typed by hand,
+   which on a phone is how people end up with the wrong clock. */
+.q-suggest {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    background: var(--tint-green);
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+    font-family: var(--font-mono);
+    font-size: 0.83rem;
+    font-weight: 700;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    min-height: var(--tap-target, 44px);
+    transition: filter 0.18s;
+}
+.q-suggest:hover { filter: brightness(1.14); }
+.q-suggest-note { color: var(--fg-dim); font-size: 0.74rem; font-weight: 400; }
+
+.q-howto {
+    margin-top: 1rem;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem 0.8rem;
+    font-size: 0.82rem;
+}
+.q-howto[open] { border-color: var(--accent-cyan); }
+.q-howto > summary {
+    cursor: pointer;
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    min-height: var(--tap-target, 44px);
+    display: flex;
+    align-items: center;
+    list-style-position: inside;
+}
+.q-howto-p { margin: 0.5rem 0; line-height: 1.7; color: var(--fg-color); }
+.q-howto-cmd {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.7rem 0.9rem;
+    margin: 0.5rem 0 0.35rem;
+    overflow-x: auto;
+    font-size: 0.8rem;
+}
+.q-howto-copy { font-size: 0.74rem; padding: 0.25rem 0.7rem; min-height: 0; }
+
+/* Device names spelled out, rather than assuming the reader knows why the
+   partition suffix has a p in it on one machine and not another. */
+.q-howto-naming { margin: 0.8rem 0 0; }
+.q-howto-naming dt {
+    color: var(--accent-orange);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 0.55rem;
+}
+.q-howto-naming dd { margin: 0.15rem 0 0 1.1rem; color: var(--fg-dim); line-height: 1.65; }
+.q-howto-warn {
+    margin: 0.9rem 0 0;
+    padding: 0.55rem 0.8rem;
+    background: var(--tint-red);
+    border-left: 3px solid var(--accent-red);
+    border-radius: 0 6px 6px 0;
+    color: var(--fg-color);
+    line-height: 1.65;
+}
+.q-howto-wiki { display: inline-block; margin-top: 0.8rem; font-size: 0.8rem; }
+
+/* ─── Walkthrough: whole guide vs one command at a time ───────────────────────
+   One segmented control, not two loose buttons. The first attempt at this
+   shipped with no stylesheet at all — a heredoc that wrote it failed on a
+   quoting error and the failure was not checked — so it rendered as two default
+   browser buttons above the guide, which is why it looked pasted on.
+
+   Each half carries its own accent because the two halves do different things:
+   cyan for reading, matching the site's informational surfaces, and green for
+   doing, matching every other "go" control here. */
+.guide-mode {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1rem;
+    padding: 3px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+}
+.guide-mode-btn {
+    flex: 1;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--fg-dim);
+    border-radius: 7px;
+    padding: 0.45rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: var(--tap-target, 44px);
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+.guide-mode-btn:hover:not(.active) { color: var(--fg-color); background: var(--bg-lighter); }
+#mode-guide.active {
+    background: var(--tint-cyan);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+#mode-commands.active {
+    background: var(--tint-green);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+.cmd-progress {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--fg-dim);
+    margin-bottom: 0.45rem;
+}
+.cmd-progress-title { color: var(--accent-cyan); text-align: right; font-weight: 700; }
+
+.cmd-card {
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+}
+/* Red frame for anything that cannot be undone. */
+.cmd-card.cmd-danger { border-color: var(--accent-red); background: var(--tint-red); }
+.cmd-warn {
+    background: var(--bg-dark);
+    border-left: 3px solid var(--accent-red);
+    border-radius: 0 6px 6px 0;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.81rem;
+    line-height: 1.65;
+}
+.cmd-warn strong { color: var(--accent-red); }
+.cmd-why { font-size: 0.82rem; color: var(--fg-dim); line-height: 1.75; margin: 0 0 0.75rem; }
+.cmd-block {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    margin: 0 0 0.65rem;
+}
+.cmd-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.cmd-expected {
+    background: var(--tint-green);
+    border-left: 3px solid var(--accent-green);
+    border-radius: 0 6px 6px 0;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.81rem;
+    line-height: 1.65;
+}
+.cmd-expected strong { color: var(--accent-green); }
+.cmd-confirm-label {
+    display: block;
+    margin: 1rem 0 0.35rem;
+    font-size: 0.81rem;
+    color: var(--accent-red);
+    font-weight: 700;
+    line-height: 1.55;
+}
+.cmd-nav { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+.cmd-next {
+    background: var(--accent-green);
+    color: var(--bg-color);
+    border: 1px solid var(--accent-green);
+    font-weight: 700;
+}
+.cmd-next:hover { filter: brightness(1.12); }
+.cmd-finished {
+    margin: 0.95rem 0 0;
+    padding: 0.6rem 0.85rem;
+    background: var(--tint-cyan);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 0 6px 6px 0;
+    font-size: 0.82rem;
+    line-height: 1.65;
+}
+
+/* Jump list, so you can find your place again after a reboot. */
+.cmd-jump { margin-top: 1rem; font-size: 0.8rem; }
+.cmd-jump > summary {
+    cursor: pointer;
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    min-height: var(--tap-target, 44px);
+    display: flex;
+    align-items: center;
+    list-style-position: inside;
+}
+.cmd-list { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+.cmd-list li { margin-bottom: 0.15rem; }
+.cmd-list-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--fg-dim);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 0.4rem 0.6rem;
+    cursor: pointer;
+    min-height: var(--tap-target, 44px);
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.cmd-list-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+.cmd-list-btn.danger { color: var(--accent-red); }
+.cmd-list li.here > .cmd-list-btn {
+    background: var(--tint-cyan);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+.cmd-list li.done > .cmd-list-btn { color: var(--accent-green); }
+
+/* A plain-text document shown inside the wiki's frame — the waiver and the
+   licence. Not run through the markdown renderer: their hard wrapping and
+   numbered clauses are load-bearing, and reflowing a legal document is a
+   different document. Verbatim, in the site's own typeface and palette, rather
+   than the browser's default serif on white. */
+.md-plaintext {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    margin: 0;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.75;
+    color: var(--fg-color);
+    white-space: pre-wrap;
+    word-break: break-word;
+}

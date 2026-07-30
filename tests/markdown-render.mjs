@@ -48,6 +48,40 @@ function inspect(html) {
     };
 }
 
+/* ── No markdown syntax may survive into the rendered text ──────────────────
+   A `**bold**` that renders as literal asterisks means the reader is looking at
+   source, not a page. Checked against the *visible text* with code blocks
+   removed, because a fenced block legitimately contains every one of these
+   characters and inline code is meant to show them verbatim. */
+const RESIDUE = [
+    [/\*\*[^*\n]+\*\*/,          'unrendered **bold**'],
+    [/(?:^|\s)__[^_\n]+__/,      'unrendered __bold__'],
+    [/\[[^\]\n]+\]\([^)\n]+\)/,  'unrendered [link](url)'],
+    [/^#{1,6}\s+\S/m,            'unrendered # heading'],
+    [/\[!(?:NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]/i, 'unrendered [!ALERT] marker'],
+    [/^\s*\|[^\n]*\|\s*$/m,      'unrendered | table | row |'],
+    [/^\s*```/m,                 'unrendered ``` fence'],
+];
+
+function visibleText(html) {
+    const d = new JSDOM('<div id="h"></div>');
+    const host = d.window.document.getElementById('h');
+    host.innerHTML = html;
+    // Code is exempt: it is supposed to show these characters literally.
+    host.querySelectorAll('pre, code').forEach(el => el.remove());
+    return host.textContent;
+}
+
+let residueChecked = 0;
+function assertNoResidue(html, label) {
+    const text = visibleText(html);
+    residueChecked++;
+    for (const [rx, what] of RESIDUE) {
+        const m = rx.exec(text);
+        ok(!m, `${label}: ${what} left in the rendered text — "${m ? m[0].slice(0, 60) : ''}"`);
+    }
+}
+
 /* ── 1. Injection ──────────────────────────────────────────────────────────── */
 const HOSTILE = [
     'Raw danger: <script>alert(1)</script>',
@@ -155,6 +189,9 @@ const wrapped = render([
        'joining altered the inside of a fenced block — code must stay verbatim');
 }
 
+assertNoResidue(rich.html, 'the feature sample');
+assertNoResidue(wrapped.html, 'the wrapped sample');
+
 /* Real documents, not just synthetic ones: every doc the site links to must
    render without throwing and produce something. A doc that renders to nothing
    is a blank page where an explanation should be. */
@@ -177,6 +214,8 @@ function walk(dir) {
         const ins = inspect(res.html);
         ok(!ins.tags.includes('SCRIPT'), `${rel} produced a <script> element`);
         ok(ins.eventAttrs.length === 0, `${rel} produced event attributes`);
+        // Every real document too, not just the synthetic samples.
+        assertNoResidue(res.html, rel);
     }
 }
 if (fs.existsSync(docsDir)) walk(docsDir);
@@ -213,14 +252,18 @@ const stripComments = src => src
     .replace(/^\s*\/\/.*$/gm, '')
     .replace(/<!--[\s\S]*?-->/g, '');
 
-const PAGE_RE = /[?&]page=([\w./-]+\.md)/g;
+// .txt as well as .md: the three plain-text agreements are served through the
+// same handler so they render inside the site rather than as a bare file.
+const PAGE_RE = /[?&]page=([\w./-]+\.(?:md|txt))/g;
 const seenPages = new Set();
 for (const f of fs.readdirSync(WEB).filter(x => /\.(html|js)$/.test(x))) {
     for (const m of stripComments(read(f)).matchAll(PAGE_RE)) seenPages.add(m[1]);
 }
 for (const doc of seenPages) {
-    ok(fs.existsSync(path.join(WEB, 'docs', doc)),
-       `?page=${doc} is linked but website/docs/${doc} does not exist`);
+    // Agreements resolve from the site root; everything else from docs/.
+    const rel = doc.startsWith('user-agreements/') ? doc : path.join('docs', doc);
+    ok(fs.existsSync(path.join(WEB, rel)),
+       `?page=${doc} is linked but website/${rel.split(path.sep).join('/')} does not exist`);
 }
 
 /* Every ?sheet= target must be a real tab in cheatsheets.js. */

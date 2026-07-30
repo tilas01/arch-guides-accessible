@@ -392,7 +392,7 @@
             '<a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>, ' +
             'which is the authority wherever it and this project disagree.</p>',
             '<p class="footer-fineprint">' +
-            '<a href="user-agreements/LEGAL-WAIVER.txt" target="_blank" rel="noopener">' +
+            '<a href="wiki.html?page=user-agreements/LEGAL-WAIVER.txt" target="_blank" rel="noopener">' +
             'Read the full waiver ↗</a></p>'
         ]));
 
@@ -404,8 +404,8 @@
             '<p>Three conditions: keep the credit, do not sell it, and share anything you ' +
             'build from it under the same licence. That is all the licence is for.</p>',
             '<p class="footer-fineprint">' +
-            '<a href="user-agreements/LICENSE.txt" target="_blank" rel="noopener">Full text ↗</a> · ' +
-            '<a href="user-agreements/LICENCE-PLAIN-ENGLISH.txt" target="_blank" rel="noopener">' +
+            '<a href="wiki.html?page=user-agreements/LICENSE.txt" target="_blank" rel="noopener">Full text ↗</a> · ' +
+            '<a href="wiki.html?page=user-agreements/LICENCE-PLAIN-ENGLISH.txt" target="_blank" rel="noopener">' +
             'In plain English ↗</a></p>'
         ]));
 

@@ -277,6 +277,21 @@
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.text();
         }).then(function (text) {
+            /* A .txt file is not markdown and must not be parsed as it. The
+               waiver and the licence are hard-wrapped plain text where the
+               wrapping is load-bearing — running them through the markdown
+               renderer would join their lines, turn "  a. data loss" into a
+               list, and make the numbered clauses of a legal document reflow.
+               Shown verbatim, in the site's own frame and typeface. */
+            if (/\.txt(?:[?#]|$)/i.test(url)) {
+                var pre = document.createElement('pre');
+                pre.className = 'md-plaintext';
+                pre.textContent = text;
+                host.innerHTML = '';
+                host.appendChild(pre);
+                if (typeof window.refreshTooltips === 'function') window.refreshTooltips();
+                return [];
+            }
             var res = render(text, opts);
             host.innerHTML = res.html;
             if (typeof window.highlightAll === 'function') window.highlightAll(host);

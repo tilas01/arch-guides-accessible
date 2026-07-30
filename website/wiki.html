@@ -1958,16 +1958,39 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
     catch (_) { return; }              // very old browser: just show the wiki
     if (!page) return;
 
-    // Relative markdown paths under docs/ only. No scheme, no absolute URL, no
-    // parent traversal, no backslash — a crafted value must not be able to
-    // reach outside docs/ or turn into a scripting URL.
-    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.md$/.test(page) ||
-        page.indexOf('..') !== -1 || page.indexOf('\\') !== -1) return;
+    /* Two shapes are accepted, and nothing else.
+
+       A relative markdown path under docs/ — no scheme, no absolute URL, no
+       parent traversal, no backslash, because this value comes from a query
+       string and a crafted one must not reach outside docs/ or become a
+       scripting URL.
+
+       Or one of the three plain-text agreements, by exact name. Those are
+       allowlisted rather than pattern-matched: it is three known files, and an
+       allowlist cannot be talked into serving a fourth. They are rendered here
+       so that ticking a box in the welcome dialog and then reading what you
+       agreed to does not drop you on an unstyled .txt file — which was the same
+       complaint as the docs links, in a place where it matters more. */
+    var AGREEMENTS = ['LEGAL-WAIVER.txt', 'LICENSE.txt', 'LICENCE-PLAIN-ENGLISH.txt'];
+    var isAgreement = false;
+    for (var ai = 0; ai < AGREEMENTS.length; ai++) {
+        if (page === 'user-agreements/' + AGREEMENTS[ai]) { isAgreement = true; break; }
+    }
+
+    if (!isAgreement) {
+        if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.md$/.test(page) ||
+            page.indexOf('..') !== -1 || page.indexOf('\\') !== -1) return;
+    }
 
     var main = document.querySelector('.wiki-content');
     if (!main) return;
 
-    var title = page.replace(/^.*\//, '').replace(/\.md$/, '')
+    // Declared before the markup below, which links to it. It was assigned
+    // after that template string, so the "view the source" link rendered as
+    // the literal text undefined.
+    var url = (isAgreement ? '' : 'docs/') + encodeURI(page);
+
+    var title = page.replace(/^.*\//, '').replace(/\.(md|txt)$/, '')
                     .replace(/^\d+-/, '').replace(/[-_]+/g, ' ')
                     .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
 
@@ -1987,7 +2010,7 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
         '</div>' +
         '<p class="wiki-doc-foot">' +
           '<a href="wiki.html">← Back to the wiki</a>' +
-          '<a href="docs/' + encodeURI(page) + '">View the markdown source</a>' +
+          '<a href="' + url + '">View the plain-text source</a>' +
         '</p>';
     main.appendChild(host);
     document.title = title + ' · Arch Guides Wiki';
@@ -2006,7 +2029,6 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
             '</div>';
     }
 
-    var url = 'docs/' + encodeURI(page);
 
     // markdown.js is loaded with `defer`, and this handler is an inline script,
     // so it runs first — window.renderMarkdownInto does not exist yet. Waiting

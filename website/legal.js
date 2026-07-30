@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span>
             I have read and understand the <strong>legal disclaimer and liability waiver</strong>
             above, and I accept that I use this project at my own risk.
-            <a href="user-agreements/LEGAL-WAIVER.txt" target="_blank" rel="noopener"
+            <a href="wiki.html?page=user-agreements/LEGAL-WAIVER.txt" target="_blank" rel="noopener"
                style="color:var(--accent-red,#f7768e);">Read the full waiver&nbsp;↗</a>
           </span>
         </label>
@@ -166,10 +166,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <input type="checkbox" id="legal-ck-licence">
           <span>
             I have read the <strong>repository licence</strong> and I will comply with it.
-            <a href="user-agreements/LICENSE.txt" target="_blank" rel="noopener"
+            <a href="wiki.html?page=user-agreements/LICENSE.txt" target="_blank" rel="noopener"
                style="color:var(--accent-blue,#7aa2f7);">CC BY-NC-SA 4.0&nbsp;↗</a>
             &nbsp;·&nbsp;
-            <a href="user-agreements/LICENCE-PLAIN-ENGLISH.txt" target="_blank" rel="noopener"
+            <a href="wiki.html?page=user-agreements/LICENCE-PLAIN-ENGLISH.txt" target="_blank" rel="noopener"
                style="color:var(--accent-blue,#7aa2f7);">in plain English&nbsp;↗</a>
           </span>
         </label>
