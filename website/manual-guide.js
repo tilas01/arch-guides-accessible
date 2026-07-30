@@ -669,6 +669,84 @@
             }
         }
 
+        /* ── Wallpapers ─────────────────────────────────────────────────────
+           dusklinux/images, downloaded selectively.
+
+           It lists the folders through the GitHub API and picks at random rather
+           than cloning: the whole collection is ~40 MB and somebody who asked
+           for 50 images should get 50 images, not a full clone they then have to
+           prune. Sequential filenames looked constructible (0001.jpg …) but the
+           collection is not uniform — dark/0131 is .jpeg, and the file counts do
+           not line up with the highest number — so building URLs by counting
+           would 404 on real files. The listing is authoritative.
+
+           Unauthenticated, this is two API calls against a 60/hour limit, and
+           every download failure is skipped rather than aborting the run. */
+        if (s.wallpapers && s.wallpapers !== 'none') {
+            const AVAIL = { dark: 135, light: 134 };
+            const want = s.wallpaper_count === 'all' ? 269 : parseInt(s.wallpaper_count || '50', 10);
+            const split = parseInt(s.wallpaper_split || '75', 10);
+
+            // Work out how many come from each folder, capped at what each holds.
+            let nDark = 0, nLight = 0;
+            if (s.wallpapers === 'dark')  nDark = Math.min(want, AVAIL.dark);
+            else if (s.wallpapers === 'light') nLight = Math.min(want, AVAIL.light);
+            else {
+                nDark  = Math.min(Math.round(want * split / 100), AVAIL.dark);
+                nLight = Math.min(want - nDark, AVAIL.light);
+            }
+            const total = nDark + nLight;
+
+            L.push('### Wallpapers');
+            L.push('');
+            L.push('`' + total + '` image' + (total === 1 ? '' : 's') +
+                   (nDark && nLight ? ' — ' + nDark + ' dark and ' + nLight + ' light'
+                                    : nDark ? ' from the dark set' : ' from the light set') +
+                   ', chosen at random from ' +
+                   '[dusklinux/images](' + DUSKY_IMAGES + '). Roughly ' +
+                   Math.max(1, Math.round(total * 0.15)) + ' MB.');
+            L.push('');
+            L.push('```bash');
+            L.push('# Wallpapers by dusklinux: ' + DUSKY_IMAGES);
+            L.push('# Picks at random from the folder listing rather than cloning the');
+            L.push('# whole ~40 MB collection, so you download only what you asked for.');
+            L.push('mkdir -p ~/Pictures/wallpapers');
+            L.push('');
+            L.push('fetch_wallpapers() {');
+            L.push('  local tone="$1" count="$2"');
+            L.push('  [ "$count" -gt 0 ] || return 0');
+            L.push('  # shuf gives a different set each run; -n caps it at what exists.');
+            L.push('  curl -fsSL "https://api.github.com/repos/dusklinux/images/contents/$tone" \\');
+            L.push('    | grep -o \'"download_url": *"[^"]*"\' | cut -d\'"\' -f4 \\');
+            L.push('    | shuf -n "$count" \\');
+            L.push('    | while read -r url; do');
+            L.push('        # --fail so a missing file is skipped, not saved as an error page.');
+            L.push('        curl -fsSL --retry 2 -o "$HOME/Pictures/wallpapers/${tone}-${url##*/}" "$url" \\');
+            L.push('          || echo "skipped $url" >&2');
+            L.push('      done');
+            L.push('}');
+            L.push('');
+            if (nDark)  L.push('fetch_wallpapers dark ' + nDark);
+            if (nLight) L.push('fetch_wallpapers light ' + nLight);
+            L.push('');
+            L.push('echo "Downloaded $(ls -1 ~/Pictures/wallpapers | wc -l) wallpapers to ~/Pictures/wallpapers"');
+            L.push('```');
+            L.push('');
+            // Setting one is compositor-specific, so say which command applies
+            // rather than emitting one that will not work on their desktop.
+            if (s.display_server === 'wayland') {
+                L.push('Set one with `hyprpaper` (Hyprland), or your compositor\'s own tool —');
+                L.push('`swaybg -i ~/Pictures/wallpapers/<file>` works on any wlroots compositor.');
+            } else {
+                L.push('Set one with `feh --bg-fill ~/Pictures/wallpapers/<file>`, and add that');
+                L.push('line to `~/.xinitrc` to have it applied at login.');
+            }
+            L.push('');
+            L.push('> The images are dusklinux\'s work, published separately from Dusky');
+            L.push('> itself. Nothing here modifies them.');
+            L.push('');
+        }
+
         if (s.firewall === 'ufw') {
             L.push('### Firewall');
             L.push('');
