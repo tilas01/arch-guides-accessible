@@ -161,15 +161,51 @@ const STEPS = [
     id: 'disk',
     section: 'Disk',
     title: 'Which disk are you installing to?',
-    help: 'Run "lsblk" and identify the disk by its size and model, not by ' +
-          'the name you expect. This is the single most destructive value in ' +
-          'the whole guide: every partitioning command below is aimed at it.',
+    help: 'This is the single most destructive value in the whole guide — every ' +
+          'partitioning command is aimed at it, and they do not ask twice. ' +
+          'Identify the disk by its size and model, never by the name you ' +
+          'expect: device names are assigned in the order the kernel finds ' +
+          'them, so the disk that was /dev/sda last week can be /dev/sdb today.',
+    /* How to actually find it. The old help text said "run lsblk" and left it
+       there, which is not much use if you have never read lsblk output or do not
+       know why the name has a `p` in it on one machine and not on another. */
+    howto: {
+        intro: 'In the live environment, list what is attached:',
+        command: 'lsblk -o NAME,SIZE,MODEL,TRAN,MOUNTPOINTS',
+        reading: 'Look for the row with no parent indentation and the size you ' +
+                 'expect. Its children are existing partitions — if it has ' +
+                 'some, there is data on this disk. Cross-check the MODEL ' +
+                 'column against the drive you mean to erase.',
+        naming: [
+            ['/dev/nvme0n1', 'An NVMe SSD. "n1" is the first namespace on controller 0. ' +
+                             'Partitions get a p: /dev/nvme0n1p1.'],
+            ['/dev/sda',     'SATA or USB — an SSD, a hard disk, or the stick you booted from. ' +
+                             'Partitions have no p: /dev/sda1.'],
+            ['/dev/mmcblk0', 'An SD card or eMMC, common on ARM boards. ' +
+                             'Partitions get a p: /dev/mmcblk0p1.'],
+            ['/dev/vda',     'A virtio disk — you are in a virtual machine.']
+        ],
+        warn: 'Enter the whole disk, not a partition: /dev/nvme0n1, not ' +
+              '/dev/nvme0n1p2. And make sure it is not the USB stick you are ' +
+              'running from — check TRAN for "usb".'
+    },
     wiki: 'target-disk',
     type: 'text',
     placeholder: '/dev/nvme0n1',
-    validate: v => /^\/dev\/[a-z0-9]+$/.test(v.trim())
-        ? null
-        : 'Needs a whole-disk path such as /dev/nvme0n1, /dev/sda or /dev/mmcblk0 — not a partition.'
+    validate: v => {
+        v = v.trim();
+        // Named partitions are the mistake people actually make, so say which
+        // one they typed rather than restating the rule.
+        var part = /^\/dev\/(nvme\d+n\d+p|mmcblk\d+p|loop\d+p)(\d+)$/.exec(v)
+                || /^\/dev\/([a-z]+d[a-z])(\d+)$/.exec(v);
+        if (part) {
+            return 'That is partition ' + part[2] + ' of a disk, not the disk. Drop the ' +
+                   'trailing ' + (/p\d+$/.test(v) ? '"p' + part[2] + '"' : '"' + part[2] + '"') + '.';
+        }
+        return /^\/dev\/[a-z0-9]+$/.test(v)
+            ? null
+            : 'Needs a whole-disk path such as /dev/nvme0n1, /dev/sda or /dev/mmcblk0.';
+    }
 },
 {
     id: 'encryption',
@@ -412,12 +448,25 @@ const STEPS = [
     id: 'timezone',
     section: 'System',
     title: 'Time zone',
-    help: 'An IANA zone name. "timedatectl list-timezones" lists them all. ' +
-          'The clock is kept in UTC; if you dual boot Windows the guide adds ' +
-          'the step that stops the two disagreeing.',
+    help: 'An IANA zone name — the "Region/City" form. On the installed system ' +
+          '"timedatectl list-timezones" lists every one of them. The hardware ' +
+          'clock is kept in UTC; if you dual boot Windows the guide adds the ' +
+          'step that stops the two disagreeing about the time.',
     wiki: 'manual-install',
     type: 'text',
     placeholder: 'Europe/London',
+    /* Offer the browser's own zone as a one-click fill. It is the one answer
+       this page can work out for itself, and typing "America/Argentina/Buenos_Aires"
+       by hand on a phone is how people end up with the wrong clock. Still
+       editable — a machine is not always installed in the zone it is set up in,
+       and the detected value is presented as a suggestion, not an assumption. */
+    suggest: () => {
+        try {
+            var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (!tz || tz.indexOf('/') === -1) return null;   // "UTC" alone is not a zone name
+            return { value: tz, label: 'Use ' + tz, note: 'detected from your browser' };
+        } catch (_) { return null; }        // very old engine, or Intl stripped
+    },
     validate: v => /^[A-Za-z]+\/[A-Za-z_+-]+(\/[A-Za-z_+-]+)?$/.test(v.trim())
         ? null
         : 'Needs a zone such as Europe/London, America/New_York or Australia/Sydney.'

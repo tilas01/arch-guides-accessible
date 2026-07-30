@@ -902,6 +902,163 @@
         return L.join('\n');
     }
 
+    /* ── Command-by-command mode ────────────────────────────────────────────
+       Splits the finished guide into one step per command block, so the
+       walkthrough can hand them over one at a time instead of as a wall of
+       markdown.
+
+       It parses the guide rather than emitting a second time. That is the whole
+       point: a separate command emitter would be a second source of truth, and
+       the two would drift the first time anyone edited one of them. Parsing
+       means command mode is, by construction, exactly the guide.
+
+       Each step carries the nearest heading, the prose immediately above the
+       block (the reason the command exists), the commands themselves, and
+       whether running it destroys data. */
+
+    /* Commands that destroy the disk you are installing to. Matched on the
+       command text, not the prose, so a step that merely *mentions* mkfs is not
+       flagged.
+
+       Calibrated deliberately narrow. The typed confirmation exists for one
+       thing: "this erases the device you named". Firing it on routine plumbing
+       teaches people to type past it, and then it is not there when it matters.
+       `rm -rf /.snapshots` — snapper's standard setup, replacing an empty mount
+       point on a fresh install — used to trip the old `rm -rf /` pattern, which
+       is why that one now requires a bare root. */
+    var DESTRUCTIVE = [
+        /\bsgdisk\b/, /\bwipefs\b/, /\bmkfs\./, /\bmkswap\b/,
+        /cryptsetup\s+(?:luksFormat|erase|luksErase)/,
+        /\bparted\b[^\n]*\bmklabel\b/, /\bdd\s+if=/, /\bshred\b/,
+        /\bblkdiscard\b/,
+        /\brm\s+-[a-z]*r[a-z]*f?\s+\/\s*(?:$|[;&|])/m   // bare root, not /some/path
+    ];
+
+    function isDestructive(cmd) {
+        return DESTRUCTIVE.some(function (rx) { return rx.test(cmd); });
+    }
+
+    /* Expected output for the commands where "did that work?" is a real
+       question and the answer is not obvious. Deliberately partial — inventing
+       an expected output for every command would produce confident-looking
+       fiction, and a wrong expectation is worse than none. Keyed by a pattern
+       matched against the command text. */
+    var EXPECTED = [
+        [/^\s*ping\b/m,            'Replies with times. If it hangs, there is no network yet.'],
+        [/\blsblk\b/,              'A tree of your disks and partitions. Identify the target by size and model.'],
+        [/\btimedatectl\b/,        'No output on success. "System clock synchronized: yes" if you query it.'],
+        [/cryptsetup\s+luksFormat/, 'Asks for YES in capitals, then the passphrase twice. Nothing else is printed.'],
+        [/cryptsetup\s+open\b/,    'Asks for the passphrase. Silence means it unlocked.'],
+        [/\bmkfs\.fat\b/,          'A line naming the device and the FAT type.'],
+        [/\bmkfs\.(?:ext4|xfs)\b/, 'Several lines of geometry, ending without an error.'],
+        [/\bmkfs\.btrfs\b/,        'A summary block: label, UUID, node size, and the device list.'],
+        [/\bpacstrap\b/,           'A long download and install. It ends with the package count, no errors.'],
+        [/\bgenfstab\b/,           'Writes /etc/fstab. Print it afterwards and check every line has a real UUID.'],
+        [/\bmkinitcpio\b/,         'Builds each preset. Warnings about missing firmware are normal; errors are not.'],
+        [/\bbootctl\s+install/,    '"Created ..." lines for the EFI files it copied.'],
+        [/grub-install/,           '"Installation finished. No error reported."'],
+        [/grub-mkconfig/,          'Finds your kernels, then "done".'],
+        [/\bpasswd\b/,             'Asks twice. Nothing is echoed as you type.'],
+        [/systemctl\s+enable/,     'A symlink line per unit. No output means it was already enabled.'],
+        [/\breflector\b/,          'Takes a minute — it downloads from each mirror to rank them by real speed.'],
+        [/\barch-chroot\b/,        'Your prompt changes. You are now inside the new system.']
+    ];
+
+    function expectedFor(cmd) {
+        for (var i = 0; i < EXPECTED.length; i++) {
+            if (EXPECTED[i][0].test(cmd)) return EXPECTED[i][1];
+        }
+        return null;
+    }
+
+    /**
+     * Parse a generated guide into ordered command steps.
+     * @param {string} md output of buildManualGuide()
+     * @returns {Array<{n:number,title:string,why:string,commands:string,
+     *                  destructive:boolean,expected:string|null}>}
+     */
+    function buildCommandSteps(md) {
+        var lines = String(md).split('\n');
+        var steps = [];
+        var heading = 'Before you start';
+        var prose = [];
+        var inBlock = false, buf = [];
+
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+
+            if (/^\s*```bash\s*$/.test(line)) { inBlock = true; buf = []; continue; }
+            if (inBlock && /^\s*```\s*$/.test(line)) {
+                inBlock = false;
+                var cmd = buf.join('\n').replace(/\s+$/, '');
+                if (cmd) {
+                    // Where the reason lives depends on the section. Most of the
+                    // guide explains itself in `#` comments inside the block —
+                    // that is deliberate, so the reasoning survives being pasted
+                    // into a terminal — while some sections put a sentence above
+                    // it. Prefer the prose, fall back to the comments, so a step
+                    // is never shown with no explanation at all.
+                    var why = prose.slice(-4).join(' ').replace(/\s+/g, ' ').trim();
+                    if (!why) {
+                        why = cmd.split('\n')
+                            .filter(function (l) { return /^\s*#/.test(l); })
+                            .map(function (l) { return l.replace(/^\s*#\s?/, ''); })
+                            .join(' ').replace(/\s+/g, ' ').trim();
+                    }
+                    // Displayed as plain text, so the markdown markers have to
+                    // go — otherwise the reason reads "**Lock the firmware
+                    // down.** Update it..." with the asterisks showing.
+                    why = why
+                        .replace(/`([^`]+)`/g, '$1')
+                        .replace(/\*\*([^*]+)\*\*/g, '$1')
+                        .replace(/(^|\s)\*([^*]+)\*/g, '$1$2')
+                        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+                        .replace(/<([^>]+)>/g, '$1')
+                        .trim();
+                    steps.push({
+                        n: steps.length + 1,
+                        title: heading,
+                        why: why,
+                        commands: cmd,
+                        destructive: isDestructive(cmd),
+                        expected: expectedFor(cmd)
+                    });
+                }
+                prose = [];
+                continue;
+            }
+            if (inBlock) { buf.push(line); continue; }
+
+            var h = /^#{2,4}\s+(.*)$/.exec(line);
+            if (h) {
+                heading = h[1].replace(/^\d+\.\s*/, '').trim();
+                // Cleared on every heading, deliberately. Letting prose carry
+                // across sections raised coverage from 5 steps to 10 but
+                // attached the wrong reason to some of them — the first step's
+                // command is `loadkeys` and it was explained as firmware
+                // lockdown, because that was the last paragraph before it. A
+                // confidently wrong explanation on a page about partitioning
+                // disks is worse than no explanation, and `expected` still
+                // covers most steps either way.
+                prose = [];
+                continue;
+            }
+            if (!line.trim()) continue;
+            // Table rows are data, not prose. Blockquotes are where this guide
+            // puts its warnings, so they count — with the marker stripped.
+            if (/^\s*\|/.test(line)) continue;
+            if (/^\s*>/.test(line)) { prose.push(line.replace(/^\s*>\s?/, '').trim()); continue; }
+            // A numbered or bulleted instruction is a reason; the marker is not.
+            prose.push(line.replace(/^\s*(?:[-*+]|\d+\.)\s+/, '').trim());
+        }
+        return steps;
+    }
+
     window.buildManualGuide = buildManualGuide;
     window.buildManualScript = buildManualScript;
+    window.buildCommandSteps = buildCommandSteps;
+    // Exported so the tests check the same predicate the UI gates on. Keeping a
+    // second copy of the pattern list in the test is how the two drifted: the
+    // test disagreed with the implementation about `rm -rf /.snapshots`.
+    window.isDestructiveCommand = isDestructive;
 })();

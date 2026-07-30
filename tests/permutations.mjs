@@ -21,8 +21,9 @@ function load(file) {
 const sandbox = { window: {}, module: undefined };
 const fn = new Function('window', 'module',
     load('manual-data.js') + '\n' + load('manual-guide.js') +
-    '\nreturn { STEPS, DUSKY_LOCKS, build: window.buildManualGuide, script: window.buildManualScript };');
-const { STEPS, DUSKY_LOCKS, build, script } = fn(sandbox.window, undefined);
+    '\nreturn { STEPS, DUSKY_LOCKS, build: window.buildManualGuide, script: window.buildManualScript, ' +
+    'commandSteps: window.buildCommandSteps, isDestructive: window.isDestructiveCommand };');
+const { STEPS, DUSKY_LOCKS, build, script, commandSteps, isDestructive } = fn(sandbox.window, undefined);
 
 let checks = 0, fails = 0;
 const failures = [];
@@ -152,6 +153,40 @@ function assertGuide(s, label) {
         ok(/Dusky is preconfigured/.test(md), `${label}: dusky chosen without the lock explanation`);
         ok(/youtube\.com/.test(md), `${label}: dusky chosen without the video link`);
     }
+
+    /* Command-by-command mode parses the finished guide rather than emitting a
+       second time, so it is checked here against every permutation: a config
+       whose guide cannot be split into steps is a config that cannot be followed
+       one command at a time. */
+    const cmds = commandSteps(md);
+    ok(cmds.length >= 8, `${label}: guide split into only ${cmds.length} command steps`);
+    ok(cmds.every(c => c.commands.trim().length > 0), `${label}: a command step has no command`);
+    ok(cmds.every(c => c.title && c.title.trim().length > 0), `${label}: a command step has no title`);
+    ok(cmds.every((c, i) => c.n === i + 1), `${label}: command steps are misnumbered`);
+    // At least half must carry either a reason or an expected output, or the
+    // mode degenerates into a list of bare commands.
+    const explained = cmds.filter(c => c.why || c.expected).length;
+    ok(explained * 2 >= cmds.length,
+       `${label}: only ${explained}/${cmds.length} command steps explain themselves`);
+    // Destructive detection has to fire where the guide really does destroy
+    // data, because that is what gates the typed confirmation.
+    if (/cryptsetup\s+luksFormat|sgdisk|mkfs\./.test(md)) {
+        ok(cmds.some(c => c.destructive),
+           `${label}: the guide partitions or formats but no command step is flagged destructive`);
+    }
+    // The flag must agree with the predicate the UI actually gates on. Asserted
+    // against the exported function rather than a second copy of the pattern
+    // list here, because that is precisely how the two drifted: the test called
+    // snapper's `rm -rf /.snapshots` destructive and the implementation did not.
+    const disagree = cmds.find(c => c.destructive !== isDestructive(c.commands));
+    ok(!disagree,
+       `${label}: "${disagree ? disagree.title : ''}" disagrees with isDestructiveCommand()`);
+    // And routine plumbing must not be gated. Confirmation fatigue on a
+    // non-event is what makes people type past the one that matters.
+    const overGated = cmds.find(c => c.destructive &&
+        /^(?:Snapshots|Services|Firewall|Post-install|Ricing)/i.test(c.title));
+    ok(!overGated,
+       `${label}: "${overGated ? overGated.title : ''}" gated behind a destructive confirmation`);
 
     // destructive options must always carry a warning
     if (s.buskill === 'shutdown') ok(/cuts power|Unsaved\s+work is gone/i.test(md), `${label}: buskill shutdown without warning`);

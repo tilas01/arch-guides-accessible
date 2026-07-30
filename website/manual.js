@@ -146,6 +146,90 @@
         return card;
     }
 
+    /* "How do I find out?" — a collapsible block with the command to run, how to
+       read its output, and what the device names mean. The disk question used to
+       say "run lsblk" and stop there, which is no help if you have not read
+       lsblk output before or do not know why the partition suffix has a `p` in it
+       on one machine and not another. Right-clicking it opens the wiki section,
+       the same as every other control on the page. */
+    function buildHowto(step) {
+        var ht = step.howto;
+        var box = h('details', { class: 'q-howto nav-tooltip',
+            'data-title': '🔍 How to find this',
+            'data-desc': 'The command to run, how to read what it prints, and what each ' +
+                         'device name means. Right-click for the full wiki section.' });
+        box.appendChild(h('summary', { text: '🔍 How do I find this out?' }));
+
+        if (ht.intro) box.appendChild(h('p', { class: 'q-howto-p', text: ht.intro }));
+
+        if (ht.command) {
+            var pre = h('pre', { class: 'q-howto-cmd' });
+            var code = h('code', { class: 'language-bash', text: ht.command });
+            pre.appendChild(code);
+            box.appendChild(pre);
+            box.appendChild(h('button', {
+                type: 'button', class: 'btn btn-ghost q-howto-copy',
+                text: '📋 Copy',
+                onclick: function (e) { copyText(ht.command, e.target); }
+            }));
+        }
+
+        if (ht.reading) box.appendChild(h('p', { class: 'q-howto-p', text: ht.reading }));
+
+        if (Array.isArray(ht.naming) && ht.naming.length) {
+            var dl = h('dl', { class: 'q-howto-naming' });
+            ht.naming.forEach(function (pair) {
+                dl.appendChild(h('dt', { text: pair[0] }));
+                dl.appendChild(h('dd', { text: pair[1] }));
+            });
+            box.appendChild(dl);
+        }
+
+        if (ht.warn) {
+            box.appendChild(h('p', { class: 'q-howto-warn', text: '⚠ ' + ht.warn }));
+        }
+
+        if (step.wiki) {
+            box.appendChild(h('a', {
+                class: 'q-howto-wiki', href: 'wiki.html#' + step.wiki,
+                target: '_blank', rel: 'noopener',
+                text: '📖 Read this in the wiki →'
+            }));
+        }
+        return box;
+    }
+
+    /** Copy to clipboard, with a visible confirmation and a fallback. */
+    function copyText(text, btn) {
+        function done(okFlag) {
+            if (!btn) return;
+            var was = btn.textContent;
+            btn.textContent = okFlag ? '✅ Copied' : '⚠ Press Ctrl+C';
+            setTimeout(function () { btn.textContent = was; }, 1600);
+        }
+        // navigator.clipboard needs a secure context; file:// and plain http do
+        // not qualify, and this site has to work from a live USB.
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function () { done(true); },
+                                                     function () { fallback(); });
+        } else {
+            fallback();
+        }
+        function fallback() {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', 'readonly');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            var okFlag = false;
+            try { okFlag = document.execCommand('copy'); } catch (_) { okFlag = false; }
+            document.body.removeChild(ta);
+            done(okFlag);
+        }
+    }
+
     function renderStep(step) {
         var host = document.getElementById('question-host');
         host.innerHTML = '';
@@ -215,11 +299,43 @@
                 if (e.key === 'Enter') { e.preventDefault(); submitText(step, input.value); }
             });
             card.appendChild(input);
+
+            /* A value the page can work out for itself, offered as one click.
+               Currently the time zone: typing "America/Argentina/Buenos_Aires"
+               by hand on a phone is how people end up with the wrong clock. It
+               fills the field rather than submitting, so it stays a suggestion
+               you can edit. */
+            if (typeof step.suggest === 'function') {
+                var sug = null;
+                try { sug = step.suggest(state); } catch (_) { sug = null; }
+                if (sug && sug.value) {
+                    card.appendChild(h('button', {
+                        type: 'button', class: 'btn q-suggest nav-tooltip',
+                        'data-title': sug.label,
+                        'data-desc': 'Fills the box with ' + sug.value +
+                                     (sug.note ? ', ' + sug.note : '') +
+                                     '. You can still change it — a machine is not always ' +
+                                     'installed in the same place it is set up.',
+                        html: '✨ ' + sug.label +
+                              (sug.note ? ' <span class="q-suggest-note">' + sug.note + '</span>' : ''),
+                        onclick: function () {
+                            input.value = sug.value;
+                            input.focus();
+                        }
+                    }));
+                }
+            }
+
             card.appendChild(h('div', { class: 'q-error', id: 'err-' + step.id, hidden: 'hidden' }));
             card.appendChild(h('button', {
                 type: 'button', class: 'btn q-next', text: 'Continue →',
                 onclick: function () { submitText(step, input.value); }
             }));
+
+            // How to find the answer, for the questions where "just type it" is
+            // not enough. Rendered after the input so it does not push the field
+            // off a phone screen.
+            if (step.howto) card.appendChild(buildHowto(step));
         } else {
             card.appendChild(grid);
             card.appendChild(h('div', { class: 'q-error', id: 'err-' + step.id, hidden: 'hidden' }));
@@ -399,10 +515,210 @@
         // monochrome.
         if (window.setHighlightedCode) window.setHighlightedCode(out, md, 'markdown');
         else out.textContent = md;
+        // Command mode reads the same guide, so it has to be rebuilt with it —
+        // otherwise the commands stay behind the answers.
+        if (cmdMode) renderCommandMode();
         var empty = document.getElementById('guide-empty');
-        if (empty) empty.hidden = visited.length > 0;
+        if (empty) empty.hidden = visited.length > 0 || cmdMode;
         var wrap = document.getElementById('guide-wrap');
-        if (wrap) wrap.hidden = visited.length === 0;
+        if (wrap) wrap.hidden = visited.length === 0 || cmdMode;
+    }
+
+    /* ── Command-by-command mode ────────────────────────────────────────────
+       One command at a time, with what to expect from it, so the walkthrough can
+       be followed with a terminal open beside it instead of scrolling a document
+       and losing your place.
+
+       The steps come from window.buildCommandSteps(), which *parses the guide*
+       rather than emitting commands separately. A second emitter would be a
+       second source of truth and the two would drift; this way command mode is
+       by construction exactly what the guide says.
+
+       Anything destructive is gated behind typing the disk path. Not a
+       decoration: sgdisk and luksFormat do not ask, and the whole reason people
+       lose data here is muscle-memory clicking through a confirmation. Typing
+       the target back means you have looked at it at least once. */
+
+    var cmdMode = false;
+    var cmdIndex = 0;
+    var CMD_DONE_KEY = 'arch_manual_cmd_done';
+
+    function cmdDone() {
+        try { return JSON.parse(sessionStorage.getItem(CMD_DONE_KEY)) || {}; }
+        catch (_) { return {}; }
+    }
+    function markCmdDone(n) {
+        var d = cmdDone();
+        d[n] = true;
+        try { sessionStorage.setItem(CMD_DONE_KEY, JSON.stringify(d)); } catch (_) { /* private mode */ }
+    }
+
+    function setMode(useCommands) {
+        cmdMode = !!useCommands;
+        var gWrap = document.getElementById('guide-wrap');
+        var gEmpty = document.getElementById('guide-empty');
+        var cHost = document.getElementById('command-mode');
+        var heading = document.getElementById('guide-heading');
+        var bg = document.getElementById('mode-guide');
+        var bc = document.getElementById('mode-commands');
+        if (!cHost) return;
+
+        if (bg) { bg.classList.toggle('active', !cmdMode); bg.setAttribute('aria-pressed', String(!cmdMode)); }
+        if (bc) { bc.classList.toggle('active', cmdMode); bc.setAttribute('aria-pressed', String(cmdMode)); }
+        if (heading) heading.textContent = cmdMode ? '▶️ Run it, one command at a time'
+                                                  : '📄 Your guide, so far';
+
+        cHost.hidden = !cmdMode;
+        if (gWrap) gWrap.hidden = cmdMode || visited.length === 0;
+        if (gEmpty) gEmpty.hidden = cmdMode || visited.length > 0;
+
+        if (cmdMode) renderCommandMode();
+    }
+
+    function renderCommandMode() {
+        var host = document.getElementById('command-mode');
+        if (!host) return;
+        host.innerHTML = '';
+
+        if (typeof window.buildCommandSteps !== 'function') {
+            host.appendChild(h('p', { class: 'q-help',
+                text: 'Command mode needs manual-guide.js, which did not load.' }));
+            return;
+        }
+
+        var steps;
+        try { steps = window.buildCommandSteps(window.buildManualGuide(state)); }
+        catch (_) { steps = []; }
+
+        if (!steps.length) {
+            host.appendChild(h('p', { class: 'q-help',
+                text: 'Answer a few more questions and the commands will appear here, ' +
+                      'one at a time, in the order you run them.' }));
+            return;
+        }
+
+        if (cmdIndex >= steps.length) cmdIndex = steps.length - 1;
+        if (cmdIndex < 0) cmdIndex = 0;
+        var step = steps[cmdIndex];
+        var done = cmdDone();
+
+        host.appendChild(h('div', { class: 'cmd-progress' }, [
+            h('span', { text: 'Command ' + step.n + ' of ' + steps.length }),
+            h('span', { class: 'cmd-progress-title', text: step.title })
+        ]));
+
+        var card = h('div', { class: 'cmd-card' + (step.destructive ? ' cmd-danger' : '') });
+
+        if (step.destructive) {
+            card.appendChild(h('div', { class: 'cmd-warn' }, [
+                h('strong', { text: '🔴 This destroys data and does not ask. ' }),
+                document.createTextNode('It is aimed at ' + (state.disk || 'your disk') +
+                    '. Check that is the right device before you run it — the disk you ' +
+                    'want is identified by size and model, not by the name you expect.')
+            ]));
+        }
+
+        if (step.why) card.appendChild(h('p', { class: 'cmd-why', text: step.why }));
+
+        var pre = h('pre', { class: 'cmd-block' });
+        pre.appendChild(h('code', { class: 'language-bash', text: step.commands }));
+        card.appendChild(pre);
+
+        var actions = h('div', { class: 'cmd-actions' });
+        actions.appendChild(h('button', {
+            type: 'button', class: 'btn nav-tooltip',
+            'data-title': 'Copy this command',
+            'data-desc': 'Copies exactly what is shown, comments included, so the reason ' +
+                         'travels with it into your shell history.',
+            text: '📋 Copy',
+            onclick: function (e) { copyText(step.commands, e.target); }
+        }));
+        card.appendChild(actions);
+
+        if (step.expected) {
+            card.appendChild(h('div', { class: 'cmd-expected' }, [
+                h('strong', { text: 'Expect: ' }),
+                document.createTextNode(step.expected)
+            ]));
+        }
+
+        var err = h('div', { class: 'q-error', id: 'cmd-err', hidden: 'hidden' });
+        card.appendChild(err);
+
+        // The confirmation gate, for destructive steps only.
+        var confirmInput = null;
+        if (step.destructive && state.disk) {
+            card.appendChild(h('label', { class: 'cmd-confirm-label',
+                for: 'cmd-confirm',
+                text: 'Type ' + state.disk + ' to confirm you have checked the device:' }));
+            confirmInput = h('input', {
+                type: 'text', class: 'q-text', id: 'cmd-confirm',
+                placeholder: state.disk, spellcheck: 'false', autocomplete: 'off'
+            });
+            card.appendChild(confirmInput);
+        }
+
+        var nav = h('div', { class: 'cmd-nav' });
+        if (cmdIndex > 0) {
+            nav.appendChild(h('button', {
+                type: 'button', class: 'btn btn-ghost', text: '← Previous',
+                onclick: function () { cmdIndex--; renderCommandMode(); }
+            }));
+        }
+
+        var last = cmdIndex === steps.length - 1;
+        nav.appendChild(h('button', {
+            type: 'button', class: 'btn cmd-next',
+            text: done[step.n] ? (last ? '✅ Finished' : 'Next →')
+                               : (last ? '✅ Ran it — finish' : '✅ Ran it — next'),
+            onclick: function () {
+                if (confirmInput && confirmInput.value.trim() !== state.disk) {
+                    err.hidden = false;
+                    err.textContent = '⚠ Type ' + state.disk + ' exactly. This one cannot be undone.';
+                    confirmInput.focus();
+                    return;
+                }
+                markCmdDone(step.n);
+                if (!last) { cmdIndex++; renderCommandMode(); }
+                else renderCommandMode();
+            }
+        }));
+        card.appendChild(nav);
+
+        if (last && done[step.n]) {
+            card.appendChild(h('p', { class: 'cmd-finished',
+                text: 'That is every command. Keep the markdown guide — the post-install ' +
+                      'steps and the reasoning are in it.' }));
+        }
+
+        host.appendChild(card);
+
+        // A jump list, so you can get back to where you were after a reboot.
+        var list = h('ol', { class: 'cmd-list' });
+        steps.forEach(function (st, i) {
+            var li = h('li', { class: (i === cmdIndex ? 'here ' : '') + (done[st.n] ? 'done' : '') });
+            li.appendChild(h('button', {
+                type: 'button',
+                class: 'cmd-list-btn' + (st.destructive ? ' danger' : ''),
+                text: (done[st.n] ? '✓ ' : '') + st.n + '. ' + st.title,
+                onclick: function () { cmdIndex = i; renderCommandMode(); }
+            }));
+            list.appendChild(li);
+        });
+        host.appendChild(h('details', { class: 'cmd-jump' }, [
+            h('summary', { text: '🧭 All ' + steps.length + ' commands' }),
+            list
+        ]));
+
+        if (typeof window.highlightAll === 'function') window.highlightAll(host);
+        if (typeof window.refreshTooltips === 'function') window.refreshTooltips();
+    }
+
+    function wireModeButtons() {
+        var bg = document.getElementById('mode-guide');
+        var bc = document.getElementById('mode-commands');
+        if (bg) bg.addEventListener('click', function () { setMode(false); });
+        if (bc) bc.addEventListener('click', function () { setMode(true); });
     }
 
     function download(name, text, mime) {
@@ -507,6 +823,7 @@
     /* ── Boot ───────────────────────────────────────────────────────────── */
 
     function init() {
+        wireModeButtons();
         var resumed = restore();
         wireExports();
         rebuildGuide();
