@@ -44,7 +44,11 @@
         { href: 'site-index.html',    label: '🔎 Index',
           title: '🔎 Index',
           desc: 'The contents page for the whole project, with a search box that looks through the wiki, every generator and walkthrough question, the security tools, the cheatsheets and the docs at once.' },
-        { href: 'index.html',         label: '⚙️ Generator',
+        // Named in full, matching its sibling. The nav said "Generator" beside
+        // "Manual Walkthrough", so the two front ends read as though one were
+        // the default and the other a variant of it. They are two equal routes
+        // to the same install and are named as such everywhere else.
+        { href: 'index.html',         label: '⚙️ Dynamic Generator',
           title: '⚙️ Dynamic Generator',
           desc: 'Set every option in one form and generate a custom Arch install script and guide. Fastest on a desktop when you already know what you want.' },
         { href: 'manual.html',        label: '🧭 Manual Walkthrough',

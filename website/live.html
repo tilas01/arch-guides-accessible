@@ -191,13 +191,14 @@
         <h1>📝 Live Editor</h1>
         <p>Edit, preview, and download your generated Arch Linux install script &amp; markdown guide</p>
     </div>
-    <nav style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-        <a href="site-index.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">🔎 Index</a>
-        <a href="index.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">⚙️ Generator</a>
-        <a href="manual.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">🧭 Manual</a>
-        <a href="iso-verify.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">💿 Verify Arch ISO</a>
-        <a href="security-tools.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">🦀 Security Tools</a>
-        <a href="wiki.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">📖 Wiki</a>
+    <!-- Only the two generators. Index, Verify ISO, Security Tools and the Wiki
+         were duplicated here from the canonical nav that shared-ui.js already
+         puts on this page, so every one of them appeared twice. What is worth a
+         second, larger button is the thing you came here from: the editor exists
+         to edit what those two produced. -->
+    <nav style="display:flex; gap:0.75rem; flex-wrap:wrap;" aria-label="Back to a generator">
+        <a href="index.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">⚙️ Dynamic Generator</a>
+        <a href="manual.html" class="btn" style="background:var(--bg-lighter); color:var(--fg-color); border:1px solid var(--editor-border); font-size:0.85rem; padding:0.4rem 1rem;">🧭 Manual Walkthrough</a>
     </nav>
 </div>
 

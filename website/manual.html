@@ -231,9 +231,9 @@
     <nav class="main-nav" aria-label="Site">
         <a href="site-index.html" class="nav-link nav-tooltip" data-title="🔎 Index" data-desc="The contents page for the whole site, with a search box that looks through the wiki, every generator option, the manual walkthrough, the security tools and the cheatsheets at once.">🔎 Index</a>
         <span class="nav-sep">|</span>
-        <a href="index.html" class="nav-link nav-tooltip" data-title="⚙️ Generator" data-desc="Fill in a form, get a script. Faster than the walkthrough when you already know what you want.">⚙️ Generator</a>
+        <a href="index.html" class="nav-link nav-tooltip" data-title="⚙️ Dynamic Generator" data-desc="Fill in a form, get a script. Faster than the walkthrough when you already know what you want.">⚙️ Dynamic Generator</a>
         <span class="nav-sep">|</span>
-        <a href="manual.html" class="nav-link nav-tooltip" style="color:var(--accent-purple);" data-title="🧭 Manual walkthrough" data-desc="One question at a time, with an explanation of every option and the commands appearing as you answer. The recommended path on mobile.">🧭 Manual</a>
+        <a href="manual.html" class="nav-link nav-tooltip" style="color:var(--accent-purple);" data-title="🧭 Manual walkthrough" data-desc="One question at a time, with an explanation of every option and the commands appearing as you answer. The recommended path on mobile.">🧭 Manual Walkthrough</a>
         <span class="nav-sep">|</span>
         <a href="iso-verify.html" class="nav-link nav-tooltip" data-title="💿 Verify Arch ISO" data-desc="Hash an Arch ISO in your browser and check it against mirrors other than the one that served it.">💿 Verify Arch ISO</a>
         <span class="nav-sep">|</span>
@@ -267,7 +267,23 @@
         <section id="question-host" aria-label="Questions" aria-live="polite"></section>
 
         <aside class="guide-pane" aria-label="Your guide">
-            <h2>📄 Your guide, so far</h2>
+            <!-- Two ways to use the same guide. "Whole guide" is the document;
+                 "One command at a time" walks the very same commands, parsed out
+                 of that document, so the two can never disagree about what to
+                 run. Asked for repeatedly; it is the mode that makes this usable
+                 with a terminal open beside it. -->
+            <div class="guide-mode" role="group" aria-label="How to follow the guide">
+                <button type="button" class="guide-mode-btn active nav-tooltip" id="mode-guide"
+                        aria-pressed="true"
+                        data-title="📄 Whole guide"
+                        data-desc="The complete document: every command with the reason it is there. Best for reading through before you start, and for keeping afterwards.">📄 Whole guide</button>
+                <button type="button" class="guide-mode-btn nav-tooltip" id="mode-commands"
+                        aria-pressed="false"
+                        data-title="▶️ One command at a time"
+                        data-desc="Walks the same commands one at a time, with what to expect from each, a copy button, and a typed confirmation before anything that destroys data. Best with a terminal open beside this.">▶️ One at a time</button>
+            </div>
+
+            <h2 id="guide-heading">📄 Your guide, so far</h2>
             <p id="guide-empty">
                 Answer the first question and this fills in. Right-click any
                 question to open the wiki section that explains it.
@@ -275,6 +291,8 @@
             <div id="guide-wrap" hidden style="display:contents;">
                 <pre id="guide-out" tabindex="0"></pre>
             </div>
+            <!-- Filled by manual.js in command mode. -->
+            <div id="command-mode" hidden></div>
             <div class="guide-actions">
                 <button type="button" class="btn nav-tooltip" id="copy-guide"
                         data-title="Copy the guide"
