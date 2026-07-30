@@ -97,6 +97,63 @@
         var headings = [];
         var lines = String(md).replace(/\r\n?/g, '\n').split('\n');
 
+        /* Soft wraps have to be joined before anything else looks at the text.
+           Every document in docs/ is hard-wrapped at about 80 columns, so a
+           single sentence is three or four source lines. Treating each line as
+           its own block turned one paragraph into three <p>s and — worse — cut
+           list items in half: the first line became the <li> and the rest
+           became loose paragraphs sitting outside the list, unindented and
+           visually detached from the bullet they belong to.
+
+           A line continues the previous one unless it starts something new. */
+        function startsBlock(l) {
+            return l.trim() === ''                       // blank
+                || /^\s*```/.test(l)                     // fence
+                || /^#{1,6}\s/.test(l)                   // heading
+                || /^\s*>/.test(l)                       // quote or alert
+                || /^\s*(?:[-*+]|\d+\.)\s/.test(l)       // list item
+                || /^\s*\|/.test(l)                      // table row
+                || /^\s*(?:---+|\*\*\*+|___+)\s*$/.test(l) // rule
+                || /^\s{4,}\S/.test(l);                  // indented block
+        }
+
+        var joined = [];
+        var fenced = false;
+        for (var j = 0; j < lines.length; j++) {
+            var cur = lines[j];
+            if (/^\s*```/.test(cur)) fenced = !fenced;
+            // Inside a fence every line is literal — joining would corrupt the
+            // code. Same for a table, where each row is its own line.
+            if (fenced || /^\s*\|/.test(cur)) { joined.push(cur); continue; }
+
+            var prev = joined.length ? joined[joined.length - 1] : null;
+            if (prev === null || prev.trim() === '' || cur.trim() === '') { joined.push(cur); continue; }
+
+            var prevQuote = /^\s*>/.test(prev);
+            var curQuote  = /^\s*>/.test(cur);
+
+            if (prevQuote && curQuote) {
+                // A blockquote wrapped over several lines. Join unless the
+                // previous line was only the alert marker — "> [!WARNING]" has
+                // to stay on its own so the label renders as a label rather
+                // than as the first words of the sentence.
+                if (/^\s*>\s*\[!\w+\]\s*$/.test(prev)) { joined.push(cur); continue; }
+                joined[joined.length - 1] = prev + ' ' + cur.replace(/^\s*>\s?/, '').trim();
+                continue;
+            }
+
+            // A plain continuation line extends whatever it follows — a
+            // paragraph, or a list item, so the rest of the sentence stays
+            // inside the bullet instead of falling out below it.
+            if (!startsBlock(cur) && (!startsBlock(prev) || /^\s*(?:[-*+]|\d+\.)\s/.test(prev))) {
+                joined[joined.length - 1] = prev + ' ' + cur.trim();
+                continue;
+            }
+
+            joined.push(cur);
+        }
+        lines = joined;
+
         var inCode = false, inList = false, listTag = 'ul', inTable = false, inQuote = null;
 
         function closeList()  { if (inList)  { out.push('</' + listTag + '>'); inList = false; } }

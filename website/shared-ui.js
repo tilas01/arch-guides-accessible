@@ -342,8 +342,108 @@
         }
     }
 
+    /* ── 4. The footer ──────────────────────────────────────────────────────
+       Three separate things, not one. The waiver, the licence and the project
+       credits were all inside a single red `.legal-notice` box, copied into ten
+       HTML files. That had two problems.
+
+       Visually, the waiver dominated: four paragraphs of red-accented legal text
+       with the project's own name, author and navigation tacked on the end of
+       it, so the credits read as part of the disclaimer.
+
+       Practically, ten copies drift. The link row still said "Manual" rather
+       than "Manual Walkthrough" and had never gained the Live Editor or the
+       Cheatsheets — the same failure the top nav had before it was moved here.
+
+       So: one definition, three blocks side by side, each with its own accent —
+       red for the waiver, green for the licence, purple for the project. */
+
+    var REPO_TREE = REPO_URL + '/blob/main/';
+
+    function buildFooter() {
+        var footer = document.querySelector('footer.site-footer, .site-footer');
+        if (!footer) {
+            footer = document.createElement('footer');
+            footer.className = 'site-footer';
+            document.body.appendChild(footer);
+        }
+        // Whatever was here is replaced: the hand-written copies are exactly
+        // what drifted.
+        footer.innerHTML = '';
+
+        var grid = document.createElement('div');
+        grid.className = 'footer-grid';
+
+        /* Waiver. Kept short here on purpose and linked in full — the whole text
+           is in the welcome dialog and in user-agreements/, and a wall of it on
+           every page trains people to skip it. */
+        grid.appendChild(block('footer-waiver', '⚖️', 'Disclaimer & liability waiver', [
+            '<p><strong>AI-assisted, no warranty.</strong> This site, its guides and the ' +
+            'tools it installs are provided <strong>“as is”</strong>, with no warranty of ' +
+            'any kind. No liability is accepted for data loss, system damage, hardware ' +
+            'failure or unmitigated security breaches.</p>',
+            '<p><strong>Read every generated script before you run it.</strong> They ' +
+            'repartition disks, and some options here destroy data deliberately. Test in a ' +
+            'virtual machine and cross-check against the ' +
+            '<a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>, ' +
+            'which is the authority wherever it and this project disagree.</p>',
+            '<p class="footer-fineprint">' +
+            '<a href="user-agreements/LEGAL-WAIVER.txt" target="_blank" rel="noopener">' +
+            'Read the full waiver ↗</a></p>'
+        ]));
+
+        /* Licence. Its own block because it answers a different question: not
+           "what happens if this breaks" but "what may I do with it". */
+        grid.appendChild(block('footer-licence', '📄', 'Licence', [
+            '<p>Licensed <strong>CC BY-NC-SA 4.0</strong>. Read it, use it, fork it, mirror ' +
+            'it, teach from it — no permission needed.</p>',
+            '<p>Three conditions: keep the credit, do not sell it, and share anything you ' +
+            'build from it under the same licence. That is all the licence is for.</p>',
+            '<p class="footer-fineprint">' +
+            '<a href="user-agreements/LICENSE.txt" target="_blank" rel="noopener">Full text ↗</a> · ' +
+            '<a href="user-agreements/LICENCE-PLAIN-ENGLISH.txt" target="_blank" rel="noopener">' +
+            'In plain English ↗</a></p>'
+        ]));
+
+        /* Project, navigation and credit. Built from the same NAV array as the
+           header, so this row can no longer fall behind it. */
+        var links = NAV.map(function (item) {
+            return '<a href="' + item.href + '">' + item.label + '</a>';
+        }).join('');
+
+        grid.appendChild(block('footer-project', '🦀', 'Arch Guides Dynamic', [
+            '<p>by <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a>' +
+            ' · <a href="' + REPO_URL + '" target="_blank" rel="noopener">Source</a>' +
+            ' · <a href="' + REPO_URL + '/releases" target="_blank" rel="noopener">Releases</a>' +
+            ' · <a href="' + REPO_TREE + 'tilas01.asc" target="_blank" rel="noopener">Signing key</a></p>',
+            '<nav class="footer-links" aria-label="All pages">' + links + '</nav>',
+            '<p class="footer-credits"><strong>Standing on other people\'s work:</strong> ' +
+            '<a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">the Arch Wiki</a>, ' +
+            'which is the source this project defers to; ' +
+            '<a href="https://github.com/dusklinux/dusky" target="_blank" rel="noopener">dusklinux</a> ' +
+            'for Dusky and its wallpapers; ' +
+            '<a href="https://github.com/max-baz/arch-secure-boot" target="_blank" rel="noopener">' +
+            'max-baz/arch-secure-boot</a> for signed unified kernel images and snapshot recovery; ' +
+            'and <a href="https://github.com/tilas01/arch-guides-all" target="_blank" rel="noopener">' +
+            'arch-guides-all</a>, the far simpler predecessor that is somehow still the most ' +
+            'popular thing here — all eight stars of it. Built with AI assistance from ' +
+            '<strong>Claude</strong>, and reviewed by tilas01.</p>'
+        ]));
+
+        footer.appendChild(grid);
+    }
+
+    function block(cls, icon, heading, paras) {
+        var el = document.createElement('section');
+        el.className = 'footer-block ' + cls;
+        el.innerHTML = '<h2><span aria-hidden="true">' + icon + '</span> ' + heading + '</h2>' +
+                       paras.join('');
+        return el;
+    }
+
     function init() {
         try { buildControls(); } catch (err) { console.error('shared-ui: controls', err); }
+        try { buildFooter(); } catch (err) { console.error('shared-ui: footer', err); }
         try { refreshIsoBadge(); } catch (err) { console.error('shared-ui: iso badge', err); }
         try { wireUnloadGuard(); } catch (err) { console.error('shared-ui: unload', err); }
         try { ensureTooltips(); } catch (err) { console.error('shared-ui: tooltips', err); }

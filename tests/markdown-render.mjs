@@ -114,6 +114,47 @@ ok(/<hr>/.test(rich.html), 'horizontal rules do not render');
 ok(/<kbd>Super<\/kbd>/.test(rich.html), '<kbd> is escaped instead of rendered');
 ok(/rel="noopener"/.test(rich.html), 'external links carry no rel="noopener"');
 
+/* ── Soft wraps must be joined ──────────────────────────────────────────────
+   Every document in docs/ is hard-wrapped at about 80 columns, so one sentence
+   is three or four source lines. Rendering each line as its own block turned a
+   paragraph into three <p>s and cut list items in half: the first line became
+   the <li> and the remainder became loose paragraphs outside the list,
+   unindented and visually detached from the bullet they belonged to. */
+const wrapped = render([
+    '### Warnings', '',
+    '- **Dusky + Xorg = broken.** Dusky is Hyprland, and Hyprland is a Wayland',
+    '  compositor with no Xorg backend. An earlier version said the opposite.', '',
+    'A paragraph hard wrapped at eighty columns the way every document in the',
+    'docs directory is, spanning several source lines, which must still render',
+    'as a single paragraph.', '',
+    '> [!WARNING]',
+    '> This spans two source lines and must stay inside the one callout',
+    '> rather than spilling out below it.', '',
+    '| A | B |', '|---|---|', '| 1 | 2 |', '',
+    '```bash', '# a comment', 'echo one', '', 'echo after a blank line', '```', '',
+].join('\n'));
+
+{
+    const d = new JSDOM('<div id="h"></div>');
+    d.window.document.getElementById('h').innerHTML = wrapped.html;
+    const q = d.window.document;
+    const code = q.querySelector('#h pre.md-code code');
+
+    ok(q.querySelectorAll('#h li').length === 1,
+       `a wrapped list item split into ${q.querySelectorAll('#h li').length} items`);
+    ok(q.querySelectorAll('#h > p').length === 1,
+       `a wrapped paragraph split into ${q.querySelectorAll('#h > p').length} top-level paragraphs`);
+    ok(q.querySelectorAll('#h .md-alert').length === 1, 'the wrapped alert did not stay one callout');
+    ok(q.querySelectorAll('#h .md-alert p').length === 1,
+       `the alert's two source lines became ${q.querySelectorAll('#h .md-alert p').length} paragraphs`);
+    ok(/⚠️ Warning/.test(wrapped.html),
+       'joining the alert body swallowed its [!WARNING] label');
+    ok(q.querySelectorAll('#h tr').length === 2,
+       `table rows were joined together (${q.querySelectorAll('#h tr').length} rows, expected 2)`);
+    ok(code && /# a comment\necho one\n\necho after a blank line/.test(code.textContent),
+       'joining altered the inside of a fenced block — code must stay verbatim');
+}
+
 /* Real documents, not just synthetic ones: every doc the site links to must
    render without throwing and produce something. A doc that renders to nothing
    is a blank page where an explanation should be. */
