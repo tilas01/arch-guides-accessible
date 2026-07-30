@@ -951,26 +951,91 @@ noscript .js-only { display: none !important; }
     text-align: center;
 }
 
-.legal-notice {
-    max-width: 90ch;
-    margin: 2rem auto 0;
-    padding: 1.1rem 1.3rem;
+/* ─── Footer ──────────────────────────────────────────────────────────────────
+   Three blocks, side by side, filling the width. Everything used to sit inside
+   one red .legal-notice box: four paragraphs of waiver with the project's own
+   name, author and navigation tacked on the end, so the credits read as part of
+   the disclaimer and the waiver dominated the whole footer.
+
+   Each block now carries its own accent, because each answers a different
+   question — what happens if this breaks, what may I do with it, and whose work
+   is this. Built by shared-ui.js from one definition rather than copied into ten
+   HTML files. */
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.1rem;
+    align-items: start;
     text-align: left;
+    margin: 1.5rem 0 0;
+}
+
+.footer-block {
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
     font-size: 0.78rem;
     line-height: 1.65;
     color: var(--fg-dim);
-    background: var(--tint-red);
-    border: 1px solid var(--accent-red);
-    border-radius: 8px;
-}
-.legal-notice p { margin: 0.55rem 0; }
-.legal-notice strong { color: var(--fg-color); }
-.legal-notice a { color: var(--accent-blue); }
-.legal-notice code {
+    border: 1px solid var(--border-color);
     background: var(--bg-darker);
-    padding: 0.05rem 0.3rem;
-    border-radius: 3px;
-    color: var(--accent-green);
+    /* The waiver is longer than the other two; without this the grid row
+       stretches the short ones into mostly empty boxes. */
+    height: 100%;
+}
+.footer-block h2 {
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    margin: 0 0 0.5rem;
+}
+.footer-block p { margin: 0.5rem 0; }
+.footer-block strong { color: var(--fg-color); }
+.footer-block a { color: var(--accent-blue); }
+.footer-block a:hover { color: var(--accent-cyan); }
+
+/* Red: what happens if this breaks. */
+.footer-waiver { border-color: var(--accent-red); background: var(--tint-red); }
+.footer-waiver h2 { color: var(--accent-red); }
+
+/* Green: what you may do with it. */
+.footer-licence { border-color: var(--accent-green); background: var(--tint-green); }
+.footer-licence h2 { color: var(--accent-green); }
+
+/* Purple: whose work this is. Was buried at the bottom of the red box. */
+.footer-project { border-color: var(--accent-purple); background: var(--tint-purple); }
+.footer-project h2 { color: var(--accent-purple); }
+
+.footer-fineprint { font-size: 0.74rem; opacity: 0.92; }
+
+/* Every destination, built from the same NAV array as the header so this row
+   cannot fall behind it — the hand-written one still said "Manual" and had
+   never gained the Live Editor or the Cheatsheets. */
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.75rem;
+    margin: 0.6rem 0;
+    font-size: 0.76rem;
+}
+.footer-links a { white-space: nowrap; }
+
+.footer-credits {
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.6rem;
+    margin-top: 0.7rem;
+    font-size: 0.75rem;
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+    /* One column on a phone, and links become real tap targets rather than a
+       dense row of 12px text. */
+    .footer-grid { grid-template-columns: 1fr; }
+    .footer-links { gap: 0.2rem 0.9rem; }
+    .footer-links a,
+    .footer-fineprint a {
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--tap-target, 44px);
+    }
 }
 
 /* ─── Credits ─────────────────────────────────────────────────────────────── */
@@ -1412,4 +1477,28 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
     /* 44px tap targets on the two links out of a document. */
     .wiki-doc-foot a,
     .wiki-doc-crumbs a { display: inline-flex; align-items: center; min-height: var(--tap-target, 44px); }
+}
+
+/* A page-specific note that is not a landmark. Four pages carried a second
+   hand-styled <footer> alongside the shared one, which gave a screen reader two
+   unnamed contentinfo regions to announce. Where the text was page-specific and
+   true (the Live Editor's "nothing leaves your browser", the security tools'
+   lock-out warning) it moved here; where it duplicated the shared footer — or,
+   on the wiki, stated the wrong licence entirely — it was removed. */
+.page-note {
+    max-width: 90ch;
+    margin: 2rem auto 0;
+    padding: 0.8rem 1.1rem;
+    text-align: center;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: var(--fg-dim);
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+.page-note-warn {
+    border-color: var(--accent-red);
+    background: var(--tint-red);
+    color: var(--fg-color);
 }

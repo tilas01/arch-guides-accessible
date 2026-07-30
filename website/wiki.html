@@ -6,9 +6,9 @@
     <title>Arch Guides — Official Wiki</title>
     <meta name="description" content="The Arch Guides wiki: every generator option explained, a choose-your-own-path setup guide, the security tool suite, hardware security (BusKill, coreboot, Heads), and command cheatsheets.">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <!-- Shared stylesheet first, so the palette, nav, credits and legal-notice
-         components are available. The page-specific block below then overrides
-         only what this page needs. -->
+    <!-- Shared stylesheet first, so the palette, the nav and the footer blocks
+         are available. The page-specific block below then overrides only what
+         this page needs. -->
     <link rel="stylesheet" href="style.css">
     <style>
         :root {
@@ -1929,45 +1929,10 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
     </main>
 </div>
 
-<footer style="text-align: center; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color); color: #8b949e;">
-        <p>🛠️ Arch Rusty Security Suite by tilas01. Licensed under GNU AGPLv3.</p>
-    </footer>
 
-<div class="site-footer">
 
-    <div class="legal-notice">
-        <strong style="color:var(--accent-red);">⚖️ Legal Disclaimer &amp; Liability Waiver</strong>
-        <p>
-            <strong>AI-assisted content, no warranty.</strong> This site and the scripts it
-            generates were built with AI assistance. Everything is provided
-            <strong>“AS IS”, WITHOUT WARRANTY OF ANY KIND</strong>. The authors accept
-            <strong>no liability</strong> for data loss, system damage, hardware failure or
-            security breaches arising from use of these tools.
-        </p>
-        <p>
-            <strong>You are responsible for your own machine.</strong> Always read a generated
-            script before running it. These scripts repartition disks, and some options here
-            deliberately destroy data. Test in a virtual machine and cross-check against the
-            <a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a>.
-        </p>
-        <p>
-            Licensed <strong>CC BY-NC-SA 4.0</strong> — free to use, modify and share
-            non-commercially, with attribution to <code>tilas01</code>, under the same licence.
-            Selling or monetising it is not permitted.
-        </p>
-        <p style="margin-bottom:0;">
-            🦀 <strong style="color:var(--accent-cyan);">Arch Guides Dynamic</strong> by
-            <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a> ·
-            <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank" rel="noopener">Source</a> ·
-            <a href="index.html">Generator</a> ·
-            <a href="wiki.html">Wiki</a> ·
-            <a href="iso-verify.html">Verify Arch ISO</a> ·
-            <a href="security-tools.html">Security Tools</a> ·
-            <a href="cheatsheets.html?sheet=full">Command Cheatsheet</a>
-        </p>
-    </div>
-
-</div>
+<!-- Built by shared-ui.js. -->
+<footer class="site-footer"></footer>
 
 <script>
 /* ?page= handler — renders a deep-dive document inside the wiki.
@@ -2042,6 +2007,19 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
     }
 
     var url = 'docs/' + encodeURI(page);
+
+    // markdown.js is loaded with `defer`, and this handler is an inline script,
+    // so it runs first — window.renderMarkdownInto does not exist yet. Waiting
+    // for DOMContentLoaded is enough: deferred scripts are guaranteed to have
+    // executed, in order, before it fires. Doing the render immediately showed
+    // "The markdown renderer did not load" on every document.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
+    }
+
+    function start() {
     if (typeof window.renderMarkdownInto !== 'function') {
         failed('The markdown renderer did not load.', url);
         return;
@@ -2075,6 +2053,7 @@ aur-guard --json ./PKGBUILD | jq         # for hooking into a helper</code></pre
                 : 'The document could not be loaded (' +
                   String(err && err.message || err).replace(/[<>&]/g, '') + ').', url);
         });
+    }
 })();
 </script>
 <script>

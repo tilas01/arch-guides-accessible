@@ -76,6 +76,36 @@ for (const page of pages) {
     if (!viewport) problems.push('no viewport meta, so mobile rendering is wrong');
     if (!manual) problems.push('no link to manual.html (required in every header)');
 
+    // The footer is three separate blocks — waiver, licence, project credits —
+    // built by shared-ui.js. They were one red .legal-notice box copied into ten
+    // files, with the project's own name and navigation tacked onto the end of
+    // the disclaimer. An empty <footer class="site-footer"></footer> means the
+    // builder did not run, which is invisible on the page itself.
+    const fBlocks = d.querySelectorAll('.site-footer .footer-block').length;
+    const fLinks = d.querySelectorAll('.site-footer .footer-links a').length;
+    if (d.querySelector('.site-footer')) {
+        if (fBlocks !== 3) {
+            problems.push(`footer has ${fBlocks} blocks, expected 3 (waiver, licence, project)`);
+        }
+        if (fLinks !== NAV_COUNT) {
+            problems.push(`footer links to ${fLinks} pages, expected the ${NAV_COUNT} in NAV`);
+        }
+        for (const cls of ['footer-waiver', 'footer-licence', 'footer-project']) {
+            if (!d.querySelector('.site-footer .' + cls)) {
+                problems.push(`footer is missing its .${cls} block`);
+            }
+        }
+        if (!d.querySelector('.site-footer a[href$="LEGAL-WAIVER.txt"]')) {
+            problems.push('footer does not link to the full waiver text');
+        }
+        if (!d.querySelector('.site-footer a[href$="LICENSE.txt"]')) {
+            problems.push('footer does not link to the licence text');
+        }
+        if (d.querySelector('.site-footer .legal-notice')) {
+            problems.push('the old single-box .legal-notice footer is back');
+        }
+    }
+
     failures += problems.length;
     rows.push({ page, scripts, nav, tips, ran, problems });
     window.close();
