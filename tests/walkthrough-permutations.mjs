@@ -142,14 +142,14 @@ function assertGuide(s, label) {
         ok(/mkfs\.fat -F32/.test(md), `${label}: single-OS install never formats an ESP`);
     }
 
-    // DuskyOS locking must actually take effect in the output
+    // Dusky locking must actually take effect in the output
     if (s.desktop === 'dusky') {
         for (const [k, v] of Object.entries(DUSKY_LOCKS)) {
             if (STEPS.find(st => st.id === k && applies(st, s))) {
                 ok(s[k] === v, `${label}: dusky lock ${k}=${s[k]} expected ${v}`);
             }
         }
-        ok(/DuskyOS is preconfigured/.test(md), `${label}: dusky chosen without the lock explanation`);
+        ok(/Dusky is preconfigured/.test(md), `${label}: dusky chosen without the lock explanation`);
         ok(/youtube\.com/.test(md), `${label}: dusky chosen without the video link`);
     }
 

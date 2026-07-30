@@ -50,6 +50,12 @@
         { href: 'manual.html',        label: '🧭 Manual Walkthrough',
           title: '🧭 Manual Walkthrough',
           desc: 'One question at a time, every option explained, the guide building as you answer. Same output as the generator. Recommended on mobile, or if you are not yet sure what you want.' },
+        // Live Editor sits directly after the two generators because that is
+        // where their output goes — the three are one flow, and separating them
+        // with the reference pages made the editor look like an unrelated tool.
+        { href: 'live.html',          label: '📝 Live Editor',
+          title: '📝 Live Editor',
+          desc: 'Edit a generated script and guide side by side, browse this session\'s generation history, and download the results.' },
         { href: 'iso-verify.html',    label: '💿 Verify Arch ISO',
           title: '💿 Verify Arch ISO',
           desc: 'Hash an Arch ISO in your browser and compare it against checksums from mirrors other than the one that served the image. Nothing is uploaded.' },
@@ -59,9 +65,11 @@
         { href: 'wiki.html',          label: '📖 Wiki',
           title: '📖 Wiki / Documentation',
           desc: 'Every option explained in full, plus firmware lockdown, dual boot, ARM, AUR safety and the cheatsheets.' },
-        { href: 'live.html',          label: '📝 Live Editor',
-          title: '📝 Live Editor',
-          desc: 'Edit a generated script and guide side by side, browse this session\'s generation history, and download the results.' }
+        // Cheatsheets last, deliberately: it is what you reach for after the
+        // system is installed, not while you are deciding how to install it.
+        { href: 'cheatsheets.html',   label: '📋 Cheatsheets',
+          title: '📋 Cheatsheets',
+          desc: 'Every cheatsheet in one tabbed page: Arch and pacman, the AUR, systemd, Btrfs snapshots, LUKS, the Rust security suite, and Dusky and Hyprland keybinds. Searchable and copyable.' }
     ];
 
     function currentPage() {

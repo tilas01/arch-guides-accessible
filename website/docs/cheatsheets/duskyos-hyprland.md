@@ -1,6 +1,6 @@
-# DuskyOS / Hyprland Cheatsheet
+# Dusky / Hyprland Cheatsheet
 
-DuskyOS is built around the Hyprland Wayland compositor. It uses a heavily customized, keyboard-centric workflow.
+Dusky is built around the Hyprland Wayland compositor. It uses a heavily customized, keyboard-centric workflow.
 
 > [!TIP]
 > **Searchable Keybinds UI:** Press `SUPER + SHIFT + K` at any time to open the dynamic searchable keybinds overlay.
@@ -36,7 +36,7 @@ DuskyOS is built around the Hyprland Wayland compositor. It uses a heavily custo
 ## Advanced Dusky Commands
 
 > [!NOTE]
-> DuskyOS comes with several custom scripts bound to Rofi menus for quick customization.
+> Dusky comes with several custom scripts bound to Rofi menus for quick customization.
 
 - **Change Wallpaper**: `SUPER + Alt + W` (Opens swww wallpaper selector)
 - **Change System Theme**: `SUPER + Alt + T` (Switches GTK theme and Waybar colors)

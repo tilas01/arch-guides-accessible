@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cheatsheets — Arch Guides Dynamic</title>
-    <meta name="description" content="Every cheatsheet in one place: Arch commands, pacman and the AUR, systemd, Btrfs snapshots, the security suite, and the DuskyOS and Hyprland keybinds. Tabbed, searchable and copyable.">
+    <meta name="description" content="Every cheatsheet in one place: Arch commands, pacman and the AUR, systemd, Btrfs snapshots, the security suite, and the Dusky and Hyprland keybinds. Tabbed, searchable and copyable.">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="preload" href="style.css" as="style">
     <link rel="stylesheet" href="style.css">
@@ -152,10 +152,10 @@
     <div class="alert warning">
         These cheatsheets are rendered from markdown in the repository, which
         needs JavaScript. Every one is readable directly without it:
-        <a href="docs/cheatsheets/arch-commands.md">Arch commands</a> ·
-        <a href="docs/cheatsheets/duskyos-hyprland.md">DuskyOS / Hyprland</a> ·
-        <a href="docs/helpful-commands.md">Full command reference</a> ·
-        <a href="docs/dusky-cheatsheet.md">DuskyOS quick card</a>.
+        <a href="cheatsheets.html?sheet=arch">Arch commands</a> ·
+        <a href="cheatsheets.html?sheet=dusky">Dusky / Hyprland</a> ·
+        <a href="cheatsheets.html?sheet=full">Full command reference</a> ·
+        <a href="cheatsheets.html?sheet=duskyq">Dusky quick card</a>.
     </div>
 </noscript>
 
@@ -170,7 +170,7 @@
         <h1>📋 Cheatsheets</h1>
         <p>
             Every reference in one place — the Arch commands you will actually
-            reach for, the security suite, and every DuskyOS and Hyprland
+            reach for, the security suite, and every Dusky and Hyprland
             keybind. These are rendered from the markdown in the repository, so
             what you read here and what you read on GitHub are the same file.
         </p>
@@ -181,7 +181,7 @@
     <div class="cs-meta">
         <span id="cs-desc"></span>
         <span>
-            <a id="cs-source" href="docs/helpful-commands.md" target="_blank" rel="noopener">View the markdown source ↗</a>
+            <a id="cs-source" href="cheatsheets.html?sheet=full" target="_blank" rel="noopener">View the markdown source ↗</a>
         </span>
     </div>
 
@@ -234,5 +234,10 @@
 <script src="cheatsheets.js" defer></script>
 <script src="tooltip.js" defer></script>
 <script src="shared-ui.js" defer></script>
+<!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
+     nobody has to trust a third-party bundle to render scripts they are
+     being told to read before running. -->
+<script src="markdown.js" defer></script>
+<script src="highlight.js" defer></script>
 </body>
 </html>

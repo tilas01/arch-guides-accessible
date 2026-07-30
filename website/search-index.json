@@ -186,10 +186,10 @@
 "d": "Building it yourself is the only way to know what you are running. This is also"
 },
 {
-"t": "DuskyOS / Hyprland Cheatsheet",
+"t": "Dusky / Hyprland Cheatsheet",
 "u": "docs/cheatsheets/duskyos-hyprland.md",
 "s": "Docs",
-"d": "DuskyOS is built around the Hyprland Wayland compositor. It uses a heavily customized, keyboard-centric workflow."
+"d": "Dusky is built around the Hyprland Wayland compositor. It uses a heavily customized, keyboard-centric workflow."
 },
 {
 "t": "Generated examples",
@@ -213,7 +213,7 @@
 "t": "OS Shortcut & Command cheatsheet for dusky 2026 os release",
 "u": "docs/dusky-cheatsheet.md",
 "s": "Docs",
-"d": "[Dusky OS by dusklinux](https://github.com/dusklinux/dusky) is a fully riced, incredibly fast Arch Linux setup."
+"d": "[Dusky by dusklinux](https://github.com/dusklinux/dusky) is a fully riced, incredibly fast Arch Linux setup."
 },
 {
 "t": "Security Audit — the Rust Tools",
@@ -288,10 +288,10 @@
 "d": ""
 },
 {
-"t": "🎨 DuskyOS Shortcuts & Commands",
+"t": "🎨 Dusky Shortcuts & Commands",
 "u": "docs/helpful-commands.md#duskyos-shortcuts-commands",
 "s": "Docs · Arch Command Cheatsheet",
-"d": "> [Dusky OS by dusklinux](https://github.com/dusklinux/dusky) | [YouTube Demo](https://www.youtube.com/watch?v=JmgvSdEIK8c)"
+"d": "> [Dusky by dusklinux](https://github.com/dusklinux/dusky) | [YouTube Demo](https://www.youtube.com/watch?v=JmgvSdEIK8c)"
 },
 {
 "t": "💾 Disk & Filesystem",
@@ -2000,43 +2000,43 @@
 {
 "t": "Advanced Dusky Commands",
 "u": "docs/cheatsheets/duskyos-hyprland.md#advanced-dusky-commands",
-"s": "Docs · DuskyOS / Hyprland Cheatsheet",
+"s": "Docs · Dusky / Hyprland Cheatsheet",
 "d": "> [!NOTE]"
 },
 {
 "t": "Application Launching",
 "u": "docs/cheatsheets/duskyos-hyprland.md#application-launching",
-"s": "Docs · DuskyOS / Hyprland Cheatsheet",
+"s": "Docs · Dusky / Hyprland Cheatsheet",
 "d": "- **Terminal (Alacritty / Kitty)**: `SUPER + Enter`"
 },
 {
 "t": "Essential Keybinds",
 "u": "docs/cheatsheets/duskyos-hyprland.md#essential-keybinds",
-"s": "Docs · DuskyOS / Hyprland Cheatsheet",
+"s": "Docs · Dusky / Hyprland Cheatsheet",
 "d": "*Note: The primary modifier key (SUPER) is typically the Windows key.*"
 },
 {
 "t": "System Commands",
 "u": "docs/cheatsheets/duskyos-hyprland.md#system-commands",
-"s": "Docs · DuskyOS / Hyprland Cheatsheet",
+"s": "Docs · Dusky / Hyprland Cheatsheet",
 "d": "- **Lock Screen**: `SUPER + L`"
 },
 {
 "t": "Troubleshooting",
 "u": "docs/cheatsheets/duskyos-hyprland.md#troubleshooting",
-"s": "Docs · DuskyOS / Hyprland Cheatsheet",
+"s": "Docs · Dusky / Hyprland Cheatsheet",
 "d": "> [!WARNING]"
 },
 {
 "t": "Window Management",
 "u": "docs/cheatsheets/duskyos-hyprland.md#window-management",
-"s": "Docs · DuskyOS / Hyprland Cheatsheet",
+"s": "Docs · Dusky / Hyprland Cheatsheet",
 "d": "- **Close Focused Window**: `SUPER + Q` or `SUPER + Shift + Q`"
 },
 {
 "t": "Workspaces",
 "u": "docs/cheatsheets/duskyos-hyprland.md#workspaces",
-"s": "Docs · DuskyOS / Hyprland Cheatsheet",
+"s": "Docs · Dusky / Hyprland Cheatsheet",
 "d": "- **Switch Workspace**: `SUPER + [1-9]`"
 },
 {
@@ -2073,7 +2073,7 @@
 "t": "Desktop Environments & Applications",
 "u": "docs/10-generator-selections-and-dusky.md#desktop-environments-applications",
 "s": "Docs · Generator Selections Guide",
-"d": "- **Desktop Environment**: [GNOME](https://www.gnome.org/), [KDE Plasma](https://kde.org/plasma-desktop/), [DWM](https://dwm.suckless.org/), or **[Dusky OS](https://github.com/dusk"
+"d": "- **Desktop Environment**: [GNOME](https://www.gnome.org/), [KDE Plasma](https://kde.org/plasma-desktop/), [DWM](https://dwm.suckless.org/), or **[Dusky](https://github.com/dusk"
 },
 {
 "t": "Disks & Filesystems",
@@ -2157,7 +2157,7 @@
 "t": "Root Account & Usage",
 "u": "docs/dusky-cheatsheet.md#root-account-usage",
 "s": "Docs · OS Shortcut & Command cheatsheet for dusky 2026 os release",
-"d": "With Dusky OS, it is recommended to run as your regular user and elevate privileges using `sudo` or `doas` when necessary. If you selected \"No\" for Root SSH Access in the generator"
+"d": "With Dusky, it is recommended to run as your regular user and elevate privileges using `sudo` or `doas` when necessary. If you selected \"No\" for Root SSH Access in the generator"
 },
 {
 "t": "Deliberately not \"fixed\"",
@@ -2685,7 +2685,7 @@
 "t": "Desktop Environment",
 "u": "wiki.html#desktop",
 "s": "Wiki",
-"d": "None leaves a pure TTY. GNOME and KDE are full environments. DWM is a minimal tiling WM requiring Xorg. Dusky OS is a pre-configured Hyprland setup by dusklinux and forces Wayland."
+"d": "None leaves a pure TTY. GNOME and KDE are full environments. DWM is a minimal tiling WM requiring Xorg. Dusky is a pre-configured Hyprland setup by dusklinux and forces Wayland."
 },
 {
 "t": "Display Server",
@@ -2718,10 +2718,10 @@
 "d": "Which environment a duress boot presents. Requires a pre-created partition labelled decoy — see setting up the decoy volume ."
 },
 {
-"t": "DuskyOS Automated Setup",
+"t": "Dusky Automated Setup",
 "u": "wiki.html#dusky_setup",
 "s": "Wiki",
-"d": "A single yes/no. Yes installs DuskyOS by dusklinux: a pre-configured Hyprland desktop with dotfiles, theming and a full Wayland environment. Because Dusky brings its own answers, c…"
+"d": "A single yes/no. Yes installs Dusky by dusklinux: a pre-configured Hyprland desktop with dotfiles, theming and a full Wayland environment. Because Dusky brings its own answers, c…"
 },
 {
 "t": "Encryption alongside Windows",

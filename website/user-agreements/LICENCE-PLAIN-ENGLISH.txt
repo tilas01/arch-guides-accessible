@@ -1,0 +1,72 @@
+THE LICENCE, IN PLAIN ENGLISH
+=============================
+
+Project:  Arch Guides Dynamic
+Licence:  Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+          (CC BY-NC-SA 4.0)
+Full text: LICENSE.txt in this folder, and
+          https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+This file is a summary written for people, not a legal document. Where this
+summary and LICENSE.txt disagree, LICENSE.txt is the licence.
+
+
+WHAT YOU CAN DO, FREELY
+-----------------------
+
+  - Read all of it. Use it. Install Arch with it.
+  - Copy it, mirror it, keep an offline copy, put it on a USB stick.
+  - Change it. Fork it. Build something else out of it.
+  - Use it at work, at a hackspace, in a class, in a workshop.
+  - Translate it.
+
+You do not need to ask permission for any of that. That is the point of
+publishing it.
+
+
+THE THREE CONDITIONS
+--------------------
+
+  Attribution   Say where it came from. A link to
+                https://github.com/tilas01/arch-guides-dynamic is plenty.
+                If you changed something, say that you changed it, so nobody
+                blames the original for your edits.
+
+  NonCommercial Do not sell it or use it to make money.
+
+  ShareAlike    If you build on it and share the result, share it under this
+                same licence, so the next person gets what you got.
+
+
+WHY THIS LICENCE
+----------------
+
+Information about how to install and harden your own computer should be free
+to read and free to pass on, and this project is licensed so that it stays
+that way.
+
+The two conditions beyond attribution are there for one reason: this took a
+long time to write, and it was written to be given away. Reposting it under
+someone else's name, or putting it behind a paywall, takes something that was
+free and makes it less free. That is the only outcome the licence is trying to
+prevent.
+
+So: a request, plainly. Please keep the credit on it, and please do not charge
+people for it. Everything else — forking, editing, mirroring, teaching from it,
+disagreeing with it in public — is welcome and always will be.
+
+
+IF YOU WANT TO DO SOMETHING THE LICENCE DOES NOT ALLOW
+------------------------------------------------------
+
+Ask. Open an issue on the repository and explain what you have in mind.
+Permission beyond the licence is granted case by case, and it costs nothing to
+ask.
+
+
+THIS IS SEPARATE FROM THE WAIVER
+--------------------------------
+
+The licence covers what you may do with the work. It says nothing about
+warranty or liability — that is LEGAL-WAIVER.txt in this folder, and it is a
+separate thing that you also agree to when you use the site.

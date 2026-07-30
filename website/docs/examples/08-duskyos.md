@@ -35,7 +35,7 @@ it is the authority, and where it and this disagree it is right.
 | **Security tools** |  |
 | **Libre only** | no |
 
-> **DuskyOS is preconfigured.** It fixes the compositor (Hyprland on
+> **Dusky is preconfigured.** It fixes the compositor (Hyprland on
 > Wayland), the shell (zsh), the font (JetBrains Mono Nerd) and the
 > palette (Tokyo Night). Those questions were locked rather than
 > silently overridden, so you could see the cost of the choice.

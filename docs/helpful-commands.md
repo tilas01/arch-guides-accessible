@@ -11,7 +11,7 @@
 4. [Disk & Filesystem](#-disk--filesystem)
 5. [Permissions & Users](#-permissions--users)
 6. [Security Auditing](#-security-auditing)
-7. [DuskyOS Shortcuts & Commands](#-duskos-shortcuts--commands)
+7. [Dusky Shortcuts & Commands](#-duskos-shortcuts--commands)
 8. [DWM Window Manager Cheatsheet](#-dwm-window-manager-cheatsheet)
 9. [GNOME Keyboard Shortcuts](#-gnome-keyboard-shortcuts)
 10. [KDE Plasma Shortcuts](#-kde-plasma-shortcuts)
@@ -123,11 +123,15 @@ systemctl list-units --failed                           # Check failed services
 
 ---
 
-## 🎨 DuskyOS Shortcuts & Commands
+## 🎨 Dusky Shortcuts & Commands
 
-> [Dusky OS by dusklinux](https://github.com/dusklinux/dusky) | [YouTube Demo](https://www.youtube.com/watch?v=JmgvSdEIK8c)
+> [Dusky by dusklinux](https://github.com/dusklinux/dusky) | [YouTube Demo](https://www.youtube.com/watch?v=JmgvSdEIK8c)
 >
-> Dusky OS is based on a custom X11/Xorg environment with bspwm or similar tiling window manager.
+> Dusky is a dotfiles and install-script project for **Hyprland on Wayland** — not a
+> separate operating system, and nothing to do with bspwm or dwm. It ships Waybar,
+> Rofi, Swaync, Wlogout and SDDM. The keybinds below are the defaults; the
+> authoritative list is `cheatsheet.md` in the repo, which is cloned to
+> `/tmp/dusky/` during installation.
 
 ### Window Management
 | Keybinding | Action |
@@ -168,17 +172,17 @@ xrandr                    # Display configuration (X11)
 ```
 
 ### Theming / Customization
-| Component | Tool Used |
-|-----------|-----------|
-| WM | bspwm/openbox (see Dusky repo) |
-| Status Bar | polybar / eww |
-| Compositor | picom |
-| Terminal | Alacritty / kitty |
-| Launcher | Rofi / dmenu |
-| Wallpaper | nitrogen / feh |
-| Notification | dunst |
-| Theme | Tokyo Night / custom GTK |
-| Icons | Papirus Dark |
+| Component | What Dusky uses |
+|-----------|-----------------|
+| Compositor | Hyprland (Wayland — it is its own compositor, so no picom) |
+| Status bar | Waybar |
+| Launcher | Rofi |
+| Notifications | Swaync |
+| Session / logout | Wlogout |
+| Display manager | SDDM |
+| Terminal | Kitty |
+| Wallpaper | hyprpaper |
+| Theme | Tokyo Night |
 | Fonts | JetBrains Mono / Nerd Font |
 
 ```bash

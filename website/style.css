@@ -919,19 +919,11 @@ input[type="checkbox"].policy-toggle:checked {
 /* Any wide block scrolls inside itself rather than the page. */
 .markdown-body table, .markdown-body pre { max-width: 100%; }
 
-/* ─── Tokyo Night syntax tokens ───────────────────────────────────────────── */
-.token.comment, .token.prolog, .token.doctype, .token.cdata { color: #565f89; }
-.token.punctuation { color: #89ddff; }
-.token.namespace { opacity: 0.7; }
-.token.property, .token.tag, .token.boolean, .token.number,
-.token.constant, .token.symbol, .token.deleted { color: var(--accent-orange); }
-.token.selector, .token.attr-name, .token.string, .token.char,
-.token.builtin, .token.inserted { color: var(--accent-green); }
-.token.operator, .token.entity, .token.url,
-.language-css .token.string, .style .token.string { color: #89ddff; }
-.token.atrule, .token.attr-value, .token.keyword { color: var(--accent-purple); }
-.token.function, .token.class-name { color: var(--accent-blue); }
-.token.regex, .token.important, .token.variable { color: var(--accent-yellow); }
+/* The .token.* rules that were here styled Prism's output. Prism was never
+   loaded — its five call sites in script.js were each guarded with
+   `if (window.Prism)` and none ever fired — so these selectors matched nothing
+   on any page, and two of them carried off-palette colours. Highlighting is now
+   done by highlight.js; its .tk-* colours are at the end of this file. */
 
 ul { list-style-type: square; padding-left: 1.5rem; }
 ul li { margin-bottom: 0.3rem; }
@@ -1094,4 +1086,330 @@ noscript .js-only { display: none !important; }
    nothing depends on :has() for functionality — only for emphasis. */
 @supports not selector(:has(*)) {
     .gear-config-btn { display: inline-block; opacity: 0.6; }
+}
+
+/* ─── Welcome dialog: the two required confirmations ──────────────────────────
+   Both ticks are mandatory, so the rows have to read as things you act on, not
+   as more paragraphs in a wall of legal text. Whole-row hit area, because a
+   14px box is not a tap target — the <label> wraps the input so anywhere in the
+   row toggles it. */
+.legal-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.75rem 0.9rem;
+    margin-bottom: 0.6rem;
+    min-height: var(--tap-target, 44px);
+    background: var(--bg-darker, #16161e);
+    border: 1px solid var(--border-color, #2d2d3f);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+}
+
+.legal-check:hover { border-color: var(--accent-cyan, #7dcfff); }
+
+.legal-check input[type="checkbox"] {
+    /* Sized up from the 13px default: this is the control the whole dialog
+       hangs on, and it has to be hittable with a thumb. */
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    margin: 0.12rem 0 0;
+    accent-color: var(--accent-green, #9ece6a);
+    cursor: pointer;
+}
+
+/* Ticked rows go green so the two states are distinguishable at a glance and
+   it is obvious which one is still outstanding. */
+.legal-check:has(input:checked) {
+    border-color: var(--accent-green, #9ece6a);
+    background: rgba(158, 206, 106, 0.07);
+}
+
+/* Keyboard focus must be visible on the row, not just the box. */
+.legal-check:focus-within {
+    outline: 2px solid var(--accent-cyan, #7dcfff);
+    outline-offset: 2px;
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+    .legal-check { padding: 0.85rem; font-size: 0.85rem; }
+    .legal-check input[type="checkbox"] { width: 22px; height: 22px; }
+}
+
+/* Shown on the Dynamic Generator when the chosen desktop only runs on one
+   display server. Matches .q-locked in the Manual Walkthrough so a locked
+   answer looks the same in both front ends. */
+.locked-note {
+    background: var(--tint-orange, rgba(255, 158, 100, 0.1));
+    border-left: 3px solid var(--accent-orange, #ff9e64);
+    border-radius: 0 6px 6px 0;
+    padding: 0.55rem 0.75rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: var(--fg-color, #a9b1d6);
+}
+
+/* A pinned select is still readable — greying it out to the point of being
+   unreadable hides the very answer the note is explaining. */
+select:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+/* ─── Syntax highlighting ─────────────────────────────────────────────────────
+   Tokyo Night, using the same --accent-* variables as the rest of the site so a
+   code block belongs to the page rather than looking like an embedded widget
+   from somewhere else. Applied by highlight.js; every colour here degrades to
+   plain monospace text if that file fails to load.
+
+   Contrast: all of these sit on --bg-dark (#13141c) and clear 4.5:1, except
+   .tk-comment which is deliberately quieter at ~4.6:1 — a comment that competes
+   with the command it explains is worse than one that recedes. */
+.tk-comment  { color: #6b7394; font-style: italic; }
+.tk-string   { color: var(--accent-green, #9ece6a); }
+.tk-keyword  { color: var(--accent-purple, #bb9af7); }
+.tk-builtin  { color: var(--accent-blue, #7aa2f7); }
+.tk-variable { color: var(--accent-orange, #ff9e64); }
+.tk-number   { color: var(--accent-orange, #ff9e64); }
+.tk-operator { color: var(--accent-cyan, #7dcfff); }
+.tk-flag     { color: var(--accent-yellow, #e0af68); }
+
+.tk-md-head  { color: var(--accent-purple, #bb9af7); font-weight: 700; }
+.tk-md-bold  { color: var(--fg-color, #a9b1d6); font-weight: 700; }
+.tk-md-em    { color: var(--fg-color, #a9b1d6); font-style: italic; }
+.tk-md-code  { color: var(--accent-green, #9ece6a); }
+.tk-md-link  { color: var(--accent-blue, #7aa2f7); }
+.tk-md-quote { color: var(--accent-cyan, #7dcfff); }
+.tk-md-list  { color: var(--accent-orange, #ff9e64); }
+.tk-md-table { color: var(--fg-dim, #7f88ad); }
+.tk-md-rule  { color: var(--border-color, #2d2d3f); }
+.tk-md-fence { color: var(--accent-green, #9ece6a); }
+
+.tk-diff-add { color: var(--accent-green, #9ece6a); }
+.tk-diff-del { color: var(--accent-red, #f7768e); }
+
+/* The language label. An attribute on the <pre>, not an element inside it, so
+   it can never end up in a copied selection — every copy button on this site
+   reads textContent, and "bash" pasted at the top of a script would break it. */
+pre.tk {
+    position: relative;
+}
+
+pre.tk[data-tk-lang]::before {
+    content: attr(data-tk-lang);
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.15rem 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+    color: var(--fg-dim, #7f88ad);
+    background: var(--bg-lighter, #24283b);
+    border-left: 1px solid var(--border-color, #2d2d3f);
+    border-bottom: 1px solid var(--border-color, #2d2d3f);
+    border-radius: 0 6px 0 6px;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* A copy button, where a page has one, sits in the same corner. Move the label
+   left so the two do not stack. */
+pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
+
+@media (max-width: 480px) {
+    /* On a phone the label eats a third of a narrow block. The colours already
+       say what it is. */
+    pre.tk[data-tk-lang]::before { display: none; }
+}
+
+/* Respect a reader who has asked for less contrast in their OS. */
+@media (prefers-contrast: more) {
+    .tk-comment { color: #8b95bd; font-style: normal; }
+}
+
+/* Rendered markdown in the Live Editor preview. Previously each element carried
+   its own inline colours, copied from GitHub's dark theme rather than taken from
+   this palette, so a previewed guide did not look like the site it was on. */
+#markdown-preview h1,
+#markdown-preview h2,
+#markdown-preview h3,
+#markdown-preview h4 { color: var(--accent-purple); margin: 1.2rem 0 0.5rem; }
+#markdown-preview h1 { font-size: 1.4rem; }
+#markdown-preview h2 { font-size: 1.2rem; }
+#markdown-preview h3 { font-size: 1.05rem; }
+#markdown-preview h4 { font-size: 0.95rem; }
+#markdown-preview code {
+    background: var(--bg-darker);
+    color: var(--accent-green);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+}
+#markdown-preview blockquote {
+    border-left: 3px solid var(--accent-purple);
+    background: var(--tint-purple, rgba(187, 154, 247, 0.07));
+    padding: 0.4rem 0.9rem;
+    color: var(--fg-dim);
+    margin: 0.6rem 0;
+    border-radius: 0 6px 6px 0;
+}
+#markdown-preview ul { margin: 0.5rem 0 0.5rem 1.3rem; }
+#markdown-preview hr { border: 0; border-top: 1px solid var(--border-color); margin: 1.2rem 0; }
+#markdown-preview a { color: var(--accent-blue); }
+
+/* A fenced block inside the preview. The <code> keeps its own token colours;
+   this is only the frame around it. */
+.md-preview-code {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+}
+/* Inline-code styling must not leak into a fenced block's <code>. */
+#markdown-preview .md-preview-code code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: 0.85rem;
+}
+
+/* ─── Rendered markdown documents ─────────────────────────────────────────────
+   Used by wiki.html?page=, the cheatsheets tabs, and the Live Editor preview.
+   These exist because following a docs link used to land the reader on a raw
+   .md file — grey serif text, no header, no navigation, no way back. A document
+   is part of the site, so it has to look like it. */
+
+.md-alert {
+    border-left: 3px solid var(--accent-cyan);
+    background: var(--tint-cyan);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+}
+.md-alert > p { margin: 0.35rem 0 0; }
+.md-alert > p:first-of-type { margin-top: 0.15rem; }
+.md-alert-head {
+    display: block;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    color: var(--accent-cyan);
+}
+
+/* One per alert type, so severity is legible before the text is read. */
+.md-alert.md-note      { border-left-color: var(--accent-blue);   background: var(--tint-blue); }
+.md-alert.md-note      .md-alert-head { color: var(--accent-blue); }
+.md-alert.md-tip       { border-left-color: var(--accent-green);  background: var(--tint-green); }
+.md-alert.md-tip       .md-alert-head { color: var(--accent-green); }
+.md-alert.md-important { border-left-color: var(--accent-purple); background: var(--tint-purple); }
+.md-alert.md-important .md-alert-head { color: var(--accent-purple); }
+.md-alert.md-warning   { border-left-color: var(--accent-orange); background: var(--tint-orange); }
+.md-alert.md-warning   .md-alert-head { color: var(--accent-orange); }
+.md-alert.md-caution   { border-left-color: var(--accent-red);    background: var(--tint-red); }
+.md-alert.md-caution   .md-alert-head { color: var(--accent-red); }
+.md-alert.md-quote     { border-left-color: var(--border-color);  background: transparent; }
+.md-alert.md-quote .md-alert-head { display: none; }
+
+.md-code {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    font-size: 0.85rem;
+}
+
+.md-tablewrap { overflow-x: auto; margin: 1rem 0; }
+.md-table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+.md-table th,
+.md-table td { border: 1px solid var(--border-color); padding: 0.5rem 0.7rem; text-align: left; }
+.md-table th { background: var(--bg-lighter); color: var(--accent-cyan); font-weight: 700; }
+.md-table tr:nth-child(even) td { background: rgba(255, 255, 255, 0.015); }
+
+/* ─── wiki.html?page= document view ───────────────────────────────────────── */
+.wiki-doc { max-width: 100%; }
+
+.wiki-doc-crumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    color: var(--fg-dim);
+    padding-bottom: 0.7rem;
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.wiki-doc-here { color: var(--accent-cyan); font-weight: 700; }
+
+.wiki-doc-body h1 { font-size: 1.55rem; color: var(--heading-color, var(--accent-cyan)); margin: 0 0 0.8rem; }
+.wiki-doc-body h2 { font-size: 1.2rem;  color: var(--accent-purple); margin: 1.7rem 0 0.6rem; }
+.wiki-doc-body h3 { font-size: 1.02rem; color: var(--accent-cyan);   margin: 1.3rem 0 0.5rem; }
+.wiki-doc-body h4 { font-size: 0.94rem; color: var(--accent-green);  margin: 1.1rem 0 0.4rem; }
+.wiki-doc-body p  { line-height: 1.75; margin: 0.6rem 0; }
+.wiki-doc-body ul,
+.wiki-doc-body ol { margin: 0.6rem 0 0.6rem 1.4rem; }
+.wiki-doc-body li { margin-bottom: 0.35rem; line-height: 1.7; }
+.wiki-doc-body hr { border: 0; border-top: 1px solid var(--border-color); margin: 1.8rem 0; }
+.wiki-doc-body img { max-width: 100%; height: auto; border-radius: 8px; }
+.wiki-doc-body > :not(.md-code) code {
+    background: var(--bg-darker);
+    color: var(--accent-green);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+}
+.wiki-doc-body kbd {
+    background: var(--bg-lighter);
+    border: 1px solid var(--border-color);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--accent-cyan);
+}
+.wiki-doc-loading { color: var(--fg-dim); font-style: italic; }
+
+/* The document's own contents list, when it has enough headings to need one. */
+.wiki-doc-toc {
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin: 0 0 1.5rem;
+    font-size: 0.84rem;
+}
+.wiki-doc-toc strong { color: var(--accent-cyan); display: block; margin-bottom: 0.4rem; }
+.wiki-doc-toc ul { list-style: none; margin: 0; padding: 0; }
+.wiki-doc-toc li { margin-bottom: 0.15rem; }
+.wiki-doc-toc li.lvl-3 { padding-left: 1rem; }
+.wiki-doc-toc a { color: var(--fg-color); }
+.wiki-doc-toc a:hover { color: var(--accent-cyan); }
+
+.wiki-doc-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85rem;
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+    /* 44px tap targets on the two links out of a document. */
+    .wiki-doc-foot a,
+    .wiki-doc-crumbs a { display: inline-flex; align-items: center; min-height: var(--tap-target, 44px); }
 }

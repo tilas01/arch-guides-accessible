@@ -57,11 +57,20 @@
         });
     }
 
-    /** Value DuskyOS forces for this question, or null. */
+    /** Value Dusky forces for this question, or null. */
     function lockedValue(step) {
         if (state.desktop !== 'dusky') return null;
         return Object.prototype.hasOwnProperty.call(DUSKY_LOCKS, step.id)
             ? DUSKY_LOCKS[step.id] : null;
+    }
+
+    /** Human label for a value, for use in prose. Falls back to the raw value. */
+    function optionLabel(step, value) {
+        var opts = step.options || [];
+        for (var i = 0; i < opts.length; i++) {
+            if (opts[i].value === value) return opts[i].label;
+        }
+        return String(value);
     }
 
     function nextUnanswered() {
@@ -173,17 +182,22 @@
 
         if (locked !== null) {
             card.appendChild(h('div', { class: 'q-locked' }, [
-                h('strong', { text: '🔒 Fixed by DuskyOS. ' }),
+                h('strong', { text: '🔒 Fixed by Dusky: ' + optionLabel(step, locked) + '. ' }),
                 document.createTextNode(
-                    'DuskyOS ships this preconfigured, so the walkthrough will not fight it. ' +
-                    'Choose a different desktop to decide this yourself.')
+                    'Dusky ships this preconfigured, so the walkthrough will not fight it — ' +
+                    'it is carried through to your guide and script as it stands. ' +
+                    'Continue below, or go back and choose a different desktop to decide ' +
+                    'this yourself.')
             ]));
         }
 
+        // Every card is inert while the step is locked — the value is not yours
+        // to pick here. The locked one still renders, and renders as selected,
+        // so you can see what Dusky chose rather than just being told a number
+        // of options are unavailable.
         var grid = h('div', { class: 'opt-grid' });
         activeOptions(step).forEach(function (o) {
-            grid.appendChild(optionCard(step, o, locked !== null && locked !== o.value ? true
-                                                : (locked !== null)));
+            grid.appendChild(optionCard(step, o, locked !== null));
         });
 
         if (step.type === 'text') {
@@ -209,7 +223,18 @@
         } else {
             card.appendChild(grid);
             card.appendChild(h('div', { class: 'q-error', id: 'err-' + step.id, hidden: 'hidden' }));
-            if (step.type === 'multi') {
+            if (locked !== null) {
+                // A locked step has nothing left to click, and a choice step
+                // advances only by clicking an option — so without this the
+                // walkthrough dead-ends here with Back as the only control.
+                // That is exactly what picking Dusky used to do at "Display
+                // server". The button carries the fixed value forward.
+                card.appendChild(h('button', {
+                    type: 'button', class: 'btn q-next',
+                    text: 'Continue with ' + optionLabel(step, locked) + ' →',
+                    onclick: function () { answer(step, locked); }
+                }));
+            } else if (step.type === 'multi') {
                 card.appendChild(h('button', {
                     type: 'button', class: 'btn q-next', text: 'Continue →',
                     onclick: function () { submitMulti(step); }
@@ -230,7 +255,9 @@
         requestAnimationFrame(function () { card.classList.add('q-in'); });
 
         if (typeof window.refreshTooltips === 'function') window.refreshTooltips();
-        var focusTarget = card.querySelector('.q-text, .opt-card:not([disabled])');
+        // .q-next last: on a locked step every option card is disabled, so
+        // without it nothing here is focusable and keyboard users land nowhere.
+        var focusTarget = card.querySelector('.q-text, .opt-card:not([disabled]), .q-next');
         if (focusTarget) focusTarget.focus({ preventScroll: true });
         updateProgress();
     }
@@ -365,7 +392,13 @@
         var md = window.buildManualGuide(state);
         var out = document.getElementById('guide-out');
         if (!out) return;
-        out.textContent = md;
+        // Re-highlighted on every answer, so the done-marker has to be cleared
+        // each time — plain highlightElement() would colour the first render
+        // and then leave every later one plain. Falls back to unhighlighted
+        // text if highlight.js did not load; the guide is still correct, just
+        // monochrome.
+        if (window.setHighlightedCode) window.setHighlightedCode(out, md, 'markdown');
+        else out.textContent = md;
         var empty = document.getElementById('guide-empty');
         if (empty) empty.hidden = visited.length > 0;
         var wrap = document.getElementById('guide-wrap');

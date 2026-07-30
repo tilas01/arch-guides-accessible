@@ -23,7 +23,7 @@
 - [GNOME Shortcuts](#gnome-shortcuts)
 - [KDE Plasma Shortcuts](#kde-plasma-shortcuts)
 - [DWM Shortcuts](#dwm-shortcuts)
-- [Dusky OS Shortcuts](#dusky-os-shortcuts)
+- [Dusky Shortcuts](#dusky-os-shortcuts)
 - [Post-Install Apps Reference](#post-install-apps-reference)
 - [DNS Configuration Reference](#dns-configuration-reference)
 - [Security Suite Commands](#security-suite-commands)
@@ -488,26 +488,35 @@ cd /usr/local/src/dwm
 make clean install
 ```
 
-### Dusky OS Shortcuts
+### Dusky Shortcuts
 
-> **Dusky OS** by [dusklinux](https://github.com/dusklinux/dusky) — A DWM-based minimal desktop environment.
-> For the complete Dusky cheatsheet, see the dedicated [Dusky OS Cheatsheet](dusky-cheatsheet.md).
+> **Dusky** by [dusklinux](https://github.com/dusklinux/dusky) — a dotfiles and
+> install-script project for **Hyprland on Wayland**. It is not a separate
+> operating system and it is not based on dwm: you are still running Arch, with
+> Dusky's configuration on top. It brings Waybar, Rofi, Swaync, Wlogout and SDDM.
+> [Video walkthrough](https://www.youtube.com/watch?v=JmgvSdEIK8c) ·
+> [dusklinux on YouTube](https://www.youtube.com/@dusk_everyday)
 
-Dusky inherits DWM's keybinding system. Core shortcuts:
+Because Dusky is Hyprland, it uses Hyprland's keybinding system — `hyprland.conf`,
+not a recompiled `config.h`. The defaults below are Hyprland's own; Dusky changes
+some of them.
 
 | Shortcut | Action |
 |----------|--------|
-| `Mod + Enter` | Open terminal |
-| `Mod + p` | Open application launcher |
-| `Mod + Shift + c` | Close window |
-| `Mod + Shift + q` | Quit Dusky |
-| `Mod + 1-9` | Switch workspace/tag |
-| `Mod + Shift + 1-9` | Move window to tag |
-| `Mod + j/k` | Navigate windows |
-| `Mod + h/l` | Resize master area |
-| `Mod + t/f/m` | Tiled/Floating/Monocle layout |
+| `Super + Enter` | Open terminal |
+| `Super + R` | Application launcher (Rofi) |
+| `Super + Q` | Close window |
+| `Super + M` | Exit Hyprland |
+| `Super + 1-9` | Switch workspace |
+| `Super + Shift + 1-9` | Move window to workspace |
+| `Super + arrows` | Move focus |
+| `Super + V` | Toggle floating |
+| `Super + F` | Fullscreen |
 
-> **Note:** Dusky may customize these defaults. Check the `config.h` in the [Dusky repository](https://github.com/dusklinux/dusky) for exact keybindings.
+> **The authoritative list is Dusky's own.** `cheatsheet.md` is cloned to
+> `/tmp/dusky/` during installation, and the bindings live in
+> `~/.config/hypr/hyprland.conf` afterwards. Read those rather than trusting this
+> table — the project moves, and this page does not move with it.
 
 ---
 
@@ -684,4 +693,4 @@ pacman -Ss '^linux$' '^linux-hardened$' '^linux-zen$' '^linux-lts$'
 ---
 
 *Part of the [Arch Guides Dynamic](https://github.com/tilas01/arch-guides-dynamic) wiki by [tilas01](https://github.com/tilas01).*
-*Dusky OS by [dusklinux](https://github.com/dusklinux/dusky). *
+*Dusky by [dusklinux](https://github.com/dusklinux/dusky). *

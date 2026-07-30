@@ -89,7 +89,7 @@ routes 1–2 stay tied to routes 3–4.
 ### Reference
 
 * **[Arch command cheatsheet](docs/helpful-commands.md)** — pacman, systemd, LUKS, BTRFS/Snapper, networking, recovery.
-* **[DuskyOS / Hyprland keybinds](docs/dusky-cheatsheet.md)** — every shortcut, if you chose Dusky in the generator.
+* **[Dusky / Hyprland keybinds](docs/dusky-cheatsheet.md)** — every shortcut, if you chose Dusky in the generator.
 * **[Xorg vs Wayland](docs/xorg-vs-wayland.md)** — what actually differs and which you need.
 * **[Maintenance](docs/maintenance.md)** — keeping a rolling-release install healthy.
 * **[Architecture](docs/architecture.md)** — how the generator, guides and tools fit together.
@@ -103,7 +103,7 @@ routes 1–2 stay tied to routes 3–4.
 * [05. Secure Boot](docs/05-secure-boot/) — [custom keys + UKI](docs/05-secure-boot/custom-keys-uki.md) · [Shim + GRUB](docs/05-secure-boot/shim-grub.md)
 * [06. Dual boot](docs/06-dual-boot/) — [systemd-boot + Windows](docs/06-dual-boot/systemd-boot-windows.md) · [GRUB os-prober](docs/06-dual-boot/grub-os-prober.md)
 * [07. Post-installation](docs/07-post-installation.md)
-* [10. Generator selections & DuskyOS](docs/10-generator-selections-and-dusky.md)
+* [10. Generator selections & Dusky](docs/10-generator-selections-and-dusky.md)
 
 ---
 
@@ -280,7 +280,7 @@ Contributions and issue reports are welcome.
   account for personally, and which I remain unreasonably pleased about. It is
   now deprecated in favour of this project, but the guides here are descended
   from it and it earned the retirement.
-* **[dusklinux](https://github.com/dusklinux/dusky)** — creator of DuskyOS, the basis for the Dusky desktop option and its cheatsheet.
+* **[dusklinux](https://github.com/dusklinux/dusky)** — creator of Dusky, the basis for the Dusky desktop option and its cheatsheet.
 * **[Arch Wiki](https://wiki.archlinux.org/)** — the authoritative reference every procedure here follows.
 * **[max-baz/arch-secure-boot](https://github.com/max-baz/arch-secure-boot)** — the Secure Boot / UKI approach, whose guide covers running LUKS with a Unified Kernel Image instead of GRUB, as used here. [`scripts/arch-secure-boot.sh`](scripts/arch-secure-boot.sh) is adapted from it.
 * **[Snapper](https://github.com/openSUSE/snapper)** and **[usbkill](https://github.com/hephaest0s/usbkill)** — integrated into the generator.

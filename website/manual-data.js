@@ -26,10 +26,13 @@
 'use strict';
 
 /* Values Dusky fixes for you. Selecting it locks these rather than silently
-   overriding them, so you can see what the choice costs before you make it. */
+   overriding them, so you can see what the choice costs before you make it.
+   Every key here must be the id of a real step and every value must be one of
+   that step's option values — a key that matches nothing locks nothing, and a
+   value that matches no option leaves the question with no answer to carry
+   forward. `tests/dusky-locks.mjs` fails the build if either stops holding. */
 const DUSKY_LOCKS = {
     display_server: 'wayland',
-    desktop_extra: 'hyprland',
     shell: 'zsh',
     font: 'jetbrains-mono-nerd',
     palette: 'tokyo-night'

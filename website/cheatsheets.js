@@ -6,14 +6,10 @@
    markdown and renders it, so docs/ stays the single source and the repo-only
    route reads exactly what the site shows.
 
-   The renderer is deliberately small — headings, code fences, inline code,
-   tables, lists, links, bold. That is the whole vocabulary these files use. A
-   full markdown library would be ~50 KB to gain features no cheatsheet needs.
-
-   Everything is escaped before any markup is added, so a stray `<` in a command
-   cannot become an element. The fetched files are our own, but treating them as
-   untrusted costs nothing and means a future editor cannot accidentally
-   introduce script through a docs edit.
+   Rendering is markdown.js, shared with wiki.html?page= and the Live Editor
+   preview, so all three agree and a fix lands once. It escapes before inserting
+   any markup: the fetched files are our own, but treating them as untrusted
+   costs nothing and means a docs edit cannot introduce script.
    ========================================================================= */
 
 'use strict';
@@ -26,107 +22,34 @@
         { id: 'arch',    label: '📦 Arch commands',
           file: 'docs/cheatsheets/arch-commands.md',
           desc: 'pacman, the AUR, systemd, Btrfs snapshots and the security suite.' },
-        { id: 'dusky',   label: '🌙 DuskyOS / Hyprland',
+        { id: 'dusky',   label: '🌙 Dusky / Hyprland',
           file: 'docs/cheatsheets/duskyos-hyprland.md',
           desc: 'Every keybind, the advanced commands, and what to do when it misbehaves.' },
         { id: 'full',    label: '📖 Full command reference',
           file: 'docs/helpful-commands.md',
           desc: 'The long one: packages, services, disks, permissions, security auditing, and per-desktop shortcuts.' },
-        { id: 'duskyq',  label: '⚡ DuskyOS quick card',
+        { id: 'duskyq',  label: '⚡ Dusky quick card',
           file: 'docs/dusky-cheatsheet.md',
           desc: 'The short version, for printing or keeping on a second screen.' }
     ];
 
     var cache = {};   // file -> raw markdown, so switching tabs refetches nothing
 
-    function esc(s) {
-        return String(s).replace(/[&<>"']/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-    }
-
-    /* Inline formatting, applied only to already-escaped text. */
-    function inline(t) {
-        return t
-            .replace(/`([^`]+)`/g, '<code>$1</code>')
-            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, label, href) {
-                // Only http(s) and relative links; never javascript: or data:.
-                if (/^(https?:)?\/\//.test(href) || /^[\w./#-]+$/.test(href)) {
-                    var ext = /^https?:/.test(href) ? ' target="_blank" rel="noopener"' : '';
-                    return '<a href="' + href + '"' + ext + '>' + label + '</a>';
-                }
-                return label;
-            });
-    }
-
+    // Rendering is markdown.js's job now. There were three copies of a
+    // markdown renderer on this site — one here, one in live.html, and none at
+    // all in wiki.html, whose ?page= handler redirected to the raw .md file
+    // instead. One implementation means a fix lands in all three places, and
+    // this file no longer carries its own escaping rules to get wrong.
     function render(md) {
-        var out = [], lines = md.split(/\r?\n/);
-        var inCode = false, inTable = false, inList = false;
-
-        function closeBlocks() {
-            if (inList) { out.push('</ul>'); inList = false; }
-            if (inTable) { out.push('</tbody></table></div>'); inTable = false; }
+        if (typeof window.renderMarkdown !== 'function') {
+            // No renderer: show the source as preformatted text rather than a
+            // blank tab. Still escaped, still readable, just not styled.
+            var pre = document.createElement('pre');
+            pre.className = 'md-code';
+            pre.textContent = md;
+            return pre.outerHTML;
         }
-
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i];
-
-            // Fenced code
-            var fence = line.match(/^```(\w*)\s*$/);
-            if (fence) {
-                if (inCode) { out.push('</code></pre>'); inCode = false; }
-                else {
-                    closeBlocks();
-                    out.push('<pre class="cs-code"><code data-lang="' + esc(fence[1] || '') + '">');
-                    inCode = true;
-                }
-                continue;
-            }
-            if (inCode) { out.push(esc(line)); continue; }
-
-            // Tables: | a | b |  with a --- separator row
-            if (/^\s*\|/.test(line)) {
-                var cells = line.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|');
-                if (/^[\s|:-]+$/.test(line)) continue;   // separator row
-                if (!inTable) {
-                    closeBlocks();
-                    out.push('<div class="cs-tablewrap"><table class="cs-table"><tbody>');
-                    inTable = true;
-                }
-                out.push('<tr>' + cells.map(function (c) {
-                    return '<td>' + inline(esc(c.trim())) + '</td>';
-                }).join('') + '</tr>');
-                continue;
-            }
-            if (inTable && line.trim() === '') { closeBlocks(); continue; }
-
-            // Headings
-            var h = line.match(/^(#{1,4})\s+(.*)$/);
-            if (h) {
-                closeBlocks();
-                var lvl = h[1].length;
-                var text = inline(esc(h[2]));
-                var id = h[2].toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                out.push('<h' + lvl + ' id="cs-' + esc(id) + '">' + text + '</h' + lvl + '>');
-                continue;
-            }
-
-            // Lists
-            if (/^\s*[-*]\s+/.test(line)) {
-                if (!inList) { closeBlocks(); out.push('<ul>'); inList = true; }
-                out.push('<li>' + inline(esc(line.replace(/^\s*[-*]\s+/, ''))) + '</li>');
-                continue;
-            }
-
-            if (line.trim() === '') { closeBlocks(); continue; }
-
-            closeBlocks();
-            out.push('<p>' + inline(esc(line)) + '</p>');
-        }
-        if (inCode) out.push('</code></pre>');
-        closeBlocks();
-        return out.join('\n');
+        return window.renderMarkdown(md, { headingPrefix: 'cs-' }).html;
     }
 
     function el(id) { return document.getElementById(id); }
@@ -158,6 +81,10 @@
             // collapsed into the same style recalculation.
             requestAnimationFrame(function () { host.classList.add('cs-in'); });
             if (status) status.textContent = '';
+            // Highlight the fenced blocks this render just produced. Scoped to
+            // the host so it does not re-walk the rest of the page on every
+            // tab switch.
+            if (typeof window.highlightAll === 'function') window.highlightAll(host);
             wireCopyButtons();
         }
 

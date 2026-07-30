@@ -2,13 +2,17 @@
 // Uses localStorage only. No cookies. No tracking.
 'use strict';
 document.addEventListener('DOMContentLoaded', () => {
+  // Legacy only. These were set by the old "I Agree & Don't Show Again" button,
+  // which no longer exists — agreement is now two explicit ticks per session,
+  // because a flag saved months ago is not somebody reading a waiver. They are
+  // still honoured so that anyone who pressed that button before does not get
+  // the dialog again unasked; nothing writes them any more.
   const LEGAL_KEY   = 'legal_accepted';
   const WELCOME_KEY = 'welcome_seen';
-  // Session-scoped acceptance. "I Agree" alone used to set nothing, so agreeing
-  // and then navigating anywhere — including via the chooser's own "take me to
-  // the index" link — showed the modal again on the next page, with no way out
-  // short of ticking "don't show again". Agreeing now holds for the session;
-  // "don't show again" is what makes it persist across sessions.
+  // Session-scoped acceptance. Agreeing used to set nothing at all, so agreeing
+  // and then navigating anywhere — including via the chooser's own escape link
+  // — showed the dialog again on the next page, with no way out short of
+  // ticking "don't show again". Acceptance now holds for the browser session.
   const SESSION_KEY = 'legal_accepted_session';
 
   function sessionAccepted() {
@@ -111,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="border-top:1px solid var(--border-color,#2d2d3f); padding-top:1.25rem; margin-bottom:1.5rem;">
         <h3 style="color:var(--accent-red,#f7768e); margin-top:0; font-size:1rem;">⚠️ Legal Disclaimer &amp; Liability Waiver</h3>
         <p style="color:var(--fg-color,#a9b1d6); line-height:1.75; font-size:0.83rem; margin:0;">
-          By clicking <strong>"I Agree"</strong>, you acknowledge and accept that all content, tools, scripts, binaries,
+          By continuing, you acknowledge and accept that all content, tools, scripts, binaries,
           documentation, and source code provided on this website and within the GitHub repository
           <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank"
              style="color:var(--accent-blue,#7aa2f7);">tilas01/arch-guides-dynamic</a> —
@@ -136,56 +140,123 @@ document.addEventListener('DOMContentLoaded', () => {
         </p>
       </div>
 
-      <!-- Two Action Buttons -->
-      <div style="display:flex; flex-direction:column; gap:0.75rem;">
-        <button id="legal-agree-btn" class="btn" style="
-          background:var(--accent-red,#f7768e); color:#0d1117;
-          border:none; width:100%; padding:0.85rem;
+      <!-- Two required confirmations, then one way forward -->
+      <div style="border-top:1px solid var(--border-color,#2d2d3f); padding-top:1.25rem;">
+        <p style="color:var(--accent-orange,#ff9e64); font-size:0.8rem; margin:0 0 0.9rem; font-weight:600;">
+          Both boxes below are required. <span style="color:#8b949e; font-weight:400;">Continue stays
+          greyed out until you tick both — they are two separate things and you are
+          confirming each one on its own.</span>
+        </p>
+
+        <label for="legal-ck-waiver" class="legal-check nav-tooltip"
+               data-title="⚠️ Understanding the waiver"
+               data-desc="Confirms you have read the disclaimer above and accept that everything here is provided as is, with no warranty and no liability. The full text is linked and opens in a new tab.">
+          <input type="checkbox" id="legal-ck-waiver">
+          <span>
+            I have read and understand the <strong>legal disclaimer and liability waiver</strong>
+            above, and I accept that I use this project at my own risk.
+            <a href="user-agreements/LEGAL-WAIVER.txt" target="_blank" rel="noopener"
+               style="color:var(--accent-red,#f7768e);">Read the full waiver&nbsp;↗</a>
+          </span>
+        </label>
+
+        <label for="legal-ck-licence" class="legal-check nav-tooltip"
+               data-title="📄 Complying with the licence"
+               data-desc="The repository is licensed CC BY-NC-SA 4.0: keep the credit on it, do not sell it, and share anything you build from it under the same licence. Everything else — reading, forking, mirroring, editing — is free.">
+          <input type="checkbox" id="legal-ck-licence">
+          <span>
+            I have read the <strong>repository licence</strong> and I will comply with it.
+            <a href="user-agreements/LICENSE.txt" target="_blank" rel="noopener"
+               style="color:var(--accent-blue,#7aa2f7);">CC BY-NC-SA 4.0&nbsp;↗</a>
+            &nbsp;·&nbsp;
+            <a href="user-agreements/LICENCE-PLAIN-ENGLISH.txt" target="_blank" rel="noopener"
+               style="color:var(--accent-blue,#7aa2f7);">in plain English&nbsp;↗</a>
+          </span>
+        </label>
+
+        <button id="legal-continue-btn" class="btn nav-tooltip" type="button" disabled
+                data-title="Continue"
+                data-desc="Enabled once both boxes are ticked. It takes you to a list of everywhere on the site, with a short description of each."
+                style="
+          background:var(--bg-lighter,#24283b); color:#565f89;
+          border:1px solid var(--border-color,#2d2d3f); width:100%;
+          padding:0.9rem; margin-top:1.1rem;
           font-size:1rem; font-weight:700; border-radius:8px;
-          cursor:pointer; letter-spacing:0.5px; transition:filter 0.2s;">
-          ✅ I Agree
+          cursor:not-allowed; letter-spacing:0.5px;
+          transition:background 0.18s, color 0.18s, border-color 0.18s;">
+          Continue
         </button>
-        <button id="legal-agree-persist-btn" class="btn" style="
-          background:var(--bg-darker,#16161e); color:var(--accent-red,#f7768e);
-          border:1px solid var(--accent-red,#f7768e); width:100%; padding:0.85rem;
-          font-size:0.9rem; font-weight:700; border-radius:8px;
-          cursor:pointer; letter-spacing:0.3px; transition:filter 0.2s;">
-          ✅ I Agree &amp; Don't Show Again
-        </button>
+
+        <p id="legal-continue-hint" style="color:#8b949e; font-size:0.72rem; text-align:center; margin:0.7rem 0 0;">
+          Tick both boxes to continue.
+        </p>
       </div>
-      <p style="color:#8b949e; font-size:0.72rem; text-align:center; margin:1rem 0 0;">
-        "Don't Show Again" stores a flag in your browser's <code>localStorage</code>. No personal data is saved.
-      </p>
     `;
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    // After agreeing, always offer the two ways in. It is the first real
-    // decision a visitor has to make, and burying it behind an opt-in checkbox
-    // meant most people never saw it — they landed on whichever page happened
-    // to be open. The chooser has its own "not now" escape to the site index.
+    // After agreeing, always offer the ways in. It is the first real decision a
+    // visitor has to make, and burying it behind an opt-in checkbox meant most
+    // people never saw it — they landed on whichever page happened to be open.
+    // The chooser has its own "not now" escape.
     const dismiss = () => {
       markSessionAccepted();
       overlay.remove();
       showGeneratorJump();
     };
 
-    modal.querySelector('#legal-agree-btn').addEventListener('click', dismiss);
+    // One button, gated on two ticks. There is deliberately no "don't show
+    // again": that turned agreement into a preference, and a stored preference
+    // is not somebody reading a waiver. Ticking is the whole point, so it is
+    // asked once per session and no more.
+    const ckWaiver  = modal.querySelector('#legal-ck-waiver');
+    const ckLicence = modal.querySelector('#legal-ck-licence');
+    const btn       = modal.querySelector('#legal-continue-btn');
+    const hint      = modal.querySelector('#legal-continue-hint');
 
-    modal.querySelector('#legal-agree-persist-btn').addEventListener('click', () => {
-      localStorage.setItem(LEGAL_KEY, 'true');
-      localStorage.setItem(WELCOME_KEY, 'true');
-      dismiss();
+    const GREEN = 'var(--accent-green,#9ece6a)';
+
+    function syncGate() {
+      const ready = ckWaiver.checked && ckLicence.checked;
+      btn.disabled = !ready;
+      // Colour and cursor both move, so the state is legible without relying on
+      // colour alone — the disabled cursor says the same thing to anyone who
+      // cannot distinguish the grey from the green.
+      // The `border` shorthand, not `borderColor`. Assigning the longhand alone
+      // expands the shorthand already in the style attribute and leaves
+      // border-*-style and border-*-width as empty strings, so the width fell
+      // back to the UA hairline (0.67px) and the button's box shifted by a
+      // fraction of a pixel every time it was toggled.
+      Object.assign(btn.style, ready
+        ? { background: GREEN, color: '#16161e',
+            border: '1px solid ' + GREEN, cursor: 'pointer' }
+        : { background: 'var(--bg-lighter,#24283b)', color: '#565f89',
+            border: '1px solid var(--border-color,#2f3450)', cursor: 'not-allowed' });
+
+      if (ready) {
+        hint.textContent = 'Both confirmed — you can continue.';
+        hint.style.color = GREEN;
+      } else {
+        const missing = !ckWaiver.checked && !ckLicence.checked ? 'both boxes'
+                      : !ckWaiver.checked ? 'the disclaimer box'
+                      : 'the licence box';
+        hint.textContent = 'Tick ' + missing + ' to continue.';
+        hint.style.color = '#8b949e';
+      }
+    }
+
+    [ckWaiver, ckLicence].forEach(ck => ck.addEventListener('change', syncGate));
+    syncGate();
+
+    btn.addEventListener('click', () => { if (!btn.disabled) dismiss(); });
+    btn.addEventListener('mouseenter', () => {
+      if (!btn.disabled) btn.style.filter = 'brightness(1.12)';
     });
+    btn.addEventListener('mouseleave', () => { btn.style.filter = ''; });
 
-    // Hover effect
-    [modal.querySelector('#legal-agree-btn'), modal.querySelector('#legal-agree-persist-btn')]
-      .forEach(btn => {
-        btn.addEventListener('mouseenter', () => btn.style.filter = 'brightness(1.12)');
-        btn.addEventListener('mouseleave', () => btn.style.filter = '');
-      });
+    if (typeof window.refreshTooltips === 'function') window.refreshTooltips();
   }
 
   // ─── Generator jump overlay ─────────────────────────────────────────────────

@@ -6,22 +6,25 @@
     <title>Live Editor — Arch Guides Dynamic</title>
     <meta name="description" content="Live script editor for Arch Guides Dynamic. Edit, preview, and download your generated install scripts and markdown guides.">
     <link rel="stylesheet" href="style.css">
+    <!-- No CDN scripts and no remote fonts, deliberately.
+         This page used to pull Prism and marked from cdnjs and jsdelivr, and the
+         font from Google. Each one sent every visitor's IP to a third party — on
+         a site about not leaking to third parties — ran unpinned remote script on
+         the page that renders install commands, and broke the site entirely when
+         used offline from a live USB, which is exactly when it is needed.
+         markdown.js and highlight.js do both jobs and ship with the site. -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
     <style>
         :root {
             --editor-bg: #0d1117;
-            --editor-border: #30363d;
+            --editor-border: var(--border-color, #2f3450);
             --editor-line: #8b949e;
         }
         body { font-family: 'Inter', var(--font-mono), sans-serif; }
 
         .editor-page-header {
             background: var(--bg-darker);
-            border-bottom: 1px solid var(--border-color, #30363d);
+            border-bottom: 1px solid var(--border-color, #2f3450);
             padding: 1.2rem 2rem;
             display: flex;
             align-items: center;
@@ -87,7 +90,7 @@
             flex: 1;
             min-height: 450px;
             background: var(--editor-bg);
-            color: #e6edf3;
+            color: var(--fg-color, #a9b1d6);
             border: none;
             outline: none;
             resize: vertical;
@@ -296,7 +299,7 @@ All edits are local — nothing is sent to any server."
         ></textarea>
         <!-- Preview pane (hidden by default) -->
         <div id="markdown-preview"
-            style="display:none; padding:1.5rem; overflow:auto; flex:1; min-height:450px; background:var(--editor-bg); color:#e6edf3; font-family:'Inter',sans-serif; line-height:1.7; font-size:0.88rem;">
+            style="display:none; padding:1.5rem; overflow:auto; flex:1; min-height:450px; background:var(--editor-bg); color:var(--fg-color, #a9b1d6); font-family:'Inter',sans-serif; line-height:1.7; font-size:0.88rem;">
         </div>
     </div>
 
@@ -639,6 +642,13 @@ Edit this guide using the generator to match your exact setup.
 
 // ─── Markdown Preview ─────────────────────────────────────────────────────────
 
+// Rendering is markdown.js, shared with wiki.html?page= and the cheatsheets, so
+// a previewed guide is formatted exactly as the same markdown would be anywhere
+// else on the site. The version that used to live here chained .replace() over
+// the raw text with no escaping, and ran the fenced-code rule *after* the inline
+// rules — so a guide's own ``` blocks had their contents rewritten as markdown
+// before the fence was seen, and any < in a script became live HTML.
+
 let previewMode = false;
 function toggleMarkdownPreview() {
     previewMode = !previewMode;
@@ -647,21 +657,11 @@ function toggleMarkdownPreview() {
     const btn = document.getElementById('preview-toggle-btn');
 
     if (previewMode) {
-        const content = ta.value;
-        // Simple markdown to HTML (basic parser)
-        let html = content
-            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/`([^`]+)`/g, '<code style="background:#1c2128; padding:0.15em 0.4em; border-radius:3px; color:#79c0ff;">$1</code>')
-            .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre style="background:#1c2128; padding:1rem; border-radius:6px; overflow-x:auto; border:1px solid #30363d; margin:1rem 0;"><code>$2</code></pre>')
-            .replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid #bb9af7; padding-left:1rem; color:#8b949e; margin:0.5rem 0;">$1</blockquote>')
-            .replace(/^- (.+)$/gm, '<li>$1</li>')
-            .replace(/\n\n/g, '<br><br>');
-
-        preview.innerHTML = html;
+        preview.innerHTML = typeof window.renderMarkdown === 'function'
+            ? window.renderMarkdown(ta.value, { headingPrefix: 'live-' }).html
+            : '';
+        // Colour the fenced blocks this render produced, scoped to the preview.
+        if (typeof window.highlightAll === 'function') window.highlightAll(preview);
         ta.style.display = 'none';
         preview.style.display = 'block';
         btn.textContent = '✏️ Edit';
@@ -755,12 +755,16 @@ document.addEventListener('DOMContentLoaded', initLiveEditor);
             <a href="wiki.html">Wiki</a> ·
             <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a> ·
-            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+            <a href="cheatsheets.html?sheet=full">Command Cheatsheet</a>
         </p>
     </div>
 
 </div>
 <script src="tooltip.js" defer></script>
 <script src="shared-ui.js" defer></script>
+<!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
+     nobody has to trust a third-party bundle to render scripts they are
+     being told to read before running. -->
+<script src="highlight.js" defer></script>
 </body>
 </html>

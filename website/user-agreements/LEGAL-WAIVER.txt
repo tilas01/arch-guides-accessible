@@ -1,0 +1,130 @@
+ARCH GUIDES DYNAMIC — LEGAL DISCLAIMER AND LIABILITY WAIVER
+===========================================================
+
+Project:  Arch Guides Dynamic
+Author:   tilas01
+Repo:     https://github.com/tilas01/arch-guides-dynamic
+Site:     https://tilas01.github.io/arch-guides-dynamic/
+Version:  1.0
+Updated:  2026-07-30
+
+This is the authoritative text of the waiver shown in the welcome dialog on the
+website. It is kept here as plain text so that it can be read, quoted, diffed
+and archived without running any JavaScript, and so that the website has a
+stable thing to link to. If the dialog and this file ever disagree, this file
+is the one that is meant.
+
+
+1. SCOPE
+--------
+
+This waiver covers all content, tools, scripts, binaries, documentation and
+source code provided on the website and within the GitHub repository
+tilas01/arch-guides-dynamic. That includes, but is not limited to:
+
+  - the Arch Guides Dynamic Generator
+  - the Manual Walkthrough
+  - the website wiki and the markdown guides in docs/
+  - the in-browser ISO verifier
+  - the Arch Rusty Security Suite (ARSS) and each of its tools:
+    Anti-Evil-Maid, Anti-Ducky, Kernel Watcher, Libre OTP, Scarecrow
+  - every generated install script, guide and JSON configuration
+
+
+2. NO WARRANTY
+--------------
+
+Everything listed in section 1 is provided strictly "AS IS", without warranty
+of any kind, express or implied, including but not limited to the implied
+warranties of merchantability, fitness for a particular purpose and
+non-infringement.
+
+
+3. LIMITATION OF LIABILITY
+--------------------------
+
+The author (tilas01) expressly disclaims all liability for any direct,
+indirect, incidental, consequential or punitive damages of any nature,
+including but not limited to:
+
+  a. data loss or corruption;
+  b. system damage, bricking, or unbootable states;
+  c. security breaches or exploits that are not mitigated;
+  d. loss of files caused by destructive features — duress passwords,
+     Anti-Evil-Maid triggers, secure-erase routines and similar;
+  e. conflicts arising from proprietary software, firmware blobs or
+     third-party packages;
+  f. any harm arising from following a generated installation script or guide.
+
+
+4. INTENDED AUDIENCE AND YOUR RESPONSIBILITY
+--------------------------------------------
+
+This project is intended for users who are comfortable with Linux and who
+understand the risks involved in partitioning disks, encrypting volumes,
+flashing firmware and running privileged code.
+
+You assume full and sole responsibility for every action you take using these
+tools on your systems.
+
+Some options in this project are destructive by design. Where a feature can
+erase data or lock you out of your own machine, it is opt-in and gated behind a
+typed confirmation. That gate is a safety net, not a substitute for reading
+what the option does.
+
+
+5. AI ASSISTANCE AND SCRIPT REVIEW
+----------------------------------
+
+This project was developed with AI assistance (Claude, by Anthropic) and has
+been reviewed by tilas01.
+
+You MUST read any generated script before you execute it. A generator cannot
+see your hardware, your existing partitions or your dual-boot layout. Running
+an install script unread on a machine that holds data you care about is how
+people lose that data.
+
+
+6. PRIVACY
+----------
+
+The website is a static site on GitHub Pages. It sets no cookies, performs no
+session tracking, and collects no personally identifiable information.
+
+Generation history is stored only in your own browser, in sessionStorage, and
+is discarded when you close the tab. Your acceptance of these terms and your
+interface preferences are stored the same way. None of it leaves your device,
+and there is no server for it to be sent to. You can clear it at any time from
+within the site or from your browser's own settings.
+
+The ISO verifier hashes files locally in your browser. The image you select
+never leaves your machine. Checksum and signature files are fetched from public
+Arch Linux mirrors; those requests are ordinary HTTPS requests to those mirrors
+and are visible to them, as any download would be.
+
+
+7. THIRD-PARTY SOFTWARE
+-----------------------
+
+This project installs, recommends and links to software it does not own —
+Arch Linux itself, packages from the official repositories and the AUR,
+firmware utilities, and third-party hardening tools. Each of those is covered
+by its own licence and its own warranty position. Nothing here alters them.
+
+AUR packages are user-submitted and are not audited by Arch Linux. Treat any
+PKGBUILD as untrusted code until you have read it.
+
+
+8. ACCEPTANCE
+-------------
+
+Using this website, the repository or any generated output constitutes your
+binding agreement to these terms in full.
+
+The welcome dialog asks you to confirm two things before continuing:
+
+  (1) that you have read and understood this waiver; and
+  (2) that you have read the repository licence and will comply with it.
+
+See LICENSE.txt in this folder for the licence, and LICENCE-PLAIN-ENGLISH.txt
+for what it means in ordinary words.

@@ -10,11 +10,14 @@
     <link rel="preload" href="style.css" as="style">
     <link rel="prefetch" href="wiki.html">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- No CDN scripts and no remote fonts, deliberately.
+         This page used to pull Prism and marked from cdnjs and jsdelivr, and the
+         font from Google. Each one sent every visitor's IP to a third party — on
+         a site about not leaking to third parties — ran unpinned remote script on
+         the page that renders install commands, and broke the site entirely when
+         used offline from a live USB, which is exactly when it is needed.
+         markdown.js and highlight.js do both jobs and ship with the site. -->
     <script src="legal.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
 
     <link rel="preload" href="style.css" as="style">
     <link rel="preload" href="script.js" as="script">
@@ -799,10 +802,10 @@ Source: 📁 Arch Extra
 Website: https://github.com/openSUSE/snapper">ℹ️</span> <span class="app-desc">Snapshots</span> <span class="btn-configure" role="button" tabindex="0" data-app="snapper" style="background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('snapper')" title="Configure this app">⚙️</span>
 </label>
-                            <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🎨 Dusky OS</div>
+                            <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🎨 Dusky</div>
                             <label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
                                 <input type="checkbox" name="post_apps" value="dusky-setup">
-                                <span class="app-icon">🌙</span> <a href="https://github.com/dusklinux/dusky" target="_blank">Dusky Setup</a> <span class="info-tooltip-icon" title="Dusky OS auto-setup
+                                <span class="app-icon">🌙</span> <a href="https://github.com/dusklinux/dusky" target="_blank">Dusky Setup</a> <span class="info-tooltip-icon" title="Dusky auto-setup
 --
 Automated Hyprland desktop setup by dusklinux — installs dotfiles, themes, and full Wayland environment. Includes cheatsheet. Watch YouTube guide before running.
 
@@ -877,7 +880,7 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         </select>
                     </div>
 
-                    <div class="form-group form-step" data-title="Desktop Environment" data-desc="GNOME is full-featured. KDE is customizable. DWM is minimal and keyboard-driven. Dusky OS is a pre-configured Hyprland setup by dusklinux. TTY Only means no GUI." oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;">
+                    <div class="form-group form-step" data-title="Desktop Environment" data-desc="GNOME is full-featured. KDE is customizable. DWM is minimal and keyboard-driven. Dusky is a pre-configured Hyprland setup by dusklinux. TTY Only means no GUI." oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;">
                         <label>Desktop Environment:</label>
                         <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="desktop">
                                     <option value="" disabled selected hidden>No Selection Provided</option>
@@ -885,28 +888,28 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                             <option value="gnome">GNOME</option>
                             <option value="kde">KDE Plasma</option>
                             <option value="dwm">DWM (Minimal WM)</option>
-                            <option value="dusky">Dusky OS (dusklinux/dusky)</option>
+                            <option value="dusky">Dusky (dusklinux/dusky)</option>
                         </select>
                     </div>
 
                     <!-- Straight yes/no. Answering Yes ticks the Dusky setup app,
                          forces Wayland and skips the questions that no longer
                          apply, because Dusky brings its own answers. -->
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#duskyos', '_blank'); return false;" data-title="DuskyOS Automated Setup" data-desc="DuskyOS is a pre-configured Hyprland desktop by dusklinux: dotfiles, theming and a full Wayland environment installed for you. Choosing Yes sets the desktop and display server automatically.">
-                        <label for="dusky_setup">Install DuskyOS (automated Hyprland desktop)?</label>
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#duskyos', '_blank'); return false;" data-title="Dusky Automated Setup" data-desc="Dusky is a pre-configured Hyprland desktop by dusklinux: dotfiles, theming and a full Wayland environment installed for you. Choosing Yes sets the desktop and display server automatically.">
+                        <label for="dusky_setup">Install Dusky (automated Hyprland desktop)?</label>
                         <select oncontextmenu="window.open('wiki.html#duskyos', '_blank'); return false;" id="dusky_setup">
                             <option value="no" selected>No — I'll choose my own desktop</option>
-                            <option value="yes">Yes — set up DuskyOS for me</option>
+                            <option value="yes">Yes — set up Dusky for me</option>
                         </select>
                         <p id="dusky-note" style="display:none; font-size:0.78rem; color:var(--accent-cyan); margin-top:0.4rem;">
-                            🌙 DuskyOS selected. Desktop and display server are set for you
+                            🌙 Dusky selected. Desktop and display server are set for you
                             (Hyprland on Wayland) and those two questions are hidden. Watch the
                             <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" rel="noopener">setup video</a>
-                            and read the <a href="docs/dusky-cheatsheet.md">keybind cheatsheet</a> before first boot.
+                            and read the <a href="cheatsheets.html?sheet=duskyq">keybind cheatsheet</a> before first boot.
                         </p>
                     </div>
 
-                    <div class="form-step" data-title="Display Server" data-desc="Wayland is modern and secure. Xorg is legacy but required for DWM/Dusky.">
+                    <div class="form-step" data-title="Display Server" data-desc="Wayland isolates windows from each other, so one cannot read another's keystrokes. Xorg cannot make that guarantee, but dwm and some legacy applications need it. Hyprland and Dusky are Wayland-only, so choosing either fixes this.">
                         <div class="form-group" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
                             <label for="display_server">Display Server:</label>
                             <select oncontextmenu="window.open('wiki.html#' + this.id, '_blank'); return false;" id="display_server">
@@ -915,6 +918,9 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                                 <option value="wayland">Wayland (Modern)</option>
                                 <option value="xorg">Xorg (Legacy)</option>
                             </select>
+                            <!-- Filled in and shown by validateConfigurations() when the
+                                 chosen desktop only runs on one of the two. -->
+                            <p id="ds-forced-note" class="locked-note" style="display:none;"></p>
                         </div>
                     </div>
     
@@ -1300,10 +1306,10 @@ Website: https://github.com/hephaest0s/usbkill">ℹ️</span> <span class="app-d
             </div>
         </div>
 
-        <!-- dusklinux: Dusky OS -->
+        <!-- dusklinux: Dusky -->
         <div class="credit-card nav-tooltip"
-             data-title="dusklinux — Dusky OS"
-             data-desc="Creator of Dusky OS, a minimal Arch-based setup with automated Hyprland, custom dotfiles and theming. The basis for the Dusky desktop option and cheatsheet here."
+             data-title="dusklinux — Dusky"
+             data-desc="Creator of Dusky, a minimal Arch-based setup with automated Hyprland, custom dotfiles and theming. The basis for the Dusky desktop option and cheatsheet here."
              style="border-color:var(--accent-blue); cursor:pointer;"
              onclick="window.open('https://github.com/dusklinux/dusky','_blank','noopener')">
             <img src="https://github.com/dusklinux.png?size=80" alt="dusklinux" loading="lazy"
@@ -1311,7 +1317,7 @@ Website: https://github.com/hephaest0s/usbkill">ℹ️</span> <span class="app-d
             <div class="credit-info">
                 <span class="credit-name" style="color:var(--accent-blue);">dusklinux</span>
                 <span class="credit-role">
-                    Creator of Dusky OS 🎨 — Arch + Hyprland<br>
+                    Creator of Dusky 🎨 — Arch + Hyprland<br>
                     <a href="https://github.com/dusklinux" target="_blank" rel="noopener"
                        style="color:var(--accent-blue);font-size:0.75rem;" onclick="event.stopPropagation()">GitHub</a>
                     · <a href="https://github.com/dusklinux/dusky" target="_blank" rel="noopener"
@@ -1396,7 +1402,7 @@ Website: https://github.com/hephaest0s/usbkill">ℹ️</span> <span class="app-d
             <a href="wiki.html">Wiki</a> ·
             <a href="iso-verify.html">Verify Arch ISO</a> ·
             <a href="security-tools.html">Security Tools</a> ·
-            <a href="docs/helpful-commands.md">Command Cheatsheet</a>
+            <a href="cheatsheets.html?sheet=full">Command Cheatsheet</a>
         </p>
     </div>
 </footer>
@@ -1428,6 +1434,10 @@ Website: https://github.com/hephaest0s/usbkill">ℹ️</span> <span class="app-d
 </div>
 
 <script src="shared-ui.js" defer></script>
+<!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
+     nobody has to trust a third-party bundle to render scripts they are
+     being told to read before running. -->
+<script src="highlight.js" defer></script>
 </body>
 </html>
 
