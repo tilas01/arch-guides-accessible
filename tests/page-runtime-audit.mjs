@@ -73,6 +73,22 @@ for (const page of pages) {
     if (!NO_NAV.has(page) && nav < NAV_COUNT) {
         problems.push(`nav has ${nav} links, expected the ${NAV_COUNT} canonical destinations`);
     }
+    // The history clock must exist on every page. It used to be built only when
+    // window.toggleHistoryModal was defined — that lives in script.js, so nine
+    // of eleven pages had no clock and no route to the session's history.
+    if (!d.getElementById('history-btn')) {
+        problems.push('no #history-btn — the session history is unreachable from this page');
+    }
+    if (!d.getElementById('repo-link-btn')) {
+        problems.push('no #repo-link-btn in the control cluster');
+    }
+    if (!d.getElementById('toggle-tooltips-btn')) {
+        problems.push('no #toggle-tooltips-btn in the control cluster');
+    }
+    if (typeof window.openSharedHistory !== 'function') {
+        problems.push('shared-ui.js exposes no openSharedHistory(), so the clock opens nothing');
+    }
+
     if (!viewport) problems.push('no viewport meta, so mobile rendering is wrong');
     if (!manual) problems.push('no link to manual.html (required in every header)');
 
