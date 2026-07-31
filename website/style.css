@@ -1699,8 +1699,20 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
     line-height: 1.65;
 }
 
-/* Jump list, so you can find your place again after a reboot. */
-.cmd-jump { margin-top: 1rem; font-size: 0.8rem; }
+/* Jump list, so you can find your place again after a reboot.
+
+   Solid background, not transparent. It had none, so when open it overlaid the
+   guide text behind it and the two sets of words sat on top of each other. A
+   list you cannot read is worse than no list. */
+.cmd-jump {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.5rem 0.8rem 0.7rem;
+}
+.cmd-jump[open] { border-color: var(--accent-cyan); }
 .cmd-jump > summary {
     cursor: pointer;
     color: var(--accent-cyan);
@@ -1710,7 +1722,14 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
     align-items: center;
     list-style-position: inside;
 }
-.cmd-list { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+.cmd-list {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    /* Thirty-odd commands would otherwise push everything below off the page. */
+    max-height: 40vh;
+    overflow-y: auto;
+}
 .cmd-list li { margin-bottom: 0.15rem; }
 .cmd-list-btn {
     display: block;
