@@ -342,6 +342,10 @@
 
     // Exposed so a page can offer its own entry point to the same overlay.
     window.openSharedHistory = openHistoryOverlay;
+    /* Exposed so a page that writes to the history can light the clock
+       immediately. The Manual Walkthrough auto-saves on completion, and
+       without this the badge stayed dark until the next page load. */
+    window.refreshHistoryBadge = function () { refreshHistoryBadge(); };
 
     function buildControls() {
         var header = document.querySelector('header');
