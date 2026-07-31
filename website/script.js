@@ -477,6 +477,64 @@ window.downloadFile = function(content, filename) {
     URL.revokeObjectURL(url);
 };
 
+
+/* Wallpapers from dusklinux/images. The folder counts are real and checked
+   against the repository: dark/ 135, light/ 134, so 269 in total at roughly
+   65-285 KB each. Capped per folder, because a 50/50 split of "all" cannot draw
+   135 light images from a folder that holds 134. */
+const WALLPAPER_AVAILABLE = { dark: 135, light: 134 };
+
+function wallpaperCounts(mode, count, split) {
+    if (!mode || mode === 'none') return { dark: 0, light: 0, total: 0 };
+    const want = count === 'all' ? 269 : parseInt(count || '50', 10);
+    const pct = parseInt(split || '75', 10);
+    let dark = 0, light = 0;
+    if (mode === 'dark') dark = Math.min(want, WALLPAPER_AVAILABLE.dark);
+    else if (mode === 'light') light = Math.min(want, WALLPAPER_AVAILABLE.light);
+    else {
+        dark = Math.min(Math.round(want * pct / 100), WALLPAPER_AVAILABLE.dark);
+        light = Math.min(want - dark, WALLPAPER_AVAILABLE.light);
+    }
+    return { dark, light, total: dark + light };
+}
+
+/* Emits the wallpaper fetch, or '' when none were asked for.
+
+   Lists the folders through the GitHub API and picks at random rather than
+   cloning. The collection is ~40 MB and someone who asked for 50 images should
+   get 50, not a full clone to prune afterwards. Filenames looked constructible
+   (0001.jpg, 0002.jpg …) but the collection is not uniform — dark/0131 is
+   .jpeg, and the file counts do not line up with the highest number — so
+   building URLs by counting would 404 on real files. Every download failure is
+   skipped rather than aborting the run.
+
+   `owner` is the user to chown to, or null when the block runs as that user
+   already (the markdown path, which the reader pastes into their own shell). */
+function emitWallpapers(dir, owner) {
+    const mode = gv('wallpapers', 'none');
+    const wp = wallpaperCounts(mode, gv('wallpaper_count', '50'), gv('wallpaper_split', '75'));
+    if (wp.total <= 0) return '';
+
+    let o = '';
+    o += `# ${wp.total} wallpapers by dusklinux — https://github.com/dusklinux/images\n`;
+    o += `# Picked at random, so you get a different set each time.\n`;
+    o += `mkdir -p ${dir}\n`;
+    o += `fetch_wallpapers() {\n`;
+    o += `  local tone="$1" count="$2"\n`;
+    o += `  [ "$count" -gt 0 ] || return 0\n`;
+    o += `  curl -fsSL "https://api.github.com/repos/dusklinux/images/contents/$tone" \\n`;
+    o += `    | grep -o '"download_url": *"[^"]*"' | cut -d'"' -f4 \\n`;
+    o += `    | shuf -n "$count" \\n`;
+    o += `    | while read -r url; do\n`;
+    o += `        curl -fsSL --retry 2 -o "${dir}/\${tone}-\${url##*/}" "$url" || echo "skipped $url" >&2\n`;
+    o += `      done\n`;
+    o += `}\n`;
+    if (wp.dark)  o += `fetch_wallpapers dark ${wp.dark}\n`;
+    if (wp.light) o += `fetch_wallpapers light ${wp.light}\n`;
+    if (owner) o += `chown -R ${owner}:${owner} ${dir}\n`;
+    return o;
+}
+
 // ---- Live Preview Updater ----
 window.updatePreview = function() {
     const mdEl = document.getElementById('raw-md-code');
@@ -860,6 +918,11 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     const software_type = gv('software_type','libre');
     const desktop = gv('desktop','none');
     const displayServer = gv('display_server','auto');
+    // Wallpapers, matching the Manual Walkthrough's three questions so a config
+    // from either front end configures the other.
+    const wallpapers = gv('wallpapers','none');
+    const wallpaperCount = gv('wallpaper_count','50');
+    const wallpaperSplit = gv('wallpaper_split','75');
     const swap_size = gv('swap_size','8G');
     const cleanup = gv('cleanup','yes');
     const browser = gv('browser','none');
@@ -1997,12 +2060,15 @@ run_with_progress() {
                 o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/duskyos-hyprland.md" -o /home/$u1/cheatsheets/duskyos-hyprland.md\n`;
             }
             o += `chown -R $u1:$u1 /home/$u1/cheatsheets\n`;
+            o += emitWallpapers('/home/$u1/Pictures/wallpapers', '$u1');
         } else {
             o += `\n### 11. Download Cheatsheets\n\`\`\`bash\nmkdir -p ~/cheatsheets\ncurl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/arch-commands.md" -o ~/cheatsheets/arch-commands.md\n`;
             if (desktop === 'dusky') {
                 o += `curl -sL "https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/docs/cheatsheets/duskyos-hyprland.md" -o ~/cheatsheets/duskyos-hyprland.md\n`;
             }
             o += `\`\`\`\n`;
+            const wpBlock = emitWallpapers('~/Pictures/wallpapers', null);
+            if (wpBlock) o += `\n### 12. Wallpapers\n\`\`\`bash\n` + wpBlock + `\`\`\`\n`;
         }
 
         // Setup Phase 2 Script Rollover
@@ -3092,6 +3158,29 @@ function validateConfigurations() {
             displayServerSelect.title = '';
         }
     }
+    /* Wallpapers: show the resulting counts, not just the percentage. "75%" does
+       not tell anyone how many files they are about to download, and the split
+       control is meaningless unless a mix was chosen. */
+    const wpMode = document.getElementById('wallpapers')?.value || 'none';
+    const wpSplitSel = document.getElementById('wallpaper_split');
+    const wpCountSel = document.getElementById('wallpaper_count');
+    const wpNote = document.getElementById('wallpaper-note');
+    const wpOn = wpMode !== 'none';
+    if (wpCountSel) wpCountSel.disabled = !wpOn;
+    if (wpSplitSel) wpSplitSel.disabled = wpMode !== 'mixed';
+    if (wpNote) {
+        if (!wpOn) { wpNote.style.display = 'none'; }
+        else {
+            const c = wallpaperCounts(wpMode, wpCountSel?.value, wpSplitSel?.value);
+            wpNote.style.display = 'block';
+            wpNote.textContent = '🖼️ ' + c.total + ' image' + (c.total === 1 ? '' : 's') +
+                (c.dark && c.light ? ' — ' + c.dark + ' dark and ' + c.light + ' light'
+                                   : c.dark ? ' from the dark set' : ' from the light set') +
+                ', roughly ' + Math.max(1, Math.round(c.total * 0.15)) + ' MB. ' +
+                'Chosen at random, so you get a different set each time.';
+        }
+    }
+
     const dsNote = document.getElementById('ds-forced-note');
     if (dsNote) {
         dsNote.style.display = dsForced ? 'block' : 'none';

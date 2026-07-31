@@ -58,7 +58,13 @@
         // decides whether a disk gets encrypted.
         { wl: 'encryption',     gen: 'partitioning',    group: 'selects',
           values: { 'luks2': 'luks2', 'luks1': 'luks1', 'none': 'unencrypted' } },
-        { wl: 'apps',           gen: 'post_apps',       group: 'checkboxes' }
+        { wl: 'apps',           gen: 'post_apps',       group: 'checkboxes' },
+        // Wallpapers. The ids and the option values are deliberately identical
+        // on both sides, so there is nothing to translate — which is the point:
+        // a value map is a place for the two to disagree.
+        { wl: 'wallpapers',       gen: 'wallpapers',       group: 'selects' },
+        { wl: 'wallpaper_count',  gen: 'wallpaper_count',  group: 'selects' },
+        { wl: 'wallpaper_split',  gen: 'wallpaper_split',  group: 'selects' }
     ];
 
     function invert(values) {
