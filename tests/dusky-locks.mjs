@@ -174,6 +174,53 @@ for (const [id, value] of Object.entries(DUSKY_LOCKS)) {
   }
 }
 
+/* ── A finished walkthrough must save itself to the session history ─────────
+   Answering thirty-one questions and losing the result to a closed tab is the
+   worst outcome this page has. The generator always wrote to the history; the
+   walkthrough never did, so its output existed only if you remembered to press
+   a download button. */
+const hist = (() => {
+  try { return JSON.parse(window.sessionStorage.getItem('arch_gen_history') || '[]'); }
+  catch (_) { return []; }
+})();
+
+ok(Array.isArray(hist) && hist.length >= 1,
+   'finishing the walkthrough saved nothing to the generation history');
+
+if (hist.length) {
+  const top = hist[0];
+  ok(top.source === 'manual-walkthrough',
+     `history entry is labelled "${top.source}", not manual-walkthrough`);
+  ok(typeof top.md === 'string' && top.md.includes('# Arch Linux'),
+     'the saved entry carries no markdown guide');
+  ok(typeof top.sh === 'string' && top.sh.length > 200,
+     'the saved entry carries no install script');
+  ok(!!top.timestamp, 'the saved entry has no timestamp, so history cannot order it');
+  // The JSON config must be the documented envelope, not a bare answers dump —
+  // the generator reads the same shape.
+  let cfg = null;
+  try { cfg = JSON.parse(top.sc); } catch (_) { /* stays null */ }
+  ok(cfg && cfg.schema === 'arch-guides-dynamic/config',
+     'the saved entry has no valid config envelope');
+  ok(cfg && cfg.answers && cfg.answers.desktop === 'dusky',
+     'the saved config does not carry the answers that were given');
+}
+
+/* Re-rendering the done screen must not stack duplicates. It re-renders on every
+   mode toggle and every tooltip refresh, so an unguarded save would fill the
+   history with copies of one guide and push real entries out of the ten-entry
+   limit. */
+const before = hist.length;
+window.document.getElementById('mode-commands')?.click();
+window.document.getElementById('mode-guide')?.click();
+await new Promise(r => setTimeout(r, 30));
+const after = (() => {
+  try { return JSON.parse(window.sessionStorage.getItem('arch_gen_history') || '[]').length; }
+  catch (_) { return -1; }
+})();
+ok(after === before,
+   `re-rendering the done screen added ${after - before} duplicate history entries`);
+
 ok(pageErrors.length === 0, `manual.html threw during the Dusky run: ${pageErrors[0] || ''}`);
 window.close();
 await server.close();

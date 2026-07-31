@@ -473,7 +473,82 @@
         if (label) label.textContent = done + ' of ' + steps.length + ' answered';
     }
 
+    /* ── Auto-save a finished walkthrough to the session history ─────────────
+       Answering thirty-one questions and then losing the result to a closed tab
+       is the worst outcome this page has. The generator has always written to
+       the history; the walkthrough never did, so its output only existed if you
+       remembered to press a download button.
+
+       Keyed on the answers, not on "have we saved yet": going Back, changing one
+       thing and finishing again is a *different* guide and deserves its own
+       entry, but re-rendering the done screen (which happens on every mode
+       toggle and every tooltip refresh) must not add a duplicate. */
+    var HISTORY_KEY = 'arch_gen_history';
+    var HISTORY_LIMIT = 10;
+    var lastSavedSignature = null;
+
+    function saveCompletedToHistory() {
+        var signature;
+        try { signature = JSON.stringify(state); } catch (_) { return; }
+        if (signature === lastSavedSignature) return;
+
+        var entries;
+        try {
+            var raw = sessionStorage.getItem(HISTORY_KEY);
+            entries = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(entries)) entries = [];
+        } catch (_) { entries = []; }
+
+        // An identical config already at the top is the same guide — do not
+        // stack copies of it just because the page re-rendered.
+        if (entries.length && entries[0] && entries[0].signature === signature) {
+            lastSavedSignature = signature;
+            return;
+        }
+
+        var now = new Date();
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+
+        try {
+            entries.unshift({
+                timestamp: now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' +
+                           pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' +
+                           pad(now.getMinutes()) + ':' + pad(now.getSeconds()),
+                // The shared history overlay and the live editor both label
+                // entries by this.
+                source: 'manual-walkthrough',
+                format: 'unified',
+                md: window.buildManualGuide(state),
+                sh: window.buildManualScript(state),
+                post: '',
+                sc: JSON.stringify({
+                    schema: 'arch-guides-dynamic/config',
+                    version: 2,
+                    created: now.toISOString(),
+                    source: 'manual-walkthrough',
+                    answers: state
+                }, null, 2),
+                signature: signature
+            });
+            sessionStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, HISTORY_LIMIT)));
+            lastSavedSignature = signature;
+        } catch (_) {
+            // Quota, or private mode. The guide is still on screen and still
+            // downloadable; losing the history entry is not worth an error.
+            return;
+        }
+
+        // A saved-but-not-exported history is exactly what the close warning is
+        // for, so make sure it fires. refreshHistoryBadge lights the clock.
+        try { sessionStorage.setItem('arch_gen_history_saved', '0'); } catch (_) { /* ignore */ }
+        if (typeof window.refreshHistoryBadge === 'function') window.refreshHistoryBadge();
+    }
+
     function renderDone() {
+        // Save before painting: if anything below throws, the work is already
+        // recorded.
+        saveCompletedToHistory();
+
         var host = document.getElementById('question-host');
         host.innerHTML = '';
         host.appendChild(h('div', { class: 'q-card q-done q-in' }, [
