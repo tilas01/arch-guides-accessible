@@ -923,6 +923,45 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                             <p id="ds-forced-note" class="locked-note" style="display:none;"></p>
                         </div>
                     </div>
+
+                    <!-- Wallpapers, matching the Manual Walkthrough's three questions
+                         so a config exported from either configures the other. The
+                         collection is dusklinux's and is published separately from
+                         Dusky itself, so it is offered with any desktop rather than
+                         only that one. Counts are real: dark/ 135, light/ 134. -->
+                    <div class="form-step" data-title="Wallpapers" data-desc="269 wallpapers by dusklinux — 135 dark and 134 light — published separately from the Dusky desktop, so you can take them with any desktop. Downloaded at random, so you get a different set each time. All of them is about 40 MB.">
+                        <div class="form-group" oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;">
+                            <label for="wallpapers">Wallpapers (dusklinux):</label>
+                            <select oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;" id="wallpapers">
+                                <option value="none" selected>None — skip it</option>
+                                <option value="dark">Dark only (135 available)</option>
+                                <option value="light">Light only (134 available)</option>
+                                <option value="mixed">A mix of both</option>
+                            </select>
+
+                            <label for="wallpaper_count" style="margin-top:0.6rem;">How many:</label>
+                            <select oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;" id="wallpaper_count">
+                                <option value="10">10 — about 1.5 MB</option>
+                                <option value="25">25 — about 4 MB</option>
+                                <option value="50" selected>50 — about 7 MB</option>
+                                <option value="100">100 — about 15 MB</option>
+                                <option value="all">Every one — 269, about 40 MB</option>
+                            </select>
+
+                            <label for="wallpaper_split" style="margin-top:0.6rem;">Dark / light split:</label>
+                            <select oncontextmenu="window.open('wiki.html#desktop', '_blank'); return false;" id="wallpaper_split">
+                                <option value="90">90% dark / 10% light</option>
+                                <option value="75" selected>75% dark / 25% light</option>
+                                <option value="50">50% dark / 50% light</option>
+                                <option value="25">25% dark / 75% light</option>
+                                <option value="10">10% dark / 90% light</option>
+                            </select>
+                            <!-- Shown by validateConfigurations() with the resulting counts,
+                                 because a percentage on its own does not tell anyone how
+                                 many files they are about to download. -->
+                            <p id="wallpaper-note" class="locked-note" style="display:none;"></p>
+                        </div>
+                    </div>
     
 
 
