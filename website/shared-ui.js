@@ -165,6 +165,184 @@
 
     /* ── 1. The control cluster ─────────────────────────────────────────── */
 
+    /* ── The shared history overlay ──────────────────────────────────────────
+       Reachable from every page, because the history is session-wide and the
+       thing you most want when you notice it is disappearing is a way to get it
+       out. Read-only by design: it shows what is there, lets you copy or
+       download it, and hands off to the Live Editor for anything more. Writing
+       back into a page that may not have a form to write into is how the
+       generator-only version stayed generator-only.
+
+       Entries are written by both front ends with the shape
+       `{ timestamp, source, format, md, sh, post, sc }`. */
+    function readHistoryEntries() {
+        return ss(function () {
+            var raw = sessionStorage.getItem(HISTORY_KEY);
+            if (!raw) return [];
+            var parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        }, []);
+    }
+
+    function downloadText(name, text, mime) {
+        try {
+            var blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            // Downloading counts as saving, so the close warning stops nagging.
+            if (typeof window.markHistorySaved === 'function') window.markHistorySaved();
+        } catch (_) { /* nothing sensible to do; the overlay stays open */ }
+    }
+
+    function copyToClipboard(text, btn) {
+        function done(okFlag) {
+            if (!btn) return;
+            var was = btn.textContent;
+            btn.textContent = okFlag ? '✅ Copied' : '⚠ Press Ctrl+C';
+            setTimeout(function () { btn.textContent = was; }, 1600);
+        }
+        // navigator.clipboard needs a secure context, which file:// and plain
+        // http are not — and this site has to work from a live USB.
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+        } else { fallback(); }
+        function fallback() {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', 'readonly');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            var okFlag = false;
+            try { okFlag = document.execCommand('copy'); } catch (_) { okFlag = false; }
+            document.body.removeChild(ta);
+            done(okFlag);
+        }
+    }
+
+    function openHistoryOverlay() {
+        var existing = document.getElementById('shared-history-overlay');
+        if (existing) { closeHistoryOverlay(); return; }
+
+        var entries = readHistoryEntries();
+
+        var ov = document.createElement('div');
+        ov.id = 'shared-history-overlay';
+        ov.className = 'history-overlay';
+        ov.setAttribute('role', 'dialog');
+        ov.setAttribute('aria-modal', 'true');
+        ov.setAttribute('aria-label', 'Generation history');
+
+        var panel = document.createElement('div');
+        panel.className = 'history-panel';
+
+        var head = document.createElement('div');
+        head.className = 'history-head';
+        head.innerHTML = '<h2>🕘 This session\'s generations</h2>' +
+            '<p>' + (entries.length
+                ? entries.length + ' saved. Session-only — no cookies, and gone when this ' +
+                  'tab closes, so download anything you want to keep.'
+                : 'Nothing yet. Anything you generate in the Dynamic Generator or finish ' +
+                  'in the Manual Walkthrough appears here.') + '</p>';
+        panel.appendChild(head);
+
+        if (entries.length) {
+            var list = document.createElement('ol');
+            list.className = 'history-list';
+            entries.forEach(function (e, i) {
+                var li = document.createElement('li');
+                li.className = 'history-item';
+
+                var meta = document.createElement('div');
+                meta.className = 'history-meta';
+                var src = e.source === 'manual-walkthrough' ? '🧭 Manual Walkthrough'
+                        : e.source === 'dynamic-generator' ? '⚙️ Dynamic Generator'
+                        : '📄 Generated';
+                meta.innerHTML = '<strong>' + src + '</strong>' +
+                    '<span>' + String(e.timestamp || '').replace(/[<>&]/g, '') + '</span>';
+                li.appendChild(meta);
+
+                var acts = document.createElement('div');
+                acts.className = 'history-actions';
+                [
+                    ['md',  '⬇️ .md',   'guide-' + (i + 1) + '.md',  'text/markdown'],
+                    ['sh',  '⬇️ .sh',   'install-' + (i + 1) + '.sh', 'text/x-shellscript'],
+                    ['post', '⬇️ post.sh', 'post-install-' + (i + 1) + '.sh', 'text/x-shellscript'],
+                    ['sc',  '⬇️ .json', 'config-' + (i + 1) + '.json', 'application/json']
+                ].forEach(function (spec) {
+                    var content = e[spec[0]];
+                    if (!content || !String(content).trim()) return;   // never offer an empty file
+                    var b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'btn btn-ghost history-btn-sm';
+                    b.textContent = spec[1];
+                    b.addEventListener('click', function () {
+                        downloadText(spec[2], content, spec[3]);
+                    });
+                    acts.appendChild(b);
+                });
+
+                var copy = document.createElement('button');
+                copy.type = 'button';
+                copy.className = 'btn btn-ghost history-btn-sm';
+                copy.textContent = '📋 Copy guide';
+                copy.addEventListener('click', function (ev) {
+                    copyToClipboard(e.md || e.sh || '', ev.target);
+                });
+                acts.appendChild(copy);
+
+                // The Live Editor is where you change one before using it.
+                var open = document.createElement('a');
+                open.className = 'btn btn-ghost history-btn-sm';
+                open.href = 'live.html';
+                open.textContent = '📝 Open editor';
+                acts.appendChild(open);
+
+                li.appendChild(acts);
+                list.appendChild(li);
+            });
+            panel.appendChild(list);
+        }
+
+        var foot = document.createElement('div');
+        foot.className = 'history-foot';
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'btn';
+        close.textContent = 'Close';
+        close.addEventListener('click', closeHistoryOverlay);
+        foot.appendChild(close);
+        panel.appendChild(foot);
+
+        ov.appendChild(panel);
+        document.body.appendChild(ov);
+        document.body.style.overflow = 'hidden';
+
+        // Click outside, and Escape, both close it.
+        ov.addEventListener('click', function (e) { if (e.target === ov) closeHistoryOverlay(); });
+        document.addEventListener('keydown', escClose);
+        close.focus();
+    }
+
+    function escClose(e) { if (e.key === 'Escape') closeHistoryOverlay(); }
+
+    function closeHistoryOverlay() {
+        var ov = document.getElementById('shared-history-overlay');
+        if (ov) ov.remove();
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', escClose);
+    }
+
+    // Exposed so a page can offer its own entry point to the same overlay.
+    window.openSharedHistory = openHistoryOverlay;
+
     function buildControls() {
         var header = document.querySelector('header');
         if (!header) {
@@ -228,8 +406,16 @@
 
         /* History, only where the page can actually show it. A button that
            opens nothing is worse than no button. */
+        /* Built unconditionally now. It used to be created only when
+           `window.toggleHistoryModal` existed, and that function is defined in
+           script.js — the generator page and nowhere else. So the clock was
+           absent from the walkthrough, the wiki, the index, the cheatsheets and
+           the live editor: nine pages out of eleven had no way to reach the
+           history at all. The original comment said "a button that opens
+           nothing is worse than no button", which was right; the fix is to give
+           it something to open everywhere rather than to hide it. */
         var hist = document.getElementById('history-btn');
-        if (!hist && typeof window.toggleHistoryModal === 'function') {
+        if (!hist) {
             hist = document.createElement('button');
             hist.id = 'history-btn';
             hist.type = 'button';
@@ -241,7 +427,13 @@
                 'cookies, and it is gone when the tab closes, so export anything you ' +
                 'want to keep.');
             hist.textContent = '🕘';
-            hist.addEventListener('click', function () { window.toggleHistoryModal(); });
+            hist.addEventListener('click', function () {
+                // The generator has its own richer modal that can reload an
+                // entry straight back into the form. Defer to it there, and use
+                // the shared overlay everywhere else.
+                if (typeof window.toggleHistoryModal === 'function') window.toggleHistoryModal();
+                else openHistoryOverlay();
+            });
         }
         if (hist) bar.appendChild(hist);
 
