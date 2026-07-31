@@ -1816,3 +1816,14 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
     .history-panel { max-width: 100%; border-radius: 12px; padding: 1.2rem 1rem; }
     .history-btn-sm { min-height: var(--tap-target, 44px); display: inline-flex; align-items: center; }
 }
+
+/* The "report a bug" line in the footer's project block. Slightly separated from
+   the credits above it: it is an invitation to act, not more attribution. */
+.footer-report {
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.6rem;
+    margin-top: 0.7rem;
+    font-size: 0.76rem;
+    line-height: 1.6;
+}
+.footer-report strong { color: var(--accent-orange); }

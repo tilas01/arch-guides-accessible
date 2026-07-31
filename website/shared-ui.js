@@ -616,6 +616,14 @@
             ' · <a href="' + REPO_URL + '" target="_blank" rel="noopener">Source</a>' +
             ' · <a href="' + REPO_URL + '/releases" target="_blank" rel="noopener">Releases</a>' +
             ' · <a href="' + REPO_TREE + 'tilas01.asc" target="_blank" rel="noopener">Signing key</a></p>',
+            // Reachable from every page, deliberately. The security audit says in
+            // its own words what it did not cover; an invitation to report what it
+            // missed only works if it is somewhere you actually are.
+            '<p class="footer-report">🐞 <strong>Found a bug, or something that is wrong?</strong> ' +
+            '<a href="' + REPO_URL + '/issues/new" target="_blank" rel="noopener">Open an issue</a>' +
+            ' — including where this and the ' +
+            '<a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">Arch Wiki</a> ' +
+            'disagree, because the Arch Wiki is right and this is the bug.</p>',
             '<nav class="footer-links" aria-label="All pages">' + links + '</nav>',
             '<p class="footer-credits"><strong>Standing on other people\'s work:</strong> ' +
             '<a href="https://wiki.archlinux.org/" target="_blank" rel="noopener">the Arch Wiki</a>, ' +
