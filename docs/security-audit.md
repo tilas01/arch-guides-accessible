@@ -242,3 +242,21 @@ Recommended next: add `cargo audit` and `cargo deny` to CI, write tests for the
 integrity-check paths (especially the fail-closed behaviour fixed above), and
 measure anti-ducky's false-positive rate on real hardware before anyone relies on
 it to guard a login.
+
+## Found something? Say so
+
+An audit is a snapshot by one set of eyes, and the section above is explicit
+about what it did not cover. If you spot something — a real vulnerability, a
+command that does not do what the guide claims, a package that no longer exists,
+or documentation that describes behaviour the code does not have — please open an
+issue:
+
+**<https://github.com/tilas01/arch-guides-dynamic/issues>**
+
+That includes disagreements. If this project and the Arch Wiki conflict, the Arch
+Wiki is right and this is a bug worth reporting.
+
+For anything you believe is exploitable, say so in the issue title so it is
+triaged first. There is no separate private channel — this is a personal project,
+not an organisation with a security team, and pretending otherwise would be
+worse than saying it plainly.
