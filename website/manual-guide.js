@@ -1032,6 +1032,37 @@
                        "sudo sed -i 's/^#\\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config",
                        'sudo systemctl enable --now sshd']
             });
+            /* A second factor for SSH, only when libre-otp is actually being
+               installed. Offering it otherwise would emit a ForceCommand
+               pointing at a binary that is not on the machine — which locks the
+               user out of their own server on the next connection. */
+            if (has(s.security_tools, 'libre-otp')) {
+                out.push({
+                    title: 'openssh + libre-otp (second factor)',
+                    why: 'A TOTP code on top of the key. There is no PAM module — this ' +
+                         'crate builds a binary, not a cdylib — so the gate runs as ' +
+                         'the sshd ForceCommand instead. The check happens after key ' +
+                         'authentication, so a wrong code costs an attacker a valid ' +
+                         'private key first. Keep a second session open while you test ' +
+                         'this: a mistake here locks you out of a remote machine, and ' +
+                         'reloading sshd does not drop connections that are already up.',
+                    cmds: ['sudo libre-otp --setup --hash=SHA256',
+                           '# Scan the QR with a 2FA app that is open source and offline —',
+                           '# Aegis or FreeOTP. A proprietary cloud authenticator syncs the',
+                           '# seed onto a server you do not control, which is the thing this avoids.',
+                           '',
+                           "printf '%s\n' 'Match User " + esc(s.username) + "' \\",
+                           "    '    ForceCommand /usr/local/bin/libre-otp --gate' \\",
+                           "    '    AllowTcpForwarding no' \\",
+                           "    '    PermitTunnel no' | sudo tee -a /etc/ssh/sshd_config",
+                           '',
+                           '# Validate BEFORE reloading. This is the step that stops a typo',
+                           '# from becoming a lockout.',
+                           'sudo sshd -t && sudo systemctl reload sshd',
+                           '',
+                           '# From a SECOND terminal, confirm you can still log in.']
+                });
+            }
         }
         if (has(apps, 'docker')) {
             out.push({
