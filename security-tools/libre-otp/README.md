@@ -75,6 +75,55 @@ The previous signing key `4C0383A1…` is **revoked** — its private half was
 committed to public git history. See
 [Verifying downloads](../../README.md#-verifying-downloads).
 
+## A second factor for SSH, without PAM
+
+`--gate` is meant for sshd's `ForceCommand`. sshd authenticates the key as
+usual, then runs this instead of the user's command; only a correct code reaches
+an exec of the real session.
+
+```
+# /etc/ssh/sshd_config
+Match User you
+    ForceCommand /usr/local/bin/libre-otp --gate
+```
+
+```bash
+sudo sshd -t && sudo systemctl reload sshd
+```
+
+`scp`, `rsync` and `git push` keep working: `SSH_ORIGINAL_COMMAND` is passed to
+your shell with `-c` exactly as sshd would have. An interactive login gets a
+login shell. Nothing is printed on success, because anything on stdout would be
+prepended to the client's stream and corrupt a transfer.
+
+> [!WARNING]
+> **Keep a second session open while you test this.** A mistake in
+> `sshd_config` locks you out of a remote machine. `sshd -t` validates the file
+> before you reload, and reloading does not drop existing connections — so open
+> a second terminal, confirm you can still get in, and only then close the
+> first.
+
+### Why a ForceCommand and not a PAM module
+
+This crate builds a binary, not a `cdylib`, so there is no `pam_libre_otp.so`
+and there never was — see *Honest limitations* below. A `ForceCommand` gate does
+the same job with what actually exists, and it has one property PAM does not:
+the check runs **after** key authentication, so a wrong code costs an attacker a
+valid private key first.
+
+It also has a real limit. `ForceCommand` applies to the session, not to
+authentication, so anything that bypasses the session bypasses the gate —
+port forwarding and `-N`, for example, do not run a command at all. If you need
+those blocked, disable them in `sshd_config` alongside this:
+
+```
+Match User you
+    ForceCommand /usr/local/bin/libre-otp --gate
+    AllowTcpForwarding no
+    PermitTunnel no
+    X11Forwarding no
+```
+
 ## Honest limitations
 
 Three things this README used to claim that were **not true**. They are
@@ -91,8 +140,9 @@ them:
 * **`--interactive` did not work.** The dashboard was fully written but nothing
   ever called it, so clap rejected the flag as unknown. That is fixed.
 
-PAM integration is a reasonable thing to want and may be built later. Until it
-exists, this README will not say it does.
+A PAM module is still not built. `--gate` covers the SSH case with what exists
+today, and its limits are stated above rather than glossed over. If a PAM module
+is written later, this README will say so then and not before.
 
 ## Licence
 

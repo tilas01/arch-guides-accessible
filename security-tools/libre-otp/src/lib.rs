@@ -186,6 +186,49 @@ fn load_state() -> OtpState {
     })
 }
 
+/// Hand control to the session SSH was going to start, once the OTP is correct.
+///
+/// This is how a second factor is added to SSH **without a PAM module**. The
+/// README used to tell people to add `auth required pam_libre_otp.so` to
+/// `/etc/pam.d/sshd`; no such module exists — this crate builds a binary, not a
+/// `cdylib` — and following that advice adds a line referencing a missing module
+/// to the SSH auth stack, which locks you out of the machine.
+///
+/// A `ForceCommand` gate does the same job with what actually exists. sshd
+/// authenticates the key as usual, then runs this instead of the user's command;
+/// only a correct code reaches an exec. Because the check happens *after* key
+/// authentication, a wrong code costs the attacker a valid key first.
+///
+/// `SSH_ORIGINAL_COMMAND` is what the client asked to run. It is passed to the
+/// shell with `-c`, exactly as sshd would have, so `scp`, `rsync` and
+/// `git push` keep working. Empty means an interactive login, so the shell is
+/// started as a login shell.
+///
+/// Nothing is printed here on success: anything written to stdout would be
+/// prepended to the stream of whatever the client is running, which corrupts
+/// `scp` and `rsync` transfers.
+fn exec_gate_target() -> ! {
+    use std::os::unix::process::CommandExt;
+    use std::process::Command;
+
+    let shell = env::var("SHELL").unwrap_or_else(|_| "/bin/bash".to_string());
+    let original = env::var("SSH_ORIGINAL_COMMAND").unwrap_or_default();
+
+    let mut cmd = Command::new(&shell);
+    if original.is_empty() {
+        cmd.arg("-l");
+    } else {
+        cmd.arg("-c").arg(&original);
+    }
+
+    // exec replaces this process, so the OTP check leaves nothing behind in the
+    // process tree and the exit status is the command's own.
+    let err = cmd.exec();
+    // Only reachable if exec failed.
+    eprintln!("libre-otp: could not start the session: {err}");
+    std::process::exit(126);
+}
+
 pub fn run() {
     // Harden the process BEFORE any secret is read. Locks memory out of swap,
     // disables core dumps and refuses same-user ptrace, so the TOTP seed cannot
@@ -400,6 +443,11 @@ pub fn run() {
     }
 
     let double_check = args.iter().any(|a| a == "--double-check");
+    /* --gate: verify, then hand over to the session SSH was going to start.
+       Intended for sshd's ForceCommand. A failed check falls through to the
+       normal failure path below, which increments the lockout counter and
+       exits non-zero, so sshd closes the connection. */
+    let gate = args.iter().any(|a| a == "--gate");
 
     // Verify OTP
     let mut state = load_state();
@@ -566,6 +614,11 @@ pub fn run() {
         state.lockout_duration_mins = 30; // Reset penalty
         save_state(&state);
         state.secret_bytes.zeroize();
+        // Zeroize before handing over: exec_gate_target never returns, so
+        // anything not cleared here stays in the image the new program inherits.
+        if gate {
+            exec_gate_target();
+        }
         std::process::exit(0);
     } else {
         state.failed_attempts += 1;
