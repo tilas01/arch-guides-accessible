@@ -44,6 +44,22 @@ struct Args {
     /// Disarm the hard-shutdown-on-attack switch.
     #[arg(long)]
     disarm_kill_switch: bool,
+
+    /// Enrol the input devices plugged in right now, one at a time.
+    ///
+    /// Run this before enabling the daemon. Trust is otherwise granted by a
+    /// vote from an already-trusted keyboard, and on a fresh install there is
+    /// no such keyboard — so the first one plugged in gets sandboxed by a tool
+    /// with no way to be told otherwise.
+    #[arg(long)]
+    enroll: bool,
+
+    /// Print trusted device names, one per line, for another tool to consume.
+    ///
+    /// Feeds the usbkill allowlist, so the two tools cannot disagree about what
+    /// is trusted and power a machine off over its owner's own keyboard.
+    #[arg(long)]
+    export_whitelist: bool,
 }
 
 /// Argon2id parameters for the unlock PIN.
@@ -238,7 +254,11 @@ fn arm_kill_switch(enable: bool) -> u8 {
 fn main() -> ExitCode {
     let args = Args::parse();
 
-    let code = if args.arm_kill_switch {
+    let code = if args.enroll {
+        anti_ducky::enroll_devices()
+    } else if args.export_whitelist {
+        anti_ducky::export_whitelist()
+    } else if args.arm_kill_switch {
         arm_kill_switch(true)
     } else if args.disarm_kill_switch {
         arm_kill_switch(false)
