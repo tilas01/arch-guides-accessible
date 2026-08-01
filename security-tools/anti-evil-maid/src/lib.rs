@@ -1,3 +1,4 @@
+pub mod autolock;
 pub mod gui;
 use chrono::Local;
 use sha2::{Digest, Sha256};

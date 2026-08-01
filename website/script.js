@@ -607,9 +607,14 @@ const APP_CONFIG_DEFAULTS = {
         label: 'Anti-Evil Maid',
         fields: {
             modal_aem_decoy_mode:  { value: 'none', label: 'decoy password' },
-            modal_aem_duress_mode: { value: 'none', label: 'duress password' }
+            modal_aem_duress_mode: { value: 'none', label: 'duress password' },
+            // Defaults to off. Suspending the volume that backs / freezes every
+            // disk read until the passphrase is typed, so a machine that
+            // auto-locks without the owner having chosen it is a machine that
+            // looks broken the first time it happens.
+            modal_aem_autolock:    { value: 'never', label: 'LUKS auto-lock' }
         },
-        summary: 'boot verification only — no decoy or duress password',
+        summary: 'boot verification only — no decoy or duress password, no auto-lock',
         why: 'The duress option destroys data irreversibly, so it is never enabled without an explicit choice.'
     }
 };
@@ -1834,33 +1839,75 @@ run_with_progress() {
                 const aemDecoyMode = document.getElementById('modal_aem_decoy_mode')?.value || 'none';
                 const aemDuressMode = document.getElementById('modal_aem_duress_mode')?.value || 'none';
 
-                if (aemDecoyMode !== 'none') {
-                    o += `\n# Anti-Evil Maid - Decoy Password (shows decoy OS, system intact)\n`;
-                    o += `# A decoy password boots into a dummy/fake OS without any indication of the real system.\n`;
-                    o += `# This is useful if forced to unlock under duress - attacker sees decoy, real data untouched.\n`;
-                    o += `read -s -p "Enter Decoy Password (shown to attacker, boots fake OS): " AEM_DECOY_PASS\necho\n`;
-                    if (aemDecoyMode === 'partition') {
-                        o += `# A decoy LUKS partition must be pre-created. anti-evil-maid registers this password to open it.\n`;
-                        o += `anti-evil-maid --decoy-password "$AEM_DECOY_PASS" --decoy-mode partition\n`;
-                    } else {
-                        o += `anti-evil-maid --decoy-password "$AEM_DECOY_PASS" --decoy-mode fake-boot\n`;
+                // Decoy and duress passwords are scarecrow's job, not
+                // anti-evil-maid's. This block previously called
+                // `anti-evil-maid --decoy-password "$PASS" --decoy-mode …` and
+                // `--duress-password "$PASS" --wipe-method …`. None of those
+                // four flags exist in the crate, so every one of these lines
+                // failed — and worse, they put the duress password on the
+                // command line, where `ps` shows it to every user on the
+                // machine. A duress password that any local process can read is
+                // not a duress password.
+                //
+                // scarecrow implements this properly: three separate PINs, each
+                // prompted for interactively and never passed as an argument,
+                // each hashed with Argon2id and stored root-only 0600.
+                //
+                // A duress PIN erases a LUKS header. On an unencrypted install
+                // there is none to erase, so the whole block is suppressed
+                // rather than emitting commands that cannot work — the same
+                // guard the walkthrough emitter needed.
+                const aemEncrypted = part !== "unencrypted";
+                if (aemEncrypted && (aemDecoyMode !== 'none' || aemDuressMode !== 'none')) {
+                    o += `\n# ── Duress and decoy PINs (scarecrow) ──\n`;
+                    o += `# These are entered at the login prompt instead of your real password.\n`;
+                    o += `# scarecrow prompts for each one; nothing is passed on the command\n`;
+                    o += `# line, where ps would show it to every user on the machine.\n`;
+                    if (aemDuressMode !== 'none') {
+                        o += `#\n`;
+                        o += `# Back the LUKS header up FIRST. A duress PIN erases it, and without\n`;
+                        o += `# a backup that is unrecoverable — which is the intent, but it also\n`;
+                        o += `# means a mistake is final. Keep the backup off this machine.\n`;
+                        o += `cryptsetup luksHeaderBackup ${partRoot} --header-backup-file /root/luks-header-backup.img\n`;
+                        o += `echo "Header backed up to /root/luks-header-backup.img — MOVE IT OFF THIS MACHINE."\n`;
+                        o += `\n# Name the device a duress PIN erases. Nothing is erased until this is\n`;
+                        o += `# set: scarecrow will not guess which disk to destroy.\n`;
+                        o += `scarecrow --set-duress-device ${partRoot}\n`;
                     }
-                    o += `unset AEM_DECOY_PASS\n`;
+                    if (aemDecoyMode !== 'none' && aemDuressMode !== 'none') {
+                        o += `\n# Erases the header AND opens a working decoy session, so there is no\n`;
+                        o += `# sign on screen that either happened.\n`;
+                        o += `scarecrow --set-duress-decoy-pin\n`;
+                    } else if (aemDuressMode !== 'none') {
+                        o += `\n# Erases the header, then behaves exactly like a wrong password.\n`;
+                        o += `scarecrow --set-duress-pin\n`;
+                    }
+                    if (aemDecoyMode !== 'none') {
+                        o += `\n# A working session in a decoy home. Erases nothing.\n`;
+                        o += `scarecrow --set-decoy-pin\n`;
+                    }
                 }
 
-                if (aemDuressMode !== 'none') {
-                    o += `\n# Anti-Evil Maid - Duress Password (wipes real data, shows decoy)\n`;
-                    o += `# WARNING: This password PERMANENTLY DESTROYS real data. Use with extreme caution.\n`;
-                    o += `# The system will appear to boot normally into decoy after wiping - attacker cannot tell.\n`;
-                    o += `read -s -p "Enter Duress Password (TRIGGERS DATA WIPE - use only under extreme duress): " AEM_DURESS_PASS\necho\n`;
-                    if (aemDuressMode === 'ssd') {
-                        o += `# SSD/NVMe - uses blkdiscard for instant cryptographic erasure\n`;
-                        o += `anti-evil-maid --duress-password "$AEM_DURESS_PASS" --wipe-method ssd-discard\n`;
+                // ── LUKS auto-lock ──
+                // Locking the screen leaves the master key in kernel memory.
+                // luksSuspend flushes it, which is the difference between a UI
+                // lock and a cryptographic one.
+                const aemAutolock = document.getElementById('modal_aem_autolock')?.value || 'never';
+                if (aemEncrypted && aemAutolock !== 'never') {
+                    o += `\n# ── LUKS auto-lock ──\n`;
+                    o += `# Suspends the volume and flushes the master key from RAM. A screen\n`;
+                    o += `# lock does not do this: the key stays resident while the volume is\n`;
+                    o += `# open, where a DMA port or a cold-boot attack can still reach it.\n`;
+                    if (aemAutolock === 'on-lock') {
+                        o += `anti-evil-maid --configure-autolock --idle never\n`;
+                        o += `echo "Point your screen locker at /usr/local/bin/anti-evil-maid-on-lock"\n`;
                     } else {
-                        o += `# HDD - uses shred overwrite then boots decoy\n`;
-                        o += `anti-evil-maid --duress-password "$AEM_DURESS_PASS" --wipe-method shred\n`;
+                        o += `anti-evil-maid --configure-autolock --idle ${aemAutolock}\n`;
+                        o += `systemctl enable anti-evil-maid-autolock.timer\n`;
                     }
-                    o += `unset AEM_DURESS_PASS\n`;
+                    o += `echo "Test this before relying on it: suspending the root volume freezes"\n`;
+                    o += `echo "all disk I/O until the passphrase is typed, and a mistake needs a"\n`;
+                    o += `echo "power cycle. Lock on demand with: anti-evil-maid --lock-now"\n`;
                 }
 
                 // Boot-integrity daemon, wrapped so a failed check is reported on
@@ -3568,7 +3615,12 @@ function openAppConfigModal(appId) {
         `;
     } else if (appId === 'evil-maid') {
         title.innerHTML = '⚙️ Anti-Evil Maid Configuration';
-        desc.innerText = 'Configure decoy kernels and cryptographically secure boot signatures.';
+        desc.innerText = 'Configure decoy kernels, LUKS auto-lock, and duress passwords.';
+        // modal_aem_decoy_mode and modal_aem_duress_mode are read by the script
+        // emitter but had no markup here at all, so getElementById always
+        // returned null, the `|| 'none'` default always won, and the duress
+        // block could never fire no matter what the user picked. Adding the
+        // controls the emitter was already looking for.
         contentArea.innerHTML = `
             <div style="margin-bottom:1rem;">
                 <label>Decoy Kernels:</label>
@@ -3577,6 +3629,40 @@ function openAppConfigModal(appId) {
                     <option value="2">2 Decoys</option>
                     <option value="random">Randomized Decoy Selection</option>
                 </select>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label>LUKS auto-lock:</label>
+                <select id="modal_aem_autolock" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="never" selected>None — lock on demand only</option>
+                    <option value="15m">After 15 minutes idle</option>
+                    <option value="1h">After 1 hour idle</option>
+                    <option value="8h">After 8 hours idle</option>
+                    <option value="on-lock">Whenever the session locks</option>
+                </select>
+                <p style="font-size:0.8rem; color:var(--fg-dim); margin-top:0.35rem;">
+                    Locking the screen leaves the LUKS master key in kernel memory.
+                    Suspending the volume flushes it. Requires disk encryption.
+                </p>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label>Decoy password (Scarecrow):</label>
+                <select id="modal_aem_decoy_mode" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="none" selected>None</option>
+                    <option value="session">Opens a working decoy session, erases nothing</option>
+                </select>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label>Duress password (Scarecrow):</label>
+                <select id="modal_aem_duress_mode" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="none" selected>None</option>
+                    <option value="erase">Erases the LUKS header, then acts like a wrong password</option>
+                </select>
+                <p style="font-size:0.8rem; color:var(--accent-red); margin-top:0.35rem;">
+                    Irreversible without a header backup. The script takes one first and
+                    tells you to move it off the machine — do that, or a mistake is final.
+                    Choosing both a decoy and a duress password sets the combined PIN:
+                    the header is erased and a working session still appears.
+                </p>
             </div>
         `;
 } else if (appId === 'git') {
