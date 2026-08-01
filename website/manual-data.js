@@ -879,6 +879,43 @@ const STEPS = [
                 'runs it. Read-only; it cannot lock you out.' }
     ]
 },
+/* ── Duress PINs ────────────────────────────────────────────────────────────
+   Only offered when scarecrow is installed and the disk is actually encrypted:
+   a duress PIN erases a LUKS header, and there is no header to erase on an
+   unencrypted install. Offering it there would be a control that silently does
+   nothing, which is worse than not offering it. */
+{
+    id: 'duress_pins',
+    section: 'Security',
+    title: 'Duress PINs',
+    help: 'Three separate passwords you can set at the LUKS prompt, each ' +
+          'optional. They exist for the situation where someone is standing ' +
+          'over you demanding a password. Nothing on screen ever reveals that ' +
+          'one was used — that is the whole point, and it is why none of them ' +
+          'announce themselves.',
+    wiki: 'luks-duress',
+    when: s => (s.security_tools || []).indexOf('scarecrow') !== -1 &&
+               s.encryption && s.encryption !== 'none',
+    type: 'multi',
+    optional: true,
+    options: [
+        { value: 'duress', label: 'Duress — erase, silently',
+          desc: 'Erases the LUKS header. The data becomes unrecoverable. It ' +
+                'then behaves exactly like a wrong password, because a disk ' +
+                'that will not unlock reads as a forgotten passphrase.',
+          danger: 'Irreversible without a header backup. Take one first, and ' +
+                  'keep it where the person you are hiding from cannot reach it.' },
+        { value: 'decoy', label: 'Decoy — a plausible session',
+          desc: 'Opens a working session in a decoy home while your real data ' +
+                'stays sealed. Erases nothing. An obviously empty decoy home ' +
+                'is itself a tell, so populate it.' },
+        { value: 'both', label: 'Both at once — erase and show a decoy',
+          desc: 'Erases the header and opens the decoy session, so the data ' +
+                'is gone and the screen still shows a working system. For ' +
+                'when you need both and cannot afford either to be visible.',
+          danger: 'Irreversible without a header backup, same as duress.' }
+    ]
+},
 {
     id: 'apps',
     section: 'Software',
