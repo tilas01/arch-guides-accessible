@@ -934,7 +934,11 @@ const STEPS = [
     id: 'duress_pins',
     section: 'Security',
     title: 'Duress PINs',
-    help: 'Three separate passwords you can set at the LUKS prompt, each ' +
+    // "at the LUKS prompt" was wrong and it mattered: these are checked at the
+    // *login* prompt, by a PAM gate. Someone who believed otherwise would type
+    // their duress PIN at the boot passphrase prompt, where it is just a wrong
+    // passphrase and nothing happens — at the one moment it needed to work.
+    help: 'Three separate passwords you can set at the login prompt, each ' +
           'optional. They exist for the situation where someone is standing ' +
           'over you demanding a password. Nothing on screen ever reveals that ' +
           'one was used — that is the whole point, and it is why none of them ' +

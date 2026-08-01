@@ -930,9 +930,9 @@ sha512sum -c libre-otp.sha512</code></pre>
         <h3 id="scarecrow">🦅 Scarecrow</h3>
         <p>Plants canary tokens and spoofs sandbox/VM artefacts, so malware that checks whether it is being analysed decides to stay dormant. Includes an optional kernel module. Detection-oriented rather than preventive: it tells you something looked, and discourages execution.</p>
         <p>
-            It also provides <strong>three optional duress PINs</strong> for the LUKS
-            prompt — see <a href="#luks-duress">LUKS duress passphrase</a>. Each is set
-            separately and none announces itself:
+            It also provides <strong>three optional duress PINs</strong> for the
+            <strong>login</strong> prompt — see <a href="#luks-duress">LUKS duress passphrase</a>.
+            Each is set separately and none announces itself:
         </p>
         <div class="md-tablewrap">
         <table class="md-table">
@@ -1075,6 +1075,69 @@ sha512sum -c libre-otp.sha512</code></pre>
                 <li>Keep verified offline backups and rehearse the entire flow in a VM.</li>
                 <li>Destroying evidence may itself be an offence where you live. That is your call to make, not this tool's.</li>
             </ul>
+        </div>
+
+        <h3>Two different mechanisms — know which one you have</h3>
+        <p>
+            There are two duress implementations in this project, at two different layers, and
+            they are not interchangeable:
+        </p>
+        <ul>
+            <li><strong>The initramfs hook</strong> described above fires at the
+                <strong>boot passphrase prompt</strong>, before the root filesystem is mounted.
+                It is what the four actions above configure.</li>
+            <li><strong>Scarecrow's three PINs</strong> fire at the <strong>login prompt</strong>,
+                after the disk is already unlocked. They are what
+                <code>scarecrow --set-duress-pin</code> and its siblings configure.</li>
+        </ul>
+        <div style="border-left:4px solid var(--accent-red); background:rgba(247,118,142,0.1); padding:1rem; margin:1rem 0;">
+            <strong style="color:var(--accent-red);">⚠️ This page previously said scarecrow's PINs
+            were entered "at the LUKS prompt". They are not.</strong>
+            <p style="margin-top:0.5rem;">
+                Believing that is not a harmless mix-up: you would type your duress PIN at the boot
+                passphrase prompt, where it is simply a wrong passphrase, nothing would happen, and
+                you would find that out at the one moment it needed to work. If you want a response
+                <em>before</em> the disk is unlocked, use the initramfs hook.
+            </p>
+        </div>
+
+        <h3>Wiring scarecrow's PINs into the login</h3>
+        <p>
+            Setting a PIN is not enough on its own — something has to check it. Scarecrow is
+            reached through stock <code>pam_exec</code>, so there is no custom PAM module involved
+            and it works anywhere PAM does: <code>login</code>, greetd, sddm, gdm, <code>su</code>.
+        </p>
+        <pre><code class="language-bash"># /etc/pam.d/system-auth — ABOVE the pam_unix line
+auth [success=done default=ignore] pam_exec.so expose_authtok quiet /usr/bin/scarecrow --pam-gate</code></pre>
+        <p>
+            <code>expose_authtok</code> hands the entered password to scarecrow on stdin, so it is
+            typed exactly once and nothing on screen differs from an ordinary login. The exit code
+            does the rest:
+        </p>
+        <div class="md-tablewrap">
+        <table class="md-table">
+            <thead><tr><th>Password</th><th>Exit</th><th>What happens</th></tr></thead>
+            <tbody>
+                <tr><td>Your normal one</td><td>1</td><td><code>default=ignore</code> — falls through to <code>pam_unix</code>, works exactly as before</td></tr>
+                <tr><td>Duress PIN</td><td>1</td><td>LUKS header erased first, then an ordinary-looking failure</td></tr>
+                <tr><td>Decoy PIN</td><td>0</td><td><code>success=done</code> — auth granted, session starts in the decoy home</td></tr>
+                <tr><td>Combined PIN</td><td>0</td><td>Header erased <em>and</em> the decoy session opens</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p>
+            The gate fails closed. A read error, a missing hash file or an unparseable hash all
+            exit non-zero, because a gate that returned success on a missing file would be an
+            authentication bypass an attacker triggers by deleting something.
+        </p>
+        <div style="border-left:4px solid var(--accent-red); background:rgba(247,118,142,0.1); padding:1rem; margin:1rem 0;">
+            <strong style="color:var(--accent-red);">⚠️ Edit PAM with a root shell already open.</strong>
+            <p style="margin-top:0.5rem;">
+                A mistake in <code>/etc/pam.d/system-auth</code> can lock every account out of the
+                machine, including root. Keep a second TTY logged in as root while you edit, and
+                test authentication from a <em>third</em> before closing either. Recovery otherwise
+                means booting the install medium.
+            </p>
         </div>
 
         <h3>Setting up the decoy volume</h3>

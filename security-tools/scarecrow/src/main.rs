@@ -19,6 +19,15 @@ struct Args {
     #[arg(short, long)]
     login: bool,
 
+    /// Read the password from stdin and act on it, for stock `pam_exec.so`.
+    ///
+    /// This is how the PINs actually get reached from a real login. Install as:
+    ///   auth [success=done default=ignore] pam_exec.so expose_authtok quiet \
+    ///        /usr/bin/scarecrow --pam-gate
+    /// Not meant to be run by hand.
+    #[arg(long)]
+    pam_gate: bool,
+
     /// Set or change the duress PIN — erases the LUKS header, silently
     #[arg(long)]
     set_duress_pin: bool,
@@ -67,6 +76,12 @@ fn main() -> ExitCode {
             return ExitCode::from(1);
         }
         return ExitCode::SUCCESS;
+    }
+
+    // Before --login and --interactive: this is invoked by PAM on every
+    // authentication, and it must never fall through to anything that prints.
+    if args.pam_gate {
+        return ExitCode::from(scarecrow::pam_gate() as u8);
     }
 
     if args.login {

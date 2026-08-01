@@ -410,6 +410,125 @@ fn pin_matches(path: &str, password: &str) -> bool {
     }
 }
 
+/// Which of the three PINs, if any, this password is.
+///
+/// **All three are verified every time, with no early exit.** Stopping at the
+/// first match would make the time taken depend on which slot matched, and three
+/// Argon2 verifications at m=64MiB are slow enough for that difference to be
+/// measurable. The cost is two extra verifications on a machine that is about to
+/// be wiped anyway.
+///
+/// The most destructive interpretation wins if a password is somehow enrolled in
+/// more than one slot. Someone who set the same PIN twice meant the stronger of
+/// the two, and under duress is the wrong moment to resolve an ambiguity in
+/// favour of doing less.
+fn classify_pin(password: &str) -> Option<PinAction> {
+    // No `||` short-circuit: see the timing note above.
+    let is_duress = pin_matches(DURESS_HASH_FILE, password);
+    let is_decoy = pin_matches(DECOY_HASH_FILE, password);
+    let is_both = pin_matches(BOTH_HASH_FILE, password);
+
+    if is_both {
+        Some(PinAction::WipeAndDecoy)
+    } else if is_duress {
+        Some(PinAction::Wipe)
+    } else if is_decoy {
+        Some(PinAction::Decoy)
+    } else {
+        None
+    }
+}
+
+/// Marker read by `/etc/profile.d/scarecrow-decoy.sh` to redirect `HOME`.
+///
+/// In `/run`, so it is tmpfs and cannot survive a reboot: a stale marker would
+/// silently drop the owner into the decoy home on their next ordinary login,
+/// which looks exactly like their data having been lost.
+pub const DECOY_SESSION_MARKER: &str = "/run/scarecrow/decoy-session";
+
+/// PAM gate, for use with stock `pam_exec.so` — no custom PAM module.
+///
+/// This is what makes the PINs reachable from a real login. `scarecrow --login`
+/// alone is a standalone prompt that nothing invokes, so PINs enrolled with
+/// `--set-duress-pin` could never fire. Installed in the PAM stack as:
+///
+/// ```text
+/// auth [success=done default=ignore] pam_exec.so expose_authtok quiet \
+///      /usr/bin/scarecrow --pam-gate
+/// ```
+///
+/// `expose_authtok` writes the entered password to this process's stdin, so the
+/// user types it exactly once — no second prompt, and nothing on screen that
+/// differs from an ordinary login. It works anywhere PAM does: `login`, greetd,
+/// sddm, gdm, `su`.
+///
+/// The exit code drives the whole behaviour, which is why the stack line uses
+/// `success=done default=ignore`:
+///
+/// | PIN            | Exit | PAM result                                      |
+/// |----------------|------|-------------------------------------------------|
+/// | none (normal)  | 1    | ignored; falls through to `pam_unix` as usual    |
+/// | duress         | 1    | header erased first, then an ordinary failure    |
+/// | decoy          | 0    | auth succeeds here, session starts in the decoy  |
+/// | duress + decoy | 0    | header erased, and the decoy session still opens |
+///
+/// The default is failure. A gate that returned success on a read error, a
+/// missing file or an unparseable hash would be an authentication bypass that an
+/// attacker triggers by deleting something.
+pub fn pam_gate() -> i32 {
+    use std::io::Read;
+
+    let mut password = String::new();
+    if std::io::stdin().read_to_string(&mut password).is_err() {
+        return 1;
+    }
+    // pam_exec terminates the token with a NUL, and some versions add a
+    // newline. Trimming both is required or every comparison fails against a
+    // hash of the bare password — silently, and only in production, because a
+    // hand-typed test at the terminal has neither.
+    let trimmed = password.trim_end_matches(['\0', '\n', '\r']).to_string();
+    password.zeroize();
+
+    let action = classify_pin(&trimmed);
+    let mut trimmed = trimmed;
+    trimmed.zeroize();
+
+    match action {
+        Some(PinAction::Wipe) => {
+            raise_duress_signal();
+            wipe_luks_header();
+            // Deliberately a failure: the data is gone, so there is no session
+            // to open, and a login that simply refuses reads as a forgotten
+            // password or a failing drive rather than as a wipe.
+            1
+        }
+        Some(PinAction::WipeAndDecoy) => {
+            raise_duress_signal();
+            wipe_luks_header();
+            mark_decoy_session();
+            0
+        }
+        Some(PinAction::Decoy) => {
+            mark_decoy_session();
+            0
+        }
+        // Not one of ours. Fail, so `default=ignore` hands the decision to
+        // pam_unix and the real password works exactly as it always did.
+        None => 1,
+    }
+}
+
+/// Flag the session that is about to start as a decoy one.
+///
+/// Silent and best-effort. A machine where `/run` is not writable gets no
+/// marker and an ordinary home, which is the failure that reveals least.
+fn mark_decoy_session() {
+    if let Some(parent) = Path::new(DECOY_SESSION_MARKER).parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    let _ = fs::write(DECOY_SESSION_MARKER, b"1");
+}
+
 /// The duress / decoy login.
 ///
 /// Plausible deniability depends on this being **silent about what it is**. The
@@ -461,25 +580,8 @@ pub fn handle_duress_login(require_confirmation: bool) {
         }
     }
 
-    // No `||` short-circuit: see the timing note above.
-    let is_duress = pin_matches(DURESS_HASH_FILE, &password);
-    let is_decoy = pin_matches(DECOY_HASH_FILE, &password);
-    let is_both = pin_matches(BOTH_HASH_FILE, &password);
+    let action = classify_pin(&password);
     password.zeroize();
-
-    // Most destructive interpretation wins if a password is somehow enrolled in
-    // more than one slot. Someone who set the same PIN twice meant the stronger
-    // of the two, and under duress is the wrong moment to resolve ambiguity in
-    // favour of doing less.
-    let action = if is_both {
-        Some(PinAction::WipeAndDecoy)
-    } else if is_duress {
-        Some(PinAction::Wipe)
-    } else if is_decoy {
-        Some(PinAction::Decoy)
-    } else {
-        None
-    };
 
     match action {
         Some(act) => {
@@ -498,12 +600,49 @@ pub fn handle_duress_login(require_confirmation: bool) {
             }
         }
         None => {
-            // Not one of ours. Behave like an ordinary failed login rather than
-            // revealing that a duress mechanism exists at all.
+            // Not one of ours. Hand the terminal to the real login program, so
+            // an ordinary password works exactly as it always did.
+            //
+            // This is what makes the whole feature usable. Without it,
+            // `scarecrow --login` was a standalone prompt that printed "Login
+            // incorrect" to *everyone*, including the owner typing their real
+            // password — so it could never be installed as agetty's login
+            // program, so nothing ever reached it, so the enrolled PINs could
+            // not fire. A duress PIN that cannot fire is worse than none,
+            // because you believe you have one.
+            //
+            // Falls through to printing "Login incorrect" if the handover
+            // fails, which keeps the no-real-login case behaving as before
+            // rather than revealing that anything unusual is installed.
+            exec_real_login();
             println!("Login incorrect");
         }
     }
 }
+
+/// Replace this process with the system login program.
+///
+/// `exec`, not spawn: the terminal, the session and the controlling tty pass
+/// straight to `login`, and there is no scarecrow process left in the tree for
+/// anyone to notice. Returns only if the exec failed.
+#[cfg(unix)]
+fn exec_real_login() {
+    use std::os::unix::process::CommandExt;
+
+    // util-linux ships /bin/login; some systems only have /usr/bin/login.
+    for path in ["/bin/login", "/usr/bin/login"] {
+        if Path::new(path).exists() {
+            // The error is deliberately discarded and unlogged: a message here
+            // would appear on the screen of someone who simply mistyped their
+            // password, and "scarecrow could not exec login" tells a coercer
+            // that scarecrow is installed.
+            let _ = Command::new(path).exec();
+        }
+    }
+}
+
+#[cfg(not(unix))]
+fn exec_real_login() {}
 
 /// Raise the silent duress signal. No output — a visible signal defeats the
 /// purpose. Best-effort: a machine where /run is not writable simply has no
