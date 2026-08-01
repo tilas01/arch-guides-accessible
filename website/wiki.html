@@ -873,7 +873,39 @@ sha512sum -c libre-otp.sha512</code></pre>
         <!-- Per-tool anchors. releases.html and security-tools.html link to each
              of these by id, so they must exist here. -->
         <h3 id="libre-otp">🔐 Libre OTP</h3>
-        <p>Native Rust TOTP/HOTP two-factor authentication for boot, login and SSH. Configurable SHA-1/256/512, optional double-OTP, single-use recovery codes and a limited-use bypass password. Enforced through PAM and, for boot mode, an initramfs hook. Configure it via the <a href="#libre_otp_mode">OTP options</a> in the generator.</p>
+        <p>Native Rust TOTP/HOTP two-factor authentication. Configurable SHA-1/256/512 (SHA-256 is the default and the strongest option here), single-use recovery codes, a limited-use bypass password, and an escalating lockout after repeated failures. Configure it via the <a href="#libre_otp_mode">OTP options</a> in the generator.</p>
+        <p>
+            <strong>The prompt shows a code and asks for one.</strong> That is deliberate:
+            an ordinary 2FA prompt only proves <em>you</em> hold the secret, so a convincing
+            fake prompt harvests a code and you learn nothing. If the number on screen does
+            not match your authenticator, the thing asking does not hold the secret and you
+            should not answer it. <code>--double-check</code> additionally requires two
+            consecutive codes, so a single shoulder-surfed code is not enough.
+        </p>
+        <div class="md-alert md-warning">
+            <span class="md-alert-head">⚠️ There is no PAM module</span>
+            <p>
+                This page previously said Libre OTP was &ldquo;enforced through PAM&rdquo;.
+                It is not, and never was — the crate builds a binary, not a
+                <code>cdylib</code>, so <code>pam_libre_otp.so</code> does not exist. Adding
+                a line for it to <code>/etc/pam.d/sshd</code> references a missing module
+                and can lock you out of the machine. If you did that on this page's advice,
+                remove that line.
+            </p>
+            <p>
+                SSH is covered instead by <code>libre-otp --gate</code> as sshd's
+                <code>ForceCommand</code>: the key authenticates first, then the code gates
+                the session. It applies to the <em>session</em>, not to authentication, so
+                pair it with <code>AllowTcpForwarding no</code> and
+                <code>PermitTunnel no</code> — <code>ssh -N</code> runs no command and would
+                otherwise slip past it.
+            </p>
+        </div>
+        <p style="font-size:0.85rem; color:var(--fg-dim);">
+            Use an offline, open-source authenticator — Aegis or FreeOTP. One that syncs
+            seeds to a vendor's cloud makes the second factor only as strong as that
+            vendor, which is most of what it exists to remove.
+        </p>
 
         <h3 id="anti-ducky">🦆 Input Guard (Anti-Ducky)</h3>
         <p>Monitors USB HID keystroke timing and sandboxes unknown input devices, blocking Rubber Ducky / BadUSB style automated keystroke injection before the payload can type. Requires approval from already-trusted inputs before a new keyboard is authorised. For a policy-based alternative at the kernel level, see <a href="#other-sec">USBGuard</a>; for a hard power-off response, see the <a href="#usb-kill">USB kill switch</a>.</p>
@@ -886,6 +918,28 @@ sha512sum -c libre-otp.sha512</code></pre>
 
         <h3 id="scarecrow">🦅 Scarecrow</h3>
         <p>Plants canary tokens and spoofs sandbox/VM artefacts, so malware that checks whether it is being analysed decides to stay dormant. Includes an optional kernel module. Detection-oriented rather than preventive: it tells you something looked, and discourages execution.</p>
+        <p>
+            It also provides <strong>three optional duress PINs</strong> for the LUKS
+            prompt — see <a href="#luks-duress">LUKS duress passphrase</a>. Each is set
+            separately and none announces itself:
+        </p>
+        <div class="md-tablewrap">
+        <table class="md-table">
+            <tbody>
+                <tr><th>PIN</th><th>What entering it does</th></tr>
+                <tr><td><code>--set-duress-pin</code></td><td>Erases the LUKS header, then behaves exactly like a wrong password.</td></tr>
+                <tr><td><code>--set-decoy-pin</code></td><td>Opens a believable working session in a decoy home. Erases nothing.</td></tr>
+                <tr><td><code>--set-duress-decoy-pin</code></td><td>Erases the header <em>and</em> opens the decoy, so neither is visible.</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p style="font-size:0.85rem; color:var(--fg-dim);">
+            Nothing is erased until <code>--set-duress-device</code> names a device, and
+            you should take a <code>luksHeaderBackup</code> first and keep it somewhere the
+            person you are hiding from cannot reach. All three are verified on every
+            attempt with no early exit, so the time taken does not reveal which one
+            matched.
+        </p>
 
         <div style="background:var(--bg-lighter); padding:1rem; border-radius:8px; border:1px solid var(--border-color); margin-bottom:1.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">

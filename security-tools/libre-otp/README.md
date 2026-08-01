@@ -24,6 +24,44 @@ shown, partly masked, or withheld entirely depending on who can see the screen.
 Secrets are handled through `zeroize`, so they are overwritten rather than left
 sitting in freed memory.
 
+## Two codes, in both directions
+
+The prompt **shows the current valid code and also asks you for one.** That is
+not redundancy, and it is worth understanding before you set the display mode to
+`none`.
+
+An ordinary 2FA prompt only proves *you* hold the secret. It proves nothing about
+the machine, so a convincing fake prompt — a hostile initramfs, a shoulder-surfed
+login screen, an SSH session to somewhere you did not mean to go — harvests a
+code from you and you learn nothing. Showing the code first inverts that: if the
+number on the screen does not match the one in your authenticator, **the thing
+asking does not hold the secret, and you should not answer it.**
+
+So: the display half authenticates the machine to you, and the entry half
+authenticates you to the machine.
+
+`--double-check` additionally requires two *consecutive* codes, which means an
+attacker who captured a single code over your shoulder cannot use it alone.
+
+Set the display to `none` on a screen other people can see. You lose the check on
+the machine, which is a real trade — make it deliberately.
+
+## Choosing an authenticator app
+
+Use one that is open source and works offline: **Aegis** (Android) or
+**FreeOTP** (Android, iOS) are the usual choices, and both let you export an
+encrypted backup you control.
+
+Avoid an authenticator that syncs seeds to a vendor's cloud. If the seed leaves
+your device, the second factor is only as strong as that vendor's security and
+their willingness to refuse a request for it — which is most of what a second
+factor is supposed to remove. If you are hardening a machine to this degree, that
+trade does not make sense.
+
+`--hash=SHA256` at setup is the strongest option here and the default. SHA-1 is
+offered only because some older authenticators still refuse anything else; if
+yours accepts SHA-256, use it.
+
 ## Install
 
 The suite installer verifies the SHA-512 hash *and* the GPG signature, pins the
