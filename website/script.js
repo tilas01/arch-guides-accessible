@@ -1905,8 +1905,27 @@ run_with_progress() {
             }
 
             if (effectiveSuite.includes('anti-ducky')) {
-                o += `\n# Configuring Input Guard (Anti-Ducky) — trust currently attached devices\nanti-ducky --approve-current\n`;
-                o += `systemctl enable anti-ducky.service\n`;
+                // This used to run `anti-ducky --approve-current`, a flag the
+                // crate does not have — clap rejects it, and in a chroot the
+                // install would fail on a line that never worked.
+                //
+                // Enrolment is also deliberately NOT done here. It is
+                // interactive, and the devices attached during an install are
+                // not the devices the machine is used with. Enabling the daemon
+                // before enrolment locks the owner out of their own keyboard,
+                // so the unit is installed and left stopped until they run it.
+                o += `\n# Input Guard (Anti-Ducky): installed, NOT enabled.\n`;
+                o += `# Enrolment is interactive and must happen on the real machine with\n`;
+                o += `# the real keyboards attached, or the daemon sandboxes the keyboard\n`;
+                o += `# you log in with.\n`;
+                o += `mkdir -p /etc/motd.d\n`;
+                o += `cat > /etc/motd.d/10-anti-ducky << 'DUCKYMOTD'\n`;
+                o += `Input Guard is installed but not running. Before enabling it:\n`;
+                o += `  1. Plug in every keyboard, mouse and dock you actually use.\n`;
+                o += `  2. sudo anti-ducky --enroll          # confirms each device in turn\n`;
+                o += `  3. sudo anti-ducky --export-whitelist  # check what it now trusts\n`;
+                o += `  4. sudo systemctl enable --now anti-ducky.service\n`;
+                o += `DUCKYMOTD\n`;
                 // Report the full device identity, so the user can judge it rather
                 // than just being told "something happened".
                 o += `\n# Alert on an unrecognised USB input device, with its full identity.\n`;
@@ -2014,6 +2033,19 @@ run_with_progress() {
                 // explicit, separate decision the user makes on the machine itself.
                 o += `\n# usbkill (upstream anti-forensic kill switch)\n`;
                 o += `su - builder -c "paru -S --noconfirm usbkill"\n`;
+                if (effectiveSuite.includes('anti-ducky')) {
+                    // One allowlist, two consumers. Two tools with two different
+                    // ideas of what is trusted is how a machine powers itself
+                    // off over its owner's own keyboard.
+                    o += `mkdir -p /etc/motd.d\n`;
+                    o += `cat > /etc/motd.d/11-usbkill << 'KILLMOTD'\n`;
+                    o += `usbkill is installed but not running. After 'anti-ducky --enroll',\n`;
+                    o += `hand it the same allowlist so the two cannot disagree:\n`;
+                    o += `  trusted=$(sudo anti-ducky --export-whitelist | paste -sd,) && \\\n`;
+                    o += `    printf '[config]\\nwhitelist = %s\\n' "$trusted" | \\\n`;
+                    o += `    sudo tee /etc/usbkill/usbkill.ini\n`;
+                    o += `KILLMOTD\n`;
+                }
                 o += `echo "usbkill installed but NOT enabled."\n`;
                 o += `echo "It powers the machine off immediately when USB devices change,"\n`;
                 o += `echo "with no confirmation and no chance to save work."\n`;

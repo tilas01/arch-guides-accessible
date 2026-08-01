@@ -433,6 +433,144 @@ fn broadcast_new_device_alert(device: &MonitoredDevice) {
     ));
 }
 
+/// Enrol the input devices that are plugged in right now.
+///
+/// Without this, the only way a keyboard becomes trusted is the running
+/// daemon's approval vote — which needs an already-trusted keyboard to vote
+/// with. On a fresh install there is no such keyboard, so the first one to be
+/// plugged in is sandboxed by a tool that has no way to be told otherwise.
+/// Enrolling at setup, while you can still see what is attached, is the way out
+/// of that.
+///
+/// Every device is confirmed one at a time rather than trusted en masse: a
+/// machine that already has something malicious attached should not have it
+/// blessed by a single "yes to all".
+#[cfg(target_os = "linux")]
+pub fn enroll_devices() -> u8 {
+    use std::io::{BufRead, Write};
+
+    println!("=== Anti-Ducky: enrol trusted input devices ===");
+    println!();
+    println!("These are the keyboards and keyboard-like devices attached now.");
+    println!("Approve the ones you recognise. Anything you do not recognise is");
+    println!("exactly what this tool exists to catch — leave it out.");
+    println!();
+
+    let mut registry = load_approved_registry();
+    let stdin = std::io::stdin();
+    let mut approved_now = 0usize;
+
+    loop {
+        let devices = enumerate_keyboards();
+        if devices.is_empty() {
+            println!("No keyboard-like input devices found. Is this running as root?");
+            return 1;
+        }
+
+        for (path, device) in devices {
+            let name = device.name().unwrap_or("(unnamed device)").to_string();
+            let fp = device_fingerprint(&path, &name);
+
+            if registry.contains_key(&fp) {
+                println!("  already trusted  {name}");
+                continue;
+            }
+
+            // The physical path is shown as well as the name, because two
+            // identical keyboards report the same name and only the path tells
+            // them apart.
+            println!();
+            println!("  Device : {name}");
+            println!("  Path   : {path}");
+            print!("  Trust this device? [y/N] ");
+            let _ = std::io::stdout().flush();
+
+            let mut answer = String::new();
+            if stdin.lock().read_line(&mut answer).is_err() {
+                return 1;
+            }
+            if !matches!(answer.trim(), "y" | "Y" | "yes" | "Yes") {
+                println!("  -> left untrusted");
+                continue;
+            }
+
+            registry.insert(
+                fp.clone(),
+                DeviceRecord {
+                    sys_path: path.clone(),
+                    name: name.clone(),
+                    fingerprint: fp,
+                    approved_at_epoch: timestamp_epoch(),
+                },
+            );
+            approved_now += 1;
+            println!("  -> trusted");
+        }
+
+        println!();
+        print!("Plug in another device and press Enter to rescan, or 'd' when done: ");
+        let _ = std::io::stdout().flush();
+        let mut again = String::new();
+        if stdin.lock().read_line(&mut again).is_err() {
+            break;
+        }
+        if matches!(again.trim(), "d" | "D" | "done" | "q") {
+            break;
+        }
+    }
+
+    save_approved_registry(&registry);
+
+    println!();
+    println!("{approved_now} newly trusted, {} in the registry.", registry.len());
+    if registry.is_empty() {
+        println!();
+        println!("Nothing is trusted, so every keyboard will be sandboxed on first use —");
+        println!("including the one you are typing on. Run this again before enabling the");
+        println!("daemon, or keep SSH available as a way back in.");
+    }
+    0
+}
+
+/// Print the trusted device names, one per line, for another tool to consume.
+///
+/// This exists so usbkill and anti-ducky cannot disagree about what is trusted.
+/// Two tools with two separate lists is how a machine ends up powering off
+/// because of the keyboard its owner deliberately approved five minutes earlier.
+///
+/// Names only, and no header or count — the output is meant to be piped, and
+/// anything extra becomes a line in somebody's config file.
+#[cfg(target_os = "linux")]
+pub fn export_whitelist() -> u8 {
+    let registry = load_approved_registry();
+    if registry.is_empty() {
+        // Nothing to say. Empty output and a non-zero status, so a caller that
+        // pipes this into a config file does not silently write an empty
+        // allowlist and lock the owner out.
+        eprintln!("anti-ducky: no devices are trusted yet — run --enroll first");
+        return 1;
+    }
+    let mut names: Vec<&str> = registry.values().map(|r| r.name.as_str()).collect();
+    names.sort_unstable();
+    names.dedup();
+    for n in names {
+        println!("{n}");
+    }
+    0
+}
+
+/// Stubs for non-Linux builds, so `main.rs` compiles everywhere the rest does.
+#[cfg(not(target_os = "linux"))]
+pub fn enroll_devices() -> u8 {
+    eprintln!("Device enrolment needs Linux evdev.");
+    1
+}
+#[cfg(not(target_os = "linux"))]
+pub fn export_whitelist() -> u8 {
+    eprintln!("Whitelist export needs Linux evdev.");
+    1
+}
+
 // ─── Public Entry Point ──────────────────────────────────────────────────────
 
 /// Run the anti-ducky input guard daemon.
