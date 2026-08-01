@@ -45,6 +45,27 @@
 
     const LIBRE_BLOCKED = ['steam', 'discord'];
 
+    /* DNS upstreams. Addresses and DoT hostnames taken from each provider's own
+       documentation. The second address is the provider's secondary resolver,
+       not a fallback to someone else — mixing providers would leak a share of
+       queries to whoever the fallback is. */
+    const DNS_PROVIDERS = {
+        quad9:      { label: 'Quad9',        v4: ['9.9.9.9', '149.112.112.112'],
+                      v6: ['2620:fe::fe', '2620:fe::9'], tls: 'dns.quad9.net' },
+        mullvad:    { label: 'Mullvad DNS',  v4: ['194.242.2.2'],
+                      v6: ['2a07:e340::2'], tls: 'dns.mullvad.net' },
+        cloudflare: { label: 'Cloudflare',   v4: ['1.1.1.1', '1.0.0.1'],
+                      v6: ['2606:4700:4700::1111', '2606:4700:4700::1001'],
+                      tls: 'cloudflare-dns.com' },
+        dns0:       { label: 'dns0.eu',      v4: ['193.110.81.0', '185.253.5.0'],
+                      v6: ['2a0f:fc80::', '2a0f:fc81::'], tls: 'dns0.eu' },
+        adguard:    { label: 'AdGuard DNS',  v4: ['94.140.14.14', '94.140.15.15'],
+                      v6: ['2a10:50c0::ad1:ff', '2a10:50c0::ad2:ff'],
+                      tls: 'dns.adguard-dns.com' }
+    };
+
+
+
     /* ── Derived facts ──────────────────────────────────────────────────── */
 
     function facts(s) {
@@ -745,6 +766,73 @@
             L.push('');
             L.push('> The images are dusklinux\'s work, published separately from Dusky');
             L.push('> itself. Nothing here modifies them.');
+            L.push('');
+        }
+
+        /* DNS. Every site you visit starts with a lookup, and by default that
+           goes to the ISP in plaintext — visible to them and to anyone on the
+           path, whatever the browser does with HTTPS afterwards. */
+        const dnsProv = DNS_PROVIDERS[s.dns_provider];
+        if (dnsProv) {
+            L.push('### DNS — ' + dnsProv.label + ', encrypted');
+            L.push('');
+            L.push('```bash');
+            L.push('sudo mkdir -p /etc/systemd/resolved.conf.d');
+            L.push("cat | sudo tee /etc/systemd/resolved.conf.d/dns.conf <<'EOF'");
+            L.push('[Resolve]');
+            /* `address#hostname` is what actually pins the certificate name.
+               `DNSOverTLS=yes` on its own encrypts but does not authenticate —
+               anyone able to answer on port 853 is then accepted, which is most
+               of the threat this is meant to remove. The comment here used to
+               claim pinning that the config did not do. */
+            L.push('DNS=' + dnsProv.v4.concat(dnsProv.v6)
+                                 .map(function (a) { return a + '#' + dnsProv.tls; })
+                                 .join(' '));
+            // No FallbackDNS on purpose: systemd's built-in fallbacks are other
+            // providers, so leaving it set quietly leaks a share of queries to
+            // whoever those are — which defeats the point of choosing.
+            L.push('FallbackDNS=');
+            L.push('DNSOverTLS=yes');
+            L.push('DNSSEC=yes');
+            L.push('EOF');
+            L.push('');
+            L.push('sudo systemctl enable --now systemd-resolved');
+            L.push('sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf');
+            L.push('');
+            L.push('# Check it took effect. "DNSOverTLS: yes" and the addresses above.');
+            L.push('resolvectl status | head -20');
+            L.push('```');
+            L.push('');
+            if (s.network === 'networkmanager') {
+                L.push('```bash');
+                L.push('# NetworkManager overwrites resolv.conf with whatever DHCP said');
+                L.push('# unless it is told to hand DNS to systemd-resolved instead.');
+                L.push("cat | sudo tee /etc/NetworkManager/conf.d/dns.conf <<'EOF'");
+                L.push('[main]');
+                L.push('dns=systemd-resolved');
+                L.push('EOF');
+                L.push('sudo systemctl restart NetworkManager');
+                L.push('```');
+                L.push('');
+            }
+            L.push('> DNS-over-TLS (port 853) with the certificate hostname pinned to');
+            L.push('> `' + dnsProv.tls + '`, so the queries are encrypted *and* you know who');
+            L.push('> answered. DNSSEC then checks the answers were not tampered with.');
+            L.push('');
+            L.push('> **What this does not do.** It moves who sees your lookups from your');
+            L.push('> ISP to ' + dnsProv.label + '. Their no-logging policy is a published');
+            L.push('> claim you cannot verify from here. It also does nothing about SNI or');
+            L.push('> the IP you then connect to, so a network observer can often still');
+            L.push('> infer the site. This is a real improvement, not anonymity.');
+            L.push('');
+        } else if (s.dns_provider === 'isp') {
+            L.push('### DNS');
+            L.push('');
+            L.push('> Using whatever DHCP hands out — usually your ISP or your router.');
+            L.push('> Nothing to configure, and the lookups are unencrypted: every domain');
+            L.push('> you visit is visible to them and to anyone on the path, regardless');
+            L.push('> of HTTPS. Re-run the walkthrough and pick a provider if you would');
+            L.push('> rather that were not the case.');
             L.push('');
         }
 

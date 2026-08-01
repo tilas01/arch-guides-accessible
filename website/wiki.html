@@ -322,6 +322,7 @@
             <h3 class="g-hard">Hardening</h3>
             <a class="g-hard" href="#luks-duress">LUKS Duress Passphrase</a>
             <a class="g-hard" href="#usb-kill">USB Kill Switch</a>
+            <a class="g-hard" href="#encrypted-dns">Encrypted DNS</a>
             <a class="g-hard" href="#firewall-profiles">UFW Firewall Profiles</a>
             <a class="g-hard" href="#fail2ban">Fail2ban Intrusion Prevention</a>
             <a class="g-hard" href="#endlessh">Endlessh (SSH Tarpit)</a>
@@ -360,6 +361,7 @@
             <li><a href="#verification">Verifying Downloads (GPG &amp; Hashes)</a></li>
             <li><a href="#luks-duress">LUKS Duress Passphrase</a></li>
             <li><a href="#usb-kill">USB Kill Switch</a></li>
+            <li><a href="#encrypted-dns">Encrypted DNS</a></li>
             <li><a href="#firewall-profiles">UFW Firewall Profiles</a></li>
             <li><a href="#fail2ban">Fail2ban Intrusion Prevention</a></li>
             <li><a href="#endlessh">Endlessh (SSH Tarpit)</a></li>
@@ -1093,6 +1095,81 @@ udevadm control --reload-rules</code></pre>
             <li><strong>USBGuard</strong> — device authorisation policy for USB. Generates an allowlist from what is attached and rejects anything else at the kernel level. A gentler alternative to the <a href="#usb-kill">USB kill switch</a>.</li>
             <li><strong>auditd</strong> — kernel audit daemon, preconfigured to watch <code>/etc/passwd</code> and <code>/etc/sudoers</code> for changes.</li>
         </ul>
+    </div>
+
+    <div class="section" id="encrypted-dns">
+        <h2><span class="icon">🌐</span> Encrypted DNS</h2>
+        <p>
+            Every site you visit starts with a DNS lookup, and by default that lookup
+            goes to whoever DHCP nominated — usually your ISP — as <strong>plaintext on
+            port 53</strong>. HTTPS does not help: the encryption starts after the name
+            has already been resolved. So your ISP, and anyone able to watch the
+            connection, sees a list of every domain you ask for.
+        </p>
+        <p>
+            Both generators let you pick an upstream and turn on DNS-over-TLS, which
+            fixes the plaintext part and moves the trust to a provider you chose.
+        </p>
+
+        <h3>The providers offered</h3>
+        <div class="md-tablewrap">
+        <table class="md-table">
+            <tbody>
+                <tr><th>Provider</th><th>Addresses</th><th>Who they are</th></tr>
+                <tr><td><strong>Quad9</strong></td><td><code>9.9.9.9</code>, <code>149.112.112.112</code></td>
+                    <td>Swiss non-profit foundation. Blocks known-malicious domains at the resolver. States it does not log the querying IP.</td></tr>
+                <tr><td><strong>Mullvad</strong></td><td><code>194.242.2.2</code></td>
+                    <td>Run by the VPN provider, usable without a subscription. States no logging.</td></tr>
+                <tr><td><strong>Cloudflare</strong></td><td><code>1.1.1.1</code>, <code>1.0.0.1</code></td>
+                    <td>Fast and very widely used. No-logging policy with published third-party audits.</td></tr>
+                <tr><td><strong>dns0.eu</strong></td><td><code>193.110.81.0</code>, <code>185.253.5.0</code></td>
+                    <td>European non-profit, GDPR-scoped, states no logging.</td></tr>
+                <tr><td><strong>AdGuard</strong></td><td><code>94.140.14.14</code>, <code>94.140.15.15</code></td>
+                    <td>Blocks advertising and tracking domains for every application on the machine, not just a browser.</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <h3>Why the <code>#hostname</code> matters</h3>
+        <p>
+            The generated config writes each address as <code>9.9.9.9#dns.quad9.net</code>,
+            not just <code>9.9.9.9</code>. That suffix is the name the TLS certificate must
+            match.
+        </p>
+        <div class="md-alert md-warning">
+            <span class="md-alert-head">⚠️ Warning</span>
+            <p>
+                <code>DNSOverTLS=yes</code> on its own encrypts the query but does
+                <strong>not</strong> authenticate the server. Anyone who can answer on
+                port 853 — on a hostile network, that is the network — is then trusted.
+                Encryption without authentication is not much of a defence, and this is a
+                common way DoT setups are quietly useless.
+            </p>
+        </div>
+        <p>
+            <code>FallbackDNS=</code> is deliberately set empty. systemd's compiled-in
+            fallbacks are <em>other providers</em>, so leaving it at the default silently
+            leaks a share of your queries to whoever those happen to be — which defeats
+            the point of choosing one.
+        </p>
+
+        <h3>What this does not do</h3>
+        <p>
+            It moves who sees your lookups from your ISP to the provider you picked. Their
+            no-logging policy is a published claim you cannot verify from your machine.
+        </p>
+        <p>
+            It also does nothing about the IP address you then connect to, or about SNI
+            where Encrypted Client Hello is not in use — so an observer can often still
+            infer which site you reached, just not from the DNS query. This is a real
+            improvement over plaintext DNS. It is not anonymity, and anything claiming
+            otherwise is selling something.
+        </p>
+        <p style="font-size:0.85rem; color:var(--fg-dim);">
+            Arch Wiki: <a href="https://wiki.archlinux.org/title/Systemd-resolved" target="_blank" rel="noopener">systemd-resolved</a>
+            · <a href="https://wiki.archlinux.org/title/Domain_name_resolution" target="_blank" rel="noopener">Domain name resolution</a>
+            · this project defers to both.
+        </p>
     </div>
 
     <div class="section" id="firewall-profiles">
