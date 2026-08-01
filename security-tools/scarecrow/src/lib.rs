@@ -107,10 +107,27 @@ fn monitor_network_connections() {
     }
 }
 
-/// Where the duress password's Argon2id hash lives. Root-owned, 0600. It is a
-/// hash, not the password, but a hash any local user can read is a hash any
-/// local user can attack offline.
+/// Where each PIN's Argon2id hash lives. Root-owned, 0600. These are hashes,
+/// not passwords, but a hash any local user can read is a hash any local user
+/// can attack offline.
+///
+/// Three separate, independently optional PINs, because they answer three
+/// different situations:
+///
+///   * `DURESS_HASH_FILE`  — destroy the data. Silently.
+///   * `DECOY_HASH_FILE`   — show a plausible session. Destroy nothing.
+///   * `BOTH_HASH_FILE`    — destroy the data *and* show the plausible session,
+///     for the case where you need the data gone and still need to survive
+///     someone watching the screen.
 const DURESS_HASH_FILE: &str = "/etc/arch-security/scarecrow/duress.hash";
+const DECOY_HASH_FILE: &str = "/etc/arch-security/scarecrow/decoy.hash";
+const BOTH_HASH_FILE: &str = "/etc/arch-security/scarecrow/duress-decoy.hash";
+
+/// The block device whose LUKS header gets erased on a duress match. Written by
+/// `--set-duress-device`. Without it, no wipe can happen — refusing to guess is
+/// deliberate: erasing the header of a device nobody named is unrecoverable and
+/// might be the wrong disk.
+const DURESS_DEVICE_FILE: &str = "/etc/arch-security/scarecrow/duress.device";
 /// The decoy home the duress session runs in. Populated with plausible,
 /// innocuous content so it looks like an ordinary account in use.
 const DECOY_HOME: &str = "/etc/arch-security/scarecrow/decoy-home";
@@ -148,18 +165,99 @@ fn write_private(path: &str, contents: &str) -> std::io::Result<()> {
 /// This replaces the old hardcoded `"duress123"`, which was published in the
 /// source of a public repository and so provided no protection at all: a
 /// coercer who read the code knew the decoy password.
-pub fn set_duress_password() -> i32 {
+/// Which PIN a setter is configuring, and what to tell the user about it.
+pub enum PinSlot {
+    /// Erase the LUKS header. No decoy.
+    Duress,
+    /// A believable session. Erases nothing.
+    Decoy,
+    /// Erase the header *and* open the decoy.
+    Both,
+}
+
+impl PinSlot {
+    fn path(&self) -> &'static str {
+        match self {
+            PinSlot::Duress => DURESS_HASH_FILE,
+            PinSlot::Decoy => DECOY_HASH_FILE,
+            PinSlot::Both => BOTH_HASH_FILE,
+        }
+    }
+    fn label(&self) -> &'static str {
+        match self {
+            PinSlot::Duress => "duress (erase)",
+            PinSlot::Decoy => "decoy (plausible session)",
+            PinSlot::Both => "duress + decoy (erase, then a plausible session)",
+        }
+    }
+    fn explains(&self) -> &'static str {
+        match self {
+            PinSlot::Duress =>
+                "Entering THIS password erases the LUKS header of the device you \
+                 configured with --set-duress-device. The data becomes \
+                 unrecoverable. Nothing on screen says so: it behaves exactly like \
+                 a wrong password, because a disk that will not unlock reads as a \
+                 forgotten passphrase rather than as a wipe.",
+            PinSlot::Decoy =>
+                "Entering THIS password opens a decoy session that looks and behaves \
+                 like an ordinary account, while your real data stays sealed. \
+                 Nothing is erased.",
+            PinSlot::Both =>
+                "Entering THIS password erases the LUKS header AND opens the decoy \
+                 session, so the data is gone and the screen still shows a working \
+                 system. This is the one for when you need both at once.",
+        }
+    }
+}
+
+/// Record the device whose LUKS header a duress PIN erases.
+///
+/// Separate from the PINs on purpose. Without it no wipe can happen, and
+/// refusing to guess is the point: erasing the header of a device nobody named
+/// is unrecoverable and might be the wrong disk.
+pub fn set_duress_device(device: &str) -> i32 {
+    let device = device.trim();
+    if !device.starts_with("/dev/") || device.contains(char::is_whitespace) {
+        eprintln!("Refusing '{device}': give a block device path such as /dev/nvme0n1p2.");
+        return 1;
+    }
+    if !Path::new(device).exists() {
+        eprintln!("'{device}' does not exist. Check `lsblk` — this must be the \
+                   encrypted partition, not the whole disk and not the mapper name.");
+        return 1;
+    }
+    match write_private(DURESS_DEVICE_FILE, device) {
+        Ok(()) => {
+            println!("Duress target set to {device}.");
+            println!("A duress PIN will erase this device's LUKS header. Take a header");
+            println!("backup first if you want any way back:");
+            println!("  cryptsetup luksHeaderBackup {device} --header-backup-file <path>");
+            println!("Keep that backup somewhere the person you are hiding from cannot reach,");
+            println!("or it defeats the whole mechanism.");
+            0
+        }
+        Err(e) => {
+            eprintln!("Could not write {DURESS_DEVICE_FILE}: {e}. This needs root.");
+            1
+        }
+    }
+}
+
+/// Set or change one of the three PINs.
+///
+/// All three are optional and independent: configure none, one, or all of them.
+pub fn set_pin(slot: PinSlot) -> i32 {
     use argon2::password_hash::{PasswordHasher, SaltString};
     use rand_core::OsRng;
 
-    println!("=== Set the scarecrow duress password ===");
-    println!("Entering THIS password at login opens a decoy session that looks and");
-    println!("behaves like an ordinary account, while your real data stays sealed.");
+    println!("=== Set the scarecrow {} password ===", slot.label());
+    println!("{}", slot.explains());
+    println!();
     println!("It must be different from your real login password, and memorable under");
     println!("stress — you will only ever reach for it in the worst moment.");
     println!();
 
-    let mut pw = match rpassword::prompt_password("Duress password: ") {
+    let mut pw = match rpassword::prompt_password("Password: ") {
         Ok(p) => p,
         Err(e) => {
             eprintln!("Could not read the password: {e}");
@@ -195,16 +293,28 @@ pub fn set_duress_password() -> i32 {
     confirm.zeroize();
 
     match hashed {
-        Ok(h) => match write_private(DURESS_HASH_FILE, &h) {
+        Ok(h) => match write_private(slot.path(), &h) {
             Ok(()) => {
-                let _ = ensure_decoy_home();
-                println!("Duress password set. The decoy home is at {DECOY_HOME}.");
-                println!("Populate it with believable, innocuous files so it reads as a");
-                println!("real account rather than an empty shell.");
+                if matches!(slot, PinSlot::Decoy | PinSlot::Both) {
+                    let _ = ensure_decoy_home();
+                    println!("Set. The decoy home is at {DECOY_HOME}.");
+                    println!("Populate it with believable, innocuous files so it reads as a");
+                    println!("real account rather than an empty shell — an obviously empty");
+                    println!("home is itself a tell.");
+                } else {
+                    println!("Set.");
+                }
+                if matches!(slot, PinSlot::Duress | PinSlot::Both)
+                    && !Path::new(DURESS_DEVICE_FILE).exists()
+                {
+                    println!();
+                    println!("No duress target is configured yet, so this PIN will erase");
+                    println!("nothing. Set one with --set-duress-device /dev/...");
+                }
                 0
             }
             Err(e) => {
-                eprintln!("Could not write {DURESS_HASH_FILE}: {e}. This needs root.");
+                eprintln!("Could not write {}: {e}. This needs root.", slot.path());
                 1
             }
         },
@@ -233,9 +343,101 @@ pub fn set_duress_password() -> i32 {
 /// `require_confirmation` is retained for callers that double-enter, but note
 /// that a confirmation prompt is itself a tell, so the default flow does not use
 /// one.
-pub fn handle_duress_login(require_confirmation: bool) {
+/// What a matching PIN should do. Deliberately an enum rather than two bools:
+/// "wipe" and "show a decoy" are independent, and naming the four states stops
+/// a future edit from producing the fifth one nobody thought about.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum PinAction {
+    /// Destroy the LUKS header. Nothing is shown that suggests it happened.
+    Wipe,
+    /// A believable session. Nothing is destroyed.
+    Decoy,
+    /// Both: the data goes, and the screen shows a working system anyway.
+    WipeAndDecoy,
+}
+
+/// Erase the LUKS header of the configured device.
+///
+/// The header, not the disk. Erasing the keyslots takes milliseconds and is
+/// irreversible without a backup; overwriting a whole disk cannot finish before
+/// someone notices what is happening, which defeats the point.
+///
+/// **Every path here is silent.** No progress, no confirmation, no error — not
+/// on success, not on failure, not when no device is configured. A message is a
+/// tell, and the person this protects against is standing behind you. Failures
+/// are swallowed rather than reported for the same reason: an error about
+/// `cryptsetup` on a login screen says exactly what was attempted.
+fn wipe_luks_header() {
+    let device = match fs::read_to_string(DURESS_DEVICE_FILE) {
+        Ok(d) => d.trim().to_string(),
+        // No device configured. Nothing to erase, and nothing to say about it.
+        Err(_) => return,
+    };
+    // Refuse anything that is not a plain device path. This value is read from
+    // a file, and a mangled one must not become arbitrary arguments.
+    if !device.starts_with("/dev/") || device.contains(char::is_whitespace) {
+        return;
+    }
+
+    let _ = Command::new("cryptsetup")
+        .arg("luksErase")
+        .arg("--batch-mode")   // never prompt: there is nobody safe to ask
+        .arg(&device)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+}
+
+/// Verify `password` against the hash in `path`.
+///
+/// Returns false for a missing or unparseable file, so an unconfigured PIN is
+/// simply never a match. Argon2's own comparison is constant-time.
+fn pin_matches(path: &str, password: &str) -> bool {
     use argon2::password_hash::{PasswordHash, PasswordVerifier};
 
+    match fs::read_to_string(path) {
+        Ok(stored) => PasswordHash::new(stored.trim())
+            .map(|parsed| {
+                // Argon2::default() reads the parameters from the stored PHC
+                // string, so a hash written with different costs still verifies.
+                argon2::Argon2::default()
+                    .verify_password(password.as_bytes(), &parsed)
+                    .is_ok()
+            })
+            .unwrap_or(false),
+        Err(_) => false,
+    }
+}
+
+/// The duress / decoy login.
+///
+/// Plausible deniability depends on this being **silent about what it is**. The
+/// person standing over your shoulder must see an ordinary login — never a
+/// message announcing that a special password was entered, and never the word
+/// "wipe". This code previously printed "Duress password detected! Wiping
+/// system", which told the coercer precisely what it existed to hide.
+///
+/// Three PINs, each optional, checked in a fixed order:
+///
+///   * duress        → erase the LUKS header, then behave like a wrong password
+///   * decoy         → a working session in a decoy home, nothing destroyed
+///   * duress+decoy  → erase the header *and* open the decoy session, so there
+///     is no outward sign that either happened
+///
+/// **All three are verified every time, with no early exit.** Stopping at the
+/// first match would make the time taken depend on which slot matched, and three
+/// Argon2 verifications at m=64MiB are slow enough for that difference to be
+/// measurable. The cost is two extra verifications on a machine that is about to
+/// be wiped anyway.
+///
+/// A non-match prints exactly `Login incorrect` and nothing else — the same
+/// string, and the same behaviour, as an ordinary failed login.
+///
+/// `require_confirmation` is retained for callers that double-enter, but note
+/// that a confirmation prompt is itself a tell, so the default flow does not use
+/// one.
+pub fn handle_duress_login(require_confirmation: bool) {
     // Deliberately generic prompt — identical to a normal login.
     print!("Password: ");
     let _ = std::io::Write::flush(&mut std::io::stdout());
@@ -259,28 +461,47 @@ pub fn handle_duress_login(require_confirmation: bool) {
         }
     }
 
-    let is_duress = match fs::read_to_string(DURESS_HASH_FILE) {
-        Ok(stored) => PasswordHash::new(stored.trim())
-            .map(|parsed| {
-                // Argon2::default() reads the parameters from the stored PHC
-                // string, and its comparison is constant-time.
-                argon2::Argon2::default()
-                    .verify_password(password.as_bytes(), &parsed)
-                    .is_ok()
-            })
-            .unwrap_or(false),
-        // No duress password configured: nothing here is a duress password.
-        Err(_) => false,
-    };
+    // No `||` short-circuit: see the timing note above.
+    let is_duress = pin_matches(DURESS_HASH_FILE, &password);
+    let is_decoy = pin_matches(DECOY_HASH_FILE, &password);
+    let is_both = pin_matches(BOTH_HASH_FILE, &password);
     password.zeroize();
 
-    if is_duress {
-        raise_duress_signal();
-        launch_decoy_session();
+    // Most destructive interpretation wins if a password is somehow enrolled in
+    // more than one slot. Someone who set the same PIN twice meant the stronger
+    // of the two, and under duress is the wrong moment to resolve ambiguity in
+    // favour of doing less.
+    let action = if is_both {
+        Some(PinAction::WipeAndDecoy)
+    } else if is_duress {
+        Some(PinAction::Wipe)
+    } else if is_decoy {
+        Some(PinAction::Decoy)
     } else {
-        // Not the duress password. Behave like an ordinary failed login rather
-        // than revealing that a duress mechanism exists at all.
-        println!("Login incorrect");
+        None
+    };
+
+    match action {
+        Some(act) => {
+            if matches!(act, PinAction::Wipe | PinAction::WipeAndDecoy) {
+                raise_duress_signal();
+                wipe_luks_header();
+            }
+            if matches!(act, PinAction::Decoy | PinAction::WipeAndDecoy) {
+                launch_decoy_session();
+            } else {
+                // Wipe-only. The data is gone, so there is no session to open.
+                // Behaving exactly like a wrong password is the most plausible
+                // thing left: a disk that will not unlock reads as a forgotten
+                // password or a failing drive, not as a wipe that just happened.
+                println!("Login incorrect");
+            }
+        }
+        None => {
+            // Not one of ours. Behave like an ordinary failed login rather than
+            // revealing that a duress mechanism exists at all.
+            println!("Login incorrect");
+        }
     }
 }
 

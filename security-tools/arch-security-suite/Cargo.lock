@@ -213,11 +213,13 @@ dependencies = [
 name = "anti-ducky"
 version = "1.0.0"
 dependencies = [
+ "argon2",
  "clap",
  "eframe",
  "egui",
  "evdev",
  "hex",
+ "rand_core 0.6.4",
  "rpassword",
  "serde",
  "serde_json",
@@ -2336,6 +2338,7 @@ dependencies = [
  "clap",
  "eframe",
  "egui",
+ "libc",
  "rand 0.8.7",
  "rand_core 0.6.4",
  "rpassword",
@@ -3344,9 +3347,11 @@ dependencies = [
 name = "scarecrow"
 version = "1.0.0"
 dependencies = [
+ "argon2",
  "clap",
  "eframe",
  "egui",
+ "rand_core 0.6.4",
  "rpassword",
  "zeroize",
 ]

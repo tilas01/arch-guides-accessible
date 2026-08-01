@@ -57,8 +57,25 @@ jobs:
         run: cargo fmt --check || echo "::warning::cargo fmt reported differences"
         working-directory: security-tools/${{ matrix.tool }}
 
+      # First thing that touches cargo, and it must be --locked.
+      #
+      # Three lockfiles (anti-ducky, arch-security-suite, scarecrow) had drifted
+      # from their Cargo.toml: dependencies were declared and never resolved into
+      # the lock. `cargo build --release --locked` below should have failed on
+      # that — and did not, because the clippy step ran first *without* --locked,
+      # silently re-resolved, and rewrote the lock. So --locked was being
+      # satisfied by a file that step had just generated, not by the committed
+      # one, and the released binaries were not built from the lock in the
+      # repository. That is precisely the guarantee --locked exists to give.
+      #
+      # Every cargo invocation before the build now carries --locked, so a stale
+      # lock fails loudly here instead of being quietly repaired.
+      - name: Verify the committed Cargo.lock is complete
+        run: cargo metadata --locked --format-version 1 > /dev/null
+        working-directory: security-tools/${{ matrix.tool }}
+
       - name: Clippy (blocking, -D warnings)
-        run: cargo clippy --all-targets --release -- -D warnings
+        run: cargo clippy --all-targets --release --locked -- -D warnings
         working-directory: security-tools/${{ matrix.tool }}
 
       # Advisory rather than blocking: a newly published advisory in a transitive
