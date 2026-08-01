@@ -1,7 +1,9 @@
 use clap::Parser;
 use scarecrow::handle_duress_login;
 use scarecrow::init_scarecrow;
-use scarecrow::set_duress_password;
+use scarecrow::set_duress_device;
+use scarecrow::set_pin;
+use scarecrow::PinSlot;
 use scarecrow::start_gui;
 use std::process::ExitCode;
 
@@ -17,9 +19,23 @@ struct Args {
     #[arg(short, long)]
     login: bool,
 
-    /// Set or change the duress password, then exit
+    /// Set or change the duress PIN — erases the LUKS header, silently
     #[arg(long)]
-    set_duress_password: bool,
+    set_duress_pin: bool,
+
+    /// Set or change the decoy PIN — a plausible session, erases nothing
+    #[arg(long)]
+    set_decoy_pin: bool,
+
+    /// Set or change the combined PIN — erases the header AND opens the decoy
+    #[arg(long)]
+    set_duress_decoy_pin: bool,
+
+    /// The block device a duress PIN erases, e.g. /dev/nvme0n1p2. Nothing is
+    /// erased until this is set: guessing which disk to destroy is not a
+    /// decision this tool will make for you.
+    #[arg(long, value_name = "DEVICE")]
+    set_duress_device: Option<String>,
 
     /// Double-enter the password at the duress prompt. Off by default: a
     /// confirmation step is itself a tell that something unusual is happening,
@@ -31,8 +47,18 @@ struct Args {
 fn main() -> ExitCode {
     let args = Args::parse();
 
-    if args.set_duress_password {
-        return ExitCode::from(set_duress_password() as u8);
+    // All three PINs are optional and independent. Set none, one, or all.
+    if args.set_duress_pin {
+        return ExitCode::from(set_pin(PinSlot::Duress) as u8);
+    }
+    if args.set_decoy_pin {
+        return ExitCode::from(set_pin(PinSlot::Decoy) as u8);
+    }
+    if args.set_duress_decoy_pin {
+        return ExitCode::from(set_pin(PinSlot::Both) as u8);
+    }
+    if let Some(dev) = args.set_duress_device.as_deref() {
+        return ExitCode::from(set_duress_device(dev) as u8);
     }
 
     if args.interactive {
