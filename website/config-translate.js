@@ -64,7 +64,23 @@
         // a value map is a place for the two to disagree.
         { wl: 'wallpapers',       gen: 'wallpapers',       group: 'selects' },
         { wl: 'wallpaper_count',  gen: 'wallpaper_count',  group: 'selects' },
-        { wl: 'wallpaper_split',  gen: 'wallpaper_split',  group: 'selects' }
+        { wl: 'wallpaper_split',  gen: 'wallpaper_split',  group: 'selects' },
+
+        /* Duress PINs. The two front ends model this differently and only three
+           states have an exact equivalent, so only those three are carried.
+           `wlIsList` says the walkthrough side is an array of one.
+
+           The walkthrough sets up to three *separate passwords*, one per
+           behaviour. The generator picks one action for one password. So
+           "duress and decoy, as two different PINs" has no generator
+           equivalent, and the generator's "shutdown" has no walkthrough one —
+           both are reported as unmapped rather than approximated. Guessing here
+           would silently change what a password does under coercion. */
+        { wl: 'duress_pins', gen: 'luks_duress_action', group: 'selects',
+          wlIsList: true,
+          values: { 'duress': 'wipe-keys',
+                    'decoy': 'decoy-only',
+                    'both': 'wipe-keys-decoy' } }
     ];
 
     function invert(values) {
@@ -106,7 +122,7 @@
                 }
                 v = back[v];
             }
-            out[m.wl] = v;
+            out[m.wl] = m.wlIsList ? [v] : v;
             mapped.push(m.wl);
         });
 
@@ -132,6 +148,18 @@
             if (!Object.prototype.hasOwnProperty.call(wl, m.wl)) return;
             var v = wl[m.wl];
             if (v === '' || v === undefined || v === null) return;
+            if (m.wlIsList) {
+                // A list the generator can only express as one value. Empty is
+                // simply "not set"; more than one has no equivalent at all, and
+                // picking one of them would silently change what a password
+                // does under coercion.
+                if (!Array.isArray(v) || v.length === 0) return;
+                if (v.length > 1) {
+                    unmapped.push(m.wl + '=[' + v.join(',') + '] (generator holds one action)');
+                    return;
+                }
+                v = v[0];
+            }
             if (m.values) {
                 if (!Object.prototype.hasOwnProperty.call(m.values, v)) {
                     unmapped.push(m.wl + '=' + v);

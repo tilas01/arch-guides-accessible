@@ -193,6 +193,7 @@
         row('Firewall', s.firewall);
         row('Snapshots', s.snapshots);
         row('Security tools', s.security_tools);
+        row('Duress PINs', s.duress_pins);
         row('Libre only', s.libre);
         L.push('');
 
@@ -820,6 +821,64 @@
                 L.push('> you still have SSH or a second keyboard.');
                 L.push('');
             }
+        }
+
+        /* Duress PINs. Only reachable when scarecrow is installed and the disk
+           is encrypted — a duress PIN erases a LUKS header, and there is none to
+           erase otherwise. The device is `f.root`, the partition the guide has
+           already told cryptsetup to encrypt, so it is never asked for twice
+           and cannot disagree with what was actually created. */
+        const pins = s.duress_pins || [];
+        // `f.enc`, not just `f.root` — root is always set, so checking it alone
+        // emitted the whole section for an unencrypted install, telling the
+        // reader to erase a LUKS header that does not exist. The walkthrough's
+        // `when` already prevents choosing that combination, but a hand-edited
+        // JSON config reaches the emitter directly and must not produce
+        // commands that cannot work.
+        if (pins.length && f.enc && f.root) {
+            L.push('### Duress PINs');
+            L.push('');
+            L.push('> **Take a LUKS header backup before you set any of these.** A duress');
+            L.push('> PIN erases the header, and without a backup that is unrecoverable —');
+            L.push('> which is the intent, but it also means a mistake is final. Keep the');
+            L.push('> backup somewhere the person you are hiding from cannot reach; on the');
+            L.push('> same machine it defeats the whole mechanism.');
+            L.push('');
+            L.push('```bash');
+            L.push('# Back up the header first. Store this off the machine.');
+            L.push('sudo cryptsetup luksHeaderBackup ' + f.root +
+                   ' --header-backup-file ~/luks-header-backup.img');
+            L.push('');
+            L.push('# Name the device a duress PIN erases. Nothing is erased until this');
+            L.push('# is set: scarecrow will not guess which disk to destroy.');
+            L.push('sudo scarecrow --set-duress-device ' + f.root);
+            L.push('');
+            if (has(pins, 'duress')) {
+                L.push('# Duress: erases the header, then behaves like a wrong password.');
+                L.push('sudo scarecrow --set-duress-pin');
+            }
+            if (has(pins, 'decoy')) {
+                L.push('# Decoy: a working session in a decoy home. Erases nothing.');
+                L.push('sudo scarecrow --set-decoy-pin');
+            }
+            if (has(pins, 'both')) {
+                L.push('# Both: erases the header AND opens the decoy session.');
+                L.push('sudo scarecrow --set-duress-decoy-pin');
+            }
+            L.push('```');
+            L.push('');
+            if (has(pins, 'decoy') || has(pins, 'both')) {
+                L.push('> **Populate the decoy home.** It lives at');
+                L.push('> `/etc/arch-security/scarecrow/decoy-home`. An account with nothing');
+                L.push('> in it is not a believable account — put real, dull files there:');
+                L.push('> some documents, a browser profile, a shell history.');
+                L.push('');
+            }
+            L.push('> Each PIN must be different from your real passphrase, and memorable');
+            L.push('> under pressure — you will only ever reach for one in the worst');
+            L.push('> moment. Nothing on screen distinguishes any of them from an ordinary');
+            L.push('> login, which is the entire point.');
+            L.push('');
         }
 
         if (s.buskill && s.buskill !== 'none') {
