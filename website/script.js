@@ -1973,6 +1973,43 @@ run_with_progress() {
                 o += `  3. sudo anti-ducky --export-whitelist  # check what it now trusts\n`;
                 o += `  4. sudo systemctl enable --now anti-ducky.service\n`;
                 o += `DUCKYMOTD\n`;
+
+                // What happens after a payload is confirmed. Capture and
+                // deauthorization are unconditional; this is the extra step.
+                const duckyResponse = gv('ducky_response', 'lock');
+                o += `\n# Response to a confirmed payload. The payload is captured to\n`;
+                o += `# /var/log/anti-ducky/ with a SHA-256, and the device is deauthorized\n`;
+                o += `# at the kernel, whichever of these is set.\n`;
+                if (duckyResponse === 'poweroff') {
+                    o += `# Hard power-off: clears the disk-encryption keys from RAM before\n`;
+                    o += `# anyone can pull the DIMMs. Loses unsaved work on a false positive,\n`;
+                    o += `# and these timing thresholds have never been measured on real\n`;
+                    o += `# hardware. Prompts for typed confirmation.\n`;
+                    o += `anti-ducky --set-response poweroff\n`;
+                } else if (duckyResponse === 'alert') {
+                    o += `anti-ducky --set-response alert\n`;
+                } else {
+                    o += `anti-ducky --set-response lock\n`;
+                }
+
+                // Without this, a power-off response takes the on-screen warning
+                // with it and the attack leaves nothing the owner will ever see.
+                o += `\n# Show the alert after the next boot.\n`;
+                o += `cat > /etc/systemd/system/anti-ducky-boot-alert.service << 'DUCKYBOOT'\n`;
+                o += `[Unit]\n`;
+                o += `Description=Show any BadUSB alert recorded before this boot\n`;
+                o += `After=multi-user.target\n`;
+                o += `\n`;
+                o += `[Service]\n`;
+                o += `Type=oneshot\n`;
+                o += `ExecStart=/usr/bin/anti-ducky --show-boot-alerts\n`;
+                o += `StandardOutput=tty\n`;
+                o += `TTYPath=/dev/tty1\n`;
+                o += `\n`;
+                o += `[Install]\n`;
+                o += `WantedBy=multi-user.target\n`;
+                o += `DUCKYBOOT\n`;
+                o += `systemctl enable anti-ducky-boot-alert.service\n`;
                 // Report the full device identity, so the user can judge it rather
                 // than just being told "something happened".
                 o += `\n# Alert on an unrecognised USB input device, with its full identity.\n`;

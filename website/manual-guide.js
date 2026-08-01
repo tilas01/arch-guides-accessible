@@ -952,6 +952,68 @@
                 L.push('> after enrolling anything new, or the next dock you plug in ends');
                 L.push('> the session.');
                 L.push('');
+
+                L.push('#### What happens when it catches something');
+                L.push('');
+                L.push('The payload is captured to `/var/log/anti-ducky/payload_*.log` with a');
+                L.push('SHA-256 for chain of custody, and the device is deauthorized at the');
+                L.push('kernel so it cannot deliver another keystroke. That happens whatever');
+                L.push('you configure below.');
+                L.push('');
+                L.push('```bash');
+                var resp = s.ducky_response || 'lock';
+                if (resp === 'poweroff') {
+                    L.push('# Hard power-off, so the disk-encryption keys leave RAM before');
+                    L.push('# anyone can pull the DIMMs. Asks you to type ARM to confirm.');
+                    L.push('sudo anti-ducky --set-response poweroff');
+                } else if (resp === 'alert') {
+                    L.push('# Alert only. The device is blocked and the payload saved either');
+                    L.push('# way; this just declines to do anything further.');
+                    L.push('sudo anti-ducky --set-response alert');
+                } else {
+                    L.push('# Lock every session, so an attacker cannot use the unlocked');
+                    L.push('# desktop the injected keystrokes were aimed at.');
+                    L.push('sudo anti-ducky --set-response lock');
+                }
+                L.push('```');
+                L.push('');
+                if (resp === 'poweroff') {
+                    L.push('> [!CAUTION]');
+                    L.push('> This loses unsaved work with no confirmation, and a false');
+                    L.push('> positive triggers it. Input Guard\'s timing thresholds have');
+                    L.push('> never been measured on real hardware, so its false-positive');
+                    L.push('> rate is unknown. Test it before relying on it.');
+                    L.push('');
+                }
+                if (resp === 'lock') {
+                    L.push('> A lock screen does not protect the LUKS master key — it stays in');
+                    L.push('> kernel memory while the volume is open. Pair this with');
+                    L.push('> `anti-evil-maid --lock-now` if that is what you need.');
+                    L.push('');
+                }
+                L.push('Show the alert after the next boot. A power-off takes the on-screen');
+                L.push('warning with it, so without this the owner finds an unexplained');
+                L.push('shutdown, assumes hardware, and plugs the device back in.');
+                L.push('');
+                L.push('```bash');
+                L.push('sudo tee /etc/systemd/system/anti-ducky-boot-alert.service >/dev/null <<\'UNIT\'');
+                L.push('[Unit]');
+                L.push('Description=Show any BadUSB alert recorded before this boot');
+                L.push('After=multi-user.target');
+                L.push('');
+                L.push('[Service]');
+                L.push('Type=oneshot');
+                L.push('ExecStart=/usr/bin/anti-ducky --show-boot-alerts');
+                L.push('StandardOutput=tty');
+                L.push('TTYPath=/dev/tty1');
+                L.push('');
+                L.push('[Install]');
+                L.push('WantedBy=multi-user.target');
+                L.push('UNIT');
+                L.push('');
+                L.push('sudo systemctl enable anti-ducky-boot-alert.service');
+                L.push('```');
+                L.push('');
             }
         }
 

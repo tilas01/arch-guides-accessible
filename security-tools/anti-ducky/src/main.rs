@@ -60,6 +60,18 @@ struct Args {
     /// is trusted and power a machine off over its owner's own keyboard.
     #[arg(long)]
     export_whitelist: bool,
+
+    /// What to do on a confirmed payload, beyond capturing and deauthorizing:
+    /// alert (default), lock (lock every session), or poweroff.
+    #[arg(long, value_name = "ACTION")]
+    set_response: Option<String>,
+
+    /// Show and clear any alert recorded before this boot.
+    ///
+    /// Run from a boot unit. A power-off response takes the on-screen warning
+    /// with it, so without this the attack leaves no trace the owner will see.
+    #[arg(long)]
+    show_boot_alerts: bool,
 }
 
 /// Argon2id parameters for the unlock PIN.
@@ -251,6 +263,54 @@ fn arm_kill_switch(enable: bool) -> u8 {
     }
 }
 
+/// Set the confirmed-payload response.
+///
+/// `poweroff` reuses the same typed confirmation as `--arm-kill-switch`: it is
+/// the one option here that loses unsaved work, and a false positive triggers
+/// it. `lock` and `alert` are freely settable, because the worst case of either
+/// is a re-login.
+fn set_response(action: &str) -> u8 {
+    use anti_ducky::defence::{AttackResponse, set_attack_response};
+
+    let r = match action.trim().to_ascii_lowercase().as_str() {
+        "alert" | "alert-only" | "none" => AttackResponse::AlertOnly,
+        "lock" | "lock-session" => AttackResponse::LockSession,
+        "poweroff" | "shutdown" | "kill" => {
+            if arm_kill_switch(true) != 0 {
+                return 1;
+            }
+            AttackResponse::PowerOff
+        }
+        other => {
+            eprintln!("Unknown response {other:?}. Use: alert, lock, or poweroff.");
+            return 1;
+        }
+    };
+
+    match set_attack_response(r) {
+        Ok(()) => {
+            match r {
+                AttackResponse::AlertOnly => println!(
+                    "Response: alert only. The device is still deauthorized and the \
+                     payload still captured."
+                ),
+                AttackResponse::LockSession => println!(
+                    "Response: lock every session. Note that a lock screen does not \
+                     protect the disk-encryption keys in RAM — pair it with \
+                     `anti-evil-maid --lock-now` if that is what you need."
+                ),
+                AttackResponse::PowerOff => println!("Response: hard power-off."),
+            }
+            0
+        }
+        Err(e) => {
+            eprintln!("Could not write the response policy: {e}");
+            eprintln!("This needs root.");
+            1
+        }
+    }
+}
+
 fn main() -> ExitCode {
     let args = Args::parse();
 
@@ -258,6 +318,11 @@ fn main() -> ExitCode {
         anti_ducky::enroll_devices()
     } else if args.export_whitelist {
         anti_ducky::export_whitelist()
+    } else if args.show_boot_alerts {
+        anti_ducky::defence::show_boot_alerts();
+        0
+    } else if let Some(action) = args.set_response.as_deref() {
+        set_response(action)
     } else if args.arm_kill_switch {
         arm_kill_switch(true)
     } else if args.disarm_kill_switch {

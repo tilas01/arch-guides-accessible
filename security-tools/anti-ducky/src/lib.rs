@@ -392,14 +392,37 @@ fn handle_payload_detected(
                 device.record.name, LOG_DIR, deauth
             ));
 
-            // Opt-in, off by default: hard-power-off so the disk-encryption keys
-            // leave RAM before anyone can extract them. Only fires if the
-            // operator explicitly enabled it with --arm-kill-switch.
-            if defence::kill_on_attack_enabled() {
-                defence::hard_poweroff(&format!(
-                    "confirmed BadUSB payload from '{}'; clearing RAM keys",
-                    device.record.name
-                ));
+            // Record the alert BEFORE acting on it. A power-off takes the screen
+            // with it a fraction of a second later, including the warning that
+            // explains why the machine just died — leaving the owner to find an
+            // unexplained shutdown, conclude it was a hardware fault, and plug
+            // the device back in. Writing first means the note survives whatever
+            // the response turns out to be.
+            defence::record_boot_alert(
+                &device.record.name,
+                &format!(
+                    "quarantined after {PAYLOAD_TRIGGER_COUNT} rapid keystrokes; {} bytes captured",
+                    device.payload_buf.len()
+                ),
+            );
+
+            match defence::attack_response() {
+                defence::AttackResponse::PowerOff => {
+                    defence::hard_poweroff(&format!(
+                        "confirmed BadUSB payload from '{}'; clearing RAM keys",
+                        device.record.name
+                    ));
+                }
+                defence::AttackResponse::LockSession => {
+                    defence::lock_sessions(&format!(
+                        "confirmed BadUSB payload from '{}'",
+                        device.record.name
+                    ));
+                }
+                // The device is already deauthorized and the payload is already
+                // captured. Doing nothing further is a legitimate policy, and
+                // it is the default.
+                defence::AttackResponse::AlertOnly => {}
             }
         }
         DeviceState::Quarantined => {
