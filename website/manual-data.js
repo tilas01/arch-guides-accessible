@@ -795,6 +795,52 @@ const STEPS = [
           desc: 'Wireless only, minimal. You configure addressing yourself.' }
     ]
 },
+/* ── DNS ────────────────────────────────────────────────────────────────────
+   Whoever answers your DNS queries sees every domain you visit, before any
+   encryption in the browser applies. By default that is your ISP, on the wire,
+   in plaintext. This picks the upstream and turns on DNS-over-TLS.
+
+   Addresses checked against each provider's own documentation. "No logs" is a
+   published policy, not something you can verify from here — the options say
+   what each provider claims and who they are, and let you decide. */
+{
+    id: 'dns_provider',
+    section: 'Services',
+    title: 'Who answers your DNS queries?',
+    help: 'Every site you visit starts with a DNS lookup, and by default that ' +
+          'goes to your ISP unencrypted — visible to them and to anyone on the ' +
+          'path, regardless of HTTPS. Picking a provider here also enables ' +
+          'DNS-over-TLS and DNSSEC, so the queries are encrypted and the ' +
+          'answers are authenticated.',
+    wiki: 'encrypted-dns',
+    type: 'choice',
+    options: [
+        { value: 'quad9', label: 'Quad9 — 9.9.9.9', recommended: true,
+          desc: 'Swiss non-profit foundation. Blocks known-malicious domains ' +
+                'at the resolver, and states it does not log the querying IP. ' +
+                'DNS-over-TLS at dns.quad9.net.' },
+        { value: 'mullvad', label: 'Mullvad DNS — 194.242.2.2',
+          desc: 'Run by the VPN provider, usable without a subscription. ' +
+                'States no logging. DNS-over-TLS at dns.mullvad.net.' },
+        { value: 'cloudflare', label: 'Cloudflare — 1.1.1.1',
+          desc: 'Fast and very widely used. Publishes a no-logging policy with ' +
+                'third-party audits. DNS-over-TLS at cloudflare-dns.com.',
+          note: 'A single very large company sees a large share of the ' +
+                'internet\'s DNS. That is a centralisation trade-off, not a ' +
+                'technical fault.' },
+        { value: 'dns0', label: 'dns0.eu — 193.110.81.0',
+          desc: 'European non-profit, GDPR-scoped, states no logging. ' +
+                'DNS-over-TLS at dns0.eu.' },
+        { value: 'adguard', label: 'AdGuard DNS — 94.140.14.14',
+          desc: 'Blocks advertising and tracking domains at the resolver, so ' +
+                'it applies to every device and every application, not just a ' +
+                'browser. DNS-over-TLS at dns.adguard-dns.com.' },
+        { value: 'isp', label: 'Whatever DHCP hands out',
+          desc: 'Your ISP or your router. No extra configuration, and no ' +
+                'encryption unless they happen to offer it.',
+          note: 'Your ISP sees every domain you look up, in plaintext.' }
+    ]
+},
 {
     id: 'audio',
     section: 'Services',
