@@ -1126,6 +1126,58 @@
             L.push('> moment. Nothing on screen distinguishes any of them from an ordinary');
             L.push('> login, which is the entire point.');
             L.push('');
+
+            /* Setting a PIN configures nothing on its own — something has to
+               check it. Without this block the PINs were enrolled and then
+               never reached, which is the worst possible state: you believe you
+               have a duress PIN and you do not. */
+            L.push('#### Wire the PINs into the login');
+            L.push('');
+            L.push('These are checked at the **login** prompt, not the boot passphrase');
+            L.push('prompt. Setting a PIN does not connect it to anything; this is what');
+            L.push('makes it fire. Stock `pam_exec` — no custom PAM module — so it works');
+            L.push('anywhere PAM does: `login`, greetd, sddm, gdm, `su`.');
+            L.push('');
+            L.push('```bash');
+            L.push('# Insert ABOVE the first pam_unix auth line.');
+            L.push('sudo sed -i \'0,/^auth.*pam_unix\\.so/s##'
+                   + 'auth [success=done default=ignore] pam_exec.so expose_authtok quiet '
+                   + '/usr/bin/scarecrow --pam-gate\\n&#\' /etc/pam.d/system-auth');
+            L.push('');
+            L.push('# Read it back. Do not skip this.');
+            L.push('grep -n -A1 scarecrow /etc/pam.d/system-auth');
+            L.push('```');
+            L.push('');
+            L.push('> [!CAUTION]');
+            L.push('> **Keep a root shell open on another TTY while you do this.** A mistake');
+            L.push('> in `/etc/pam.d/system-auth` locks every account out of the machine,');
+            L.push('> including root, and recovery means booting the install medium. Test');
+            L.push('> logging in from a third TTY before you close either of the others.');
+            L.push('');
+            L.push('`expose_authtok` passes the entered password to scarecrow on stdin, so');
+            L.push('you type it once and nothing on screen differs from an ordinary login.');
+            L.push('Your real password still goes to `pam_unix` exactly as before, because');
+            L.push('a non-matching PIN exits non-zero and `default=ignore` hands the');
+            L.push('decision straight back.');
+            L.push('');
+            if (has(pins, 'decoy') || has(pins, 'both')) {
+                L.push('The decoy session is flagged in `/run`, so a shell profile can send');
+                L.push('it to the decoy home:');
+                L.push('');
+                L.push('```bash');
+                L.push('sudo tee /etc/profile.d/scarecrow-decoy.sh >/dev/null <<\'DECOY\'');
+                L.push('# Set by scarecrow when a decoy PIN was used. In /run, so it is tmpfs');
+                L.push('# and cannot survive a reboot — a stale marker would drop you into the');
+                L.push('# decoy home on an ordinary login, which looks like losing your data.');
+                L.push('if [ -f /run/scarecrow/decoy-session ]; then');
+                L.push('    export HOME=/etc/arch-security/scarecrow/decoy-home');
+                L.push('    cd "$HOME" || true');
+                L.push('fi');
+                L.push('DECOY');
+                L.push('sudo chmod 0644 /etc/profile.d/scarecrow-decoy.sh');
+                L.push('```');
+                L.push('');
+            }
         }
 
         if (s.buskill && s.buskill !== 'none') {

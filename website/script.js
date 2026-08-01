@@ -1886,6 +1886,34 @@ run_with_progress() {
                         o += `\n# A working session in a decoy home. Erases nothing.\n`;
                         o += `scarecrow --set-decoy-pin\n`;
                     }
+
+                    // Setting a PIN configures nothing on its own — something
+                    // has to check it. Without this the PINs were enrolled and
+                    // then never reached, which is the worst state to be in:
+                    // you believe you have a duress PIN and you do not.
+                    o += `\n# Wire the PINs into the LOGIN prompt (not the boot passphrase\n`;
+                    o += `# prompt — these are checked after the disk is already unlocked).\n`;
+                    o += `# Stock pam_exec, so no custom PAM module and it works anywhere PAM\n`;
+                    o += `# does: login, greetd, sddm, gdm, su.\n`;
+                    o += `sed -i '0,/^auth.*pam_unix\\.so/s##auth [success=done default=ignore] pam_exec.so expose_authtok quiet /usr/bin/scarecrow --pam-gate\\n&#' /etc/pam.d/system-auth\n`;
+                    o += `grep -n -A1 scarecrow /etc/pam.d/system-auth\n`;
+                    o += `echo "PAM gate installed. Your real password still works: a non-matching"\n`;
+                    o += `echo "PIN exits non-zero and default=ignore hands the decision to pam_unix."\n`;
+                    o += `echo "Test logging in on another TTY BEFORE you log out of this one — a"\n`;
+                    o += `echo "mistake in system-auth locks out every account including root."\n`;
+                    if (aemDecoyMode !== 'none') {
+                        o += `\n# Send a decoy session to the decoy home. The marker lives in /run,\n`;
+                        o += `# so it is tmpfs and cannot survive a reboot — a stale one would drop\n`;
+                        o += `# you into the decoy home on an ordinary login, which looks exactly\n`;
+                        o += `# like your data having been lost.\n`;
+                        o += `cat > /etc/profile.d/scarecrow-decoy.sh << 'DECOYPROFILE'\n`;
+                        o += `if [ -f /run/scarecrow/decoy-session ]; then\n`;
+                        o += `    export HOME=/etc/arch-security/scarecrow/decoy-home\n`;
+                        o += `    cd "$HOME" || true\n`;
+                        o += `fi\n`;
+                        o += `DECOYPROFILE\n`;
+                        o += `chmod 0644 /etc/profile.d/scarecrow-decoy.sh\n`;
+                    }
                 }
 
                 // ── LUKS auto-lock ──
