@@ -89,6 +89,27 @@ for (const page of pages) {
         problems.push('shared-ui.js exposes no openSharedHistory(), so the clock opens nothing');
     }
 
+    /* A page must actually load the file that defines the globals it calls.
+       index.html and live.html both called window.renderMarkdown and neither
+       loaded markdown.js — the Live Editor's preview button switched panes and
+       rendered nothing, and the generator's live preview was blank. It survived
+       because the calls are guarded (`if (typeof window.renderMarkdown ===
+       'function')`), so the failure was silent by design.
+
+       Checking the global rather than the <script> tag is deliberate: a tag that
+       is present but 404s, or a file with a SyntaxError, both leave the global
+       undefined and both should fail here. */
+    for (const [fn, provider] of [
+        ['renderMarkdown', 'markdown.js'],
+        ['renderMarkdownInto', 'markdown.js'],
+        ['highlightAll', 'highlight.js'],
+        ['setHighlightedCode', 'highlight.js'],
+    ]) {
+        if (typeof window[fn] !== 'function') {
+            problems.push(`window.${fn} is undefined — ${provider} is not loaded or did not run`);
+        }
+    }
+
     if (!viewport) problems.push('no viewport meta, so mobile rendering is wrong');
     if (!manual) problems.push('no link to manual.html (required in every header)');
 
