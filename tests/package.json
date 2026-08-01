@@ -7,7 +7,7 @@
     "permutations": "node permutations.mjs ../website",
     "responsive": "node responsive.mjs ../website",
     "html": "html-validate ../website/*.html",
-    "test": "npm run permutations && npm run responsive && npm run translate && npm run parity && npm run wiki && npm run dusky && npm run legal && npm run emoji && npm run markdown && npm run palette && npm run runtime && npm run html",
+    "test": "npm run permutations && npm run responsive && npm run translate && npm run parity && npm run wiki && npm run dusky && npm run legal && npm run emoji && npm run markdown && npm run palette && npm run live && npm run runtime && npm run html",
     "translate": "node config-translate.mjs",
     "parity": "node parity-five-installs.mjs ../website",
     "runtime": "node page-runtime-audit.mjs ../website",
@@ -16,7 +16,8 @@
     "legal": "node legal-gate.mjs ../website",
     "emoji": "node emoji-consistency.mjs ../website",
     "markdown": "node markdown-render.mjs ../website",
-    "palette": "node palette-audit.mjs ../website"
+    "palette": "node palette-audit.mjs ../website",
+    "live": "node live-editor.mjs ../website"
   },
   "devDependencies": {
     "html-validate": "^11.5.6",
