@@ -962,6 +962,38 @@ const STEPS = [
           danger: 'Irreversible without a header backup, same as duress.' }
     ]
 },
+/* ── Input Guard response ───────────────────────────────────────────────────
+   Only asked when Input Guard is actually installed. The capture and the
+   deauthorization happen regardless; this is the *extra* response, and the two
+   ends of it have very different costs. */
+{
+    id: 'ducky_response',
+    section: 'Security',
+    title: 'What should Input Guard do when it catches a payload?',
+    help: 'It always captures the payload and deauthorizes the device at the ' +
+          'kernel, whatever you pick here. This is what happens on top of that.',
+    wiki: 'anti-ducky',
+    when: s => (s.security_tools || []).indexOf('anti-ducky') !== -1,
+    type: 'single',
+    optional: true,
+    options: [
+        { value: 'lock', label: 'Lock every session', recommended: true,
+          desc: 'The attacker cannot use the unlocked desktop the injected ' +
+                'keystrokes were aimed at. If it misfires you lose a login, ' +
+                'not your work. It does not protect the encryption keys in ' +
+                'RAM — a lock screen is a UI, not a cryptographic boundary.' },
+        { value: 'alert', label: 'Alert only',
+          desc: 'The device is already blocked and the payload already saved. ' +
+                'Doing nothing further is a legitimate choice.' },
+        { value: 'poweroff', label: 'Hard power-off',
+          desc: 'Cuts power so the disk-encryption keys leave RAM before ' +
+                'anyone can pull the DIMMs for a cold-boot read.',
+          danger: 'Loses unsaved work, with no confirmation, on a false ' +
+                  'positive. Input Guard\'s timing thresholds have never been ' +
+                  'measured on real hardware, so its false-positive rate is ' +
+                  'unknown. Requires typed confirmation to arm.' }
+    ]
+},
 /* ── LUKS auto-lock ─────────────────────────────────────────────────────────
    Encryption-only for the obvious reason, and anti-evil-maid-only because that
    is the crate that ships `--lock-now`. Offering it without either would be a

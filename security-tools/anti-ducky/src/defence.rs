@@ -117,6 +117,145 @@ pub fn set_kill_on_attack(enabled: bool) -> std::io::Result<()> {
     }
 }
 
+/// What to do once a payload is confirmed, beyond capturing and deauthorizing.
+///
+/// Deauthorization always happens — it is reversible and it stops the attack.
+/// This is the *additional* response, and it is a spectrum rather than a switch
+/// because the two ends have very different costs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AttackResponse {
+    /// Capture, deauthorize, alert. Nothing else. The default.
+    AlertOnly,
+    /// Also lock every session, so an attacker standing at the machine cannot
+    /// use the unlocked desktop the injected keystrokes were aimed at.
+    ///
+    /// The middle option, and the right default for most people: it costs
+    /// nothing but a re-login if it misfires, whereas a power-off costs unsaved
+    /// work. It does *not* protect the keys in RAM — a lock screen is a UI, not
+    /// a cryptographic boundary. Pair it with `anti-evil-maid --lock-now` if
+    /// that is what you need.
+    LockSession,
+    /// Hard power-off, to clear disk-encryption keys from RAM before anyone can
+    /// pull the DIMMs. Destructive to unsaved work; strictly opt-in.
+    PowerOff,
+}
+
+/// Where the response policy is recorded, when it is not the legacy flag file.
+const RESPONSE_FILE: &str = "/etc/arch-security/anti-ducky/attack-response";
+
+/// The configured response.
+///
+/// Reads [`RESPONSE_FILE`] first, then falls back to the older
+/// `kill-on-attack` marker so a machine configured before this existed keeps the
+/// behaviour its operator chose. Anything unrecognised is treated as
+/// [`AttackResponse::AlertOnly`]: a corrupt config file must not be able to
+/// *escalate* the response into powering the machine off.
+pub fn attack_response() -> AttackResponse {
+    if let Ok(s) = fs::read_to_string(RESPONSE_FILE) {
+        return match s.trim() {
+            "poweroff" => AttackResponse::PowerOff,
+            "lock" => AttackResponse::LockSession,
+            _ => AttackResponse::AlertOnly,
+        };
+    }
+    if kill_on_attack_enabled() {
+        return AttackResponse::PowerOff;
+    }
+    AttackResponse::AlertOnly
+}
+
+/// Record the response policy.
+pub fn set_attack_response(r: AttackResponse) -> std::io::Result<()> {
+    fs::create_dir_all(CONFIG_DIR)?;
+    let word = match r {
+        AttackResponse::PowerOff => "poweroff",
+        AttackResponse::LockSession => "lock",
+        AttackResponse::AlertOnly => "alert",
+    };
+    fs::write(RESPONSE_FILE, format!("{word}\n"))?;
+    // Keep the legacy flag consistent, so the two cannot disagree and leave a
+    // machine powering itself off after its operator chose not to.
+    set_kill_on_attack(r == AttackResponse::PowerOff)
+}
+
+/// Lock every active session.
+///
+/// `loginctl lock-sessions` asks each session's own locker, which is what
+/// respects the user's configured screen lock. Best-effort: a machine with no
+/// graphical session has nothing to lock, and that is not an error.
+pub fn lock_sessions(reason: &str) {
+    eprintln!("[anti-ducky] LOCKING SESSIONS: {reason}");
+    let _ = Command::new("loginctl").arg("lock-sessions").status();
+}
+
+/// Where an alert waits to be shown after the next boot.
+const PENDING_ALERT: &str = "/etc/arch-security/anti-ducky/pending-alert";
+
+/// Leave a note that survives the reboot.
+///
+/// When the response is a power-off, everything on screen is gone a fraction of
+/// a second later — including the alert explaining why the machine just died.
+/// Without this, the attack is invisible to the person it happened to: they
+/// power the machine back on and find no explanation, which is indistinguishable
+/// from a hardware fault, and they plug the device back in.
+///
+/// Appended, not overwritten: two attacks before anyone reads the file are two
+/// things worth knowing about.
+pub fn record_boot_alert(device: &str, detail: &str) {
+    let _ = fs::create_dir_all(CONFIG_DIR);
+    let ts = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let line = format!("{ts}\t{device}\t{detail}\n");
+    use std::io::Write;
+    if let Ok(mut f) = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(PENDING_ALERT)
+    {
+        let _ = f.write_all(line.as_bytes());
+    }
+}
+
+/// Show and clear any alert recorded before the last boot.
+///
+/// Returns the number of alerts shown. The file is only removed once it has
+/// actually been printed — an alert that is cleared without being read is worse
+/// than no alert at all, because it makes the system look clean.
+pub fn show_boot_alerts() -> usize {
+    let Ok(contents) = fs::read_to_string(PENDING_ALERT) else {
+        return 0;
+    };
+    let lines: Vec<&str> = contents.lines().filter(|l| !l.trim().is_empty()).collect();
+    if lines.is_empty() {
+        let _ = fs::remove_file(PENDING_ALERT);
+        return 0;
+    }
+
+    println!("=============================================================");
+    println!(" anti-ducky: a BadUSB payload was detected before this boot");
+    println!("=============================================================");
+    for line in &lines {
+        let mut f = line.split('\t');
+        let ts = f.next().unwrap_or("?");
+        let device = f.next().unwrap_or("unknown device");
+        let detail = f.next().unwrap_or("");
+        println!("  when   : unix {ts}");
+        println!("  device : {device}");
+        if !detail.is_empty() {
+            println!("  detail : {detail}");
+        }
+        println!();
+    }
+    println!("The captured payload is in /var/log/anti-ducky/payload_*.log.");
+    println!("Read it before plugging that device into anything else.");
+    println!("=============================================================");
+
+    let _ = fs::remove_file(PENDING_ALERT);
+    lines.len()
+}
+
 /// Hard power-off to clear disk-encryption keys from RAM.
 ///
 /// `poweroff -f` cuts power without the normal shutdown sequence: the objective

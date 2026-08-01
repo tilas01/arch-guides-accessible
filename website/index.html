@@ -824,6 +824,23 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre users: Firefox firmware blobs, Flatpak proprietary apps, Signal Electron build, and Chromium may conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                     </div>
 
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#anti-ducky', '_blank'); return false;" data-title="Input Guard response" data-desc="What Input Guard (anti-ducky) does after it confirms a BadUSB payload. It captures the payload and deauthorizes the device at the kernel whatever you pick here; this is the additional response.">
+                        <label for="ducky_response">Input Guard — on a confirmed payload:</label>
+                        <select oncontextmenu="window.open('wiki.html#anti-ducky', '_blank'); return false;" id="ducky_response">
+                            <option value="lock" selected>Lock every session (recommended)</option>
+                            <option value="alert">Alert only — the device is blocked either way</option>
+                            <option value="poweroff">Hard power-off — clears encryption keys from RAM</option>
+                        </select>
+                        <p style="font-size:0.75rem;color:var(--fg-dim);margin-top:0.3rem;">
+                            The payload is always captured to <code>/var/log/anti-ducky/</code> with a
+                            SHA-256 for chain of custody, and the device is always deauthorized.
+                            A lock screen does not protect the LUKS key in RAM — pair it with
+                            <a href="wiki.html#luks-autolock" style="color:var(--accent-blue)">LUKS auto-lock</a>
+                            if that is what you need. Power-off loses unsaved work on a false positive,
+                            and these timing thresholds have never been measured on real hardware.
+                        </p>
+                    </div>
+
                     <div class="form-group form-step" oncontextmenu="window.open('wiki.html#usb-kill', '_blank'); return false;" data-title="USB Kill Switch" data-desc="Monitors connected USB devices against an allowlist and reacts if an unauthorised device is attached or a whitelisted one is removed. Modelled on the usbkill project.">
                         <label for="usb_kill">USB Kill Switch:</label>
                         <select oncontextmenu="window.open('wiki.html#usb-kill', '_blank'); return false;" id="usb_kill">
