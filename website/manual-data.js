@@ -962,6 +962,41 @@ const STEPS = [
           danger: 'Irreversible without a header backup, same as duress.' }
     ]
 },
+/* ── LUKS auto-lock ─────────────────────────────────────────────────────────
+   Encryption-only for the obvious reason, and anti-evil-maid-only because that
+   is the crate that ships `--lock-now`. Offering it without either would be a
+   control that configures nothing. */
+{
+    id: 'luks_autolock',
+    section: 'Security',
+    title: 'Lock the disk when you step away?',
+    help: 'Locking your screen leaves the LUKS master key sitting in kernel ' +
+          'memory, where a DMA port or a cold-boot attack on the RAM can still ' +
+          'reach it. Suspending the volume flushes that key, so the disk is as ' +
+          'protected as it is when the machine is off.',
+    wiki: 'luks-autolock',
+    when: s => (s.security_tools || []).indexOf('anti-evil-maid') !== -1 &&
+               s.encryption && s.encryption !== 'none',
+    type: 'single',
+    optional: true,
+    options: [
+        { value: 'never', label: 'No auto-lock',
+          desc: 'You can still lock on demand with `anti-evil-maid --lock-now`.' },
+        { value: '15m', label: 'After 15 minutes idle', recommended: true,
+          desc: 'Long enough not to interrupt you, short enough that a machine ' +
+                'left on a desk is not open all afternoon.' },
+        { value: '1h', label: 'After 1 hour idle',
+          desc: 'For a machine you leave running but stay near.' },
+        { value: '8h', label: 'After 8 hours idle',
+          desc: 'Effectively overnight. Little protection during the day.' },
+        { value: 'on-lock', label: 'Whenever the session locks',
+          desc: 'The key stops being resident the moment you lock the screen, ' +
+                'which is when you have decided you are done.' }
+    ],
+    note: 'Suspending the volume that backs / freezes every disk read until ' +
+          'you type the passphrase. Test it once while you can still reach ' +
+          'the machine physically — a mistake needs a power cycle.'
+},
 {
     id: 'apps',
     section: 'Software',

@@ -955,6 +955,59 @@
             }
         }
 
+        /* LUKS auto-lock. Same encryption guard as the duress section, and for
+           the same reason: there is nothing to suspend on an unencrypted
+           install, and a hand-edited JSON config reaches this emitter without
+           passing the walkthrough's `when`. */
+        const autolock = s.luks_autolock;
+        if (autolock && autolock !== 'never' && f.enc && f.root) {
+            L.push('### Lock the disk, not just the screen');
+            L.push('');
+            L.push('Locking your session leaves the LUKS master key in kernel memory. A');
+            L.push('DMA-capable port, a cold-boot attack on the DIMMs or a kernel bug all');
+            L.push('recover it from there. `cryptsetup luksSuspend` flushes the key and');
+            L.push('freezes the device until the passphrase is entered again — after that,');
+            L.push('the disk is as protected as it is when the machine is off.');
+            L.push('');
+            L.push('```bash');
+            if (autolock === 'on-lock') {
+                L.push('# Write the config and the session-lock hook.');
+                L.push('sudo anti-evil-maid --configure-autolock --idle never');
+                L.push('');
+                L.push('# Point your screen locker at the hook, so the key stops being');
+                L.push('# resident the moment you lock the session.');
+                L.push('#   /usr/local/bin/anti-evil-maid-on-lock');
+            } else {
+                L.push('sudo anti-evil-maid --configure-autolock --idle ' + autolock);
+                L.push('');
+                L.push('# Nothing is armed until you enable the timer.');
+                L.push('sudo systemctl enable --now anti-evil-maid-autolock.timer');
+            }
+            L.push('');
+            L.push('# Lock on demand at any time:');
+            L.push('sudo anti-evil-maid --lock-now');
+            L.push('```');
+            L.push('');
+            L.push('> [!CAUTION]');
+            L.push('> Suspending the volume that backs `/` freezes **every** disk read');
+            L.push('> until you type the passphrase. The tool stages `cryptsetup` and its');
+            L.push('> libraries into tmpfs and locks its own pages into RAM first, so the');
+            L.push('> resume path is never read from the device it just froze — but test');
+            L.push('> it once while you can still reach the machine physically.');
+            L.push('');
+            L.push('> [!NOTE]');
+            L.push('> **The unlock delay is not phone-grade brute-force protection.** After');
+            L.push('> four wrong attempts the resume prompt imposes a delay that doubles');
+            L.push('> from 30 seconds to a ceiling of one hour. That raises the cost of');
+            L.push('> someone typing at *this* machine. It is not comparable to a phone:');
+            L.push('> GrapheneOS enforces its delays in a secure element, so bypassing the');
+            L.push('> OS does not bypass them. A PC has no such component, and an attacker');
+            L.push('> who images the disk attacks the header offline where this delay does');
+            L.push('> not exist. What defends an imaged header is the Argon2id cost and a');
+            L.push('> passphrase strong enough to survive it.');
+            L.push('');
+        }
+
         /* Duress PINs. Only reachable when scarecrow is installed and the disk
            is encrypted — a duress PIN erases a LUKS header, and there is none to
            erase otherwise. The device is `f.root`, the partition the guide has

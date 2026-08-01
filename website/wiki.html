@@ -321,6 +321,7 @@
             <a class="g-sec" href="#verification">Verifying Downloads (GPG &amp; Hashes)</a>
             <h3 class="g-hard">Hardening</h3>
             <a class="g-hard" href="#luks-duress">LUKS Duress Passphrase</a>
+            <a class="g-hard" href="#luks-autolock">LUKS Auto-Lock</a>
             <a class="g-hard" href="#usb-kill">USB Kill Switch</a>
             <a class="g-hard" href="#encrypted-dns">Encrypted DNS</a>
             <a class="g-hard" href="#firewall-profiles">UFW Firewall Profiles</a>
@@ -360,6 +361,7 @@
             <li><a href="#reproducible-builds">Build Integrity &amp; Reproducible Builds</a></li>
             <li><a href="#verification">Verifying Downloads (GPG &amp; Hashes)</a></li>
             <li><a href="#luks-duress">LUKS Duress Passphrase</a></li>
+            <li><a href="#luks-autolock">LUKS Auto-Lock</a></li>
             <li><a href="#usb-kill">USB Kill Switch</a></li>
             <li><a href="#encrypted-dns">Encrypted DNS</a></li>
             <li><a href="#firewall-profiles">UFW Firewall Profiles</a></li>
@@ -911,7 +913,16 @@ sha512sum -c libre-otp.sha512</code></pre>
         <p>Monitors USB HID keystroke timing and sandboxes unknown input devices, blocking Rubber Ducky / BadUSB style automated keystroke injection before the payload can type. Requires approval from already-trusted inputs before a new keyboard is authorised. For a policy-based alternative at the kernel level, see <a href="#other-sec">USBGuard</a>; for a hard power-off response, see the <a href="#usb-kill">USB kill switch</a>.</p>
 
         <h3 id="anti-evil-maid">🕵️ Anti-Evil Maid</h3>
-        <p>Verifies boot integrity by hashing the boot chain and comparing it across boots, and generates generic decoy kernel entries so the real encrypted target is not obvious. Supports a decoy password that boots a dummy environment and a duress password. Note that with GRUB plus LUKS, <code>/boot</code> is unencrypted on disk — a UKI bootloader removes that attack surface entirely. Related: <a href="#luks-duress">LUKS duress passphrase</a>.</p>
+        <p>Verifies boot integrity by hashing the boot chain and comparing it across boots, and generates generic decoy kernel entries so the real encrypted target is not obvious. It also provides <a href="#luks-autolock">LUKS auto-lock</a>: <code>--lock-now</code> suspends the volume and flushes the master key from RAM, which a screen lock does not do. Note that with GRUB plus LUKS, <code>/boot</code> is unencrypted on disk — a UKI bootloader removes that attack surface entirely.</p>
+        <p>
+            <strong>Decoy and duress passwords are <a href="#scarecrow">Scarecrow</a>'s job, not this tool's.</strong>
+            This page previously credited them here, and the generator emitted
+            <code>anti-evil-maid --decoy-password</code> and <code>--duress-password</code> to match.
+            Neither flag has ever existed in the crate, so every one of those lines failed — and they
+            put the password on the command line, where <code>ps</code> shows it to every user on the
+            machine. See <a href="#luks-duress">LUKS duress passphrase</a> for the three PINs that are
+            real, each prompted for interactively and never passed as an argument.
+        </p>
 
         <h3 id="kernel-watcher">👁️ Kernel Watcher</h3>
         <p>Asynchronous filesystem monitor that flags infostealers touching browser profiles, SSH keys and wallet files, and detects userland rootkit behaviour. A lightweight semi-EDR that runs as a systemd daemon and logs to <code>/var/log</code>.</p>
@@ -1079,6 +1090,97 @@ mkfs.ext4 /dev/mapper/decoyroot
         <p>
             Verify your real passphrase still works, and that the duress passphrase behaves as
             expected, <strong>in a virtual machine</strong> before trusting this on hardware.
+        </p>
+    </div>
+
+    <div class="section" id="luks-autolock">
+        <h2><span class="icon">🔒</span> LUKS Auto-Lock</h2>
+        <p>
+            Locking your screen does not lock your disk. The LUKS master key stays resident in
+            kernel memory for as long as the volume is open, so a DMA-capable port, a cold-boot
+            attack on the DIMMs, or a kernel bug recovers it while the lock screen is still up.
+            The lock screen is a UI, not a cryptographic boundary.
+        </p>
+        <p>
+            <code>cryptsetup luksSuspend</code> is the primitive that actually locks the disk: it
+            wipes the master key from kernel memory and freezes I/O on the device until
+            <code>luksResume</code> supplies the passphrase again. After a suspend, the data is as
+            protected as it is when the machine is powered off.
+        </p>
+
+        <h3>Configuring it</h3>
+        <pre><code class="language-bash">sudo anti-evil-maid --configure-autolock --idle 15m
+sudo systemctl enable --now anti-evil-maid-autolock.timer
+
+# Lock on demand at any time
+sudo anti-evil-maid --lock-now</code></pre>
+        <p>
+            <code>--idle</code> accepts the presets the walkthrough offers and a free-form value:
+            <code>15m</code>, <code>1h</code>, <code>2d3h</code>, <code>3d4h15m</code>, or
+            <code>never</code>. A bare number is read as minutes. An interval of zero is rejected
+            rather than guessed at — it reads as "off" to a person and as "lock immediately, over
+            and over" to a timer, and the difference matters too much to assume.
+        </p>
+        <p>
+            <code>--configure-autolock</code> also writes
+            <code>/usr/local/bin/anti-evil-maid-on-lock</code>. Point your screen locker at it and
+            the key stops being resident the moment you lock the session.
+        </p>
+
+        <h3>Why suspending the root volume is delicate</h3>
+        <p>
+            Once a device is suspended, every read and write to it blocks forever. If the volume
+            backs <code>/</code>, that includes the <code>cryptsetup</code> binary you are about to
+            run and every shared library it links. A naive implementation suspends the root device
+            and then deadlocks trying to load the code that would resume it — the machine is not
+            locked, it is bricked until a hard power cycle.
+        </p>
+        <p>
+            So before suspending anything, the tool stages <code>cryptsetup</code> and its
+            libraries into <code>/run</code> (tmpfs, so RAM), verifies that directory really is
+            memory-backed rather than assuming it, and locks its own pages with
+            <code>mlockall</code> so the kernel cannot page the resume helper out to a swap device
+            that is also about to freeze. Every check that can fail happens
+            <em>before</em> the suspend, because after it a missing binary is not an error path,
+            it is data loss.
+        </p>
+        <p>
+            Test it once while you can still reach the machine physically.
+        </p>
+
+        <h3>The unlock delay is not phone-grade brute-force protection</h3>
+        <p>
+            The resume prompt allows four attempts — a deliberate concession to typos, because a
+            passphrase long enough to resist offline attack is long enough to fat-finger — then
+            imposes a delay that doubles from 30 seconds to a ceiling of one hour. The ceiling is
+            there because an uncapped doubling locks the machine's owner out for days over someone
+            else's failed guesses, and the owner is the person most likely to be typing.
+        </p>
+        <p>
+            That raises the cost of someone typing at <strong>your running machine's</strong>
+            prompt. It is worth having and it is all it is. It is <em>not</em> equivalent to the
+            brute-force resistance of a phone. GrapheneOS's escalating delays are enforced by a
+            <strong>secure element</strong> (Titan M / Weaver) that rate-limits key derivation in
+            hardware; bypassing the OS does not bypass the delay, because the OS is not the thing
+            enforcing it.
+        </p>
+        <p>
+            A generic PC has no such component. An attacker who images the disk attacks the LUKS
+            header <strong>offline</strong>, at whatever rate their hardware allows, and this delay
+            is simply absent from that attack. What actually defends an imaged header is:
+        </p>
+        <ul>
+            <li><strong>The KDF cost.</strong> LUKS2 with Argon2id and a high memory cost is what
+                makes each offline guess expensive. Raising <code>--iter-time</code> raises the
+                floor further.</li>
+            <li><strong>A TPM-sealed keyslot with a TPM-enforced lockout</strong>
+                (<code>systemd-cryptenroll --tpm2-pin=yes</code>) — the nearest thing to a secure
+                element on a PC, because the counter lives where the OS cannot reach it.</li>
+            <li><strong>A passphrase strong enough to survive offline Argon2id attack</strong>,
+                which is worth more than either of the above.</li>
+        </ul>
+        <p>
+            Related: <a href="#luks-duress">LUKS duress passphrase</a>.
         </p>
     </div>
 

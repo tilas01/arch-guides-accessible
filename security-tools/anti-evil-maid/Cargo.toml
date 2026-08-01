@@ -18,6 +18,12 @@ dialoguer = "0.12.0"
 
 clap = { version = "4.5.4", features = ["derive"] }
 
+# mlockall, for the LUKS suspend path. If the resume helper is paged out to a
+# swap device that is also being suspended, the next instruction fetch blocks
+# forever and the machine needs a power cycle.
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
+
 [[bin]]
 name = "anti-evil-maid"
 path = "src/main.rs"

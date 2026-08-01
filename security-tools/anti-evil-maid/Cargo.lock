@@ -220,6 +220,7 @@ dependencies = [
  "egui",
  "hex",
  "kernel-watcher",
+ "libc",
  "rpassword",
  "sha2",
  "udev",

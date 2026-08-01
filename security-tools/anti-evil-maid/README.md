@@ -53,15 +53,23 @@ byte-identical to the published binary.
 ## Usage
 
 ```
-  -i, --interactive   Launch the GUI dashboard (Wayland/Xorg)
-  -h, --help          Full argument list
-  -V, --version       Version
+  --setup                Record the current boot chain as the trusted baseline
+  --daemon               Verify the boot chain against the baseline, then exit
+  --fs-hash-check        Deep filesystem hash verification
+  --lock-now             Suspend the LUKS volume: flush the master key from RAM
+  --configure-autolock   Set up the auto-lock timer and session-lock hook
+  --autolock-status      Show the current auto-lock settings
+  --idle <INTERVAL>      15m, 1h, 2d3h, or "never"
+  --mapper <NAME>        Device-mapper name, as in /dev/mapper/<name>
+  -i, --interactive      Launch the GUI dashboard (Wayland/Xorg)
+  -h, --help             Full argument list
+  -V, --version          Version
 ```
 
-Run with no arguments to start the daemon:
+Record a baseline while you know the machine is clean:
 
 ```bash
-sudo anti-evil-maid
+sudo anti-evil-maid --setup
 ```
 
 Or open the dashboard:
@@ -69,6 +77,32 @@ Or open the dashboard:
 ```bash
 anti-evil-maid --interactive
 ```
+
+## Locking the disk, not just the screen
+
+Locking your session leaves the LUKS master key sitting in kernel memory. Anyone
+who reaches the running machine — a DMA-capable port, a cold-boot attack on the
+DIMMs, a kernel bug — recovers it and with it the disk. The lock screen is a UI,
+not a cryptographic boundary.
+
+`--lock-now` runs `cryptsetup luksSuspend`, which wipes the master key from
+kernel memory and freezes I/O until the passphrase is supplied again. After it,
+the data is as protected as it is when the machine is off.
+
+```bash
+sudo anti-evil-maid --configure-autolock --idle 15m
+sudo systemctl enable --now anti-evil-maid-autolock.timer
+```
+
+`--configure-autolock` also writes `/usr/local/bin/anti-evil-maid-on-lock`, which
+you can point your screen locker at so the key stops being resident the moment
+you lock the session.
+
+> **Test this while you can still reach the machine physically.** Suspending the
+> volume that backs `/` freezes every disk read until you type the passphrase.
+> The tool stages `cryptsetup` and its libraries into tmpfs and locks its own
+> pages into RAM first, precisely so the resume path is never read from the
+> device it just froze — but a mistake here still costs a power cycle.
 
 ## Verifying a release binary
 
@@ -99,6 +133,33 @@ This detects modification. It cannot prevent it, and it cannot protect you from
 an attacker who also replaces this binary. For a defence that holds when the
 firmware itself is untrusted you need measured boot: coreboot plus
 [Heads](https://osresearch.net/), a TPM, and a hardware token.
+
+### The unlock delay is not phone-grade brute-force protection
+
+The resume prompt allows four attempts, then imposes a delay that doubles from
+30 seconds to a ceiling of one hour. That raises the cost of someone typing at
+**your running machine's** prompt. It is worth having and it is all it is.
+
+It is not equivalent to the brute-force resistance of a phone, and the
+comparison is worth spelling out because it is easy to assume otherwise.
+GrapheneOS's escalating delays are enforced by a **secure element** (Titan M /
+Weaver) that rate-limits key derivation in hardware. Bypassing the OS does not
+bypass the delay, because the OS is not the thing enforcing it.
+
+A generic PC has no such component. An attacker who images your disk attacks the
+LUKS header **offline**, at whatever rate their hardware allows, and this delay
+is simply not present in that attack. What actually defends an imaged header is:
+
+- **The KDF cost.** LUKS2 with Argon2id and a high memory cost is what makes each
+  offline guess expensive. The generators emit `--pbkdf argon2id`; raising
+  `--iter-time` and the memory cost raises the floor further.
+- **A TPM-sealed keyslot with a TPM-enforced lockout**
+  (`systemd-cryptenroll --tpm2-pin=yes`). This is the nearest thing to a secure
+  element on a PC, because the counter lives somewhere the OS cannot reach.
+- **A passphrase strong enough to survive offline Argon2id attack**, which is
+  worth more than any of the above.
+
+The delay in this tool protects the live prompt. Nothing more.
 
 ## Licence
 
