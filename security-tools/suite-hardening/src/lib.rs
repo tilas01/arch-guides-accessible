@@ -1,5 +1,16 @@
 //! Process-level memory hardening for a program that holds a long-lived secret.
 //!
+//! Shared by every tool in the suite. This was `libre-otp/src/hardening.rs` and
+//! applied to exactly one of six crates, while `scarecrow` held three Argon2id
+//! PINs, `anti-ducky` held an unlock PIN and captured keystroke payloads, and
+//! `kernel-watcher` held a tamper password — all of them swappable, dumpable
+//! and ptrace-able. Lifted into its own crate rather than copied four times so
+//! there is one implementation to get right.
+//!
+//! Kept to one dependency on purpose. Everything in the suite links this, so a
+//! dependency added here is added to all of them, and a hardening crate that
+//! drags in a tree is one nobody applies.
+//!
 //! `zeroize` already wipes secrets when they go out of scope. That closes the
 //! "freed heap still contains the key" hole, but it does nothing about three
 //! others, all of which put the TOTP seed on disk or in another process's hands

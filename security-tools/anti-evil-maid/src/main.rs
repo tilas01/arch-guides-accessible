@@ -65,6 +65,17 @@ struct Args {
 }
 
 fn main() -> ExitCode {
+    // First statement in main, before even argument parsing: a crash any
+    // time before this call still dumps the whole address space, and the
+    // resume path below reads a LUKS passphrase into it. Best-effort by
+    // design — a tool that refuses to start because it could not raise a
+    // memory-lock limit is a tool that gets uninstalled.
+    //
+    // Note this is separate from the mlockall in autolock::lock_now, which
+    // is a hard requirement rather than best-effort: there, being paged out
+    // to a suspended swap device hangs the machine.
+    let _hardening = suite_hardening::harden_process();
+
     let args = Args::parse();
 
     // Auto-lock first: --lock-now must work even on a machine whose baseline was

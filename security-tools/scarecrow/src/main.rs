@@ -54,6 +54,13 @@ struct Args {
 }
 
 fn main() -> ExitCode {
+    // First statement in main, before even argument parsing: a crash any
+    // time before this call still dumps the whole address space, and the
+    // PIN prompts below read secrets into it. Best-effort by design — a
+    // tool that refuses to start because it could not raise a memory-lock
+    // limit is a tool that gets uninstalled.
+    let _hardening = suite_hardening::harden_process();
+
     let args = Args::parse();
 
     // All three PINs are optional and independent. Set none, one, or all.
