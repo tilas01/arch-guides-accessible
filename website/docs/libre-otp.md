@@ -15,7 +15,7 @@ Libre-OTP integrates seamlessly into `/etc/pam.d/system-auth`. This enforces an 
 Libre-OTP secures remote connections by enforcing:
 ```bash
 AuthenticationMethods publickey,keyboard-interactive
-ForceCommand /usr/local/bin/libre-otp --ssh
+ForceCommand /usr/local/bin/libre-otp --gate
 ```
 This guarantees that attackers possessing stolen SSH keys still cannot gain a shell without the hardware-backed OTP.
 

@@ -46,6 +46,15 @@ struct Args {
     #[arg(long, value_name = "DEVICE")]
     set_duress_device: Option<String>,
 
+    /// Plant the canary tokens and sandbox artefacts, then exit.
+    ///
+    /// The installer and the docs both tell people to run this, but clap
+    /// rejected it — the only way to reach init_scarecrow() was to run the
+    /// binary bare, which also starts the daemon. Anyone following the
+    /// instructions got "unexpected argument" and no canaries.
+    #[arg(long)]
+    setup: bool,
+
     /// Double-enter the password at the duress prompt. Off by default: a
     /// confirmation step is itself a tell that something unusual is happening,
     /// which works against plausible deniability.
@@ -87,6 +96,11 @@ fn main() -> ExitCode {
 
     // Before --login and --interactive: this is invoked by PAM on every
     // authentication, and it must never fall through to anything that prints.
+    if args.setup {
+        init_scarecrow();
+        return ExitCode::SUCCESS;
+    }
+
     if args.pam_gate {
         return ExitCode::from(scarecrow::pam_gate() as u8);
     }

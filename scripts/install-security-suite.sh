@@ -414,8 +414,11 @@ for name in "${SELECTED[@]}"; do
             dim "Without them, losing your authenticator locks you out permanently."
             ;;
         anti-ducky)
-            printf '%s  anti-ducky%s — approve the devices you currently trust:\n' "$C_GREEN" "$C_RESET"
-            dim "anti-ducky --approve-current"
+            printf '%s  anti-ducky%s — enrol the devices you currently trust:\n' "$C_GREEN" "$C_RESET"
+            # Was `--approve-current`, a flag the crate has never had, so this
+            # instruction could only ever print "unexpected argument".
+            dim "anti-ducky --enroll"
+            dim "anti-ducky --export-whitelist   # check what it now trusts"
             warn "Do this while your real keyboard is attached, or it may block it."
             ;;
         anti-evil-maid)
