@@ -1,5 +1,11 @@
 pub mod gui;
-pub mod hardening;
+/// Re-exported from the shared `suite-hardening` crate.
+///
+/// This was a private module here and applied to exactly one of six tools,
+/// while scarecrow held three Argon2id PINs and anti-ducky held an unlock
+/// PIN, both unhardened. Lifted out so all of them share one implementation.
+/// The `hardening::` path is kept so no call site had to change.
+pub use suite_hardening as hardening;
 use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,

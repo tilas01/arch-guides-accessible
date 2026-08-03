@@ -4,6 +4,7 @@ version = "1.0.0"
 edition = "2024"
 
 [dependencies]
+suite-hardening = { path = "../suite-hardening" }
 argon2 = "0.5.3"
 notify = "8.2.0"
 rand = "0.10.1"
