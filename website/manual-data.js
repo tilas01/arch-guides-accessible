@@ -1060,6 +1060,35 @@ const STEPS = [
     ]
 },
 {
+    id: 'extra_packages',
+    section: 'Software',
+    title: 'Anything else?',
+    help: 'Package names, separated by spaces. Search the official repos and ' +
+          'the AUR below, or type names you already know. Leave it empty to ' +
+          'skip.',
+    wiki: 'advanced-config',
+    type: 'text',
+    optional: true,
+    // Renders the live search panel. The search is a convenience: if it cannot
+    // reach the APIs the field still works as a plain text box, which is why
+    // nothing downstream depends on a package having been found here.
+    search: 'packages',
+    placeholder: 'e.g. ripgrep fd bat',
+    validate: function (v) {
+        if (!v) return null;
+        // Deliberately permissive — this is checked again on the machine, where
+        // the real package database is. Rejecting a valid name here because the
+        // pattern was too strict is worse than passing an unknown one through
+        // to a warning. Arch package names allow @ . _ + - and alphanumerics.
+        var bad = v.split(/\s+/).filter(function (p) {
+            return p && !/^[a-z0-9@._+-]+$/i.test(p);
+        });
+        return bad.length
+            ? 'Not valid package names: ' + bad.join(', ')
+            : null;
+    }
+},
+{
     id: 'buskill',
     section: 'Security',
     title: 'BusKill dead-man switch?',

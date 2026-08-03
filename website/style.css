@@ -1846,3 +1846,89 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
     line-height: 1.6;
 }
 .footer-report strong { color: var(--accent-orange); }
+
+/* ── Package search ──────────────────────────────────────────────────────────
+   Shared by the Dynamic Generator and the Manual Walkthrough (pkg-search.js).
+   Palette variables only — the palette gate fails on a colour literal here. */
+
+.pkg-search {
+    margin-top: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-darker);
+    padding: 0.6rem;
+}
+
+.pkg-search-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.pkg-search-box {
+    flex: 1 1 12rem;
+    min-width: 0;
+    min-height: var(--tap-target, 44px);
+    padding: 0.5rem 0.65rem;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--fg-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.pkg-search-box:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+/* `width: auto` is doing real work here. The generator's `.btn` is full-width
+   because it is used for Generate, so without this every button in the row
+   claimed 100% and the three of them stacked into a column three rows tall. */
+.pkg-search-go,
+.pkg-search .pkg-add {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: var(--tap-target, 44px);
+    padding-inline: 0.9rem;
+    white-space: nowrap;
+}
+
+.pkg-search-note {
+    margin: 0.35rem 0;
+    font-size: 0.8rem;
+    color: var(--fg-dim);
+}
+
+/* The AUR caveat, kept visually distinct from the neutral explanatory note:
+   an AUR PKGBUILD is a build script a stranger wrote that runs as your user,
+   and that deserves more than the same grey as everything else. */
+.pkg-search-warn { color: var(--accent-orange); }
+
+.pkg-add {
+    min-height: var(--tap-target, 44px);
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85rem;
+}
+
+/* Official packages are signed and built by Arch; AUR packages are not. The
+   two buttons are coloured to say which is which before anyone clicks.
+
+   The background must be overridden, not just the text colour: `.btn` fills
+   with --accent-purple, and accent-green or accent-orange text on that is two
+   light colours against each other — it failed to read at all. Outlined on the
+   panel background instead, which also keeps these visually secondary to the
+   real Generate button. */
+.pkg-go-official,
+.pkg-go-aur {
+    background: var(--bg-color);
+    border-width: 1px;
+    border-style: solid;
+}
+
+.pkg-go-official { border-color: var(--accent-green); color: var(--accent-green); }
+.pkg-go-aur      { border-color: var(--accent-orange); color: var(--accent-orange); }
+
+.pkg-go-official:hover { background: var(--tint-green, var(--bg-lighter)); }
+.pkg-go-aur:hover      { background: var(--tint-orange, var(--bg-lighter)); }

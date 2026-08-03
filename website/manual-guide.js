@@ -689,6 +689,48 @@
                        '`. They ship proprietary components.');
                 L.push('');
             }
+
+            /* Packages the user typed in themselves. Checked, never blocked.
+               A name can be perfectly valid and still be unknown to this
+               browser — the real database is on the machine — so the check runs
+               there, at install time, and warns rather than aborting. Refusing
+               to continue on a renamed package would strand someone who knows
+               exactly what they want better than we do. */
+            const typed = String(s.extra_packages || '').trim().split(/\s+/).filter(Boolean);
+            if (typed.length) {
+                L.push('### Your own packages');
+                L.push('');
+                L.push('These are the names you entered. They are checked against the real');
+                L.push('package databases here, on the machine — a name that has been renamed');
+                L.push('or dropped upstream should stop *you*, not the script.');
+                L.push('');
+                L.push('```bash');
+                L.push('for pkg in ' + typed.join(' ') + '; do');
+                L.push('    if pacman -Si "$pkg" >/dev/null 2>&1; then');
+                L.push('        sudo pacman -S --needed --noconfirm "$pkg"');
+                L.push('    elif command -v paru >/dev/null 2>&1 && paru -Si "$pkg" >/dev/null 2>&1; then');
+                L.push('        # AUR: a build script a stranger wrote, running as you.');
+                L.push('        paru -S --needed "$pkg"');
+                L.push('    else');
+                L.push('        echo "WARNING: \'$pkg\' is in neither the official repos nor the AUR." >&2');
+                L.push('        echo "  Official: https://archlinux.org/packages/?q=$pkg" >&2');
+                L.push('        echo "  AUR:      https://aur.archlinux.org/packages?K=$pkg" >&2');
+                L.push('        echo "  It may have been renamed or dropped. Skipping this one." >&2');
+                L.push('    fi');
+                L.push('done');
+                L.push('```');
+                L.push('');
+                L.push('> Those two links are the ones that would 404 if the package really is');
+                L.push('> gone — open them and see for yourself rather than taking the');
+                L.push('> warning\'s word for it.');
+                L.push('');
+                L.push('> [!NOTE]');
+                L.push('> AUR packages are not reviewed by anyone. `makepkg` runs a `PKGBUILD`');
+                L.push('> a stranger wrote, as your user, before anything is installed. Read');
+                L.push('> it — `paru -G <pkg>` fetches it without building — or run it past');
+                L.push('> `aur-guard`, which is in the security tools list for this reason.');
+                L.push('');
+            }
         }
 
         /* ── Wallpapers ─────────────────────────────────────────────────────

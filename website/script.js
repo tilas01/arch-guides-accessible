@@ -793,6 +793,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sel.value) sel.classList.remove('field-invalid');
         });
     });
+
+    // Live package search on the free-text package field. Guarded: if
+    // pkg-search.js did not load, the field stays a plain text box and the
+    // generated script still verifies every name on the machine.
+    const pkgField = document.getElementById('extra_packages');
+    const pkgMount = document.getElementById('extra-packages-search');
+    if (pkgField && pkgMount && window.PkgSearch) {
+        try {
+            window.PkgSearch.attach(pkgField, { mount: pkgMount });
+        } catch (_) { /* the field alone is still usable */ }
+    }
 });
 
 // ---- Form readers ----
@@ -1483,6 +1494,30 @@ run_with_progress() {
             }
             else if (pacApps[app]) o += `pacman -S --noconfirm ${pacApps[app]}\n`;
         });
+        // Packages the user typed in themselves. Checked on the machine, where
+        // the real package database is, and warned about rather than aborted:
+        // a name this browser could not verify may be perfectly valid, and a
+        // rename upstream should stop the user, not kill the script.
+        const extraPkgs = gv('extra_packages', '').trim().split(/\s+/)
+            // Filtered to the characters Arch package names actually allow, so
+            // nothing a user pastes can break out of the loop below.
+            .filter(p => p && /^[a-z0-9@._+-]+$/i.test(p));
+        if (extraPkgs.length) {
+            o += `\n# Your own packages. Verified here, not in the browser.\n`;
+            o += `for pkg in ${extraPkgs.join(' ')}; do\n`;
+            o += `    if pacman -Si "$pkg" >/dev/null 2>&1; then\n`;
+            o += `        pacman -S --needed --noconfirm "$pkg"\n`;
+            o += `    elif su - builder -c "paru -Si '$pkg'" >/dev/null 2>&1; then\n`;
+            o += `        su - builder -c "paru -S --needed --noconfirm '$pkg'"\n`;
+            o += `    else\n`;
+            o += `        echo "WARNING: '$pkg' is in neither the official repos nor the AUR." >&2\n`;
+            o += `        echo "  Official: https://archlinux.org/packages/?q=$pkg" >&2\n`;
+            o += `        echo "  AUR:      https://aur.archlinux.org/packages?K=$pkg" >&2\n`;
+            o += `        echo "  It may have been renamed or dropped. Skipping this one." >&2\n`;
+            o += `    fi\n`;
+            o += `done\n`;
+        }
+
         // Post-install service enables & extra setup
         if (post_apps.includes('flatpak')) o += `flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo\n`;
         if (post_apps.includes('zsh')) o += `chsh -s /bin/zsh\n`;

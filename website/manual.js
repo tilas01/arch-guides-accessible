@@ -326,6 +326,16 @@
                 }
             }
 
+            /* Live package search, for steps that ask for package names. Guarded
+               on PkgSearch being present so the field degrades to a plain text
+               box if the script did not load, rather than throwing here and
+               taking the rest of the question's rendering with it. */
+            if (step.search === 'packages' && window.PkgSearch) {
+                try {
+                    window.PkgSearch.attach(input, { mount: card });
+                } catch (_) { /* the field alone is still usable */ }
+            }
+
             card.appendChild(h('div', { class: 'q-error', id: 'err-' + step.id, hidden: 'hidden' }));
             card.appendChild(h('button', {
                 type: 'button', class: 'btn q-next', text: 'Continue →',
