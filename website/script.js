@@ -612,7 +612,11 @@ const APP_CONFIG_DEFAULTS = {
             // disk read until the passphrase is typed, so a machine that
             // auto-locks without the owner having chosen it is a machine that
             // looks broken the first time it happens.
-            modal_aem_autolock:    { value: 'never', label: 'LUKS auto-lock' }
+            modal_aem_autolock:    { value: 'never', label: 'LUKS auto-lock' },
+            // Off by default for the same reason as auto-lock: a machine that
+            // freezes its disk the first time the screensaver fires, on an owner
+            // who did not choose that, looks broken rather than secure.
+            modal_aem_lock_on_screen: { value: 'no', label: 'LUKS suspend on screen lock' }
         },
         summary: 'boot verification only — no decoy or duress password, no auto-lock',
         why: 'The duress option destroys data irreversibly, so it is never enabled without an explicit choice.'
@@ -1994,6 +1998,16 @@ run_with_progress() {
                         o += `anti-evil-maid --configure-autolock --idle ${aemAutolock}\n`;
                         o += `systemctl enable anti-evil-maid-autolock.timer\n`;
                     }
+                    // Make the lock screen an actual boundary: a watcher for
+                    // logind's session-lock signal suspends the volume the
+                    // moment the screen locks, so the key does not sit in RAM
+                    // for as long as the owner is away.
+                    if ((document.getElementById('modal_aem_lock_on_screen')?.value || 'no') === 'yes') {
+                        o += `\n# Suspend LUKS whenever the session locks.\n`;
+                        o += `pacman -S --needed --noconfirm dbus\n`;
+                        o += `anti-evil-maid --install-lock-hook\n`;
+                        o += `systemctl enable anti-evil-maid-lock-watch.service\n`;
+                    }
                     o += `echo "Test this before relying on it: suspending the root volume freezes"\n`;
                     o += `echo "all disk I/O until the passphrase is typed, and a mistake needs a"\n`;
                     o += `echo "power cycle. Lock on demand with: anti-evil-maid --lock-now"\n`;
@@ -2069,7 +2083,17 @@ run_with_progress() {
                 o += `\n# Response to a confirmed payload. The payload is captured to\n`;
                 o += `# /var/log/anti-ducky/ with a SHA-256, and the device is deauthorized\n`;
                 o += `# at the kernel, whichever of these is set.\n`;
-                if (duckyResponse === 'poweroff') {
+                if (duckyResponse === 'lockdown') {
+                    o += `# Staged: sessions locked, kernel lockdown raised to confidentiality,\n`;
+                    o += `# LUKS suspended so the master key leaves RAM, then power cut via\n`;
+                    o += `# sysrq. A plain power-off leaves several seconds where the key is\n`;
+                    o += `# still in RAM and the desktop is still unlocked behind whatever the\n`;
+                    o += `# payload typed. Prompts for typed confirmation.\n`;
+                    o += `anti-ducky --set-response lockdown\n`;
+                    o += `echo "Lockdown needs anti-evil-maid configured to flush the key:"\n`;
+                    o += `echo "  anti-evil-maid --configure-autolock"\n`;
+                    o += `echo "Without it the lockdown still locks and still powers off."\n`;
+                } else if (duckyResponse === 'poweroff') {
                     o += `# Hard power-off: clears the disk-encryption keys from RAM before\n`;
                     o += `# anyone can pull the DIMMs. Loses unsaved work on a false positive,\n`;
                     o += `# and these timing thresholds have never been measured on real\n`;
@@ -3768,6 +3792,18 @@ function openAppConfigModal(appId) {
                 <p style="font-size:0.8rem; color:var(--fg-dim); margin-top:0.35rem;">
                     Locking the screen leaves the LUKS master key in kernel memory.
                     Suspending the volume flushes it. Requires disk encryption.
+                </p>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label>Suspend LUKS when the screen locks:</label>
+                <select id="modal_aem_lock_on_screen" style="width:100%; padding:0.5rem; background:var(--bg-light); border:1px solid var(--accent-blue); color:white; border-radius:4px;">
+                    <option value="no" selected>No — screen lock only</option>
+                    <option value="yes">Yes — make the lock screen a cryptographic barrier</option>
+                </select>
+                <p style="font-size:0.8rem; color:var(--accent-red); margin-top:0.35rem;">
+                    Getting back in then needs the disk passphrase, not just your login
+                    password. Test it first: the moment your screensaver fires, the disk
+                    freezes until you type it.
                 </p>
             </div>
             <div style="margin-bottom:1rem;">

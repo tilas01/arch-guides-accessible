@@ -912,6 +912,92 @@ sha512sum -c libre-otp.sha512</code></pre>
         <h3 id="anti-ducky">🦆 Input Guard (Anti-Ducky)</h3>
         <p>Monitors USB HID keystroke timing and sandboxes unknown input devices, blocking Rubber Ducky / BadUSB style automated keystroke injection before the payload can type. Requires approval from already-trusted inputs before a new keyboard is authorised. For a policy-based alternative at the kernel level, see <a href="#other-sec">USBGuard</a>; for a hard power-off response, see the <a href="#usb-kill">USB kill switch</a>.</p>
 
+        <h4>Enrol your own devices first</h4>
+        <p>
+            Trust is granted by a vote from an already-trusted keyboard. On a fresh install there
+            is no such keyboard, so the first one plugged in is the one it sandboxes — yours.
+            Enrol before enabling the daemon:
+        </p>
+        <pre><code class="language-bash">sudo anti-ducky --enroll             # confirms each attached device in turn
+sudo anti-ducky --export-whitelist   # check what it now trusts</code></pre>
+        <p>
+            It asks about each device separately rather than offering "yes to all": a machine that
+            already has something malicious attached should not have it blessed by one keypress.
+            <code>--export-whitelist</code> also feeds <a href="#usb-kill">usbkill</a>, so the two
+            tools cannot disagree about what is trusted and power a machine off over its owner's
+            own keyboard.
+        </p>
+
+        <h4>What happens when it catches a payload</h4>
+        <p>
+            The payload is written to <code>/var/log/anti-ducky/payload_*.log</code> with a
+            SHA-256 for chain of custody, and the device is deauthorized at the kernel so it
+            cannot deliver another keystroke. That happens regardless of the setting below, which
+            controls only what is done <em>in addition</em>.
+        </p>
+        <div class="md-tablewrap">
+        <table class="md-table">
+            <thead><tr><th>Response</th><th>What it does</th><th>Cost if it misfires</th></tr></thead>
+            <tbody>
+                <tr><td><code>alert</code></td><td>Nothing further. The device is blocked and the payload saved either way.</td><td>None.</td></tr>
+                <tr><td><code>lock</code> <em>(recommended)</em></td><td>Locks every session, denying the attacker the unlocked desktop the keystrokes were aimed at.</td><td>A re-login. Note it does <strong>not</strong> protect the LUKS key in RAM.</td></tr>
+                <tr><td><code>lockdown</code></td><td>Staged: lock sessions → raise kernel lockdown → suspend LUKS → cut power.</td><td>Unsaved work, same as a power-off.</td></tr>
+                <tr><td><code>poweroff</code></td><td>Immediate hard power cut.</td><td>Unsaved work, and several seconds where the key is still in RAM.</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <pre><code class="language-bash">sudo anti-ducky --set-response lockdown   # prompts for typed confirmation</code></pre>
+
+        <h4>Why <code>lockdown</code> is ordered the way it is</h4>
+        <p>
+            A bare <code>poweroff -f</code> leaves several seconds during which the machine is
+            still running with the master key in RAM, the desktop still unlocked behind whatever
+            the payload typed, and <code>/dev/mem</code>, <code>kexec</code> and unsigned module
+            loading all still available. Lockdown closes each of those first:
+        </p>
+        <ol>
+            <li><strong>Lock every session.</strong> Instant and cheap, and it takes away the
+                thing the payload was usually after.</li>
+            <li><strong>Raise the kernel lockdown level to <code>confidentiality</code>.</strong>
+                Blocks <code>/dev/mem</code>, <code>/dev/kmem</code>, <code>kexec</code>, unsigned
+                module loading and several debug interfaces — the routes an attacker would use to
+                read the master key straight out of kernel memory while we are still up. One-way,
+                which is fine because the next step is a power cut.</li>
+            <li><strong>Suspend the LUKS volume</strong>, via
+                <code>anti-evil-maid --suspend-only</code>. The master key leaves RAM and the disk
+                becomes unreadable.</li>
+            <li><strong>Cut power with sysrq.</strong></li>
+        </ol>
+        <p>
+            The last step is <code>/proc/sysrq-trigger</code> and not <code>/sbin/poweroff</code>
+            for a specific reason: after step 3 the root filesystem is frozen, so the
+            <code>poweroff</code> binary cannot even be <em>read</em>. Calling it would block
+            forever and leave the machine locked but still running — the opposite of the intent.
+            <code>/proc</code> is virtual, so writing to it needs no disk I/O. If you rely on this,
+            check <code>kernel.sysrq</code> is not <code>0</code>.
+        </p>
+        <p>
+            The LUKS step is delegated rather than reimplemented because
+            <a href="#luks-autolock">anti-evil-maid</a> already handles the staging and
+            <code>mlockall</code> correctly, and that is the most deadlock-prone code in the
+            project — one copy of it is enough. If anti-evil-maid is not installed and configured,
+            the lockdown still locks and still powers off; it just cannot flush the key, and it
+            says so at the time.
+        </p>
+
+        <h4>Do not let a power-off hide the attack</h4>
+        <p>
+            Cutting power takes the on-screen warning with it. Without the boot alert, the owner
+            powers the machine back on, finds no explanation, concludes it was a hardware fault,
+            and plugs the device back in:
+        </p>
+        <pre><code class="language-bash">sudo systemctl enable anti-ducky-boot-alert.service</code></pre>
+        <p>
+            The alert is written <em>before</em> the response is acted on, appended rather than
+            overwritten, and cleared only once it has actually been printed — an alert cleared
+            without being read makes the system look clean, which is worse than no alert at all.
+        </p>
+
         <h3 id="anti-evil-maid">🕵️ Anti-Evil Maid</h3>
         <p>Verifies boot integrity by hashing the boot chain and comparing it across boots, and generates generic decoy kernel entries so the real encrypted target is not obvious. It also provides <a href="#luks-autolock">LUKS auto-lock</a>: <code>--lock-now</code> suspends the volume and flushes the master key from RAM, which a screen lock does not do. Note that with GRUB plus LUKS, <code>/boot</code> is unencrypted on disk — a UKI bootloader removes that attack surface entirely.</p>
         <p>
@@ -1189,6 +1275,44 @@ sudo anti-evil-maid --lock-now</code></pre>
             <code>/usr/local/bin/anti-evil-maid-on-lock</code>. Point your screen locker at it and
             the key stops being resident the moment you lock the session.
         </p>
+
+        <h3>Making the lock screen an actual barrier</h3>
+        <p>
+            Locking your session hides the desktop and asks for your login password. It does
+            nothing whatsoever to the LUKS master key, which stays in kernel memory for as long
+            as the volume is open. To anyone with a DMA-capable port, a can of freeze spray, or a
+            kernel bug, a locked screen and an unlocked one are the same machine.
+        </p>
+        <p>
+            <code>--install-lock-hook</code> wires the two together. It installs a watcher for
+            logind's <code>Lock</code> signal on the system bus, so the volume is suspended the
+            moment the screen locks — no timer, no window:
+        </p>
+        <pre><code class="language-bash"># dbus-monitor comes from the dbus package
+command -v dbus-monitor || sudo pacman -S --needed dbus
+
+sudo anti-evil-maid --install-lock-hook
+sudo systemctl enable --now anti-evil-maid-lock-watch.service</code></pre>
+        <p>
+            Once enabled, getting back in needs the <em>disk passphrase</em>, not just your login
+            password. That is the entire difference between a UI and a cryptographic boundary.
+            It listens for the signal rather than polling, so there is no timer-shaped gap
+            between locking the screen and the key going away.
+        </p>
+        <p>
+            <code>dbus-monitor</code> is used rather than a D-Bus library deliberately: it is
+            already on any systemd machine, and taking on a dependency to catch a signal that a
+            one-line filter already catches is not worth the supply chain.
+        </p>
+        <div style="border-left:4px solid var(--accent-red); background:rgba(247,118,142,0.1); padding:1rem; margin:1rem 0;">
+            <strong style="color:var(--accent-red);">⚠️ Installed disabled, and test it before you enable it.</strong>
+            <p style="margin-top:0.5rem;">
+                The first time your screensaver fires, the disk freezes until you type the
+                passphrase. If you cannot — wrong keyboard layout, no console access, a display
+                manager that swallows the prompt — the only way out is a power cycle. Test on a
+                machine you can physically reach.
+            </p>
+        </div>
 
         <h3>Why suspending the root volume is delicate</h3>
         <p>

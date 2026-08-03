@@ -115,6 +115,44 @@ The previous signing key `4C0383A1…` is **revoked** — its private half was
 committed to public git history. See
 [Verifying downloads](../../README.md#-verifying-downloads).
 
+## Response to a confirmed payload
+
+The payload is always captured (with a SHA-256 for chain of custody) and the
+device always deauthorized at the kernel. This is what happens *in addition*:
+
+| Response | What it does | Cost if it misfires |
+|---|---|---|
+| `alert` | Nothing further. | None. |
+| `lock` *(recommended)* | Locks every session. | A re-login. Does **not** protect the LUKS key in RAM. |
+| `lockdown` | Lock → kernel lockdown → LUKS suspend → power cut. | Unsaved work. |
+| `poweroff` | Immediate hard power cut. | Unsaved work, and seconds where the key is still in RAM. |
+
+```bash
+sudo anti-ducky --set-response lockdown    # prompts for typed confirmation
+sudo systemctl enable anti-ducky-boot-alert.service
+```
+
+### Why `lockdown` is ordered the way it is
+
+A bare `poweroff -f` leaves several seconds during which the key is still in
+RAM, the desktop is still unlocked behind whatever the payload typed, and
+`/dev/mem`, `kexec` and unsigned module loading are all still available.
+Lockdown closes each of those first, then cuts power with the kernel's sysrq
+trigger — **not** `/sbin/poweroff`, which cannot even be read once the volume is
+suspended and would block forever, leaving the machine locked but still running.
+
+The LUKS step is delegated to `anti-evil-maid --suspend-only` rather than
+reimplemented: that code stages `cryptsetup` into tmpfs and `mlockall`s first,
+and it is the most deadlock-prone code in the project. One copy is enough. If
+anti-evil-maid is not installed, lockdown still locks and still powers off — it
+just cannot flush the key, and it says so.
+
+### The boot alert is not optional if you use a power-off response
+
+Cutting power takes the on-screen warning with it. Without
+`--show-boot-alerts` running from a boot unit, the owner powers back on, finds
+no explanation, assumes hardware, and plugs the device back in.
+
 ## Honest limitations
 
 **The keystroke-timing thresholds have never been measured on real hardware.**

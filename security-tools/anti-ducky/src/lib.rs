@@ -413,6 +413,12 @@ fn handle_payload_detected(
                         device.record.name
                     ));
                 }
+                defence::AttackResponse::Lockdown => {
+                    defence::lockdown_and_poweroff(&format!(
+                        "confirmed BadUSB payload from '{}'",
+                        device.record.name
+                    ));
+                }
                 defence::AttackResponse::LockSession => {
                     defence::lock_sessions(&format!(
                         "confirmed BadUSB payload from '{}'",

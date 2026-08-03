@@ -58,6 +58,8 @@ byte-identical to the published binary.
   --fs-hash-check        Deep filesystem hash verification
   --lock-now             Suspend the LUKS volume: flush the master key from RAM
   --configure-autolock   Set up the auto-lock timer and session-lock hook
+  --install-lock-hook    Suspend LUKS whenever the session locks
+  --suspend-only         Suspend and exit, without holding the resume prompt
   --autolock-status      Show the current auto-lock settings
   --idle <INTERVAL>      15m, 1h, 2d3h, or "never"
   --mapper <NAME>        Device-mapper name, as in /dev/mapper/<name>
@@ -97,6 +99,34 @@ sudo systemctl enable --now anti-evil-maid-autolock.timer
 `--configure-autolock` also writes `/usr/local/bin/anti-evil-maid-on-lock`, which
 you can point your screen locker at so the key stops being resident the moment
 you lock the session.
+
+### Make the lock screen a real barrier
+
+A lock screen hides the desktop and asks for your login password. It does
+nothing to the LUKS master key, which stays in kernel memory the whole time you
+are away. `--install-lock-hook` wires the two together: a watcher for logind's
+`Lock` signal suspends the volume the moment the screen locks, so getting back
+in needs the *disk passphrase*, not just your login password.
+
+```bash
+command -v dbus-monitor || sudo pacman -S --needed dbus
+sudo anti-evil-maid --install-lock-hook
+sudo systemctl enable --now anti-evil-maid-lock-watch.service
+```
+
+It listens for the signal rather than polling, so there is no timer-shaped gap
+between locking the screen and the key going away. Installed disabled.
+
+### `--suspend-only`
+
+Suspends and returns, without holding the resume prompt — for a caller that is
+about to power the machine off, which is what `anti-ducky --set-response
+lockdown` uses. Holding a passphrase prompt there would stop the shutdown from
+ever happening.
+
+**After it returns the disk is frozen.** The caller must touch nothing on it.
+Writes to `/proc` and `/sys` still work, which is why the power-off that follows
+uses the sysrq trigger rather than `/sbin/poweroff`.
 
 > **Test this while you can still reach the machine physically.** Suspending the
 > volume that backs `/` freezes every disk read until you type the passphrase.

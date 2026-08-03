@@ -1004,7 +1004,12 @@
                 L.push('');
                 L.push('```bash');
                 var resp = s.ducky_response || 'lock';
-                if (resp === 'poweroff') {
+                if (resp === 'lockdown') {
+                    L.push('# Staged lockdown, then power off. Asks you to type ARM.');
+                    L.push('# Order matters: sessions locked, kernel lockdown raised, LUKS');
+                    L.push('# suspended so the key leaves RAM, and only then is power cut.');
+                    L.push('sudo anti-ducky --set-response lockdown');
+                } else if (resp === 'poweroff') {
                     L.push('# Hard power-off, so the disk-encryption keys leave RAM before');
                     L.push('# anyone can pull the DIMMs. Asks you to type ARM to confirm.');
                     L.push('sudo anti-ducky --set-response poweroff');
@@ -1031,6 +1036,27 @@
                     L.push('> A lock screen does not protect the LUKS master key — it stays in');
                     L.push('> kernel memory while the volume is open. Pair this with');
                     L.push('> `anti-evil-maid --lock-now` if that is what you need.');
+                    L.push('');
+                }
+                if (resp === 'lockdown') {
+                    L.push('> [!CAUTION]');
+                    L.push('> This loses unsaved work exactly as a power-off does — the extra');
+                    L.push('> steps close attack surface, they do not make it recoverable.');
+                    L.push('');
+                    L.push('> The LUKS suspend is delegated to `anti-evil-maid --suspend-only`,');
+                    L.push('> which stages `cryptsetup` into tmpfs and locks its own pages first');
+                    L.push('> — the same handling the auto-lock uses, rather than a second copy');
+                    L.push('> of the most deadlock-prone code in the project. If anti-evil-maid');
+                    L.push('> is not installed and configured, the lockdown still locks the');
+                    L.push('> sessions and still powers off; it just cannot flush the key, and');
+                    L.push('> it says so at the time.');
+                    L.push('');
+                    L.push('> Power is cut with the kernel\'s sysrq trigger, not `poweroff`.');
+                    L.push('> After the volume is suspended the root filesystem is frozen, so');
+                    L.push('> `/sbin/poweroff` cannot even be *read* — calling it would block');
+                    L.push('> forever and leave the machine locked but still running, which is');
+                    L.push('> the opposite of the intent. `/proc/sysrq-trigger` is virtual and');
+                    L.push('> needs no disk. Check `kernel.sysrq` is not 0 if you rely on this.');
                     L.push('');
                 }
                 L.push('Show the alert after the next boot. A power-off takes the on-screen');
@@ -1091,6 +1117,33 @@
             L.push('# Lock on demand at any time:');
             L.push('sudo anti-evil-maid --lock-now');
             L.push('```');
+            L.push('');
+            if (s.luks_lock_on_screen === 'yes' || autolock === 'on-lock') {
+                L.push('#### Make the lock screen an actual barrier');
+                L.push('');
+                L.push('This installs a watcher for logind\'s session-lock signal, so the');
+                L.push('volume is suspended the moment you lock the screen — no timer, no');
+                L.push('window. Getting back in then needs the disk passphrase rather than');
+                L.push('just your login password, which is the whole difference between a UI');
+                L.push('and a boundary.');
+                L.push('');
+                L.push('```bash');
+                L.push('# Needs dbus-monitor, which is in the dbus package.');
+                L.push('command -v dbus-monitor || sudo pacman -S --needed dbus');
+                L.push('');
+                L.push('sudo anti-evil-maid --install-lock-hook');
+                L.push('');
+                L.push('# Installed disabled. Enable it once you have tested it.');
+                L.push('sudo systemctl enable --now anti-evil-maid-lock-watch.service');
+                L.push('```');
+                L.push('');
+                L.push('> [!CAUTION]');
+                L.push('> Test this while you can still reach the machine physically. Once');
+                L.push('> enabled, the first time your screensaver fires the disk freezes');
+                L.push('> until you type the passphrase — if you cannot, the only way out is');
+                L.push('> a power cycle.');
+                L.push('');
+            }
             L.push('');
             L.push('> [!CAUTION]');
             L.push('> Suspending the volume that backs `/` freezes **every** disk read');
