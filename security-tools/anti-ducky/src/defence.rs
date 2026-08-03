@@ -138,6 +138,17 @@ pub enum AttackResponse {
     /// Hard power-off, to clear disk-encryption keys from RAM before anyone can
     /// pull the DIMMs. Destructive to unsaved work; strictly opt-in.
     PowerOff,
+    /// Staged lockdown, then power off: lock every session, raise the kernel
+    /// lockdown level, suspend the LUKS volume so the master key leaves RAM,
+    /// then cut power via sysrq.
+    ///
+    /// The difference from [`AttackResponse::PowerOff`] is the order and what is
+    /// closed before the power goes. A bare `poweroff -f` leaves several seconds
+    /// during which the machine is still running with the master key in RAM, the
+    /// desktop still unlocked behind whatever the payload typed, and
+    /// `/dev/mem`, `kexec` and unsigned module loading all still available. This
+    /// closes each of those first and only then cuts power.
+    Lockdown,
 }
 
 /// Where the response policy is recorded, when it is not the legacy flag file.
@@ -154,6 +165,7 @@ pub fn attack_response() -> AttackResponse {
     if let Ok(s) = fs::read_to_string(RESPONSE_FILE) {
         return match s.trim() {
             "poweroff" => AttackResponse::PowerOff,
+            "lockdown" => AttackResponse::Lockdown,
             "lock" => AttackResponse::LockSession,
             _ => AttackResponse::AlertOnly,
         };
@@ -169,13 +181,20 @@ pub fn set_attack_response(r: AttackResponse) -> std::io::Result<()> {
     fs::create_dir_all(CONFIG_DIR)?;
     let word = match r {
         AttackResponse::PowerOff => "poweroff",
+        AttackResponse::Lockdown => "lockdown",
         AttackResponse::LockSession => "lock",
         AttackResponse::AlertOnly => "alert",
     };
     fs::write(RESPONSE_FILE, format!("{word}\n"))?;
     // Keep the legacy flag consistent, so the two cannot disagree and leave a
     // machine powering itself off after its operator chose not to.
-    set_kill_on_attack(r == AttackResponse::PowerOff)
+    // Lockdown ends in a power cut too, so the legacy marker tracks both.
+    // Leaving it clear for Lockdown would let an older component conclude the
+    // machine is not configured to power off when it very much is.
+    set_kill_on_attack(matches!(
+        r,
+        AttackResponse::PowerOff | AttackResponse::Lockdown
+    ))
 }
 
 /// Lock every active session.
@@ -254,6 +273,81 @@ pub fn show_boot_alerts() -> usize {
 
     let _ = fs::remove_file(PENDING_ALERT);
     lines.len()
+}
+
+/// Staged lockdown, then power off.
+///
+/// The order is the whole design, and each step is chosen for what it closes:
+///
+/// 1. **Lock every session.** Instant and cheap. The payload's whole objective
+///    is usually a shell on an unlocked desktop; this takes that away first.
+/// 2. **Raise the kernel lockdown level to `confidentiality`.** Blocks
+///    `/dev/mem`, `/dev/kmem`, `kexec`, unsigned module loading and several
+///    debug interfaces — the paths an attacker would use to read the LUKS
+///    master key straight out of kernel memory in the seconds we are still up.
+///    One-way, which is fine because the next step is a power cut.
+/// 3. **Suspend the LUKS volume**, via `anti-evil-maid --suspend-only`. The
+///    master key leaves RAM. From here the disk is unreadable.
+/// 4. **Cut power with sysrq.**
+///
+/// # Why sysrq and not `poweroff`
+///
+/// After step 3 the root filesystem is frozen, so `/sbin/poweroff` cannot be
+/// *read*, let alone run — calling it would block forever and leave the machine
+/// sitting there locked but alive, which is the opposite of the intent.
+/// `/proc/sysrq-trigger` is a virtual file: writing to it needs no disk I/O and
+/// asks the kernel to power off directly. This is the only ordering that both
+/// flushes the key and reliably reaches the power cut.
+///
+/// # Why the LUKS suspend is delegated
+///
+/// `anti-evil-maid` already implements it correctly — staging `cryptsetup` and
+/// its libraries into tmpfs, verifying that really is memory-backed, and
+/// `mlockall`ing so nothing is paged out to a swap device that is itself about
+/// to freeze. Reimplementing that here would be a second copy of the most
+/// deadlock-prone code in the project. If it is not installed, the lockdown
+/// still locks, still raises kernel lockdown, and still powers off — it just
+/// cannot flush the key, and it says so.
+pub fn lockdown_and_poweroff(reason: &str) {
+    eprintln!("[anti-ducky] LOCKDOWN: {reason}");
+
+    // 1. Sessions first: cheapest, and it is what the payload was after.
+    lock_sessions(reason);
+
+    // 2. Kernel lockdown. Best-effort: the LSM is not enabled on every kernel,
+    // and the file is absent rather than failing when it is not.
+    match fs::write("/sys/kernel/security/lockdown", b"confidentiality") {
+        Ok(()) => eprintln!("[anti-ducky] kernel lockdown raised to confidentiality"),
+        Err(e) => eprintln!(
+            "[anti-ducky] could not raise kernel lockdown ({e}) — \
+             /dev/mem and kexec may still be reachable"
+        ),
+    }
+
+    // 3. Flush the master key. Everything after this point must avoid the disk.
+    let suspended = Command::new("anti-evil-maid")
+        .arg("--suspend-only")
+        .status();
+    match suspended {
+        Ok(s) if s.success() => eprintln!("[anti-ducky] LUKS volume suspended; key is out of RAM"),
+        Ok(s) => eprintln!("[anti-ducky] anti-evil-maid --suspend-only failed ({s})"),
+        Err(e) => eprintln!(
+            "[anti-ducky] could not run anti-evil-maid ({e}) — \
+             powering off without flushing the key"
+        ),
+    }
+
+    // 4. Power off through the kernel. No disk read is possible now, so this
+    // must not be /sbin/poweroff.
+    let _ = fs::write("/proc/sysrq-trigger", b"o");
+
+    // If sysrq is disabled the write above is a no-op and we are still running.
+    // Try the ordinary paths as a fallback — they may still work if the volume
+    // was never suspended, and if it was, they block, which is no worse than
+    // the machine sitting here unlocked would have been.
+    std::thread::sleep(Duration::from_secs(2));
+    eprintln!("[anti-ducky] sysrq power-off did not take (is kernel.sysrq disabled?)");
+    let _ = Command::new("poweroff").arg("-f").status();
 }
 
 /// Hard power-off to clear disk-encryption keys from RAM.

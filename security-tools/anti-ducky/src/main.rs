@@ -62,7 +62,7 @@ struct Args {
     export_whitelist: bool,
 
     /// What to do on a confirmed payload, beyond capturing and deauthorizing:
-    /// alert (default), lock (lock every session), or poweroff.
+    /// alert (default), lock, lockdown (lock + kernel lockdown + LUKS suspend + power off), or poweroff.
     #[arg(long, value_name = "ACTION")]
     set_response: Option<String>,
 
@@ -275,6 +275,15 @@ fn set_response(action: &str) -> u8 {
     let r = match action.trim().to_ascii_lowercase().as_str() {
         "alert" | "alert-only" | "none" => AttackResponse::AlertOnly,
         "lock" | "lock-session" => AttackResponse::LockSession,
+        // Both of these end in a power cut, so both take the same typed
+        // confirmation. Lockdown loses unsaved work exactly as poweroff does;
+        // it just closes more before it goes.
+        "lockdown" => {
+            if arm_kill_switch(true) != 0 {
+                return 1;
+            }
+            AttackResponse::Lockdown
+        }
         "poweroff" | "shutdown" | "kill" => {
             if arm_kill_switch(true) != 0 {
                 return 1;
@@ -282,7 +291,7 @@ fn set_response(action: &str) -> u8 {
             AttackResponse::PowerOff
         }
         other => {
-            eprintln!("Unknown response {other:?}. Use: alert, lock, or poweroff.");
+            eprintln!("Unknown response {other:?}. Use: alert, lock, lockdown, or poweroff.");
             return 1;
         }
     };
@@ -300,6 +309,21 @@ fn set_response(action: &str) -> u8 {
                      `anti-evil-maid --lock-now` if that is what you need."
                 ),
                 AttackResponse::PowerOff => println!("Response: hard power-off."),
+                AttackResponse::Lockdown => {
+                    println!(
+                        "Response: staged lockdown, then power off.\n\
+                         \n\
+                         In order: every session is locked, the kernel lockdown level is\n\
+                         raised to confidentiality (closing /dev/mem, kexec and unsigned\n\
+                         module loading), the LUKS volume is suspended so the master key\n\
+                         leaves RAM, and only then is power cut via sysrq.\n\
+                         \n\
+                         The LUKS step needs anti-evil-maid installed and configured\n\
+                         (anti-evil-maid --configure-autolock). Without it the lockdown\n\
+                         still locks and still powers off — it just cannot flush the key,\n\
+                         and it will say so at the time."
+                    );
+                }
             }
             0
         }

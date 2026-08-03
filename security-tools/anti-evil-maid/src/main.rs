@@ -62,6 +62,23 @@ struct Args {
     /// Show the current auto-lock settings and what they do and do not protect
     #[arg(long)]
     autolock_status: bool,
+
+    /// Suspend the LUKS volume and exit, without holding the resume prompt.
+    ///
+    /// For a caller that is about to power the machine off — anti-ducky's
+    /// lockdown response. Holding a passphrase prompt there would stop the
+    /// shutdown from ever happening.
+    ///
+    /// After this returns the disk is frozen: the caller must touch nothing on
+    /// it. Writes to /proc and /sys still work, which is why the power-off that
+    /// follows uses the sysrq trigger rather than /sbin/poweroff.
+    #[arg(long)]
+    suspend_only: bool,
+
+    /// Install a watcher that suspends the LUKS volume whenever the session
+    /// locks, making the lock screen an actual cryptographic barrier.
+    #[arg(long)]
+    install_lock_hook: bool,
 }
 
 fn main() -> ExitCode {
@@ -83,6 +100,10 @@ fn main() -> ExitCode {
     // setup step is the wrong failure.
     let code = if args.lock_now {
         autolock::lock_now()
+    } else if args.suspend_only {
+        autolock::suspend_only()
+    } else if args.install_lock_hook {
+        autolock::install_lock_hook()
     } else if args.configure_autolock {
         autolock::configure(args.mapper, args.idle)
     } else if args.autolock_status {

@@ -989,6 +989,18 @@ const STEPS = [
         { value: 'alert', label: 'Alert only',
           desc: 'The device is already blocked and the payload already saved. ' +
                 'Doing nothing further is a legitimate choice.' },
+        { value: 'lockdown', label: 'Full lockdown, then power off',
+          desc: 'In order: lock every session, raise the kernel lockdown level ' +
+                'to confidentiality (closing /dev/mem, kexec and unsigned ' +
+                'module loading), suspend the LUKS volume so the master key ' +
+                'leaves RAM, then cut power. A plain power-off leaves several ' +
+                'seconds where the key is still in RAM and the desktop is still ' +
+                'unlocked behind whatever the payload typed; this closes each ' +
+                'of those first.',
+          danger: 'Loses unsaved work exactly as a power-off does. The LUKS ' +
+                  'step needs anti-evil-maid installed and configured — without ' +
+                  'it the lockdown still locks and still powers off, it just ' +
+                  'cannot flush the key. Requires typed confirmation to arm.' },
         { value: 'poweroff', label: 'Hard power-off',
           desc: 'Cuts power so the disk-encryption keys leave RAM before ' +
                 'anyone can pull the DIMMs for a cold-boot read.',
@@ -997,6 +1009,38 @@ const STEPS = [
                   'measured on real hardware, so its false-positive rate is ' +
                   'unknown. Requires typed confirmation to arm.' }
     ]
+},
+/* ── Lock screen as a real barrier ──────────────────────────────────────────
+   Separate from the idle timer: "when I lock the screen" and "after N minutes
+   idle" are different intentions, and someone can reasonably want one without
+   the other. */
+{
+    id: 'luks_lock_on_screen',
+    section: 'Security',
+    title: 'Make the lock screen a cryptographic barrier?',
+    help: 'Locking your session hides the desktop. It does nothing to the LUKS ' +
+          'master key, which stays in kernel memory the whole time — so to ' +
+          'anyone with a DMA port or a can of freeze spray, a locked screen ' +
+          'and an unlocked one are the same machine.',
+    wiki: 'luks-autolock',
+    when: s => (s.security_tools || []).indexOf('anti-evil-maid') !== -1 &&
+               s.encryption && s.encryption !== 'none',
+    type: 'single',
+    optional: true,
+    options: [
+        { value: 'no', label: 'No — screen lock only',
+          desc: 'Your login password gets you back in. The disk key stays ' +
+                'resident the whole time you are away.' },
+        { value: 'yes', label: 'Yes — suspend LUKS when the screen locks',
+          recommended: true,
+          desc: 'A watcher listens for the session-lock signal and suspends the ' +
+                'volume, so getting back in needs the disk passphrase, not just ' +
+                'your login password. That is what makes it a boundary rather ' +
+                'than a UI.' }
+    ],
+    note: 'Test this before relying on it. Suspending the volume that backs / ' +
+          'freezes every disk read until the passphrase is entered, so the ' +
+          'first time your screensaver fires you had better be able to type it.'
 },
 /* ── LUKS auto-lock ─────────────────────────────────────────────────────────
    Encryption-only for the obvious reason, and anti-evil-maid-only because that

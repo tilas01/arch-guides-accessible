@@ -416,13 +416,25 @@ mod imp {
     /// is frozen there is no recovering from a missing binary except a power
     /// cycle, so a failure after that point is not an error path, it is data
     /// loss.
-    pub fn lock_now() -> u8 {
+    /// Everything that must happen while the disk is still readable.
+    ///
+    /// Split out because two callers need the suspend and only one of them
+    /// wants the resume prompt afterwards: `lock_now` holds the prompt so the
+    /// owner can come back, while `suspend_only` returns so the caller can go
+    /// on to power the machine off. Duplicating this would mean two copies of
+    /// the staging and mlock logic, and the deadlock it prevents is not
+    /// something to get right twice.
+    ///
+    /// On success the volume is suspended and the staged helper path is
+    /// returned — the caller may exec it, but must not touch the disk for
+    /// anything else.
+    fn suspend_volume() -> Result<(AutoLockConfig, String), u8> {
         let cfg = match load_config() {
             Ok(c) => c,
             Err(e) => {
                 eprintln!("{e}");
                 eprintln!("Configure it first:  sudo anti-evil-maid --configure-autolock");
-                return 1;
+                return Err(1);
             }
         };
 
@@ -431,7 +443,7 @@ mod imp {
                 "/dev/mapper/{} does not exist. Nothing to suspend.",
                 cfg.mapper
             );
-            return 1;
+            return Err(1);
         }
 
         let root_backed = is_root_backed(&cfg.mapper);
@@ -440,7 +452,7 @@ mod imp {
             Err(e) => {
                 eprintln!("{e}");
                 eprintln!("Refusing to suspend. Nothing was changed.");
-                return 1;
+                return Err(1);
             }
         };
 
@@ -452,9 +464,15 @@ mod imp {
             );
             if root_backed {
                 eprintln!("Refusing to suspend the root volume without locked memory.");
-                return 1;
+                return Err(1);
             }
         }
+
+        // Flush dirty pages before the device freezes. Anything still in the
+        // page cache at suspend cannot be written afterwards, and for the
+        // lockdown path the next step is a power cut — so this is the last
+        // chance to avoid losing it.
+        let _ = Command::new("sync").status();
 
         eprintln!("Suspending /dev/mapper/{} …", cfg.mapper);
         eprintln!("The master key is being flushed from RAM. The disk is unreadable");
@@ -464,16 +482,44 @@ mod imp {
             .args(["luksSuspend", &cfg.mapper])
             .status();
         match suspended {
-            Ok(s) if s.success() => {}
+            Ok(s) if s.success() => Ok((cfg, helper)),
             Ok(s) => {
                 eprintln!("cryptsetup luksSuspend failed ({s}). The volume is still open.");
-                return 1;
+                Err(1)
             }
             Err(e) => {
                 eprintln!("Could not run the staged cryptsetup: {e}");
-                return 1;
+                Err(1)
             }
         }
+    }
+
+    /// Suspend the volume and return, without holding the resume prompt.
+    ///
+    /// For callers that are about to power the machine off — `anti-ducky`'s
+    /// lockdown response. Holding a passphrase prompt would be pointless there
+    /// and would stop the shutdown from ever happening.
+    ///
+    /// **The caller must not touch the disk after this returns.** Every path on
+    /// the suspended volume blocks forever. Writes to `/proc` and `/sys` are
+    /// safe because those are virtual filesystems, which is exactly why the
+    /// power-off that follows uses the sysrq trigger rather than
+    /// `/sbin/poweroff`.
+    pub fn suspend_only() -> u8 {
+        match suspend_volume() {
+            Ok(_) => {
+                eprintln!("Volume suspended. The master key is no longer in RAM.");
+                0
+            }
+            Err(code) => code,
+        }
+    }
+
+    pub fn lock_now() -> u8 {
+        let (cfg, helper) = match suspend_volume() {
+            Ok(v) => v,
+            Err(code) => return code,
+        };
 
         // From here on: no disk reads, no logging to /var, no reading /etc.
         // The counter is held in memory only — it cannot be written to a
@@ -657,6 +703,103 @@ mod imp {
         Ok(())
     }
 
+    /// Make the lock screen an actual cryptographic barrier.
+    ///
+    /// Locking the session hides the desktop. It does nothing to the LUKS master
+    /// key, which stays in kernel memory for as long as the volume is open — so
+    /// to anyone with a DMA-capable port or a can of freeze spray, a locked
+    /// screen and an unlocked one are the same machine. This wires the two
+    /// together: when logind reports the session locked, the volume is
+    /// suspended and the key leaves RAM.
+    ///
+    /// The watcher listens for logind's `Lock` signal on the system bus rather
+    /// than polling, so there is no timer-shaped window between locking the
+    /// screen and the key going away. `dbus-monitor` is used rather than a
+    /// D-Bus crate deliberately: it is already present on any systemd machine,
+    /// and taking on a dependency to catch a signal a one-line filter already
+    /// catches is not worth the supply chain.
+    ///
+    /// **Opt-in, and installed disabled.** Suspending the root volume freezes
+    /// every disk read until the passphrase is entered, so enabling this without
+    /// understanding it means the first screensaver locks you out of a running
+    /// machine.
+    pub fn install_lock_hook() -> u8 {
+        if load_config().is_err() {
+            eprintln!("Auto-lock is not configured yet, so there is no volume to suspend.");
+            eprintln!("Run this first:  sudo anti-evil-maid --configure-autolock");
+            return 1;
+        }
+
+        let watcher = "#!/usr/bin/env bash\n\
+             # Suspend the LUKS volume whenever a session locks.\n\
+             #\n\
+             # A lock screen is a UI. This is what makes it a boundary: the master\n\
+             # key leaves RAM the moment the screen locks, so the disk is as\n\
+             # protected as it is when the machine is powered off.\n\
+             set -uo pipefail\n\
+             \n\
+             # --profile emits one terse line per signal, which is all that is\n\
+             # needed and far cheaper to parse than the default output.\n\
+             dbus-monitor --system --profile \\\n\
+             \x20 \"type='signal',interface='org.freedesktop.login1.Session',member='Lock'\" |\n\
+             while read -r _signal; do\n\
+             \x20   # Backgrounded so a suspend that is holding the resume prompt\n\
+             \x20   # cannot block the watcher from seeing the next lock.\n\
+             \x20   /usr/bin/anti-evil-maid --lock-now &\n\
+             done\n";
+
+        let unit = "[Unit]\n\
+             Description=Suspend the LUKS volume when the session locks\n\
+             Documentation=https://tilas01.github.io/arch-guides-dynamic/wiki.html#luks-autolock\n\
+             After=dbus.service systemd-logind.service\n\
+             Requires=dbus.service\n\
+             \n\
+             [Service]\n\
+             Type=simple\n\
+             ExecStart=/usr/local/bin/anti-evil-maid-lock-watch\n\
+             Restart=on-failure\n\
+             RestartSec=5\n\
+             # The resume prompt has to reach a real terminal, and the process\n\
+             # must not be paged out to a swap device that is about to freeze.\n\
+             StandardInput=tty-force\n\
+             StandardOutput=tty\n\
+             TTYPath=/dev/tty1\n\
+             LimitMEMLOCK=infinity\n\
+             \n\
+             [Install]\n\
+             WantedBy=multi-user.target\n";
+
+        let watch_path = "/usr/local/bin/anti-evil-maid-lock-watch";
+        if let Err(e) = fs::write(watch_path, watcher) {
+            eprintln!("Could not write {watch_path}: {e}");
+            eprintln!("This needs root.");
+            return 1;
+        }
+        use std::os::unix::fs::PermissionsExt;
+        if let Err(e) = fs::set_permissions(watch_path, fs::Permissions::from_mode(0o755)) {
+            eprintln!("Could not make {watch_path} executable: {e}");
+            return 1;
+        }
+        if let Err(e) = fs::write("/etc/systemd/system/anti-evil-maid-lock-watch.service", unit) {
+            eprintln!("Could not write the systemd unit: {e}");
+            return 1;
+        }
+
+        println!("Lock hook installed, and NOT enabled.");
+        println!();
+        println!("Once enabled, locking your session suspends the LUKS volume — so");
+        println!("getting back in needs the disk passphrase, not just your login");
+        println!("password. That is the point: it turns the lock screen from a UI");
+        println!("into a cryptographic boundary.");
+        println!();
+        println!("`dbus-monitor` must be present (package: dbus). Check:");
+        println!("  command -v dbus-monitor");
+        println!();
+        println!("Test it while you can still reach the machine physically, then:");
+        println!("  sudo systemctl enable --now anti-evil-maid-lock-watch.service");
+        0
+    }
+
     pub fn status() -> u8 {
         match load_config() {
             Ok(c) => {
@@ -693,13 +836,24 @@ mod imp {
 }
 
 #[cfg(target_os = "linux")]
-pub use imp::{AutoLockConfig, configure, is_root_backed, load_config, lock_now, status};
+pub use imp::{
+    AutoLockConfig, configure, install_lock_hook, is_root_backed, load_config, lock_now, status,
+    suspend_only,
+};
 
 #[cfg(not(target_os = "linux"))]
 mod imp_stub {
     /// LUKS has no meaning off Linux; the stubs keep the crate checkable on
     /// other hosts rather than pretending the feature exists.
     pub fn lock_now() -> u8 {
+        eprintln!("LUKS auto-lock is Linux-only.");
+        1
+    }
+    pub fn suspend_only() -> u8 {
+        eprintln!("LUKS auto-lock is Linux-only.");
+        1
+    }
+    pub fn install_lock_hook() -> u8 {
         eprintln!("LUKS auto-lock is Linux-only.");
         1
     }
@@ -714,7 +868,7 @@ mod imp_stub {
 }
 
 #[cfg(not(target_os = "linux"))]
-pub use imp_stub::{configure, lock_now, status};
+pub use imp_stub::{configure, install_lock_hook, lock_now, status, suspend_only};
 
 #[cfg(test)]
 mod tests {

@@ -81,6 +81,7 @@
         // map for the two to disagree in.
         { wl: 'luks_autolock',  gen: 'modal_aem_autolock', group: 'selects' },
         { wl: 'ducky_response', gen: 'ducky_response',     group: 'selects' },
+        { wl: 'luks_lock_on_screen', gen: 'modal_aem_lock_on_screen', group: 'selects' },
         // Free text on both sides — a space-separated package list. Carried
         // verbatim: neither front end is in a position to decide that one of
         // these names is wrong, and both emit the same on-machine check.
