@@ -1765,7 +1765,11 @@ run_with_progress() {
                     o += `# One secret is generated here and never displayed. At each boot the\n`;
                     o += `# expected value is recomputed and compared internally; a mismatch means\n`;
                     o += `# the boot chain was modified since this install.\n`;
-                    o += `libre-otp --setup-tamper-check --hash sha512\n`;
+                    // Was `--setup-tamper-check --hash sha512`. Neither the flag nor
+                    // the space-separated value exists: libre-otp parses argv by hand
+                    // and looks for `--setup` and `--hash=`. The old line failed
+                    // outright, so no baseline was ever sealed.
+                    o += `libre-otp --setup --hash=sha512\n`;
                     o += `chmod 600 /etc/arch-security/otp.seal\n`;
                     o += `chown root:root /etc/arch-security/otp.seal\n\n`;
 
@@ -1784,7 +1788,7 @@ run_with_progress() {
                     o += `    printf 'The boot chain does not match what was recorded at install.\\n'\n`;
                     o += `    printf 'This can mean tampering, or simply a kernel or firmware update.\\n\\n'\n`;
                     o += `    printf 'Do NOT enter your passphrase if you did not expect this.\\n'\n`;
-                    o += `    printf 'Re-seal after a legitimate update with: libre-otp --reseal\\n\\n'\n`;
+                    o += `    printf 'Re-seal after a legitimate update with: libre-otp --setup\\n\\n'\n`;
                     o += `    printf 'Press Enter to continue anyway, or power off now. '\n`;
                     o += `    read _ack\n`;
                     o += `}\n`;
@@ -1808,7 +1812,7 @@ run_with_progress() {
                     o += `# look like tampering and the warning would be ignored.\n`;
                     o += `cat > /usr/share/libalpm/hooks/95-otp-reseal.hook << 'RESEAL'\n`;
                     o += `[Trigger]\nOperation = Install\nOperation = Upgrade\nType = Package\nTarget = linux\nTarget = linux-*\n\n`;
-                    o += `[Action]\nDescription = Re-sealing Libre OTP boot integrity baseline...\nWhen = PostTransaction\nExec = /usr/local/bin/libre-otp --reseal\n`;
+                    o += `[Action]\nDescription = Re-sealing Libre OTP boot integrity baseline...\nWhen = PostTransaction\nExec = /usr/local/bin/libre-otp --setup\n`;
                     o += `RESEAL\n`;
 
                     if (!cmdOnly) {
@@ -1835,7 +1839,29 @@ run_with_progress() {
                     }
                     if (libreOtpMode === "boot" || libreOtpMode === "both") {
                         o += `# Boot-time prompt lives in the initramfs, not PAM.\n`;
-                        o += `libre-otp --install-initramfs-hook\nmkinitcpio -P\n`;
+                        // `--install-initramfs-hook` does not exist and never has, so
+                        // this step failed silently and the boot prompt was never
+                        // actually installed on any machine that ran the script.
+                        // Writing the hook directly is what the flag would have done.
+                        o += `cat > /etc/initcpio/hooks/libre-otp << 'OTPHOOK'\n`;
+                        o += `#!/usr/bin/env bash\n`;
+                        o += `run_hook() {\n`;
+                        o += `    /usr/local/bin/libre-otp --gate || exit 1\n`;
+                        o += `}\n`;
+                        o += `OTPHOOK\n`;
+                        o += `cat > /etc/initcpio/install/libre-otp << 'OTPINST'\n`;
+                        o += `#!/usr/bin/env bash\n`;
+                        o += `build() {\n`;
+                        o += `    add_binary /usr/local/bin/libre-otp\n`;
+                        o += `    add_runscript\n`;
+                        o += `}\n`;
+                        o += `help() { echo "Prompts for a Libre OTP code before unlocking."; }\n`;
+                        o += `OTPINST\n`;
+                        o += `chmod 755 /etc/initcpio/hooks/libre-otp /etc/initcpio/install/libre-otp\n`;
+                        o += `# Must precede 'encrypt' in HOOKS= or it never runs.\n`;
+                        o += `sed -i 's/\\(^HOOKS=.*\\)\\bencrypt\\b/\\1libre-otp encrypt/' /etc/mkinitcpio.conf\n`;
+                        o += `grep -n '^HOOKS=' /etc/mkinitcpio.conf   # confirm before rebooting\n`;
+                        o += `mkinitcpio -P\n`;
                     }
                     if (effectiveSuite.includes('openssh')) {
                         o += `echo '${pamLine}' >> /etc/pam.d/sshd\n`;

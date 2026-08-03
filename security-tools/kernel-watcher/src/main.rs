@@ -12,6 +12,15 @@ struct Args {
     /// Launch the GUI Dashboard (Wayland/Xorg)
     #[arg(short, long)]
     interactive: bool,
+
+    /// Initialise the watch list and set the tamper password, then exit.
+    ///
+    /// `run_setup()` has existed in the library the whole time and the
+    /// installer and the generator both tell people to run this, but clap
+    /// rejected it — so the watch list was never initialised on any machine
+    /// that followed the instructions.
+    #[arg(long)]
+    setup: bool,
 }
 
 fn main() {
@@ -24,7 +33,9 @@ fn main() {
 
     let args = Args::parse();
 
-    if args.interactive {
+    if args.setup {
+        kernel_watcher::run_setup();
+    } else if args.interactive {
         if let Err(e) = start_gui() {
             eprintln!("Failed to start Kernel Watcher (EDR) GUI: {}", e);
             process::exit(1);

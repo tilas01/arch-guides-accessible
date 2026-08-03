@@ -917,7 +917,7 @@ sha512sum -c libre-otp.sha512</code></pre>
         <p>
             <strong>Decoy and duress passwords are <a href="#scarecrow">Scarecrow</a>'s job, not this tool's.</strong>
             This page previously credited them here, and the generator emitted
-            <code>anti-evil-maid --decoy-password</code> and <code>--duress-password</code> to match.
+            <code>anti-evil-maid --decoy-password</code> and <code>--duress-password</code> to match. <!-- cli-flags:allow — named here precisely to record that it never existed -->
             Neither flag has ever existed in the crate, so every one of those lines failed — and they
             put the password on the command line, where <code>ps</code> shows it to every user on the
             machine. See <a href="#luks-duress">LUKS duress passphrase</a> for the three PINs that are
