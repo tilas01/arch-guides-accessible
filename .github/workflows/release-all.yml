@@ -156,11 +156,19 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     steps:
+      # The notes generator reads the repository (commit, tags, git log), so the
+      # checkout is required and needs full history — fetch-depth: 1 would leave
+      # `git describe` with no previous tag and silently produce a release whose
+      # "Changes since" section is always empty.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: release_assets
-      
+
       - name: Prepare Assets
         run: |
           mkdir -p final_release
@@ -172,11 +180,22 @@ jobs:
         run: |
           echo "tag=v$(date +'%Y.%m.%d-%H%M')-${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
 
+      # Releases previously had no body at all — just a generic title and a pile
+      # of unlabelled binaries. Someone landing on one had no way to tell what
+      # any of the files were, how to check a signature, or what had changed.
+      - name: Generate release notes
+        run: |
+          bash scripts/gen-release-notes.sh \
+            "${{ steps.tag.outputs.tag }}" final_release > RELEASE_NOTES.md
+          echo "--- generated notes ---"
+          cat RELEASE_NOTES.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          name: "Security Tools Release (${{ github.ref_name }})"
+          name: "Arch Security Suite ${{ steps.tag.outputs.tag }}"
+          body_path: RELEASE_NOTES.md
           files: final_release/*
           draft: false
           prerelease: ${{ github.ref_name == 'dev' }}
