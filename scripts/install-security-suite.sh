@@ -62,6 +62,7 @@ readonly TOOLS=(
     "anti-evil-maid|Boot integrity verification and decoy entries|yes"
     "kernel-watcher|Filesystem monitor for infostealers and rootkits|yes"
     "scarecrow|Canary tokens and sandbox spoofing|yes"
+    "aur-guard|Reads a PKGBUILD before makepkg runs it|no"
 )
 
 # ─── Output helpers ───────────────────────────────────────────────────────────
@@ -430,6 +431,14 @@ for name in "${SELECTED[@]}"; do
         scarecrow)
             printf '%s  scarecrow%s — plant the canary tokens:\n' "$C_GREEN" "$C_RESET"
             dim "scarecrow --setup"
+            ;;
+        aur-guard)
+            printf '%s  aur-guard%s — read a PKGBUILD before makepkg runs it:\n' "$C_GREEN" "$C_RESET"
+            dim "aur-guard ./PKGBUILD"
+            dim "aur-guard --dir ~/.cache/paru/clone/some-package"
+            # Stated at install time as well as in the docs, because the whole
+            # hazard with a scanner is that a clean report stops people reading.
+            dim "It never says a package is safe — only what matched and what it could not read."
             ;;
     esac
     echo

@@ -25,7 +25,10 @@ jobs:
           - anti-evil-maid
           - kernel-watcher
           - scarecrow
-          # All five linked into one binary, for people who want the whole suite.
+          - aur-guard
+          # The five daemons linked into one binary, for people who want the suite.
+          # aur-guard stays standalone: it is a read-only reading aid that never
+          # needs root, and bundling it with tools that do would be misleading.
           - arch-security-suite
 
     steps:
