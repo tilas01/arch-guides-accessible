@@ -27,7 +27,7 @@
 'use strict';
 
 (function () {
-    var REPO_URL = 'https://github.com/tilas01/unix-dynamic-guides';
+    var REPO_URL = 'https://github.com/tilas01/unix-guides-dynamic';
 
     /* ── The canonical top navigation ───────────────────────────────────────
        One definition, applied to every page, because hand-copied navs drift:

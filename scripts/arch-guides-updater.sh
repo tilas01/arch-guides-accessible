@@ -5,7 +5,7 @@
 
 set -e
 
-REPO="tilas01/unix-dynamic-guides"
+REPO="tilas01/unix-guides-dynamic"
 TOOLS=("libre-otp" "anti-ducky" "anti-evil-maid" "kernel-watcher" "scarecrow")
 INSTALL_DIR="/usr/local/bin"
 LOG_FILE="/var/log/arch-guides-updater.log"

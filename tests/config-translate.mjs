@@ -40,7 +40,7 @@ ok(!('partitioning' in weird.answers.selects), 'unknown encryption left unset, n
 ok(weird.unmapped.some(u=>u.startsWith('encryption=')), 'unknown encryption reported');
 
 // 5. envelope passthrough when already correct shape
-const env = { schema:'unix-dynamic-guides/config', version:2, source:'manual-walkthrough', answers:wl };
+const env = { schema:'unix-guides-dynamic/config', version:2, source:'manual-walkthrough', answers:wl };
 ok(T.translateEnvelope(env,'manual-walkthrough').translated===false, 'no-op when shape matches');
 ok(T.translateEnvelope(env,'dynamic-generator').translated===true, 'translates when shape differs');
 

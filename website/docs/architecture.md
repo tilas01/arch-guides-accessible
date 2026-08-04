@@ -1,6 +1,6 @@
 # 🏛️ Architecture & Generation Logic
 
-The `unix-dynamic-guides` deployment framework relies on a fully client-side, zero-backend architecture to generate highly secure and precisely customized Arch Linux deployment environments.
+The `unix-guides-dynamic` deployment framework relies on a fully client-side, zero-backend architecture to generate highly secure and precisely customized Arch Linux deployment environments.
 
 ## How the Website Generator Works
 

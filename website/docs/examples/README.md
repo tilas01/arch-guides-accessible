@@ -1,7 +1,7 @@
 # Generated examples
 
-These are real output from the [manual walkthrough](https://tilas01.github.io/unix-dynamic-guides/manual.html)
-and the [generator](https://tilas01.github.io/unix-dynamic-guides/index.html),
+These are real output from the [manual walkthrough](https://tilas01.github.io/unix-guides-dynamic/manual.html)
+and the [generator](https://tilas01.github.io/unix-guides-dynamic/index.html),
 committed so you can read what they produce without running anything.
 
 Each example exists in both forms the site offers:

@@ -160,7 +160,7 @@ for (const c of CASES) {
   (ordered && missing.length === 0) ? pass++ : fail++;
 
   // 3. config round-trips through the shared envelope
-  const env = { schema:'unix-dynamic-guides/config', version:2,
+  const env = { schema:'unix-guides-dynamic/config', version:2,
                 source:'manual-walkthrough', created:new Date().toISOString(),
                 answers:c.answers };
   const rt = JSON.parse(JSON.stringify(env));
