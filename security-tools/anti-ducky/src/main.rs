@@ -279,6 +279,35 @@ fn set_response(action: &str) -> u8 {
         // confirmation. Lockdown loses unsaved work exactly as poweroff does;
         // it just closes more before it goes.
         "lockdown" => {
+            // Checked at arm time, not at fire time. At fire time the volume is
+            // already suspended and there is nothing useful left to say — the
+            // machine would sit frozen and powered on, which is worse than
+            // either intended outcome. Better to refuse to arm.
+            match anti_ducky::defence::sysrq_poweroff_available() {
+                Some(true) => {}
+                Some(false) => {
+                    eprintln!("Refusing to arm: kernel.sysrq is set so that sysrq power-off");
+                    eprintln!("is disabled, and lockdown cuts power that way — after the LUKS");
+                    eprintln!("volume is suspended, /sbin/poweroff cannot even be read.");
+                    eprintln!();
+                    eprintln!("The machine would end up frozen AND still running, which is");
+                    eprintln!("worse than either intended outcome.");
+                    eprintln!();
+                    eprintln!("Enable the power-off bit, then re-run:");
+                    eprintln!("  echo 'kernel.sysrq = 128' | sudo tee /etc/sysctl.d/99-sysrq.conf");
+                    eprintln!("  sudo sysctl --system");
+                    eprintln!();
+                    eprintln!("Or use --set-response lock, which needs none of this.");
+                    return 1;
+                }
+                None => {
+                    // Unreadable is not the same as disabled, and saying so
+                    // would be a guess. Warn and let the operator decide.
+                    eprintln!("warning: could not read /proc/sys/kernel/sysrq, so it is not");
+                    eprintln!("possible to confirm the lockdown power-off will fire. Verify by");
+                    eprintln!("hand before relying on this.");
+                }
+            }
             if arm_kill_switch(true) != 0 {
                 return 1;
             }
