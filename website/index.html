@@ -253,6 +253,49 @@
                 Keep verified offline backups, and test in a VM first.
                 Typing the duress passphrase by mistake destroys the installation.
             </div>
+
+            <!-- Scarecrow's three PINs. A DIFFERENT layer from the select above:
+                 that one is an initramfs hook firing at the BOOT PASSPHRASE
+                 prompt, these are checked at the LOGIN prompt after the disk is
+                 already unlocked. Both can be used; neither replaces the other.
+
+                 Three independent checkboxes rather than one select, matching
+                 the walkthrough exactly — you can set one, two or all three,
+                 and each is a separate password. A single select could only
+                 ever express one of them, which is why the walkthrough and the
+                 generator disagreed and config-translate could not carry the
+                 setting across. -->
+            <div class="form-group form-step" style="margin-top:1rem;"
+                 oncontextmenu="window.open('wiki.html#luks-duress', '_blank'); return false;"
+                 data-title="Scarecrow duress PINs (login prompt)"
+                 data-desc="Up to three separate passwords checked at the LOGIN prompt, after the disk is already unlocked. Each is optional and independent: set one, two, or all three. Nothing on screen ever reveals that one was used.">
+                <label>🦅 Scarecrow duress PINs <span style="color:var(--fg-dim); font-weight:normal;">(login prompt, not the boot prompt)</span></label>
+                <div class="app-grid-container" style="margin-top:0.5rem;">
+                    <label class="app-card" oncontextmenu="window.open('wiki.html#luks-duress', '_blank'); return false;">
+                        <input type="checkbox" name="duress_pins" value="duress">
+                        <span class="app-icon">🔴</span> Duress
+                        <span class="app-desc">Erases the LUKS header, then behaves exactly like a wrong password</span>
+                    </label>
+                    <label class="app-card" oncontextmenu="window.open('wiki.html#luks-duress', '_blank'); return false;">
+                        <input type="checkbox" name="duress_pins" value="decoy">
+                        <span class="app-icon">🎭</span> Decoy
+                        <span class="app-desc">Opens a working session in a decoy home. Erases nothing</span>
+                    </label>
+                    <label class="app-card" oncontextmenu="window.open('wiki.html#luks-duress', '_blank'); return false;">
+                        <input type="checkbox" name="duress_pins" value="both">
+                        <span class="app-icon">🔥</span> Both at once
+                        <span class="app-desc">Erases the header AND opens the decoy, so neither is visible</span>
+                    </label>
+                </div>
+                <p style="font-size:0.75rem; color:var(--fg-dim); margin-top:0.4rem;">
+                    Each PIN you tick is prompted for separately when you run the script, and
+                    stored as its own Argon2id hash. They may share a password or use different
+                    ones — but if two share one, scarecrow takes the
+                    <strong>most destructive</strong> interpretation, because under coercion is
+                    the wrong moment to resolve an ambiguity in favour of doing less. The script
+                    warns you if it detects a shared password.
+                </p>
+            </div>
         </div>
     </div>
 </div>
