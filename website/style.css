@@ -1932,3 +1932,44 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
 
 .pkg-go-official:hover { background: var(--tint-green, var(--bg-lighter)); }
 .pkg-go-aur:hover      { background: var(--tint-orange, var(--bg-lighter)); }
+
+/* ─── Mobile browser chrome clearance ────────────────────────────────────────
+   iOS Safari puts its address bar at the BOTTOM of the screen, overlaying page
+   content. Anything sitting at the natural end of the document — on this site
+   that is the Generate button, and the Continue button in the walkthrough —
+   ends up underneath it and cannot be tapped. Reported from a real iPhone.
+
+   Fixed with scroll clearance rather than `viewport-fit=cover` + full
+   safe-area padding. `viewport-fit=cover` would also push content under the
+   *top* notch and the side insets, which means auditing all four edges on
+   eleven pages to fix one; this solves the reported problem and cannot
+   regress the others.
+
+   `env(safe-area-inset-bottom)` is still included and simply resolves to 0px
+   without `viewport-fit=cover`, so it costs nothing now and starts helping
+   automatically if that is ever added. The 5rem is the real work: Safari's
+   bottom bar is roughly 50px, and this clears it with room to spare so the
+   button is comfortably reachable rather than flush against the chrome.
+
+   Applied to the scroll container, not to fixed overlays — the history overlay
+   has its own inset:0 positioning and must not gain a phantom gap. */
+@media (max-width: 900px) {
+    body {
+        padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* The footer is the true last element, so it carries the clearance when
+       present; without this the padding sits below the footer and the footer
+       itself is what ends up under the address bar. */
+    .site-footer {
+        margin-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* Landscape phones have a much shorter viewport, and the same bar. Slightly
+   less clearance because vertical space is scarcer and the bar is thinner. */
+@media (max-width: 900px) and (orientation: landscape) {
+    body {
+        padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+    }
+}
