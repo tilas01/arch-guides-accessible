@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
           documentation, and source code provided on this website and within the GitHub repository
           <a href="https://github.com/tilas01/unix-guides-dynamic" target="_blank"
              style="color:var(--accent-blue,#7aa2f7);">tilas01/unix-guides-dynamic</a> —
-          including but not limited to the Arch Guides Dynamic Generator, the Arch Rusty Security Suite (ARSS),
+          including but not limited to the Arch Guides Unix Install Generator, the Arch Rusty Security Suite (ARSS),
           Anti-Evil-Maid, Anti-Ducky, Kernel Watcher, LibreOTP, and Scarecrow —
           are provided strictly <strong>"AS IS"</strong>, without warranty of any kind, express or implied.
           The author (<strong>tilas01</strong>) expressly disclaims all liability for any direct, indirect,
@@ -292,11 +292,11 @@ document.addEventListener('DOMContentLoaded', () => {
         heading: '🛠️ Build an install',
         note: 'Both produce the same thing — a bash script and a matching markdown guide. They differ only in how much you decide up front.',
         items: [
-          { href: 'index.html', icon: '⚙️', name: 'Dynamic Generator',
+          { href: 'index.html', icon: '⚙️', name: 'Unix Install Generator',
             tag: 'recommended on a PC', colour: 'var(--accent-blue,#7aa2f7)',
             desc: 'One form, every option at once. Best if you already know what you want.',
             tip: 'Set every option in a single form and generate a custom Arch install script and guide. Fastest on a desktop.' },
-          { href: 'manual.html', icon: '🧭', name: 'Manual Walkthrough',
+          { href: 'manual.html', icon: '🧭', name: 'Unix Manual Guide Walkthrough',
             tag: 'recommended on mobile', colour: 'var(--accent-purple,#bb9af7)',
             desc: 'One question at a time, everything explained, the guide building as you answer.',
             tip: 'Best on a phone, or if you are not sure yet — it walks you through each choice and says what it costs.' }

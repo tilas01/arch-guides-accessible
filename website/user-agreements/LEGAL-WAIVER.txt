@@ -22,8 +22,8 @@ This waiver covers all content, tools, scripts, binaries, documentation and
 source code provided on the website and within the GitHub repository
 tilas01/unix-guides-dynamic. That includes, but is not limited to:
 
-  - the Arch Guides Dynamic Generator
-  - the Manual Walkthrough
+  - the Arch Guides Unix Install Generator
+  - the Unix Manual Guide Walkthrough
   - the website wiki and the markdown guides in docs/
   - the in-browser ISO verifier
   - the Arch Rusty Security Suite (ARSS) and each of its tools:
