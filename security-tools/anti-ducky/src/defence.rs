@@ -275,6 +275,24 @@ pub fn show_boot_alerts() -> usize {
     lines.len()
 }
 
+/// Can the sysrq power-off actually fire?
+///
+/// `/proc/sys/kernel/sysrq` is a bitmask. Bit 7 (128) is "enable poweroff/reboot",
+/// and `1` enables everything. A `0` — which several hardening guides and some
+/// distributions set — makes the write in [`lockdown_and_poweroff`] a silent
+/// no-op, leaving the machine suspended but still running. That is the worst
+/// possible outcome: the disk is frozen, the owner cannot use it, and it never
+/// powers off.
+///
+/// Returns `None` when the file cannot be read at all, which is not the same as
+/// "disabled" and must not be reported as if it were.
+pub fn sysrq_poweroff_available() -> Option<bool> {
+    let raw = fs::read_to_string("/proc/sys/kernel/sysrq").ok()?;
+    let v: u32 = raw.trim().parse().ok()?;
+    // 1 means "all functions"; otherwise the poweroff bit must be set.
+    Some(v == 1 || v & 128 != 0)
+}
+
 /// Staged lockdown, then power off.
 ///
 /// The order is the whole design, and each step is chosen for what it closes:
