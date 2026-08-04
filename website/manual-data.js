@@ -842,6 +842,32 @@ const STEPS = [
     ]
 },
 {
+    id: 'dns_ipv4_only',
+    section: 'Services',
+    title: 'Does this network have working IPv6?',
+    help: 'Only asked because getting it wrong is confusing rather than ' +
+          'obviously broken. If systemd-resolved is given an IPv6 resolver on ' +
+          'a network with no working IPv6, lookups do not fail cleanly — they ' +
+          'go intermittent while it waits on an address that will never ' +
+          'answer, which reads as "DNS is broken" rather than "there is no ' +
+          'IPv6 here".',
+    wiki: 'encrypted-dns',
+    when: s => !!s.dns_provider && s.dns_provider !== 'none',
+    type: 'single',
+    optional: true,
+    options: [
+        { value: 'no', label: 'Yes, or I am not sure', recommended: true,
+          desc: 'Uses both the IPv4 and IPv6 resolvers. The right answer almost ' +
+                'everywhere — if IPv6 works, you get it; if it is simply absent ' +
+                'rather than broken, nothing tries to use it.' },
+        { value: 'yes', label: 'No — IPv4 only',
+          desc: 'Uses only the provider\'s IPv4 addresses. Pick this if you know ' +
+                'IPv6 is half-configured on this network: advertised but not ' +
+                'actually routable is the case that causes the intermittent ' +
+                'behaviour above.' }
+    ]
+},
+{
     id: 'audio',
     section: 'Services',
     title: 'Audio',

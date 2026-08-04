@@ -45,24 +45,12 @@
 
     const LIBRE_BLOCKED = ['steam', 'discord'];
 
-    /* DNS upstreams. Addresses and DoT hostnames taken from each provider's own
-       documentation. The second address is the provider's secondary resolver,
-       not a fallback to someone else — mixing providers would leak a share of
-       queries to whoever the fallback is. */
-    const DNS_PROVIDERS = {
-        quad9:      { label: 'Quad9',        v4: ['9.9.9.9', '149.112.112.112'],
-                      v6: ['2620:fe::fe', '2620:fe::9'], tls: 'dns.quad9.net' },
-        mullvad:    { label: 'Mullvad DNS',  v4: ['194.242.2.2'],
-                      v6: ['2a07:e340::2'], tls: 'dns.mullvad.net' },
-        cloudflare: { label: 'Cloudflare',   v4: ['1.1.1.1', '1.0.0.1'],
-                      v6: ['2606:4700:4700::1111', '2606:4700:4700::1001'],
-                      tls: 'cloudflare-dns.com' },
-        dns0:       { label: 'dns0.eu',      v4: ['193.110.81.0', '185.253.5.0'],
-                      v6: ['2a0f:fc80::', '2a0f:fc81::'], tls: 'dns0.eu' },
-        adguard:    { label: 'AdGuard DNS',  v4: ['94.140.14.14', '94.140.15.15'],
-                      v6: ['2a10:50c0::ad1:ff', '2a10:50c0::ad2:ff'],
-                      tls: 'dns.adguard-dns.com' }
-    };
+    /* DNS upstreams now live in dns-providers.js, shared with the Dynamic
+       Generator. They were private to this file, which is exactly why the
+       generator had no encrypted DNS at all — the table and the emission simply
+       did not exist on that side. One table, two readers. */
+    const DNS_PROVIDERS =
+        (typeof window !== 'undefined' && window.DnsProviders && window.DnsProviders.table) || {};
 
 
 
@@ -821,21 +809,14 @@
             L.push('```bash');
             L.push('sudo mkdir -p /etc/systemd/resolved.conf.d');
             L.push("cat | sudo tee /etc/systemd/resolved.conf.d/dns.conf <<'EOF'");
-            L.push('[Resolve]');
-            /* `address#hostname` is what actually pins the certificate name.
-               `DNSOverTLS=yes` on its own encrypts but does not authenticate —
-               anyone able to answer on port 853 is then accepted, which is most
-               of the threat this is meant to remove. The comment here used to
-               claim pinning that the config did not do. */
-            L.push('DNS=' + dnsProv.v4.concat(dnsProv.v6)
-                                 .map(function (a) { return a + '#' + dnsProv.tls; })
-                                 .join(' '));
-            // No FallbackDNS on purpose: systemd's built-in fallbacks are other
-            // providers, so leaving it set quietly leaks a share of queries to
-            // whoever those are — which defeats the point of choosing.
-            L.push('FallbackDNS=');
-            L.push('DNSOverTLS=yes');
-            L.push('DNSSEC=yes');
+            /* Built by the shared module, so this side and the generator emit
+               byte-identical config. `address#hostname` is what actually pins
+               the certificate name — `DNSOverTLS=yes` alone encrypts without
+               authenticating, and anyone able to answer on port 853 is then
+               accepted, which is most of the threat this removes. */
+            var dnsConf = window.DnsProviders.buildResolvedConf(dnsProv, s.dns_ipv4_only === 'yes'
+                ? 'ipv4' : 'both');
+            dnsConf.forEach(function (line) { L.push(line); });
             L.push('EOF');
             L.push('');
             L.push('sudo systemctl enable --now systemd-resolved');
