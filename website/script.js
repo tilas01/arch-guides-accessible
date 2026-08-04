@@ -1939,8 +1939,17 @@ run_with_progress() {
                 }
 
                 // ── Decoy & Duress Passwords for Anti-Evil Maid ──
-                const aemDecoyMode = document.getElementById('modal_aem_decoy_mode')?.value || 'none';
-                const aemDuressMode = document.getElementById('modal_aem_duress_mode')?.value || 'none';
+                // Three independent PINs, matching the walkthrough exactly. The
+                // two modal selects this replaces could only express two of the
+                // three states — "both at once" had to be inferred from having
+                // set the other two, which is not the same thing: it is a third
+                // separate password with its own hash, not a combination.
+                const duressPins = Array.from(
+                    document.querySelectorAll('input[name="duress_pins"]:checked')
+                ).map(c => c.value);
+                const aemDecoyMode = duressPins.includes('decoy') ? 'session' : 'none';
+                const aemDuressMode = duressPins.includes('duress') ? 'erase' : 'none';
+                const aemBothPin = duressPins.includes('both');
 
                 // Decoy and duress passwords are scarecrow's job, not
                 // anti-evil-maid's. This block previously called
@@ -1961,12 +1970,18 @@ run_with_progress() {
                 // rather than emitting commands that cannot work — the same
                 // guard the walkthrough emitter needed.
                 const aemEncrypted = part !== "unencrypted";
-                if (aemEncrypted && (aemDecoyMode !== 'none' || aemDuressMode !== 'none')) {
+                if (aemEncrypted && (aemDecoyMode !== 'none' || aemDuressMode !== 'none' || aemBothPin)) {
                     o += `\n# ── Duress and decoy PINs (scarecrow) ──\n`;
                     o += `# These are entered at the login prompt instead of your real password.\n`;
                     o += `# scarecrow prompts for each one; nothing is passed on the command\n`;
                     o += `# line, where ps would show it to every user on the machine.\n`;
-                    if (aemDuressMode !== 'none') {
+                    // "both" erases too, so it needs the header backup and the
+                    // duress device set just as much as plain duress does.
+                    // Guarding on duress alone would let someone tick only
+                    // "both" and get an erasing PIN with no backup taken and no
+                    // device named — and with no device named, the erase
+                    // silently does nothing at the moment it is needed.
+                    if (aemDuressMode !== 'none' || aemBothPin) {
                         o += `#\n`;
                         o += `# Back the LUKS header up FIRST. A duress PIN erases it, and without\n`;
                         o += `# a backup that is unrecoverable — which is the intent, but it also\n`;
@@ -1977,17 +1992,34 @@ run_with_progress() {
                         o += `# set: scarecrow will not guess which disk to destroy.\n`;
                         o += `scarecrow --set-duress-device ${partRoot}\n`;
                     }
-                    if (aemDecoyMode !== 'none' && aemDuressMode !== 'none') {
+                    if (aemBothPin) {
                         o += `\n# Erases the header AND opens a working decoy session, so there is no\n`;
                         o += `# sign on screen that either happened.\n`;
                         o += `scarecrow --set-duress-decoy-pin\n`;
-                    } else if (aemDuressMode !== 'none') {
+                    }
+                    if (aemDuressMode !== 'none') {
                         o += `\n# Erases the header, then behaves exactly like a wrong password.\n`;
                         o += `scarecrow --set-duress-pin\n`;
                     }
                     if (aemDecoyMode !== 'none') {
                         o += `\n# A working session in a decoy home. Erases nothing.\n`;
                         o += `scarecrow --set-decoy-pin\n`;
+                    }
+
+                    // More than one PIN means they might share a password, and
+                    // that changes behaviour rather than just being untidy:
+                    // scarecrow verifies all three slots with no early exit and
+                    // takes the MOST DESTRUCTIVE match. So a decoy PIN that
+                    // happens to equal the duress PIN erases the header.
+                    if (duressPins.length > 1) {
+                        o += `\n# You set ${duressPins.length} PINs. If any two share a password,\n`;
+                        o += `# scarecrow takes the MOST DESTRUCTIVE interpretation — under\n`;
+                        o += `# coercion is the wrong moment to resolve an ambiguity in favour\n`;
+                        o += `# of doing less. A decoy PIN equal to the duress PIN erases.\n`;
+                        o += `echo "You configured ${duressPins.length} duress PINs."\n`;
+                        o += `echo "Use a DIFFERENT password for each, unless you specifically want"\n`;
+                        o += `echo "the most destructive one to win. Verify now, while you safely can:"\n`;
+                        o += `echo "  scarecrow --login   # enter each PIN, confirm it does what you expect"\n`;
                     }
 
                     // Setting a PIN configures nothing on its own — something

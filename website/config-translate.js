@@ -91,11 +91,21 @@
         // these names is wrong, and both emit the same on-machine check.
         { wl: 'extra_packages', gen: 'extra_packages',     group: 'inputs' },
 
-        { wl: 'duress_pins', gen: 'luks_duress_action', group: 'selects',
-          wlIsList: true,
-          values: { 'duress': 'wipe-keys',
-                    'decoy': 'decoy-only',
-                    'both': 'wipe-keys-decoy' } }
+        /* Scarecrow's three PINs. Now a straight pair with no value table:
+           both front ends use the same id, the same three values, and the same
+           "tick any combination" model.
+
+           This used to map `duress_pins` onto the generator's
+           `luks_duress_action` select, which was wrong in a way worth
+           recording. Those are two DIFFERENT mechanisms at two different
+           layers — `luks_duress_action` is an initramfs hook firing at the boot
+           passphrase prompt, while these PINs are checked at the login prompt
+           after the disk is already unlocked. Mapping one onto the other
+           silently moved a duress response from one layer to the other, and
+           could only ever carry one of the three states because a select holds
+           one value. The generator now has the same three independent
+           checkboxes the walkthrough has. */
+        { wl: 'duress_pins', gen: 'duress_pins', group: 'checkboxes' }
     ];
 
     function invert(values) {

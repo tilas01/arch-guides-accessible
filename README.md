@@ -4,7 +4,7 @@
   <img src="img/banner.png" width="100%" alt="Unix Dynamic Guides Banner">
 </p>
 
-<h1 align="center">🐧 Unix Dynamic Guides</h1>
+<h1 align="center">🐧 Unix Guides</h1>
 
 <p align="center">
   <strong>A modular, dynamically generated, security-focused Unix-like installation system.</strong>
