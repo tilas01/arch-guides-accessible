@@ -591,9 +591,9 @@ systemctl enable dnsmasq
 
 ```bash
 # Download latest release
-SUITE_VERSION=$(curl -s "https://api.github.com/repos/tilas01/arch-guides-dynamic/releases/latest" | grep '"tag_name"' | cut -d'"' -f4)
-curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/$SUITE_VERSION/arch-rusty-security-suite-linux-x86_64"
-curl -LO "https://github.com/tilas01/arch-guides-dynamic/releases/download/$SUITE_VERSION/arch-rusty-security-suite-linux-x86_64.sha256"
+SUITE_VERSION=$(curl -s "https://api.github.com/repos/tilas01/unix-dynamic-guides/releases/latest" | grep '"tag_name"' | cut -d'"' -f4)
+curl -LO "https://github.com/tilas01/unix-dynamic-guides/releases/download/$SUITE_VERSION/arch-rusty-security-suite-linux-x86_64"
+curl -LO "https://github.com/tilas01/unix-dynamic-guides/releases/download/$SUITE_VERSION/arch-rusty-security-suite-linux-x86_64.sha256"
 
 # Verify integrity
 sha256sum -c arch-rusty-security-suite-linux-x86_64.sha256
@@ -692,5 +692,5 @@ pacman -Ss '^linux$' '^linux-hardened$' '^linux-zen$' '^linux-lts$'
 
 ---
 
-*Part of the [Arch Guides Dynamic](https://github.com/tilas01/arch-guides-dynamic) wiki by [tilas01](https://github.com/tilas01).*
+*Part of the [Arch Guides Dynamic](https://github.com/tilas01/unix-dynamic-guides) wiki by [tilas01](https://github.com/tilas01).*
 *Dusky by [dusklinux](https://github.com/dusklinux/dusky). *

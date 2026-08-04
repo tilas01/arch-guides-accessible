@@ -117,8 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <p style="color:var(--fg-color,#a9b1d6); line-height:1.75; font-size:0.83rem; margin:0;">
           By continuing, you acknowledge and accept that all content, tools, scripts, binaries,
           documentation, and source code provided on this website and within the GitHub repository
-          <a href="https://github.com/tilas01/arch-guides-dynamic" target="_blank"
-             style="color:var(--accent-blue,#7aa2f7);">tilas01/arch-guides-dynamic</a> —
+          <a href="https://github.com/tilas01/unix-dynamic-guides" target="_blank"
+             style="color:var(--accent-blue,#7aa2f7);">tilas01/unix-dynamic-guides</a> —
           including but not limited to the Arch Guides Dynamic Generator, the Arch Rusty Security Suite (ARSS),
           Anti-Evil-Maid, Anti-Ducky, Kernel Watcher, LibreOTP, and Scarecrow —
           are provided strictly <strong>"AS IS"</strong>, without warranty of any kind, express or implied.

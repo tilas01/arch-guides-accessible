@@ -5,7 +5,7 @@
 
 set -e
 
-REPO_URL="https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main"
+REPO_URL="https://raw.githubusercontent.com/tilas01/unix-dynamic-guides/main"
 
 echo "================================================="
 echo "   Arch Guides: Automated Extractive Installer   "
