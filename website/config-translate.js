@@ -153,8 +153,8 @@
     function walkthroughToGenerator(wl) {
         var out = {
             version: 2,
-            generator: 'arch-guides-dynamic',
-            schema: 'arch-guides-dynamic/config',
+            generator: 'unix-dynamic-guides',
+            schema: 'unix-dynamic-guides/config',
             selects: {}, inputs: {}, checkboxes: {}
         };
         var mapped = [], unmapped = [];

@@ -30,7 +30,7 @@ signing key by fingerprint, and refuses to install anything that fails either
 check:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tilas01/arch-guides-dynamic/main/scripts/install-security-suite.sh -o install.sh
+curl -fsSL https://raw.githubusercontent.com/tilas01/unix-dynamic-guides/main/scripts/install-security-suite.sh -o install.sh
 less install.sh          # read it before you run it
 sudo bash install.sh
 ```
@@ -40,8 +40,8 @@ independent check that does not require trusting any signing key at all:
 
 ```bash
 pacman -S rustup && rustup default stable
-git clone https://github.com/tilas01/arch-guides-dynamic.git
-cd arch-guides-dynamic/security-tools/arch-security-suite
+git clone https://github.com/tilas01/unix-dynamic-guides.git
+cd unix-dynamic-guides/security-tools/arch-security-suite
 cargo build --release --locked
 ```
 
@@ -88,4 +88,4 @@ attribution, under the same licence. See [LICENSE](../../LICENSE).
 
 Provided **AS IS, without warranty of any kind**. These tools can lock you out
 of your own machine if misconfigured. Read the
-[wiki](https://tilas01.github.io/arch-guides-dynamic/wiki.html) first.
+[wiki](https://tilas01.github.io/unix-dynamic-guides/wiki.html) first.

@@ -25,7 +25,7 @@
 #   ./install-security-suite.sh --uninstall
 #   ./install-security-suite.sh --dry-run --all      # show what would happen
 #
-# Author: tilas01 · https://github.com/tilas01/arch-guides-dynamic
+# Author: tilas01 · https://github.com/tilas01/unix-dynamic-guides
 # Licence: CC BY-NC-SA 4.0
 #
 # Provided AS IS with no warranty. These tools can lock you out of your own
@@ -35,7 +35,7 @@ set -Eeuo pipefail
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 
-readonly REPO="tilas01/arch-guides-dynamic"
+readonly REPO="tilas01/unix-dynamic-guides"
 readonly KEY_URL="https://raw.githubusercontent.com/${REPO}/main/tilas01.asc"
 
 # The signing key is pinned by fingerprint, not merely downloaded.
@@ -447,5 +447,5 @@ for name in "${SELECTED[@]}"; do
     echo
 done
 
-dim "Full documentation: https://tilas01.github.io/arch-guides-dynamic/wiki.html#security-suite"
+dim "Full documentation: https://tilas01.github.io/unix-dynamic-guides/wiki.html#security-suite"
 dim "Uninstall:          $0 --uninstall"
