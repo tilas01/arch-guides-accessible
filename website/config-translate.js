@@ -1,7 +1,7 @@
 /* ============================================================================
    config-translate.js — make one saved config work in either front end.
    ----------------------------------------------------------------------------
-   The Dynamic Generator and the Manual Walkthrough are, deliberately, two
+   The Unix Install Generator and the Unix Manual Guide Walkthrough are, deliberately, two
    separate tools with their own pages and their own option sets. They already
    share a JSON envelope:
 

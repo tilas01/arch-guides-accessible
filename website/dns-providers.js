@@ -1,7 +1,7 @@
 /* Encrypted-DNS upstreams, shared by both front ends.
  *
  * This was a `const DNS_PROVIDERS` private to `manual-guide.js`, which is why
- * the Dynamic Generator had no encrypted DNS at all — the table, and the
+ * the Unix Install Generator had no encrypted DNS at all — the table, and the
  * emission that used it, simply did not exist on that side. Copying it would
  * have produced two tables to keep in step, and this session has already fixed
  * several bugs that were exactly that: one implementation updated, the other

@@ -63,8 +63,8 @@ it.
 
 | | Route | Best for | Start here |
 |---|---|---|---|
-| **1** | **Dynamic Generator** — one form, get a script | You know what you want, and you are on a PC | **[Open the generator →](https://tilas01.github.io/unix-guides-dynamic/)** |
-| **2** | **Manual Walkthrough** — one question at a time, each explained | You are on mobile, or not yet sure what you want | **[Open the walkthrough →](https://tilas01.github.io/unix-guides-dynamic/manual.html)** |
+| **1** | **Unix Install Generator** — one form, get a script | You know what you want, and you are on a PC | **[Open the generator →](https://tilas01.github.io/unix-guides-dynamic/)** |
+| **2** | **Unix Manual Guide Walkthrough** — one question at a time, each explained | You are on mobile, or not yet sure what you want | **[Open the walkthrough →](https://tilas01.github.io/unix-guides-dynamic/manual.html)** |
 | **3** | **Website wiki** — the same options, explained, done by hand, with hyperlinks | You want to understand each step and follow along in a browser | **[Open the wiki →](https://tilas01.github.io/unix-guides-dynamic/wiki.html#manual-install)** |
 | **4** | **This repo only** — plain markdown and README links, no website | Your machine is too slow for the site, has no JavaScript, or you prefer reading on GitHub | [Start at 01-pre-installation](docs/01-pre-installation.md) |
 
