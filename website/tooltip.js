@@ -362,7 +362,12 @@
     document.addEventListener('contextmenu', e => {
         if (activeUrl) {
             e.preventDefault();
-            window.open(activeUrl, '_blank');
+            // noopener,noreferrer: without it the opened page receives a live
+            // `window.opener` handle back to this one and can navigate it
+            // elsewhere. Some right-click targets are external — the Arch Wiki,
+            // upstream project pages — so this is not purely theoretical, and
+            // it costs nothing on the same-origin ones.
+            window.open(activeUrl, '_blank', 'noopener,noreferrer');
         }
     });
 
