@@ -82,6 +82,10 @@
         { wl: 'luks_autolock',  gen: 'modal_aem_autolock', group: 'selects' },
         { wl: 'ducky_response', gen: 'ducky_response',     group: 'selects' },
         { wl: 'luks_lock_on_screen', gen: 'modal_aem_lock_on_screen', group: 'selects' },
+        // Encrypted DNS. Same ids and same option values on both sides now
+        // that dns-providers.js is shared, so there is nothing to translate.
+        { wl: 'dns_provider',   gen: 'dns_provider',   group: 'selects' },
+        { wl: 'dns_ipv4_only',  gen: 'dns_ipv4_only',  group: 'selects' },
         // Free text on both sides — a space-separated package list. Carried
         // verbatim: neither front end is in a position to decide that one of
         // these names is wrong, and both emit the same on-machine check.

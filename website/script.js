@@ -1462,6 +1462,44 @@ run_with_progress() {
         else if (dns === "dnsmasq") o += `pacman -S --noconfirm dnsmasq\nsystemctl enable dnsmasq\n`;
         else o += `systemctl enable systemd-resolved\n`;
 
+        /* Encrypted DNS. This whole block did not exist: the generator picked a
+           resolver *daemon* and nothing else, so every guide it produced left
+           DNS in plaintext to whatever DHCP handed out — visible to the ISP and
+           to anyone on the path, whatever HTTPS does afterwards.
+
+           Built by the shared dns-providers.js so this and the walkthrough emit
+           byte-identical config. The important part is `address#hostname`:
+           `DNSOverTLS=yes` alone encrypts without authenticating, and anyone
+           able to answer on port 853 is then trusted. */
+        const dnsProviderId = gv('dns_provider', '');
+        const dnsProv = (window.DnsProviders && window.DnsProviders.table[dnsProviderId]) || null;
+        if (dnsProv) {
+            const dnsMode = gv('dns_ipv4_only', 'no') === 'yes' ? 'ipv4' : 'both';
+            o += `\n# Encrypted DNS — ${dnsProv.label}, DNS-over-TLS with the\n`;
+            o += `# certificate name pinned, plus DNSSEC.\n`;
+            o += `mkdir -p /etc/systemd/resolved.conf.d\n`;
+            o += `cat > /etc/systemd/resolved.conf.d/dns.conf << 'DNSCONF'\n`;
+            window.DnsProviders.buildResolvedConf(dnsProv, dnsMode)
+                .forEach(line => { o += `${line}\n`; });
+            o += `DNSCONF\n`;
+            o += `systemctl enable systemd-resolved\n`;
+            o += `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf\n`;
+            if (dnsMode === 'ipv4') {
+                o += `# IPv4 only: a v6 resolver on a network without working v6 does not\n`;
+                o += `# fail cleanly — lookups go intermittent, which reads as broken DNS.\n`;
+            }
+            // NetworkManager will happily replace resolv.conf with whatever DHCP
+            // said, silently undoing all of the above on the next connect.
+            if (post_apps.includes('networkmanager')) {
+                o += `\n# NetworkManager overwrites resolv.conf from DHCP otherwise, which\n`;
+                o += `# silently undoes the above on the next connection.\n`;
+                o += `mkdir -p /etc/NetworkManager/conf.d\n`;
+                o += `printf '[main]\\ndns=systemd-resolved\\n' > /etc/NetworkManager/conf.d/dns.conf\n`;
+            }
+            o += `echo "Verify after boot: resolvectl status should show DNSOverTLS: yes"\n`;
+            o += `echo "and each server as <address>#${dnsProv.tls}"\n`;
+        }
+
         if (!cmdOnly) o += `\`\`\`\n\n## 6. Desktop & Apps\n\`\`\`bash\n`;
         else o += `\n# 6. Desktop & Apps\n`;
         

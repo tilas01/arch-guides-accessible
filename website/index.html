@@ -296,6 +296,11 @@
                                     <option value="linux-zen" >linux-zen (Fallback)</option>
                             <option value="linux-lts">linux-lts (Stable Fallback)</option>
                             <option value="linux">linux (Standard)</option>
+                            <!-- linux-hardened was offered as a main kernel but not as a
+                                 fallback, so anyone choosing it had no hardened kernel to
+                                 fall back to — the fallback silently dropped them onto a
+                                 kernel without the hardening they had picked. -->
+                            <option value="linux-hardened">linux-hardened (Hardened Fallback)</option>
                             <option value="none">None</option>
                         </select>
                     </div>
@@ -1006,6 +1011,34 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         </select>
                     </div>
 
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#encrypted-dns', '_blank'); return false;" data-title="Encrypted DNS provider" data-desc="Every site you visit starts with a DNS lookup, and by default that goes to your ISP in plaintext — visible to them and to anyone on the path, whatever HTTPS does afterwards. Picking a provider here enables DNS-over-TLS with the server's certificate name pinned, plus DNSSEC.">
+                        <label for="dns_provider">🔐 Encrypted DNS provider:</label>
+                        <select oncontextmenu="window.open('wiki.html#encrypted-dns', '_blank'); return false;" id="dns_provider">
+                            <option value="">None — use whatever DHCP hands out (plaintext)</option>
+                            <option value="quad9" selected>Quad9 — 9.9.9.9 (recommended)</option>
+                            <option value="mullvad">Mullvad DNS — 194.242.2.2</option>
+                            <option value="cloudflare">Cloudflare — 1.1.1.1</option>
+                            <option value="dns0">dns0.eu — 193.110.81.0</option>
+                            <option value="adguard">AdGuard DNS — 94.140.14.14</option>
+                        </select>
+                        <p style="font-size:0.75rem;color:var(--fg-dim);margin-top:0.3rem;">
+                            Emits <code>DNS=&lt;address&gt;#&lt;hostname&gt;</code>, which pins the
+                            certificate name. <code>DNSOverTLS=yes</code> on its own encrypts the
+                            query but does <strong>not</strong> authenticate the server — anyone
+                            able to answer on port 853 is then trusted, and on a hostile network
+                            that is the network. <code>FallbackDNS=</code> is left empty
+                            deliberately: systemd's built-in fallbacks belong to other providers.
+                        </p>
+                    </div>
+
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#encrypted-dns', '_blank'); return false;" data-title="IPv4-only DNS" data-desc="Use only the provider's IPv4 resolvers. Worth setting on a network with no working IPv6: handing resolved a v6 server that will never answer makes lookups go intermittent, which reads as broken DNS rather than as an absent protocol.">
+                        <label for="dns_ipv4_only">DNS address family:</label>
+                        <select oncontextmenu="window.open('wiki.html#encrypted-dns', '_blank'); return false;" id="dns_ipv4_only">
+                            <option value="no" selected>IPv4 and IPv6</option>
+                            <option value="yes">IPv4 only — for networks with no working IPv6</option>
+                        </select>
+                    </div>
+
                     <!-- Libre OTP options. Shown only while the Libre OTP tool is
                          ticked in the security suite box below.
 
@@ -1363,6 +1396,7 @@ Website: https://github.com/hephaest0s/usbkill">ℹ️</span> <span class="app-d
     </main>
 
     <script src="config-translate.js"></script>
+<script src="dns-providers.js"></script>
 <script src="pkg-search.js"></script>
 <script src="script.js"></script>
     <script src="tooltip.js"></script>
