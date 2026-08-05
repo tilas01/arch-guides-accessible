@@ -1206,7 +1206,7 @@ noscript .js-only { display: none !important; }
 }
 
 /* Shown on the Unix Install Generator when the chosen desktop only runs on one
-   display server. Matches .q-locked in the Unix Manual Guide Walkthrough so a locked
+   display server. Matches .q-locked in the Unix Install Walkthrough so a locked
    answer looks the same in both front ends. */
 .locked-note {
     background: var(--tint-orange, rgba(255, 158, 100, 0.1));
@@ -1848,7 +1848,7 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
 .footer-report strong { color: var(--accent-orange); }
 
 /* ── Package search ──────────────────────────────────────────────────────────
-   Shared by the Unix Install Generator and the Unix Manual Guide Walkthrough (pkg-search.js).
+   Shared by the Unix Install Generator and the Unix Install Walkthrough (pkg-search.js).
    Palette variables only — the palette gate fails on a colour literal here. */
 
 .pkg-search {

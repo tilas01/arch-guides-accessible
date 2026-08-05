@@ -97,7 +97,7 @@ function stageForLiveEditor(mdContent, shContent, postContent) {
 window.stageForLiveEditor = stageForLiveEditor;
 
 // ─── Shared config envelope ─────────────────────────────────────────────────
-// The Unix Manual Guide Walkthrough and this generator are separate implementations, but
+// The Unix Install Walkthrough and this generator are separate implementations, but
 // they read and write the SAME JSON envelope, so a config saved from one loads
 // in the other. The envelope wraps whatever answers/form values the producing
 // tool uses under `answers`; each importer applies the keys it recognises and
@@ -124,7 +124,7 @@ function unwrapConfig(parsed) {
         ? parsed.answers
         : parsed; // legacy bare object
 
-    // A config exported from the Unix Manual Guide Walkthrough is flat and keyed by
+    // A config exported from the Unix Install Walkthrough is flat and keyed by
     // question id, not by form control. Translate it so importing one here
     // actually configures the form instead of quietly doing nothing.
     if (window.ConfigTranslate && !window.ConfigTranslate.isGeneratorShape(answers)) {
@@ -938,7 +938,7 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     const software_type = gv('software_type','libre');
     const desktop = gv('desktop','none');
     const displayServer = gv('display_server','auto');
-    // Wallpapers, matching the Unix Manual Guide Walkthrough's three questions so a config
+    // Wallpapers, matching the Unix Install Walkthrough's three questions so a config
     // from either front end configures the other.
     const wallpapers = gv('wallpapers','none');
     const wallpaperCount = gv('wallpaper_count','50');
@@ -3427,7 +3427,7 @@ function validateConfigurations() {
     // something impossible and then correct it behind an alert() — which fired
     // on every keystroke that re-ran validation, and once contradicted itself
     // by forcing Dusky to Wayland and then warning that Wayland breaks it —
-    // pin the select and say why, the same way the Unix Manual Guide Walkthrough locks it.
+    // pin the select and say why, the same way the Unix Install Walkthrough locks it.
     const duskyAppCb = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
     const displayServerSelect = document.getElementById('display_server');
     const DS_REQUIRED = { dusky: 'wayland', hyprland: 'wayland', dwm: 'xorg' };
