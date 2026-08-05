@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tag: 'recommended on a PC', colour: 'var(--accent-blue,#7aa2f7)',
             desc: 'One form, every option at once. Best if you already know what you want.',
             tip: 'Set every option in a single form and generate a custom Arch install script and guide. Fastest on a desktop.' },
-          { href: 'manual.html', icon: '🧭', name: 'Unix Manual Guide Walkthrough',
+          { href: 'manual.html', icon: '🧭', name: 'Unix Install Walkthrough',
             tag: 'recommended on mobile', colour: 'var(--accent-purple,#bb9af7)',
             desc: 'One question at a time, everything explained, the guide building as you answer.',
             tip: 'Best on a phone, or if you are not sure yet — it walks you through each choice and says what it costs.' }

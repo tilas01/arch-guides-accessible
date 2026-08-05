@@ -45,14 +45,14 @@
           title: '🔎 Index',
           desc: 'The contents page for the whole project, with a search box that looks through the wiki, every generator and walkthrough question, the security tools, the cheatsheets and the docs at once.' },
         // Named in full, matching its sibling. The nav said "Generator" beside
-        // "Unix Manual Guide Walkthrough", so the two front ends read as though one were
+        // "Unix Install Walkthrough", so the two front ends read as though one were
         // the default and the other a variant of it. They are two equal routes
         // to the same install and are named as such everywhere else.
         { href: 'index.html',         label: '⚙️ Unix Install Generator',
           title: '⚙️ Unix Install Generator',
           desc: 'Set every option in one form and generate a custom Arch install script and guide. Fastest on a desktop when you already know what you want.' },
-        { href: 'manual.html',        label: '🧭 Unix Manual Guide Walkthrough',
-          title: '🧭 Unix Manual Guide Walkthrough',
+        { href: 'manual.html',        label: '🧭 Unix Install Walkthrough',
+          title: '🧭 Unix Install Walkthrough',
           desc: 'One question at a time, every option explained, the guide building as you answer. Same output as the generator. Recommended on mobile, or if you are not yet sure what you want.' },
         // Live Editor sits directly after the two generators because that is
         // where their output goes — the three are one flow, and separating them
@@ -250,7 +250,7 @@
                 ? entries.length + ' saved. Session-only — no cookies, and gone when this ' +
                   'tab closes, so download anything you want to keep.'
                 : 'Nothing yet. Anything you generate in the Unix Install Generator or finish ' +
-                  'in the Unix Manual Guide Walkthrough appears here.') + '</p>';
+                  'in the Unix Install Walkthrough appears here.') + '</p>';
         panel.appendChild(head);
 
         if (entries.length) {
@@ -262,7 +262,7 @@
 
                 var meta = document.createElement('div');
                 meta.className = 'history-meta';
-                var src = e.source === 'manual-walkthrough' ? '🧭 Unix Manual Guide Walkthrough'
+                var src = e.source === 'manual-walkthrough' ? '🧭 Unix Install Walkthrough'
                         : e.source === 'dynamic-generator' ? '⚙️ Unix Install Generator'
                         : '📄 Generated';
                 meta.innerHTML = '<strong>' + src + '</strong>' +
@@ -343,7 +343,7 @@
     // Exposed so a page can offer its own entry point to the same overlay.
     window.openSharedHistory = openHistoryOverlay;
     /* Exposed so a page that writes to the history can light the clock
-       immediately. The Unix Manual Guide Walkthrough auto-saves on completion, and
+       immediately. The Unix Install Walkthrough auto-saves on completion, and
        without this the badge stayed dark until the next page load. */
     window.refreshHistoryBadge = function () { refreshHistoryBadge(); };
 
@@ -552,7 +552,7 @@
        it, so the credits read as part of the disclaimer.
 
        Practically, ten copies drift. The link row still said "Manual" rather
-       than "Unix Manual Guide Walkthrough" and had never gained the Live Editor or the
+       than "Unix Install Walkthrough" and had never gained the Live Editor or the
        Cheatsheets — the same failure the top nav had before it was moved here.
 
        So: one definition, three blocks side by side, each with its own accent —

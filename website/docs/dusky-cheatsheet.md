@@ -54,7 +54,7 @@ Wayland session.
 
 **Through this project** — pick **Dusky** as the desktop in either the
 [Unix Install Generator](../index.html) or the
-[Unix Manual Guide Walkthrough](../manual.html). Both fix the display server to Wayland and
+[Unix Install Walkthrough](../manual.html). Both fix the display server to Wayland and
 say so, then hand off to Dusky's own installer.
 
 **By hand**, on a system that already boots:

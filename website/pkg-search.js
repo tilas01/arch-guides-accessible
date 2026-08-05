@@ -1,5 +1,5 @@
 /* Package lookup for the free-text package fields, shared by the Dynamic
- * Generator and the Unix Manual Guide Walkthrough.
+ * Generator and the Unix Install Walkthrough.
  *
  * ── Why this does not search from the page ─────────────────────────────────
  *
