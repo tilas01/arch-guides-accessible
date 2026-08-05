@@ -50,7 +50,97 @@ const DUSKY_IMAGES = 'https://github.com/dusklinux/images';
 const DUSKY_VIDEO = 'https://www.youtube.com/watch?v=JmgvSdEIK8c';
 const DUSKY_CHANNEL = 'https://www.youtube.com/@dusk_everyday';
 
+/* ── Target operating system ─────────────────────────────────────────────────
+   The variable every OS-specific string reads from. Nothing downstream may
+   hard-code "Arch" any more — see `osName()` below.
+
+   `complete: false` drives the Work In Progress badge. tilas01's rule: an OS may
+   appear here before it is finished, but must be unmistakably marked as not
+   ready to install from, because these scripts repartition disks and someone
+   who ignores a subtle warning can lose one. The badge only comes off when the
+   guides reach Arch's depth, every permutation generates in both front ends,
+   every emitted script passes `bash -n` (and `sh -n` for the BSDs, whose
+   /bin/sh is not bash), option parity holds, and the tool-support table is
+   honest about what cannot work. */
+const OS_META = {
+    arch: {
+        label: 'Arch Linux', complete: true,
+        pkg: 'pacman', init: 'systemd', fde: 'LUKS2',
+        docs: 'https://wiki.archlinux.org/',
+        docsName: 'the Arch Wiki'
+    },
+    gentoo: {
+        label: 'Gentoo', complete: false,
+        pkg: 'portage', init: 'OpenRC or systemd', fde: 'LUKS2',
+        docs: 'https://wiki.gentoo.org/wiki/Handbook:AMD64',
+        docsName: 'the Gentoo Handbook'
+    },
+    freebsd: {
+        label: 'FreeBSD', complete: false,
+        pkg: 'pkg / ports', init: 'rc.d', fde: 'geli',
+        docs: 'https://docs.freebsd.org/en/books/handbook/',
+        docsName: 'the FreeBSD Handbook'
+    },
+    openbsd: {
+        label: 'OpenBSD', complete: false,
+        pkg: 'pkg_add', init: 'rc.d', fde: 'softraid -C CRYPTO',
+        docs: 'https://www.openbsd.org/faq/',
+        docsName: 'the OpenBSD FAQ'
+    }
+};
+
+/* Arch when unset. tilas01: "make arch the default if they skip selection".
+   Every downstream `when:` and every emitter must go through these two helpers
+   rather than reading `s.os` directly, so a skipped selection behaves exactly
+   as the site did before the selector existed. */
+function osId(s) { return (s && s.os && OS_META[s.os]) ? s.os : 'arch'; }
+function osMeta(s) { return OS_META[osId(s)]; }
+function osName(s) { return osMeta(s).label; }
+/** True for Linux targets — Arch and Gentoo share primitives the BSDs do not. */
+function isLinux(s) { return osId(s) === 'arch' || osId(s) === 'gentoo'; }
+
 const STEPS = [
+
+/* ── Target OS ─────────────────────────────────────────────────────────── */
+{
+    id: 'os',
+    section: 'Before you start',
+    title: 'Which operating system are you installing?',
+    help: 'This changes everything downstream — the installer, the package ' +
+          'manager, the encryption tooling, the init system and which ' +
+          'documentation is authoritative. Only Arch is finished; the others ' +
+          'are visible so you can read them, and are marked accordingly.',
+    wiki: 'architecture',
+    type: 'choice',
+    optional: true,
+    options: [
+        { value: 'arch', label: 'Arch Linux', recommended: true,
+          desc: 'Complete and the default. pacman, systemd, LUKS2. The Arch ' +
+                'Wiki is the authority — where this project and the Arch Wiki ' +
+                'disagree, the Arch Wiki is right.' },
+        { value: 'gentoo', label: 'Gentoo — 🚧 Work in progress',
+          desc: 'Source-based: a stage3 tarball, portage with USE flags, and ' +
+                'you compile the kernel. Shares Linux primitives with Arch, so ' +
+                'LUKS2 and every security tool work unchanged.',
+          danger: '🚧 NOT READY TO INSTALL FROM. Visible for reading only — ' +
+                  'the guide is incomplete and running it would not produce a ' +
+                  'working system. Use Arch for an actual install.' },
+        { value: 'freebsd', label: 'FreeBSD — 🚧 Work in progress',
+          desc: 'Not Linux. bsdinstall, ZFS or UFS, geli for encryption, ' +
+                'pkg and ports, rc.d instead of systemd.',
+          danger: '🚧 NOT READY TO INSTALL FROM. Visible for reading only. ' +
+                  'Several security tools cannot work here unchanged — see ' +
+                  'the wiki before relying on any of it.' },
+        { value: 'openbsd', label: 'OpenBSD — 🚧 Work in progress',
+          desc: 'Not Linux, and the furthest from Arch. The install(8) ' +
+                'script, disklabel, FFS2, softraid for encryption, and ' +
+                'signify rather than GPG for release signatures.',
+          danger: '🚧 NOT READY TO INSTALL FROM. Visible for reading only. ' +
+                  'OpenBSD has no PAM and no Wayland, so the duress PINs and ' +
+                  'the Dusky desktop cannot work there at all.' }
+    ],
+    note: 'Skipping this selects Arch, which is the only complete guide.'
+},
 
 /* ── Architecture ──────────────────────────────────────────────────────── */
 {
@@ -1197,6 +1287,13 @@ const STEPS = [
 }
 ];
 
+/* The OS helpers are exported for the emitters and the tests. Every
+   OS-specific string must go through `osName`/`osMeta` rather than reading
+   `s.os` directly, so a skipped selection resolves to Arch in exactly one
+   place instead of needing a fallback at every call site. */
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { STEPS, DUSKY_LOCKS, DUSKY_VIDEO };
+    module.exports = {
+        STEPS, DUSKY_LOCKS, DUSKY_VIDEO,
+        OS_META, osId, osMeta, osName, isLinux
+    };
 }
