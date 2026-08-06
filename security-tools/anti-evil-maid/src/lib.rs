@@ -122,22 +122,66 @@ fn setup_aem(
     _backup_kernel: Option<String>,
     decoy_count: Option<String>,
 ) {
+    /* Every hash is computed first, then all four are written together.
+
+       This used to compute-and-write one at a time, with `.expect()` on the
+       first two. That produced a worse failure than a panic: if the EFI write
+       succeeded and the /boot write did not — a full disk, a read-only /etc, a
+       missing directory — the process died holding a *partial* baseline. On the
+       next boot the check reads a boot.hash that was never written, sees a
+       mismatch against a /boot that nobody touched, and reports tampering. A
+       false tamper alarm on this tool ends in `enforce_lockout()`, which powers
+       the machine off and refuses to proceed.
+
+       So: compute everything, refuse to write anything unless all four can be
+       written, and leave any previous baseline untouched on failure. A stale
+       baseline verifies against a known-good state; a partial one cannot. */
     println!("Generating EFI Variables hash...");
     let efi_hash = hash_directory("/sys/firmware/efi/efivars");
-    fs::write(format!("{}/efivars.hash", AEM_STATE_DIR), &efi_hash)
-        .expect("Failed to write EFI hash");
 
     println!("Generating /boot filesystem hash...");
     let boot_hash = hash_directory("/boot");
-    fs::write(format!("{}/boot.hash", AEM_STATE_DIR), &boot_hash)
-        .expect("Failed to write /boot hash");
 
     println!("Generating HWID and TPM PCR profiles...");
     let hwid = get_hwid();
-    fs::write(format!("{}/hwid.hash", AEM_STATE_DIR), &hwid).unwrap_or_default();
-
     let tpm_pcr = get_tpm_pcr();
-    fs::write(format!("{}/tpm.hash", AEM_STATE_DIR), &tpm_pcr).unwrap_or_default();
+
+    let baseline: [(&str, &str); 4] = [
+        ("efivars.hash", &efi_hash),
+        ("boot.hash", &boot_hash),
+        ("hwid.hash", &hwid),
+        ("tpm.hash", &tpm_pcr),
+    ];
+
+    // Write to temporary names first, then rename into place. Rename is atomic
+    // within a filesystem, so a crash mid-write cannot leave a truncated hash
+    // that would later read as tampering.
+    let mut staged: Vec<(String, String)> = Vec::with_capacity(baseline.len());
+    for (name, value) in baseline {
+        let final_path = format!("{AEM_STATE_DIR}/{name}");
+        let tmp_path = format!("{final_path}.new");
+        if let Err(e) = fs::write(&tmp_path, value) {
+            eprintln!("Could not write {tmp_path}: {e}");
+            eprintln!("This needs root, and {AEM_STATE_DIR} must be writable.");
+            eprintln!();
+            eprintln!("NOTHING was changed — any previous baseline is intact. A partial");
+            eprintln!("baseline would be reported as tampering on the next boot, which");
+            eprintln!("ends in a lockout, so it is not written at all.");
+            for (done, _) in &staged {
+                let _ = fs::remove_file(done);
+            }
+            return;
+        }
+        staged.push((tmp_path, final_path));
+    }
+    for (tmp_path, final_path) in &staged {
+        if let Err(e) = fs::rename(tmp_path, final_path) {
+            eprintln!("Could not move {tmp_path} into place: {e}");
+            eprintln!("The baseline may now be incomplete. Re-run --setup before");
+            eprintln!("relying on the next boot check.");
+            return;
+        }
+    }
 
     let count = match decoy_count.as_deref() {
         Some("random") => 3, // Simulate random by picking 3 decoys

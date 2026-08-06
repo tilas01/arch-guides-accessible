@@ -694,7 +694,20 @@ pub fn run() {
             };
 
             // Grab sandboxed/quarantined devices to prevent OS from seeing events
-            let entry = monitored.get_mut(&path).unwrap();
+            //
+            // Not `.unwrap()`. The entry is present on every path that reaches
+            // here today, but this is the monitor loop of a security daemon: if
+            // that invariant ever breaks, a panic takes the whole watcher down
+            // and the BadUSB defence stops silently, leaving the machine
+            // unprotected with nothing on screen to say so. Skipping one
+            // iteration and logging it is strictly better than dying.
+            let Some(entry) = monitored.get_mut(&path) else {
+                log(&format!(
+                    "Internal: no monitor entry for {path} — skipping this event. \
+                     This should not happen; please report it."
+                ));
+                continue;
+            };
             if entry.is_sandboxed() && !entry.grabbed {
                 // In production: device.grab() — requires O_RDWR open
                 // We mark grabbed=true to track intent
@@ -707,9 +720,12 @@ pub fn run() {
                 Ok(iter) => iter.collect(),
                 Err(_) => vec![],
             };
+            // Nested rather than a let-chain: this crate is edition 2021, where
+            // `&& let` is not accepted.
             if !events.is_empty() {
-                let entry = monitored.get_mut(&path).unwrap();
-                process_events(entry, events, &mut approved_registry);
+                if let Some(entry) = monitored.get_mut(&path) {
+                    process_events(entry, events, &mut approved_registry);
+                }
             }
         }
 
