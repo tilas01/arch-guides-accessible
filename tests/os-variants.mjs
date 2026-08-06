@@ -101,6 +101,47 @@ for (const [id, want] of Object.entries(EXPECTED)) {
     }
 }
 
+/* Arch-only options must not be offered on the other systems. The AUR does not
+   exist outside Arch, so aur-guard there would install a binary that can never
+   do anything — a control wired to nothing, which is the failure this project
+   keeps removing. Hidden, not disabled. */
+/* `const STEPS` at the top level of a classic script creates a global *lexical*
+   binding, not a property on window — so `window.STEPS` is undefined and the
+   first version of this block skipped itself in silence while still reporting
+   success. Reach it through eval, and treat "cannot find it" as a failure
+   rather than a reason to skip: a check that quietly does not run is worse than
+   no check, because it reads as a pass. */
+const STEPS = window.eval('typeof STEPS !== "undefined" ? STEPS : null');
+checks++;
+if (!Array.isArray(STEPS)) {
+    problems.push('Could not reach STEPS from the page, so the Arch-only option ' +
+                  'checks did not run. Treated as a failure, not a skip.');
+} else {
+    const sec = STEPS.find(s => s.id === 'security_tools');
+    const aur = sec && (sec.options || []).find(o => o.value === 'aur-guard');
+    checks++;
+    if (!aur) {
+        problems.push('security_tools no longer offers aur-guard at all — expected it on Arch');
+    } else if (typeof aur.when !== 'function') {
+        problems.push('aur-guard has no `when`, so it is offered on Gentoo and the BSDs ' +
+                      'where there is no PKGBUILD for it to read');
+    } else {
+        for (const [id, want] of [['arch', true], ['gentoo', false],
+                                  ['freebsd', false], ['openbsd', false]]) {
+            const shown = !!aur.when({ os: id });
+            if (shown !== want) {
+                problems.push(`aur-guard is ${shown ? 'offered' : 'hidden'} on ${id} ` +
+                              `— expected it ${want ? 'offered' : 'hidden'}`);
+            }
+        }
+        // Skipping the OS must behave as Arch here too, not hide the option.
+        if (!aur.when({})) {
+            problems.push('aur-guard is hidden when no OS is selected — the default is Arch, ' +
+                          'so it must be offered');
+        }
+    }
+}
+
 // 2: skipping the selection must reproduce the Arch guide exactly.
 checks++;
 const skipped = buildGuide(cfg(undefined));

@@ -1036,9 +1036,20 @@ const STEPS = [
           desc: 'Canary files and sandbox spoofing.',
           danger: 'Its duress mode can destroy data. Off by default and gated ' +
                   'behind typed confirmation.' },
+        /* Arch only, and hidden rather than disabled elsewhere. The AUR is an
+           Arch institution: there is no PKGBUILD on Gentoo, FreeBSD or
+           OpenBSD, so the tool has nothing to read. Offering it there would be
+           a control that installs a binary which can never do anything —
+           exactly the class of dead feature this project keeps removing.
+
+           Gentoo's ebuilds and FreeBSD's ports Makefiles are the analogous
+           thing and would each need their own auditor; that is a separate tool,
+           not a flag on this one. */
         { value: 'aur-guard', label: 'AUR Guard',
+          when: s => osId(s) === 'arch',
           desc: 'Audits a PKGBUILD for malicious patterns before makepkg ' +
-                'runs it. Read-only; it cannot lock you out.' }
+                'runs it. Read-only; it cannot lock you out. Arch only — the ' +
+                'AUR does not exist on the other systems.' }
     ]
 },
 /* ── Duress PINs ────────────────────────────────────────────────────────────
