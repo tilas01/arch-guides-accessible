@@ -89,10 +89,13 @@ const OS_META = {
     }
 };
 
-/* Arch when unset. tilas01: "make arch the default if they skip selection".
-   Every downstream `when:` and every emitter must go through these two helpers
-   rather than reading `s.os` directly, so a skipped selection behaves exactly
-   as the site did before the selector existed. */
+/* Arch is the default when no OS has been chosen.
+
+   Every downstream `when:` and every emitter must resolve the target through
+   these helpers rather than reading `s.os` directly. That keeps the fallback in
+   one place, so an unanswered or unrecognised selection behaves exactly as the
+   site did before the selector existed — which is what allows the existing
+   permutation coverage to stay valid. */
 function osId(s) { return (s && s.os && OS_META[s.os]) ? s.os : 'arch'; }
 function osMeta(s) { return OS_META[osId(s)]; }
 function osName(s) { return osMeta(s).label; }

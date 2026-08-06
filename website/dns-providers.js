@@ -1,11 +1,10 @@
 /* Encrypted-DNS upstreams, shared by both front ends.
  *
- * This was a `const DNS_PROVIDERS` private to `manual-guide.js`, which is why
- * the Unix Install Generator had no encrypted DNS at all — the table, and the
- * emission that used it, simply did not exist on that side. Copying it would
- * have produced two tables to keep in step, and this session has already fixed
- * several bugs that were exactly that: one implementation updated, the other
- * left behind. So there is one table, and both emitters read it.
+ * Previously a `const DNS_PROVIDERS` private to `manual-guide.js`, which is why
+ * the Unix Install Generator had no encrypted DNS at all: the table, and the
+ * emission that used it, only existed on one side. Duplicating it here would
+ * have left two tables to keep in step — the usual outcome being one updated
+ * and the other quietly left behind. One table, two readers.
  *
  * Addresses and DoT hostnames come from each provider's own documentation. The
  * second address in each list is that provider's *secondary* resolver, never a
