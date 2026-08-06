@@ -1,30 +1,15 @@
 //! Active responses to a hostile input device.
 //!
-//! The rest of anti-ducky *detects* a BadUSB/Rubber Ducky device — including
-//! the harder case where a ZeroTrace-style implant spoofs the identity of a
-//! keyboard you already approved — and captures its injected payload. This
-//! module is what happens *after* that: the deauthorize-and-capture response.
+//! Detection and payload capture happen elsewhere; this module is what runs
+//! once a device is confirmed hostile:
 //!
-//! ## The policy, and where the line is
+//!   1. The payload is already captured by the caller.
+//!   2. Deauthorize at the kernel via `/sys/bus/usb/devices/<dev>/authorized`.
+//!      The device can no longer deliver input. Same mechanism as `usbkill` and
+//!      USBGuard, and reversible by re-authorizing or replugging.
+//!   3. Optionally escalate — lock, lockdown or power off — only if configured.
 //!
-//! On a confirmed hostile device we:
-//!
-//!   1. **Capture** the payload (done by the caller) — you keep the evidence.
-//!   2. **Deauthorize** the device at the kernel, via
-//!      `/sys/bus/usb/devices/<dev>/authorized`. The kernel drops it: it can no
-//!      longer deliver input. This is the same mechanism `usbkill` and USBGuard
-//!      use, and it is reversible (re-authorize, or replug a device you trust).
-//!   3. Optionally **hard-power-off**, if and only if the operator opted in,
-//!      to clear disk-encryption keys from RAM before anyone can extract them.
-//!
-//! We do **not** try to damage or "brick" the attacking device. That would be a
-//! retaliatory act rather than a defensive one, it rarely works from the host
-//! side anyway, and a misfire damages your own legitimate hardware.
-//! Deauthorizing stops the attack completely and leaves the evidence intact,
-//! which is the whole objective.
-//!
-//! Everything here is opt-in where it is destructive, and every action is
-//! logged before it is taken.
+//! Every destructive step is opt-in, and every action is logged before it runs.
 
 use std::fs;
 use std::path::{Path, PathBuf};

@@ -26,8 +26,8 @@ no PIN has been configured, nothing is unlocked.
 ### Active response — deauthorize and capture
 
 Detection is only half of it. On a confirmed payload — including the harder case
-where a ZeroTrace-style implant *spoofs an already-approved keyboard's
-identity* — the injected keystrokes are captured to a forensic log, then the
+of an implant that *spoofs an already-approved keyboard's identity* — the
+injected keystrokes are captured to a forensic log, then the
 device is **deauthorized at the kernel** via
 `/sys/bus/usb/devices/<dev>/authorized`. The kernel stops accepting its input;
 it can no longer type. This is the same mechanism `usbkill` and USBGuard use,
