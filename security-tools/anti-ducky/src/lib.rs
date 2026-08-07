@@ -602,7 +602,7 @@ pub fn export_whitelist() -> u8 {
 
 // ─── Public Entry Point ──────────────────────────────────────────────────────
 
-/// Run the anti-ducky input guard daemon.
+/// Run the anti-ducky daemon.
 #[cfg(target_os = "linux")]
 pub fn run() {
     // Ensure log directory exists

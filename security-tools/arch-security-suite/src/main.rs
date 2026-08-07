@@ -5,7 +5,7 @@
 //! who wants the whole suite installs and updates exactly one file.
 //!
 //! Why a dispatcher rather than a merged program: the tools have genuinely
-//! different lifetimes. Input Guard and Kernel Watcher are long-running daemons,
+//! different lifetimes. Anti-Ducky and Kernel Watcher are long-running daemons,
 //! Anti-Evil Maid is a one-shot boot check, and Libre OTP is invoked by PAM.
 //! Merging them into a single process would mean one crash takes down all five,
 //! and PAM would be loading a binary that also wants to run watcher threads.
@@ -49,7 +49,7 @@ enum Command {
         gui: bool,
     },
 
-    /// Input Guard — blocks BadUSB keystroke-injection devices.
+    /// Anti-Ducky — blocks BadUSB keystroke-injection devices.
     Ducky {
         #[arg(long)]
         gui: bool,
@@ -136,7 +136,7 @@ fn main() -> ExitCode {
 
         Command::Ducky { gui } => {
             if gui {
-                return run_gui("Input Guard", anti_ducky::gui::start_gui());
+                return run_gui("Anti-Ducky", anti_ducky::gui::start_gui());
             }
             anti_ducky::run();
             ExitCode::SUCCESS
@@ -203,7 +203,7 @@ fn main() -> ExitCode {
             println!("arch-security-suite {}", env!("CARGO_PKG_VERSION"));
             println!("All five tools are linked into this single binary.\n");
             println!("  otp        Libre OTP — two-factor / silent boot tamper check");
-            println!("  ducky      Input Guard — blocks BadUSB keystroke injection");
+            println!("  ducky      Anti-Ducky — blocks BadUSB keystroke injection");
             println!("  aem        Anti-Evil Maid — boot integrity and decoy entries");
             println!("  watch      Kernel Watcher — infostealer and rootkit monitor");
             println!("  scarecrow  Scarecrow — canary tokens and sandbox spoofing");

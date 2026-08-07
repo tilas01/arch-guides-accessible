@@ -154,6 +154,7 @@
         .table-scroll { overflow-x: auto; }
     </style>
     <link rel="preload" href="img/icons/arch-guides-32.png" as="image">
+    <script src="os-meta.js"></script>
     <script src="legal.js"></script>
 </head>
 <body>
@@ -322,7 +323,7 @@ const MY_TOOLS = [
         enforces: 'PAM + initramfs'
     },
     {
-        value: 'anti-ducky', icon: '🦆', name: 'Input Guard (Anti-Ducky)', repo: 'anti-ducky',
+        value: 'anti-ducky', icon: '🦆', name: 'Anti-Ducky', repo: 'anti-ducky',
         desc: 'Watches USB HID keystroke timing and sandboxes unknown input devices, blocking Rubber Ducky style automated keystroke injection before it can type anything.',
         enforces: 'udev + evdev'
     },

@@ -260,6 +260,7 @@
         }
     </style>
     <link rel="preload" href="img/icons/arch-guides-32.png" as="image">
+    <script src="os-meta.js"></script>
     <script src="legal.js"></script>
 </head>
 <body>
@@ -749,7 +750,7 @@ sudo bash install-security-suite.sh --all</code></pre>
         <ul>
             <li><strong>Fails closed.</strong> A bad hash or signature aborts the run. There is no <code>--skip-verify</code>, deliberately — a security tool you cannot verify is worse than none, because it gives false confidence.</li>
             <li><strong>Verifies everything before installing anything.</strong> Binaries are staged in a temporary directory first, so a failure on the fifth tool cannot leave you with four installed and one missing.</li>
-            <li><strong>Enables nothing by default.</strong> Several of these can lock you out — Input Guard can reject a keyboard, OTP can block login. They install stopped, and you enable them once you have read the configuration.</li>
+            <li><strong>Enables nothing by default.</strong> Several of these can lock you out — Anti-Ducky can reject a keyboard, OTP can block login. They install stopped, and you enable them once you have read the configuration.</li>
             <li><strong>Units are hardened.</strong> Each service gets <code>NoNewPrivileges</code>, <code>ProtectSystem=strict</code>, <code>ProtectHome=read-only</code>, <code>MemoryDenyWriteExecute</code> and a narrow <code>ReadWritePaths</code>. A security daemon should not be the weakest thing on the box.</li>
             <li><strong>Idempotent.</strong> Re-running upgrades in place.</li>
         </ul>
@@ -909,7 +910,7 @@ sha512sum -c libre-otp.sha512</code></pre>
             vendor, which is most of what it exists to remove.
         </p>
 
-        <h3 id="anti-ducky">🦆 Input Guard (Anti-Ducky)</h3>
+        <h3 id="anti-ducky">🦆 Anti-Ducky</h3>
         <p>Monitors USB HID keystroke timing and sandboxes unknown input devices, blocking Rubber Ducky / BadUSB style automated keystroke injection before the payload can type. Requires approval from already-trusted inputs before a new keyboard is authorised. For a policy-based alternative at the kernel level, see <a href="#other-sec">USBGuard</a>; for a hard power-off response, see the <a href="#usb-kill">USB kill switch</a>.</p>
 
         <h4>Enrol your own devices first</h4>
@@ -1110,7 +1111,7 @@ sudo anti-ducky --export-whitelist   # check what it now trusts</code></pre>
             <strong>🟠 “My laptop might be tampered with while I'm away.”</strong>
             <p style="margin:0.5rem 0 0;">
                 Add <a href="#security-suite">Anti-Evil Maid</a> for boot-integrity hashing,
-                <a href="#security-suite">Input Guard</a> against keystroke-injection USB devices,
+                <a href="#security-suite">Anti-Ducky</a> against keystroke-injection USB devices,
                 and <a href="#usb-kill">the USB kill switch set to “lock session”</a>.
                 Still non-destructive — you can always get back in.
             </p>
@@ -1772,7 +1773,7 @@ udevadm control --reload-rules</code></pre>
             The security tools build for aarch64. The parts that touch
             <code>evdev</code> and <code>udev</code> use the same kernel
             interfaces on ARM, so
-            <a href="#security-suite">Input Guard</a> and the rest work — but
+            <a href="#security-suite">Anti-Ducky</a> and the rest work — but
             <a href="#security-suite">Anti-Evil Maid</a>'s
             <code>/boot</code> hashing covers whatever your board actually boots
             from, which on ARM is often a FAT partition holding firmware blobs

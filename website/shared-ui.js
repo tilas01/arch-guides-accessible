@@ -1,7 +1,7 @@
 /* ============================================================================
    shared-ui.js — the parts of the interface that must be identical everywhere.
    ----------------------------------------------------------------------------
-   Loaded by every page. Four jobs:
+   Loaded by every page. Five jobs:
 
      1. The canonical top navigation, so every page offers the same
         destinations in the same order — hand-copied navs had already drifted.
@@ -13,11 +13,15 @@
         explains all the others; then the source repository; then this session's
         generation history.
 
-     3. A warning before you close the tab with unsaved generation history.
+     3. The target-system switcher, top left. Deliberately the opposite corner
+        from the control cluster: it is not one control among several, it is the
+        thing that decides what everything else on the page is about.
+
+     4. A warning before you close the tab with unsaved generation history.
         History is sessionStorage, so closing the tab is the moment it is gone
         for good.
 
-     4. Making sure tooltips are actually initialised. tooltip.js does the work;
+     5. Making sure tooltips are actually initialised. tooltip.js does the work;
         this only guarantees it gets a chance to on every page.
 
    No dependencies, no build step, and it degrades to "nothing happens" rather
@@ -60,9 +64,12 @@
         { href: 'live.html',          label: '📝 Live Editor',
           title: '📝 Live Editor',
           desc: 'Edit a generated script and guide side by side, browse this session\'s generation history, and download the results.' },
-        { href: 'iso-verify.html',    label: '💿 Verify Arch ISO',
-          title: '💿 Verify Arch ISO',
-          desc: 'Hash an Arch ISO in your browser and compare it against checksums from mirrors other than the one that served the image. Nothing is uploaded.' },
+        // The only nav entry that names an operating system, so it is the only
+        // one that has to follow the switcher. Its label is rebuilt whenever
+        // the selection changes — see applyOsIdentity().
+        { href: 'iso-verify.html',    label: '💿 Verify ISO',
+          title: '💿 Verify ISO',
+          desc: 'Hash an installer image in your browser and compare it against checksums from mirrors other than the one that served the image. Nothing is uploaded.' },
         { href: 'security-tools.html', label: '🦀 Security Tools',
           title: '🦀 Arch Security Tools',
           desc: 'Every Rust security tool explained, with live release statistics, plus the vetted third-party hardening tools.' },
@@ -160,6 +167,284 @@
         ss(function () { sessionStorage.setItem(ISO_VERIFIED_KEY, '1'); });
         refreshIsoBadge();
     };
+
+    /* ── The target-system switcher ──────────────────────────────────────────
+       Top left, opposite the control cluster. The placement is the point: the
+       cluster on the right is a row of tools that act on the page, and this is
+       not one of those — it decides which operating system the page is about,
+       so it sits on its own and reads as a statement of what you are looking at
+       rather than a button among buttons.
+
+       os-meta.js owns the table and the selection; this owns the picture of it.
+       Nothing here keeps its own copy of which system is current — it reads
+       `chosenOS()` every time it draws, so the dropdown, the walkthrough
+       question and the generated guide cannot drift apart. */
+
+    function osApi() {
+        // Feature-detected rather than assumed. If os-meta.js failed to load,
+        // every page still works; it just has no switcher, which is a visible
+        // absence rather than a control that silently does nothing.
+        return (typeof window.OS_META === 'object' && window.OS_META &&
+                typeof window.chosenOS === 'function' &&
+                typeof window.setTargetOS === 'function') ? window.OS_META : null;
+    }
+
+    function osMark(slug, size) {
+        var img = document.createElement('img');
+        img.src = 'img/icons/' + slug + '-' + (size > 32 ? 64 : 32) + '.png';
+        img.width = size;
+        img.height = size;
+        img.alt = '';
+        img.className = 'ctrl-pixel';
+        return img;
+    }
+
+    /* What the switcher button says. Before a choice has been made it invites
+       one rather than showing a default: the site is neutral until asked, and a
+       button already reading "Arch Linux" would look like a decision somebody
+       had made. */
+    function osButtonText(chosen, META) {
+        return chosen ? META[chosen].label : 'Choose your system';
+    }
+
+    function buildOsSwitch(header) {
+        var META = osApi();
+        if (!META) return;
+
+        var wrap = document.getElementById('os-switch');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.id = 'os-switch';
+            wrap.className = 'js-only';
+            header.insertBefore(wrap, header.firstChild);
+        }
+        wrap.innerHTML = '';
+
+        var btn = document.createElement('button');
+        btn.id = 'os-switch-btn';
+        btn.type = 'button';
+        btn.className = 'os-switch-btn nav-tooltip';
+        btn.setAttribute('aria-haspopup', 'listbox');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.setAttribute('data-title', '🐧 Which system you are installing');
+        btn.setAttribute('data-desc',
+            'Changes every guide, script and label on the site to the system you ' +
+            'pick. Only Arch is finished; the other three are marked and are for ' +
+            'reading, not installing. Held for this browser session only.');
+        wrap.appendChild(btn);
+
+        var menu = document.createElement('div');
+        menu.id = 'os-switch-menu';
+        menu.className = 'os-switch-menu';
+        menu.setAttribute('role', 'listbox');
+        menu.setAttribute('aria-label', 'Target operating system');
+        menu.hidden = true;
+        wrap.appendChild(menu);
+
+        Object.keys(META).forEach(function (id) {
+            var m = META[id];
+            var opt = document.createElement('button');
+            opt.type = 'button';
+            opt.className = 'os-opt os-accent-' + m.accent;
+            opt.setAttribute('role', 'option');
+            opt.setAttribute('data-os', id);
+
+            opt.appendChild(osMark(m.slug, 24));
+
+            var text = document.createElement('span');
+            text.className = 'os-opt-text';
+
+            var name = document.createElement('span');
+            name.className = 'os-opt-name';
+            name.textContent = m.label;
+            if (!m.complete) {
+                var wip = document.createElement('span');
+                wip.className = 'os-opt-wip';
+                wip.textContent = '🚧 work in progress';
+                name.appendChild(document.createTextNode(' '));
+                name.appendChild(wip);
+            }
+            text.appendChild(name);
+
+            var sum = document.createElement('span');
+            sum.className = 'os-opt-summary';
+            // Incomplete systems say so here rather than only in the badge. The
+            // badge is a label; this is the sentence that tells someone the
+            // guide will not install anything.
+            sum.textContent = m.complete
+                ? m.summary
+                : m.summary + ' Not ready to install from — read only.';
+            text.appendChild(sum);
+
+            opt.appendChild(text);
+            opt.addEventListener('click', function () {
+                window.setTargetOS(id);
+                closeOsMenu();
+                var b = document.getElementById('os-switch-btn');
+                if (b) b.focus();
+            });
+            menu.appendChild(opt);
+        });
+
+        btn.addEventListener('click', function () {
+            if (menu.hidden) openOsMenu(); else closeOsMenu();
+        });
+
+        paintOsSwitch();
+    }
+
+    /* Redrawn from the stored selection rather than from a variable this file
+       keeps, so it cannot show one system while the guide is built for
+       another. */
+    function paintOsSwitch() {
+        var META = osApi();
+        var wrap = document.getElementById('os-switch');
+        var btn = document.getElementById('os-switch-btn');
+        if (!META || !wrap || !btn) return;
+
+        var chosen = window.chosenOS();
+        var ident = chosen ? META[chosen] : window.OS_NEUTRAL;
+
+        btn.innerHTML = '';
+        btn.appendChild(osMark(ident.slug, 22));
+        var label = document.createElement('span');
+        label.className = 'os-switch-label';
+        label.textContent = osButtonText(chosen, META);
+        btn.appendChild(label);
+        var caret = document.createElement('span');
+        caret.className = 'os-switch-caret';
+        caret.setAttribute('aria-hidden', 'true');
+        caret.textContent = '▾';
+        btn.appendChild(caret);
+
+        wrap.className = 'js-only os-accent-' + ident.accent +
+                         (chosen && META[chosen].complete === false ? ' os-wip' : '');
+
+        var menu = document.getElementById('os-switch-menu');
+        if (menu) {
+            [].forEach.call(menu.querySelectorAll('.os-opt'), function (o) {
+                var is = o.getAttribute('data-os') === chosen;
+                o.setAttribute('aria-selected', String(is));
+                o.classList.toggle('is-current', is);
+            });
+        }
+    }
+
+    function openOsMenu() {
+        var menu = document.getElementById('os-switch-menu');
+        var btn = document.getElementById('os-switch-btn');
+        if (!menu || !btn) return;
+        menu.hidden = false;
+        btn.setAttribute('aria-expanded', 'true');
+        document.addEventListener('keydown', osMenuKeys);
+        document.addEventListener('click', osMenuOutside, true);
+        var first = menu.querySelector('.is-current') || menu.querySelector('.os-opt');
+        if (first) first.focus();
+    }
+
+    function closeOsMenu() {
+        var menu = document.getElementById('os-switch-menu');
+        var btn = document.getElementById('os-switch-btn');
+        if (menu) menu.hidden = true;
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+        document.removeEventListener('keydown', osMenuKeys);
+        document.removeEventListener('click', osMenuOutside, true);
+    }
+
+    function osMenuKeys(e) {
+        if (e.key === 'Escape') {
+            closeOsMenu();
+            var btn = document.getElementById('os-switch-btn');
+            if (btn) btn.focus();
+            return;
+        }
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        var menu = document.getElementById('os-switch-menu');
+        if (!menu || menu.hidden) return;
+        var opts = [].slice.call(menu.querySelectorAll('.os-opt'));
+        var at = opts.indexOf(document.activeElement);
+        var next = e.key === 'ArrowDown' ? at + 1 : at - 1;
+        if (next < 0) next = opts.length - 1;
+        if (next >= opts.length) next = 0;
+        if (opts[next]) { e.preventDefault(); opts[next].focus(); }
+    }
+
+    function osMenuOutside(e) {
+        var wrap = document.getElementById('os-switch');
+        if (wrap && !wrap.contains(e.target)) closeOsMenu();
+    }
+
+    /* ── Everything else that names the system ───────────────────────────────
+       The banner and the one navigation entry that carries an OS name. Both
+       neutral until a choice is made, which is the rule for the whole header:
+       no logo and no system name before selection. */
+
+    /* The three navigation entries that name a system. Everything else on the
+       site is the same whichever one is selected, so everything else keeps a
+       fixed name — a label that changes for no reason is harder to find again,
+       not easier. */
+    var OS_NAMED_NAV = {
+        'iso-verify.html': { icon: '💿', suffix: 'ISO', verb: 'Verify' },
+        'index.html':      { icon: '⚙️', suffix: 'Install Generator' },
+        'manual.html':     { icon: '🧭', suffix: 'Install Walkthrough' }
+    };
+
+    function osNavLabel(href, chosen, META) {
+        var spec = OS_NAMED_NAV[href];
+        var name = chosen ? (META[chosen].short || META[chosen].label) : '';
+        var parts = [spec.icon];
+        if (spec.verb) parts.push(spec.verb);
+        if (name) parts.push(name);
+        parts.push(spec.suffix);
+        return parts.join(' ');
+    }
+
+    function applyOsIdentity() {
+        var META = osApi();
+        if (!META) return;
+        var chosen = window.chosenOS();
+        var ident = chosen ? META[chosen] : window.OS_NEUTRAL;
+        var name = chosen ? (META[chosen].short || META[chosen].label) : '';
+
+        // The header banner. Matched on the file name rather than a class,
+        // because wiki.html's is an inline-styled <img> with no class and it
+        // would otherwise be the one page that kept the Arch banner.
+        [].forEach.call(document.querySelectorAll('header img'), function (img) {
+            var src = img.getAttribute('src') || '';
+            if (src.indexOf('banner') === -1) return;
+            img.src = 'img/banners/' + ident.slug + '.png';
+            img.alt = ident.label + ' banner';
+        });
+
+        Object.keys(OS_NAMED_NAV).forEach(function (href) {
+            var label = osNavLabel(href, chosen, META);
+            [].forEach.call(document.querySelectorAll(
+                '.main-nav a[href="' + href + '"], .footer-links a[href="' + href + '"]'
+            ), function (a) {
+                a.textContent = label;
+                if (a.hasAttribute('data-title')) a.setAttribute('data-title', label);
+            });
+        });
+
+        /* Page headings that name the system. Each page marks its own with an
+           id rather than this file guessing from the text, so a heading that is
+           reworded does not quietly stop following the selection. */
+        var headings = {
+            'gen-title': '⚙️ ' + (name ? name + ' ' : '') + 'Install Generator',
+            'gen-settings-heading': (name ? name + ' ' : '') + 'Generator Settings',
+            'walk-title': '🧭 ' + (name ? name + ' ' : '') + 'Install Walkthrough'
+        };
+        Object.keys(headings).forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = headings[id];
+        });
+
+        paintOsSwitch();
+    }
+
+    // Exposed so a page can relabel its own content on the same signal without
+    // reaching into this file's internals.
+    window.applyOsIdentity = applyOsIdentity;
 
     /* ── 1. The control cluster ─────────────────────────────────────────── */
 
@@ -449,6 +734,7 @@
                 if (el && el.parentNode === bar) bar.appendChild(el);
             });
         buildNav(header);
+        buildOsSwitch(header);
 
         refreshHistoryBadge();
 
@@ -628,6 +914,11 @@
     function init() {
         try { buildControls(); } catch (err) { console.error('shared-ui: controls', err); }
         try { buildFooter(); } catch (err) { console.error('shared-ui: footer', err); }
+        // After the footer, so its copy of the navigation gets relabelled too.
+        try { applyOsIdentity(); } catch (err) { console.error('shared-ui: os identity', err); }
+        document.addEventListener('unix:os-changed', function () {
+            try { applyOsIdentity(); } catch (err) { console.error('shared-ui: os identity', err); }
+        });
         try { refreshIsoBadge(); } catch (err) { console.error('shared-ui: iso badge', err); }
         try { wireUnloadGuard(); } catch (err) { console.error('shared-ui: unload', err); }
         try { ensureTooltips(); } catch (err) { console.error('shared-ui: tooltips', err); }

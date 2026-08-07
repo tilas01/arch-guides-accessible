@@ -1,7 +1,7 @@
 <!-- Author: tilas01 | Main Developer & Maintainer -->
 
 <p align="center">
-  <img src="img/banner.png" width="100%" alt="Unix Dynamic Guides Banner">
+  <img src="img/banners/unix-guides.png" width="100%" alt="Unix Guides banner">
 </p>
 
 <h1 align="center">🐧 Unix Guides</h1>
@@ -146,7 +146,7 @@ Native Rust tools built for this project. All standalone, all open source.
 | | Tool | What it does |
 |---|---|---|
 | <img src="img/icons/libre-otp-64.png" width="40" alt=""> | **[Libre OTP](security-tools/libre-otp/)** | TOTP/HOTP two-factor for boot, login and SSH. Defaults to a *silent* mode: one secret, never displayed, compared internally at boot so a mismatch means the boot chain changed. |
-| <img src="img/icons/anti-ducky-64.png" width="40" alt=""> | **[Input Guard (Anti-Ducky)](security-tools/anti-ducky/)** | Watches USB HID keystroke timing and sandboxes unknown input devices, blocking BadUSB / Rubber Ducky injection before the payload can type. |
+| <img src="img/icons/anti-ducky-64.png" width="40" alt=""> | **[Anti-Ducky](security-tools/anti-ducky/)** | Watches USB HID keystroke timing and sandboxes unknown input devices, blocking BadUSB / Rubber Ducky injection before the payload can type. |
 | <img src="img/icons/anti-evil-maid-64.png" width="40" alt=""> | **[Anti-Evil Maid](security-tools/anti-evil-maid/)** | Verifies boot integrity and hides the real encrypted target behind decoy kernel entries. Also suspends the LUKS volume on idle or on session lock, so the master key leaves RAM — which a screen lock does not do. |
 | <img src="img/icons/kernel-watcher-64.png" width="40" alt=""> | **[Kernel Watcher](security-tools/kernel-watcher/)** | Async filesystem monitor that flags infostealers touching browser profiles, SSH keys and wallets, and detects userland rootkit behaviour. |
 | <img src="img/icons/scarecrow-64.png" width="40" alt=""> | **[Scarecrow](security-tools/scarecrow/)** | Plants canary tokens and spoofs sandbox artefacts so malware that checks whether it is being analysed stays dormant. Also provides three optional duress PINs for the **login** prompt — duress, decoy, or both at once. |
@@ -176,7 +176,7 @@ hardened systemd units.
 It **fails closed** — anything that does not verify aborts the whole run, and
 there is no `--skip-verify` flag. Everything is verified before anything is
 installed, so a failure part-way cannot leave you with half a suite. Daemons are
-installed but left **stopped**: Input Guard can reject a keyboard and OTP can
+installed but left **stopped**: Anti-Ducky can reject a keyboard and OTP can
 block login, so enabling them is a decision you make after reading the config.
 
 ```bash

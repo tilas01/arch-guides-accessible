@@ -48,6 +48,16 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* `hidden` has to actually hide.
+   The browser's own `[hidden] { display: none }` is a user-agent rule, so any
+   author rule setting `display` on the same element beats it — and several here
+   do. `.iso-badge` is inline-flex and `.arch-tabs` is flex, so both stayed on
+   screen with the attribute set, and the ISO page showed its Arch verification
+   tabs and its "not verified yet" badge underneath a panel explaining that this
+   page cannot verify that image at all. `!important` is warranted: an element
+   carrying `hidden` is being hidden, and nothing should be able to argue. */
+[hidden] { display: none !important; }
+
 body {
     background-color: var(--bg-color);
     color: var(--fg-color);
@@ -160,6 +170,112 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 /* Drawn icons in the control cluster. Pixel art, so let it stay crisp rather
    than be smoothed into mush by the browser's default scaler. */
 .ctrl-pixel { display: block; image-rendering: pixelated; }
+
+/* ─── The target-system switcher, top left ────────────────────────────────── */
+/* Mirrors #header-controls on the opposite side, and inset by the same amount
+   so the two clusters sit on one line. It is not styled as another icon button:
+   it carries a name as well as a mark, because "which system am I looking at"
+   is a question the page should answer without being clicked. */
+#os-switch {
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    z-index: 100;
+    text-align: left;
+}
+
+.os-switch-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.3rem 0.55rem;
+    min-height: 34px;
+    color: var(--fg-color);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+.os-switch-btn:hover,
+.os-switch-btn:focus-visible { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+.os-switch-label { white-space: nowrap; }
+.os-switch-caret { color: var(--fg-dim); font-size: 0.7rem; }
+
+/* The accent follows the selected system, so the corner is a colour cue as well
+   as a label — and stays purple, the family colour, while nothing is chosen. */
+#os-switch.os-accent-cyan   .os-switch-btn { border-color: var(--accent-cyan); }
+#os-switch.os-accent-purple .os-switch-btn { border-color: var(--accent-purple); }
+#os-switch.os-accent-red    .os-switch-btn { border-color: var(--accent-red); }
+#os-switch.os-accent-green  .os-switch-btn { border-color: var(--accent-green); }
+
+/* An unfinished system is marked in the header the whole time it is selected,
+   not only where it was picked. Someone who chose Gentoo three pages ago and
+   has forgotten needs to be reminded before they run the script, not after. */
+#os-switch.os-wip .os-switch-btn {
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+}
+/* On the button, not on the label: the label is hidden on a narrow screen and
+   the warning is the last thing that may go with it. */
+#os-switch.os-wip .os-switch-btn::after {
+    content: "🚧";
+    font-size: 0.8rem;
+}
+
+.os-switch-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 290px;
+    max-width: min(360px, 92vw);
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+}
+
+.os-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0.5rem 0.6rem;
+    color: var(--fg-color);
+    font-family: var(--font-mono);
+    cursor: pointer;
+    min-height: var(--tap-target);
+}
+.os-opt:hover, .os-opt:focus-visible { background: var(--bg-lighter); }
+.os-opt img { flex: 0 0 auto; margin-top: 0.1rem; }
+.os-opt-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.os-opt-name { font-size: 0.86rem; font-weight: bold; }
+/* Wraps rather than truncates. Several option cards elsewhere on the site were
+   sized for short strings and clipped the ones that outgrew them; the text that
+   says a guide cannot be installed from is the last text to hide. */
+.os-opt-summary {
+    font-size: 0.74rem;
+    color: var(--fg-dim);
+    line-height: 1.45;
+    white-space: normal;
+}
+.os-opt-wip { font-size: 0.68rem; color: var(--accent-orange); font-weight: normal; }
+
+.os-opt.os-accent-cyan   .os-opt-name { color: var(--accent-cyan); }
+.os-opt.os-accent-purple .os-opt-name { color: var(--accent-purple); }
+.os-opt.os-accent-red    .os-opt-name { color: var(--accent-red); }
+.os-opt.os-accent-green  .os-opt-name { color: var(--accent-green); }
+.os-opt.is-current { border-color: currentColor; background: var(--bg-lighter); }
 
 /* The verified badge on the ISO page: the Arch mark with a tick beside it.
    The tick is a status readout — lit only after a hash has matched two
@@ -1118,6 +1234,8 @@ noscript .js-only { display: none !important; }
     .output-title { font-size: 0.95rem; }
     #header-controls { top: 8px; right: 10px; gap: 6px; }
     #header-controls button { font-size: 1.3rem; }
+    #os-switch { top: 8px; left: 10px; }
+    .os-switch-btn { font-size: 0.75rem; padding: 0.25rem 0.4rem; }
     /* Single column so app names are never clipped on a phone. */
     .app-grid-container { grid-template-columns: 1fr; padding: 0.8rem; }
 }
@@ -1126,6 +1244,13 @@ noscript .js-only { display: none !important; }
     body { padding: 0.4rem; }
     h1 { font-size: 1.3rem; }
     .app-desc { display: none; }   /* the tooltip still carries the detail */
+    /* Both header clusters are absolutely positioned on the same line, and at
+       this width the system name and four control icons no longer fit beside
+       each other. The mark and the caret stay — the switcher is still findable
+       and still says which system is selected via its colour and the 🚧 badge
+       — and the name returns as soon as there is room for it. */
+    .os-switch-label { display: none; }
+    .os-switch-menu { min-width: min(300px, 88vw); }
 }
 
 /* Coarse pointers (touch): the gear can't rely on :hover, so always show it. */

@@ -18,7 +18,7 @@ artefact to install rather than five of them, and it is what the generator
 installs when you pick the whole suite.
 
 The five tools it dispatches to are
-[Input Guard](../anti-ducky/), [Anti-Evil Maid](../anti-evil-maid/),
+[Anti-Ducky](../anti-ducky/), [Anti-Evil Maid](../anti-evil-maid/),
 [Kernel Watcher](../kernel-watcher/), [Libre OTP](../libre-otp/) and
 [Scarecrow](../scarecrow/). Each behaves exactly as it does standalone — read
 their READMEs for what each one actually does, and does not do.

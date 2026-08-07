@@ -35,4 +35,4 @@
 
 ## Security Suite Tools
 - **Verify ISO**: `arch-iso-verifier`
-- **Check Input Guard Logs**: `journalctl -u input-guard -e`
+- **Check Anti-Ducky Logs**: `journalctl -u anti-ducky -e`

@@ -1095,6 +1095,15 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
         }
     }
 
+    /* The target system, resolved the same way the walkthrough resolves it:
+       through os-meta.js, falling back to Arch when nothing has been chosen.
+       Read here rather than at load time so that switching system in the header
+       and pressing Generate produces output for the system now selected. */
+    const osMeta = (typeof window.targetOS === 'function' && window.OS_META)
+        ? window.OS_META[window.targetOS()] : null;
+    const osLabel = osMeta ? osMeta.label : 'Arch Linux';
+    const osUnfinished = !!(osMeta && osMeta.complete === false);
+
     // Build output
     function buildOutput(cmdOnly) {
         let o = "";
@@ -1103,11 +1112,47 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
         o += '<!-- CONFIG_START\n' + JSON.stringify(wrapConfig(configObj, 'dynamic-generator')) + '\nCONFIG_END -->\n\n';
 
         if (!cmdOnly) {
-            o += `# Your Custom Arch Linux Installation Guide\n\n`;
+            o += `# Your Custom ${osLabel} Installation Guide\n\n`;
+            /* Same banner, same wording and same position as the walkthrough's.
+               A reader who reaches an unfinished guide through this front end
+               instead of the other one is in exactly the same danger, and these
+               commands repartition disks. */
+            if (osUnfinished) {
+                o += `> [!CAUTION]\n`;
+                o += `> **🚧 The ${osLabel} guide is a work in progress and is NOT\n`;
+                o += `> ready to install from.** It is published so it can be read and\n`;
+                o += `> reviewed, not run. Commands may be missing, wrong, or in the wrong\n`;
+                o += `> order, and running them could destroy data without producing a\n`;
+                o += `> working system.\n>\n`;
+                o += `> **Use the Arch Linux guide for an actual install.** It is the only\n`;
+                o += `> complete one.\n>\n`;
+                o += `> If you know ${osLabel} and want to help, corrections are very\n`;
+                o += `> welcome: <https://github.com/tilas01/unix-guides-dynamic/issues>\n\n`;
+                o += `> The authority for ${osLabel} is ${osMeta.docsName}: <${osMeta.docs}>.\n`;
+                o += `> Where this guide and that disagree, that is right and this is a bug\n`;
+                o += `> worth reporting.\n\n`;
+            }
             o += `> *Generated for your specific hardware. Review every command before running.*\n\n`;
             o += `## 1. Partitioning & Formatting (${part} + ${fs})\n\`\`\`bash\n`;
         } else {
             o += `#!/bin/bash\n# Generated Script\n# WARNING: Review ALL commands!\nset -e\n`;
+            /* And in the script, because someone who skims the page and runs the
+               file has not read the guide. A comment block rather than a prompt:
+               the script is also read by people who pipe it somewhere. */
+            if (osUnfinished) {
+                o += `\n`;
+                o += `# ======================================================================\n`;
+                o += `# 🚧 WORK IN PROGRESS — NOT READY TO INSTALL FROM\n`;
+                o += `# ======================================================================\n`;
+                o += `# The ${osLabel} guide is unfinished. This script is published so it\n`;
+                o += `# can be read and reviewed, not run. Commands may be missing, wrong,\n`;
+                o += `# or in the wrong order, and running it could destroy data without\n`;
+                o += `# producing a working system.\n`;
+                o += `#\n`;
+                o += `# Use the Arch Linux guide for an actual install. It is the only\n`;
+                o += `# complete one. Authority for ${osLabel}: ${osMeta.docs}\n`;
+                o += `# ======================================================================\n\n`;
+            }
             if (verbosity_level === 'debug') o += `set -x\n`;
             if (verbosity_level === 'quiet') o += `exec >/dev/null\n`;
             o += `\n`;
@@ -1707,7 +1752,7 @@ run_with_progress() {
         // Standalone Security Apps
         const secApps = [
             { id: 'libre-otp', name: 'Libre-OTP Authenticator', repo: 'libre-otp' },
-            { id: 'anti-ducky', name: 'Input Guard (Anti-Ducky)', repo: 'anti-ducky' },
+            { id: 'anti-ducky', name: 'Anti-Ducky', repo: 'anti-ducky' },
             { id: 'anti-evil-maid', name: 'Anti-Evil Maid', repo: 'anti-evil-maid' },
             { id: 'kernel-watcher', name: 'Kernel Watcher (EDR)', repo: 'kernel-watcher' },
             { id: 'scarecrow', name: 'ScareCrow (LKM)', repo: 'scarecrow' },
@@ -2134,13 +2179,13 @@ run_with_progress() {
                 // not the devices the machine is used with. Enabling the daemon
                 // before enrolment locks the owner out of their own keyboard,
                 // so the unit is installed and left stopped until they run it.
-                o += `\n# Input Guard (Anti-Ducky): installed, NOT enabled.\n`;
+                o += `\n# Anti-Ducky: installed, NOT enabled.\n`;
                 o += `# Enrolment is interactive and must happen on the real machine with\n`;
                 o += `# the real keyboards attached, or the daemon sandboxes the keyboard\n`;
                 o += `# you log in with.\n`;
                 o += `mkdir -p /etc/motd.d\n`;
                 o += `cat > /etc/motd.d/10-anti-ducky << 'DUCKYMOTD'\n`;
-                o += `Input Guard is installed but not running. Before enabling it:\n`;
+                o += `Anti-Ducky is installed but not running. Before enabling it:\n`;
                 o += `  1. Plug in every keyboard, mouse and dock you actually use.\n`;
                 o += `  2. sudo anti-ducky --enroll          # confirms each device in turn\n`;
                 o += `  3. sudo anti-ducky --export-whitelist  # check what it now trusts\n`;
@@ -2405,7 +2450,7 @@ run_with_progress() {
         // --- STANDALONE SECURITY APP DEPLOYMENT (LIBRE-OTP & AUTO-UPDATER) ---
         const updaterApps = [
             { id: 'libre-otp', name: 'Libre-OTP Authenticator', repo: 'libre-otp' },
-            { id: 'anti-ducky', name: 'Input Guard (Anti-Ducky)', repo: 'anti-ducky' },
+            { id: 'anti-ducky', name: 'Anti-Ducky', repo: 'anti-ducky' },
             { id: 'anti-evil-maid', name: 'Anti-Evil Maid', repo: 'anti-evil-maid' },
             { id: 'kernel-watcher', name: 'Kernel Watcher (EDR)', repo: 'kernel-watcher' },
             { id: 'scarecrow', name: 'ScareCrow (LKM)', repo: 'scarecrow' }
@@ -4643,3 +4688,30 @@ function openWiki(e) {
         alert("⚠️ Your browser blocked the pop-up! Please allow pop-ups for this site to view the Wiki, or manually click the Wiki link at the top of the page.");
     }
 }
+
+/* ── The system this page generates for ──────────────────────────────────────
+   The header switcher decides it; this makes the page say so. The generator's
+   own output already reads the same variable, so the heading and the guide it
+   produces cannot claim different systems.
+
+   Only the wording changes here. The question set itself is still Arch's, which
+   is why an unfinished system's output carries the work-in-progress banner —
+   see buildOutput(). Naming the system without warning about it would be the
+   worse half of this change on its own. */
+function applyGeneratorOs() {
+    if (typeof window.targetOS !== 'function' || !window.OS_META) return;
+    const m = window.OS_META[window.targetOS()];
+    const sub = document.getElementById('gen-subtitle');
+    if (sub) {
+        sub.textContent = 'The ultimate, dynamically customizable, and highly ' +
+                          'secure guide to installing ' + m.label + '.' +
+                          (m.complete === false
+                              ? ' \u{1F6A7} This guide is unfinished — read it, do not run it.'
+                              : '');
+        sub.style.color = m.complete === false ? 'var(--accent-orange)' : '';
+    }
+    document.title = 'Unix Install Generator — ' + m.label;
+}
+
+document.addEventListener('DOMContentLoaded', applyGeneratorOs);
+document.addEventListener('unix:os-changed', applyGeneratorOs);

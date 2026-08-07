@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="assets/banner.png" width="880" alt="Input Guard (Anti-Ducky)">
+  <img src="assets/banner.png" width="880" alt="Anti-Ducky">
 </div>
 
-# Input Guard (Anti-Ducky)
+# Anti-Ducky
 
 Watches USB HID keystroke timing and sandboxes unknown input devices, so a BadUSB / Rubber Ducky cannot type its payload.
 

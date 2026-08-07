@@ -337,6 +337,130 @@ function lookup(text, filename) {
 
 function el(id) { return document.getElementById(id); }
 
+/* ── When the selected system is not Arch ────────────────────────────────────
+   Everything below this point is Arch: Arch mirrors, Arch checksum files, an
+   Arch signing key. The other three systems verify their images by genuinely
+   different mechanisms — OpenBSD does not use GPG at all, it uses signify(1),
+   an Ed25519 scheme with its own container format — so relabelling this page
+   would produce instructions that are confidently wrong.
+
+   So when another system is selected the Arch machinery is put away and the
+   page says what it can and cannot do, with a link to that project's own
+   verification instructions. A page that says "not covered yet" is worth more
+   than one that checks the wrong thing and reports success.
+
+   The exact filenames are deliberately not written out here. They change per
+   release, and a stale filename in a security instruction is the kind of
+   detail somebody works around by skipping the step. */
+const OS_VERIFY = {
+    gentoo: {
+        how: 'Gentoo publishes a digest file alongside each installer image and ' +
+             'a detached GPG signature over it, signed by the Gentoo release ' +
+             'engineering key. Verify the signature on the digest file first, ' +
+             'then check the image against the digest.',
+        where: 'https://www.gentoo.org/downloads/',
+        whereName: 'gentoo.org/downloads',
+        keys: 'https://www.gentoo.org/downloads/signatures/',
+        keysName: 'the Gentoo signature and key documentation'
+    },
+    freebsd: {
+        how: 'FreeBSD publishes CHECKSUM files for each release and signs them ' +
+             'with the FreeBSD release engineering GPG key. Verify the signature ' +
+             'on the CHECKSUM file, then check the image against it.',
+        where: 'https://download.freebsd.org/',
+        whereName: 'download.freebsd.org',
+        keys: 'https://docs.freebsd.org/en/books/handbook/mirrors/',
+        keysName: 'the FreeBSD Handbook mirrors and keys chapter'
+    },
+    openbsd: {
+        how: 'OpenBSD does not use GPG. It signs releases with signify(1), an ' +
+             'Ed25519 scheme of its own: SHA256.sig holds the signature and the ' +
+             'per-release public keys ship in /etc/signify on an installed ' +
+             'system. There is no key to import and no gpg --verify step — the ' +
+             'command is signify -C, run on a machine that has it.',
+        where: 'https://www.openbsd.org/faq/faq4.html',
+        whereName: 'the OpenBSD FAQ, section 4',
+        keys: 'https://man.openbsd.org/signify',
+        keysName: 'signify(1)'
+    }
+};
+
+function applyIsoOs() {
+    if (typeof window.targetOS !== 'function' || !window.OS_META) return;
+    const id = window.targetOS();
+    const m = window.OS_META[id];
+    const isArch = id === 'arch';
+
+    const named = isArch ? 'an Arch' : 'a ' + (m.short || m.label);
+    const head = document.querySelector('.iso-head h1');
+    if (head) head.textContent = '💿 Verify ' + named + ' image before you install it';
+    // The tab title too: a tab reading "Verify an Arch ISO" while the page says
+    // it cannot verify a Gentoo one is the sort of small contradiction that
+    // makes a reader distrust the part that is correct.
+    document.title = 'Verify ' + named + ' image — Unix Guides Dynamic';
+
+    // The Arch-only machinery. Hidden rather than disabled: a mirror picker for
+    // Arch mirrors, sitting under a FreeBSD heading, is not made safe by being
+    // greyed out.
+    ['step-download', 'step-checksums', 'step-verify', 'step-gpg', 'step-write']
+        .forEach(sid => { const s = el(sid); if (s) s.hidden = !isArch; });
+    const tabs = document.querySelector('.arch-tabs');
+    if (tabs) tabs.hidden = !isArch;
+    const badge = el('iso-verified-badge');
+    if (badge) badge.hidden = !isArch;
+
+    let panel = el('iso-os-elsewhere');
+    if (isArch) { if (panel) panel.remove(); return; }
+
+    const spec = OS_VERIFY[id];
+    if (!panel) {
+        panel = document.createElement('section');
+        panel.id = 'iso-os-elsewhere';
+        panel.className = 'step warn';
+        const main = document.querySelector('main');
+        const iso = document.querySelector('.iso-head');
+        if (main) main.insertBefore(panel, iso ? iso.nextSibling : main.firstChild);
+    }
+    panel.innerHTML = '';
+
+    const h = (tag, text, style) => {
+        const e = document.createElement(tag);
+        if (text) e.textContent = text;
+        if (style) e.setAttribute('style', style);
+        return e;
+    };
+
+    panel.appendChild(h('h2', '🚧 This page cannot verify a ' + (m.short || m.label) +
+                              ' image for you'));
+    panel.appendChild(h('p',
+        'The in-browser verifier is built around Arch: Arch mirrors, Arch checksum ' +
+        'files and an Arch signing key. ' + m.label + ' verifies its images by a ' +
+        'different mechanism, and running the Arch checks against a ' +
+        (m.short || m.label) + ' image would either fail for the wrong reason or, ' +
+        'worse, appear to pass. So it is not offered here yet.'));
+    panel.appendChild(h('p', spec.how));
+
+    const links = document.createElement('p');
+    links.appendChild(document.createTextNode('Download and verification instructions: '));
+    const a1 = document.createElement('a');
+    a1.href = spec.where; a1.target = '_blank'; a1.rel = 'noopener';
+    a1.textContent = spec.whereName;
+    links.appendChild(a1);
+    links.appendChild(document.createTextNode(' · '));
+    const a2 = document.createElement('a');
+    a2.href = spec.keys; a2.target = '_blank'; a2.rel = 'noopener';
+    a2.textContent = spec.keysName;
+    links.appendChild(a2);
+    panel.appendChild(links);
+
+    panel.appendChild(h('p',
+        'Verifying an Arch image is still available — switch the system in the ' +
+        'top-left corner back to Arch Linux and this page becomes the Arch ' +
+        'verifier again.', 'font-size:0.85rem;color:var(--fg-dim);'));
+}
+
+document.addEventListener('unix:os-changed', applyIsoOs);
+
 function setStatus(node, kind, html) {
     node.className = 'verdict verdict-' + kind;
     node.innerHTML = html;
@@ -587,4 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (q === 'aarch64' || q === 'x86_64') wantArch = q;
     } catch (_) { /* ignore */ }
     applyArch(wantArch, picked);
+
+    // Last, so it can put away anything the Arch setup above just built.
+    applyIsoOs();
 });
