@@ -906,7 +906,7 @@
             return '<a href="' + item.href + '">' + item.label + '</a>';
         }).join('');
 
-        grid.appendChild(block('footer-project', '🦀', 'Arch Guides Dynamic', [
+        grid.appendChild(block('footer-project', '🦀', 'Unix Guides Dynamic', [
             '<p>by <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a>' +
             ' · <a href="' + REPO_URL + '" target="_blank" rel="noopener">Source</a>' +
             ' · <a href="' + REPO_URL + '/releases" target="_blank" rel="noopener">Releases</a>' +

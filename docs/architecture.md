@@ -29,7 +29,7 @@ Every choice you make in the interactive generator fundamentally shapes the requ
 
 ### 3. Init Systems (systemd vs busybox)
 - **systemd hook:** Faster boot times and deeper integration with systemd-boot and sd-encrypt. It handles LVM and LUKS mounting inherently via systemd targets.
-- **busybox hook:** The traditional mkinitcpio setup. Requires specific bash hooks (encrypt, lvm2) placed in specific order before ilesystems inside /etc/mkinitcpio.conf.
+- **busybox hook:** The traditional mkinitcpio setup. Requires specific bash hooks (encrypt, lvm2) placed in specific order before filesystems inside /etc/mkinitcpio.conf.
 
 ### 4. Bootloaders & Secure Boot
 - **Unified Kernel Image (UKI):** Bundles the kernel, initramfs, and cmdline into a single .efi executable. This entirely bypasses traditional bootloaders like GRUB, directly booting from the motherboard's UEFI. This allows for Custom Keys Secure Boot where you take ownership of the motherboard PK/KEK keys.

@@ -1,6 +1,6 @@
 # Dependency Archive
 
-This directory contains scripts and archived repositories for crucial dependencies used by the Arch Guides project. 
+This directory contains scripts and archived repositories for crucial dependencies used by the Unix Guides project. 
 If the original repositories or YouTube tutorials ever go offline, this archive ensures the project remains 100% reproducible and usable.
 
 ## Included Archives

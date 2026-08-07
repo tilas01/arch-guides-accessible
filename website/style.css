@@ -1,5 +1,5 @@
 /* ============================================================================
-   Arch Guides Dynamic — Tokyo Night
+   Unix Guides Dynamic — Tokyo Night
    ----------------------------------------------------------------------------
    Consolidated. The previous revision had .app-category-header defined four
    times with conflicting values, and five selectors left dangling by a
@@ -86,8 +86,12 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 
 .banner {
     width: 100%;
-    max-width: clamp(320px, 40vw, 480px);
-    margin: 0 auto 0.6rem;
+    /* Sized to sit above the page rather than lead it. At the previous
+       clamp(320px, 40vw, 480px) the banner was the largest thing on screen and
+       pushed the first question below the fold on a laptop — it is a mark, not
+       a hero image. */
+    max-width: clamp(200px, 24vw, 320px);
+    margin: 0 auto 0.4rem;
     display: block;
     transition: transform 0.2s, filter 0.2s;
     background: transparent;

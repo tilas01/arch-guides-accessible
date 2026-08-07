@@ -1,5 +1,5 @@
 #!/bin/bash
-# Arch Guides: Download, Verify, and Execute Rust Installer
+# Unix Guides: Download, Verify, and Execute Rust Installer
 
 set -e
 
