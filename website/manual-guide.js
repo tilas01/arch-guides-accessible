@@ -958,14 +958,14 @@
             L.push('> lock you out, which is the point of them.');
             L.push('');
             if (has(s.security_tools, 'anti-ducky')) {
-                L.push('> **Input Guard specifically:** its keystroke-timing thresholds have');
+                L.push('> **Anti-Ducky specifically:** its keystroke-timing thresholds have');
                 L.push('> never been measured on real hardware, so its false-positive rate is');
                 L.push('> unknown — and it guards the keyboard you log in with. Test it while');
                 L.push('> you still have SSH or a second keyboard.');
                 L.push('');
                 L.push('#### Enrol your own input devices first');
                 L.push('');
-                L.push('Input Guard grants trust by a vote from an already-trusted keyboard.');
+                L.push('Anti-Ducky grants trust by a vote from an already-trusted keyboard.');
                 L.push('On a fresh install there is no such keyboard, so the first one you');
                 L.push('plug in is the one it sandboxes. Enrol before you enable the daemon.');
                 L.push('');
@@ -1040,7 +1040,7 @@
                 if (resp === 'poweroff') {
                     L.push('> [!CAUTION]');
                     L.push('> This loses unsaved work with no confirmation, and a false');
-                    L.push('> positive triggers it. Input Guard\'s timing thresholds have');
+                    L.push('> positive triggers it. Anti-Ducky\'s timing thresholds have');
                     L.push('> never been measured on real hardware, so its false-positive');
                     L.push('> rate is unknown. Test it before relying on it.');
                     L.push('');

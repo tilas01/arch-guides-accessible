@@ -198,23 +198,26 @@ icon("arch-security-suite", "SECURITY SUITE", "ALL FIVE TOOLS, ONE BINARY", "m",
 .......ww.......
 """)
 
-# A keyboard struck through: keystroke injection, refused. A USB-A glyph was
-# tried first and read as a robot at 16px; the thing being blocked is typing.
-icon("anti-ducky", "INPUT GUARD", "BLOCKS BADUSB KEYSTROKE INJECTION", "r", """
+# The duck itself. The tool is named for the attack it refuses — the Rubber
+# Ducky — so the mark is the duck, and the wordmark and subtitle say what
+# happens to it. A struck-through keyboard was tried first and a slash drawn
+# across the duck after that; at 16px the strike ate the beak and the result
+# read as neither a duck nor a prohibition. Silhouette-first, like the rest.
+icon("anti-ducky", "ANTI-DUCKY", "BLOCKS BADUSB KEYSTROKE INJECTION", "y", """
 ................
-............rr..
-.wwwwwwwwwwrrww.
-.wKKKKKKKKrrKKw.
-.wKffKffKrrKfKw.
-.wKKKKKKrrKKKKw.
-.wKfKffrrfKffKw.
-.wKKKKrrKKKKKKw.
-.wKffrrfffKffKw.
-.wKKrrKKKKKKKKw.
-.wKrrffffffKfKw.
-.wrrKKKKKKKKKKw.
-.rrwwwwwwwwwwww.
-rr..............
+.....yyyy.......
+....yyyyyy......
+....yyKyyy......
+....yyyyyyoooo..
+....yyyyyyoo....
+.....yyyyy......
+..yyyyyyyyy.....
+.yyyyyyyyyyy....
+yyyyyyyyyyyyy...
+.yyyyyyyyyyyy...
+..yyyyyyyyyy....
+...yyyyyyyy.....
+....yyyyyy......
 ................
 ................
 """)
@@ -667,11 +670,15 @@ def main() -> int:
               ICONS["arch-guides"]["grid"])
     written += 1
 
-    # Repository banner keeps its historic name so existing links stay valid.
+    # The default banner keeps its historic file name so existing links stay
+    # valid, but it is the neutral Unix one, not Arch's: it is what the README
+    # shows and what the site header shows before a system has been chosen.
+    # Arch's own banner is still written as img/banners/arch-guides.png and the
+    # header swaps to it the moment Arch is selected.
     for d, fn in ((os.path.join(root, "img"), "banner.png"),
                   (os.path.join(root, "website", "img"), "banner.png")):
-        write_png(os.path.join(d, fn), make_banner("arch-guides",
-                                                   ICONS["arch-guides"]))
+        write_png(os.path.join(d, fn), make_banner("unix-guides",
+                                                   ICONS["unix-guides"]))
         written += 1
 
     print(f"wrote {written} files for {len(ICONS)} icons")

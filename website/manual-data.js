@@ -54,40 +54,20 @@ const DUSKY_CHANNEL = 'https://www.youtube.com/@dusk_everyday';
    The variable every OS-specific string reads from. Nothing downstream may
    hard-code "Arch" any more — see `osName()` below.
 
-   `complete: false` drives the Work In Progress badge. tilas01's rule: an OS may
-   appear here before it is finished, but must be unmistakably marked as not
-   ready to install from, because these scripts repartition disks and someone
-   who ignores a subtle warning can lose one. The badge only comes off when the
-   guides reach Arch's depth, every permutation generates in both front ends,
-   every emitted script passes `bash -n` (and `sh -n` for the BSDs, whose
-   /bin/sh is not bash), option parity holds, and the tool-support table is
-   honest about what cannot work. */
-const OS_META = {
-    arch: {
-        label: 'Arch Linux', complete: true,
-        pkg: 'pacman', init: 'systemd', fde: 'LUKS2',
-        docs: 'https://wiki.archlinux.org/',
-        docsName: 'the Arch Wiki'
-    },
-    gentoo: {
-        label: 'Gentoo', complete: false,
-        pkg: 'portage', init: 'OpenRC or systemd', fde: 'LUKS2',
-        docs: 'https://wiki.gentoo.org/wiki/Handbook:AMD64',
-        docsName: 'the Gentoo Handbook'
-    },
-    freebsd: {
-        label: 'FreeBSD', complete: false,
-        pkg: 'pkg / ports', init: 'rc.d', fde: 'geli',
-        docs: 'https://docs.freebsd.org/en/books/handbook/',
-        docsName: 'the FreeBSD Handbook'
-    },
-    openbsd: {
-        label: 'OpenBSD', complete: false,
-        pkg: 'pkg_add', init: 'rc.d', fde: 'softraid -C CRYPTO',
-        docs: 'https://www.openbsd.org/faq/',
-        docsName: 'the OpenBSD FAQ'
-    }
-};
+   The table itself lives in os-meta.js, which every page loads before this
+   file, because the header switcher needs it on pages the walkthrough is not
+   on. Read rather than copied: two tables would let the dropdown and the
+   question below disagree about which system the reader is installing, and the
+   answer decides which commands get printed. */
+const OS_META = (typeof window !== 'undefined' && window.OS_META) || null;
+
+/* Loud rather than quiet. Without the table every `when:` on this page silently
+   resolves to Arch, so a Gentoo walkthrough would render as an Arch one and
+   look entirely normal — the failure this project keeps finding. */
+if (!OS_META || !OS_META.arch) {
+    throw new Error('manual-data.js: os-meta.js must load first. It holds the ' +
+                    'only definition of the target systems and is not duplicated here.');
+}
 
 /* Arch is the default when no OS has been chosen.
 
@@ -96,7 +76,7 @@ const OS_META = {
    one place, so an unanswered or unrecognised selection behaves exactly as the
    site did before the selector existed — which is what allows the existing
    permutation coverage to stay valid. */
-function osId(s) { return (s && s.os && OS_META[s.os]) ? s.os : 'arch'; }
+function osId(s) { return window.osIdOf(s && s.os); }
 function osMeta(s) { return OS_META[osId(s)]; }
 function osName(s) { return osMeta(s).label; }
 /** True for Linux targets — Arch and Gentoo share primitives the BSDs do not. */
@@ -116,32 +96,21 @@ const STEPS = [
     wiki: 'architecture',
     type: 'choice',
     optional: true,
-    options: [
-        { value: 'arch', label: 'Arch Linux', recommended: true,
-          desc: 'Complete and the default. pacman, systemd, LUKS2. The Arch ' +
-                'Wiki is the authority — where this project and the Arch Wiki ' +
-                'disagree, the Arch Wiki is right.' },
-        { value: 'gentoo', label: 'Gentoo — 🚧 Work in progress',
-          desc: 'Source-based: a stage3 tarball, portage with USE flags, and ' +
-                'you compile the kernel. Shares Linux primitives with Arch, so ' +
-                'LUKS2 and every security tool work unchanged.',
-          danger: '🚧 NOT READY TO INSTALL FROM. Visible for reading only — ' +
-                  'the guide is incomplete and running it would not produce a ' +
-                  'working system. Use Arch for an actual install.' },
-        { value: 'freebsd', label: 'FreeBSD — 🚧 Work in progress',
-          desc: 'Not Linux. bsdinstall, ZFS or UFS, geli for encryption, ' +
-                'pkg and ports, rc.d instead of systemd.',
-          danger: '🚧 NOT READY TO INSTALL FROM. Visible for reading only. ' +
-                  'Several security tools cannot work here unchanged — see ' +
-                  'the wiki before relying on any of it.' },
-        { value: 'openbsd', label: 'OpenBSD — 🚧 Work in progress',
-          desc: 'Not Linux, and the furthest from Arch. The install(8) ' +
-                'script, disklabel, FFS2, softraid for encryption, and ' +
-                'signify rather than GPG for release signatures.',
-          danger: '🚧 NOT READY TO INSTALL FROM. Visible for reading only. ' +
-                  'OpenBSD has no PAM and no Wayland, so the duress PINs and ' +
-                  'the Dusky desktop cannot work there at all.' }
-    ],
+    /* Built from the table rather than written out again. The header switcher
+       offers the same four with the same warnings, and a card here that said
+       something different from the card there would be a question and a control
+       disagreeing about the same choice. */
+    options: Object.keys(OS_META).map(id => {
+        const m = OS_META[id];
+        const opt = {
+            value: id,
+            label: m.label + (m.complete ? '' : ' — 🚧 Work in progress'),
+            desc: m.desc
+        };
+        if (id === window.OS_DEFAULT) opt.recommended = true;
+        if (m.danger) opt.danger = m.danger;
+        return opt;
+    }),
     note: 'Skipping this selects Arch, which is the only complete guide.'
 },
 
@@ -1025,7 +994,7 @@ const STEPS = [
     options: [
         { value: 'libre-otp', label: 'Libre OTP',
           desc: 'TOTP/HOTP second factor with no cloud account and no blobs.' },
-        { value: 'anti-ducky', label: 'Input Guard (anti-ducky)',
+        { value: 'anti-ducky', label: 'Anti-Ducky',
           desc: 'Blocks BadUSB keystroke injection by watching HID timing.',
           note: 'Its timing thresholds have never been measured on real ' +
                 'hardware. Test it before trusting it with your only keyboard.' },
@@ -1096,14 +1065,14 @@ const STEPS = [
           danger: 'Irreversible without a header backup, same as duress.' }
     ]
 },
-/* ── Input Guard response ───────────────────────────────────────────────────
-   Only asked when Input Guard is actually installed. The capture and the
+/* ── Anti-Ducky response ───────────────────────────────────────────────────
+   Only asked when Anti-Ducky is actually installed. The capture and the
    deauthorization happen regardless; this is the *extra* response, and the two
    ends of it have very different costs. */
 {
     id: 'ducky_response',
     section: 'Security',
-    title: 'What should Input Guard do when it catches a payload?',
+    title: 'What should Anti-Ducky do when it catches a payload?',
     help: 'It always captures the payload and deauthorizes the device at the ' +
           'kernel, whatever you pick here. This is what happens on top of that.',
     wiki: 'anti-ducky',
@@ -1135,7 +1104,7 @@ const STEPS = [
           desc: 'Cuts power so the disk-encryption keys leave RAM before ' +
                 'anyone can pull the DIMMs for a cold-boot read.',
           danger: 'Loses unsaved work, with no confirmation, on a false ' +
-                  'positive. Input Guard\'s timing thresholds have never been ' +
+                  'positive. Anti-Ducky\'s timing thresholds have never been ' +
                   'measured on real hardware, so its false-positive rate is ' +
                   'unknown. Requires typed confirmation to arm.' }
     ]

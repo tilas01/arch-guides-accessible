@@ -17,6 +17,7 @@
          the page that renders install commands, and broke the site entirely when
          used offline from a live USB, which is exactly when it is needed.
          markdown.js and highlight.js do both jobs and ship with the site. -->
+    <script src="os-meta.js"></script>
     <script src="legal.js"></script>
 
     <link rel="preload" href="style.css" as="style">
@@ -60,8 +61,11 @@
                 data-title="ℹ️ Tooltips: ON"
                 data-desc="Tooltips are ON. Hover on desktop, or tap on mobile, for an explanation of any control. Click to turn them off — this button keeps its own tooltip either way.">ℹ️</button>
         </div>
-        <h1>⚙️ Unix Install Generator</h1>
-        <p>The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
+        <h1 id="gen-title">⚙️ Arch Install Generator</h1>
+        <!-- The system named here follows the switcher; script.js rewrites it.
+             The markup keeps Arch because Arch is what an unselected session
+             generates, so the text is right before any script has run. -->
+        <p id="gen-subtitle">The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.</p>
         <p style="font-size:0.85rem; color:var(--fg-dim); margin-top:-0.4rem;">
             Prefer it explained one step at a time? Try the
             <a href="manual.html" class="nav-tooltip" data-title="🧭 Unix Install Walkthrough"
@@ -97,7 +101,9 @@
         <div class="layout-container js-only">
             <section class="generator-form">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--bg-lighter); gap:1.5rem;">
-                    <h3 style="margin:0; color:var(--accent-cyan); font-size:1.1rem;">Generator Settings</h3>
+                    <!-- Named for the selected system by script.js. Arch in the
+                         markup because Arch is what an unselected session builds. -->
+                    <h3 id="gen-settings-heading" style="margin:0; color:var(--accent-cyan); font-size:1.1rem;">Arch Generator Settings</h3>
                     
                     <div style="display:flex; align-items:center; gap:15px; margin-left: auto;">
                         <button type="button" class="btn nav-tooltip" data-title="Clear Form Selections" data-desc="Reset all dropdowns and checkboxes to default empty states." style="cursor:pointer; width:auto; padding:0.4rem 1rem; background:var(--bg-lighter); color:var(--accent-red); font-size:0.85rem; border:1px solid var(--accent-red); border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem; margin:0;" onclick="clearFormSelections()">
@@ -872,8 +878,8 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                         <p style="font-size:0.75rem;color:var(--accent-red);margin-top:0.3rem;">⚠️ Libre users: Firefox firmware blobs, Flatpak proprietary apps, Signal Electron build, and Chromium may conflict with strict libre principles. See <a href="wiki.html" style="color:var(--accent-red)">Wiki</a> for details.</p>
                     </div>
 
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#anti-ducky', '_blank'); return false;" data-title="Input Guard response" data-desc="What Input Guard (anti-ducky) does after it confirms a BadUSB payload. It captures the payload and deauthorizes the device at the kernel whatever you pick here; this is the additional response.">
-                        <label for="ducky_response">Input Guard — on a confirmed payload:</label>
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#anti-ducky', '_blank'); return false;" data-title="Anti-Ducky response" data-desc="What Anti-Ducky does after it confirms a BadUSB payload. It captures the payload and deauthorizes the device at the kernel whatever you pick here; this is the additional response.">
+                        <label for="ducky_response">Anti-Ducky — on a confirmed payload:</label>
                         <select oncontextmenu="window.open('wiki.html#anti-ducky', '_blank'); return false;" id="ducky_response">
                             <option value="lock" selected>Lock every session (recommended)</option>
                             <option value="alert">Alert only — the device is blocked either way</option>

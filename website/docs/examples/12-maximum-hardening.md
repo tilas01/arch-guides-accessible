@@ -282,7 +282,7 @@ sudo bash install.sh --only libre-otp,anti-ducky,anti-evil-maid,kernel-watcher,s
 > installs the daemons but does not enable them — several of these can
 > lock you out, which is the point of them.
 
-> **Input Guard specifically:** its keystroke-timing thresholds have
+> **Anti-Ducky specifically:** its keystroke-timing thresholds have
 > never been measured on real hardware, so its false-positive rate is
 > unknown — and it guards the keyboard you log in with. Test it while
 > you still have SSH or a second keyboard.

@@ -430,6 +430,13 @@
 
     function answer(step, value) {
         state[step.id] = value;
+        // The header switcher and this question are two views of one choice.
+        // Publishing it here is what stops them disagreeing; the listener below
+        // handles the other direction. setTargetOS fires synchronously and the
+        // listener sees the value already set, so this does not loop.
+        if (step.id === 'os' && typeof window.setTargetOS === 'function') {
+            window.setTargetOS(value);
+        }
         advance(step);
     }
 
@@ -459,6 +466,11 @@
         var last = visited.pop();
         if (last === undefined) return;
         delete state[last];
+        // Un-answering the OS question has to un-answer it in the header too,
+        // or the corner keeps naming a system the guide is no longer built for.
+        if (last === 'os' && typeof window.clearTargetOS === 'function') {
+            window.clearTargetOS();
+        }
         pruneUnreachable();
         rebuildGuide();
         save();
@@ -582,6 +594,7 @@
         if (!confirm('Clear every answer and start the walkthrough again?')) return;
         state = {};
         visited = [];
+        if (typeof window.clearTargetOS === 'function') window.clearTargetOS();
         save();
         rebuildGuide();
         renderStep(activeSteps()[0]);
@@ -907,12 +920,65 @@
 
     /* ── Boot ───────────────────────────────────────────────────────────── */
 
+    /* ── One choice, two places it can be made ───────────────────────────────
+       The header switcher and the first question both set the target system.
+       They must never show different answers, because the answer decides which
+       commands the guide prints.
+
+       On load, whichever of the two has an answer wins, in this order: a stored
+       selection (made in the welcome modal, or on another page, or in the
+       corner a moment ago) is authoritative, because it is the more recent
+       statement; failing that, an answer resumed from an earlier walkthrough is
+       published to the header so the corner stops saying "choose your system"
+       about a question already answered. */
+    function reconcileOs() {
+        if (typeof window.chosenOS !== 'function') return;
+        var chosen = window.chosenOS();
+        if (chosen) {
+            if (state.os !== chosen) {
+                state.os = chosen;
+                pruneUnreachable();
+            }
+            // The OS question is the first step, so it belongs at the front of
+            // the trail rather than wherever it happened to be recorded.
+            if (visited.indexOf('os') === -1) visited.unshift('os');
+        } else if (state.os && typeof window.setTargetOS === 'function') {
+            window.setTargetOS(state.os);
+        }
+    }
+
+    function onOsChanged(e) {
+        var next = (e && e.detail) ? e.detail.os : null;
+        if (state.os === next || (!next && state.os === undefined)) return;
+
+        if (next) {
+            state.os = next;
+            if (visited.indexOf('os') === -1) visited.unshift('os');
+        } else {
+            delete state.os;
+            var at = visited.indexOf('os');
+            if (at !== -1) visited.splice(at, 1);
+        }
+        // Switching system can make earlier answers unreachable — Dusky and the
+        // snapshot question do not exist on OpenBSD — so the same pruning the
+        // walkthrough does after any answer has to happen here too, or a stale
+        // answer leaks into a guide for a system that has no such option.
+        pruneUnreachable();
+        rebuildGuide();
+        save();
+        renderStep(nextUnanswered());
+    }
+
     function init() {
         wireModeButtons();
         var resumed = restore();
+        reconcileOs();
         wireExports();
         rebuildGuide();
-        renderStep(resumed ? (nextUnanswered() || null) : activeSteps()[0]);
+        save();
+        document.addEventListener('unix:os-changed', onOsChanged);
+        renderStep((resumed || state.os !== undefined)
+            ? (nextUnanswered() || null) : activeSteps()[0]);
 
         /* Right-click anywhere on a question opens its wiki section, matching
            the generator. tooltip.js does this for elements it knows about; this

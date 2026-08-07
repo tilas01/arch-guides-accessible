@@ -76,7 +76,7 @@
            equivalent, and the generator's "shutdown" has no walkthrough one —
            both are reported as unmapped rather than approximated. Guessing here
            would silently change what a password does under coercion. */
-        // Auto-lock and the Input Guard response. Same ids and same option
+        // Auto-lock and the Anti-Ducky response. Same ids and same option
         // values on both sides, so there is nothing to translate and no value
         // map for the two to disagree in.
         { wl: 'luks_autolock',  gen: 'modal_aem_autolock', group: 'selects' },

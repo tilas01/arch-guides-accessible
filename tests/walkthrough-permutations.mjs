@@ -20,7 +20,7 @@ function load(file) {
 // Evaluate both files in one shared scope, as the browser does.
 const sandbox = { window: {}, module: undefined };
 const fn = new Function('window', 'module',
-    load('manual-data.js') + '\n' + load('manual-guide.js') +
+    load('os-meta.js') + '\n' + load('manual-data.js') + '\n' + load('manual-guide.js') +
     '\nreturn { STEPS, DUSKY_LOCKS, build: window.buildManualGuide, script: window.buildManualScript, ' +
     'commandSteps: window.buildCommandSteps, isDestructive: window.isDestructiveCommand };');
 const { STEPS, DUSKY_LOCKS, build, script, commandSteps, isDestructive } = fn(sandbox.window, undefined);

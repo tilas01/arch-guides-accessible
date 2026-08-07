@@ -26,7 +26,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const legalDone   = localStorage.getItem(LEGAL_KEY) === 'true';
   const welcomeDone = localStorage.getItem(WELCOME_KEY) === 'true';
 
-  if ((legalDone && welcomeDone) || sessionAccepted()) return;
+  /* There is no neutral, general-Unix mode. Every page is a page about one
+     system, so a session that has agreed but never chosen one is asked before
+     it gets a page — otherwise a deep link, or a returning tab, would land
+     somebody in a state the site is not meant to have. */
+  function osUnchosen() {
+    return typeof window.chosenOS === 'function' && !window.chosenOS();
+  }
+
+  if ((legalDone && welcomeDone) || sessionAccepted()) {
+    if (osUnchosen()) showOsChooser(function () { /* nothing after it */ });
+    return;
+  }
 
   // ─── Overlay & modal factory ────────────────────────────────────────────────
   function makeOverlay() {
@@ -81,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <p style="margin:0 0 0.7rem;">
           <strong style="color:var(--accent-green,#9ece6a);">Start by verifying your ISO.</strong>
           That comes before everything else, and the
-          <a href="iso-verify.html" style="color:var(--accent-green,#9ece6a);">Verify Arch ISO</a>
+          <a href="iso-verify.html" style="color:var(--accent-green,#9ece6a);">Verify ISO</a>
           page does it in your browser — the file never leaves your machine, and the
           checksum is taken from mirrors other than the one that served the image, so
           a host that lies about the image cannot also hand you a matching checksum.
@@ -197,14 +208,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    // After agreeing, always offer the ways in. It is the first real decision a
-    // visitor has to make, and burying it behind an opt-in checkbox meant most
-    // people never saw it — they landed on whichever page happened to be open.
-    // The chooser has its own "not now" escape.
+    // After agreeing: which system, then where to start. The order matters —
+    // the route chooser names the system in its own labels, so asking after it
+    // would mean showing "Verify Arch ISO" to somebody about to say Gentoo.
     const dismiss = () => {
       markSessionAccepted();
       overlay.remove();
-      showGeneratorJump();
+      showOsChooser();
     };
 
     // One button, gated on two ticks. There is deliberately no "don't show
@@ -259,6 +269,146 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.refreshTooltips === 'function') window.refreshTooltips();
   }
 
+  /* "Gentoo Install Generator" once Gentoo is chosen, "Install Generator"
+     before anything is. Returns a trailing space so the caller reads as one
+     phrase either way. */
+  function osName() {
+    const chosen = typeof window.chosenOS === 'function' ? window.chosenOS() : null;
+    if (!chosen || !window.OS_META) return '';
+    const m = window.OS_META[chosen];
+    return (m.short || m.label) + ' ';
+  }
+
+  // ─── Which system are you installing? ───────────────────────────────────────
+  // Asked once, straight after the waiver, because it changes what every other
+  // page means. Four cards using the same marks the header switcher uses, so
+  // the picture in the modal and the picture in the corner are the same
+  // picture — and the same table in os-meta.js describes both.
+  //
+  // Arch is pre-selected and Continue works without touching anything: the
+  // three other guides are unfinished, and the default has to be the one that
+  // works. Skipping is not a separate state — it means Arch, which is what the
+  // rest of the site already assumes.
+  function showOsChooser(andThen) {
+    const next = typeof andThen === 'function' ? andThen : showGeneratorJump;
+    const META = window.OS_META;
+    // If os-meta.js did not load there is nothing honest to ask, so go straight
+    // on rather than showing a chooser that cannot record an answer.
+    if (!META || typeof window.setTargetOS !== 'function') { next(); return; }
+
+    const overlay = makeOverlay();
+    const modal = makeModal();
+    modal.style.maxWidth = '720px';
+    modal.style.borderColor = 'var(--accent-purple,#bb9af7)';
+
+    if (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) {
+      Object.assign(modal.style, {
+        width: '100%', maxWidth: '100%', minHeight: '100vh',
+        borderRadius: '0', border: 'none', padding: '1.5rem 1.1rem',
+      });
+      Object.assign(overlay.style, { paddingTop: '0', paddingBottom: '0', alignItems: 'stretch' });
+    }
+
+    const ACCENT = {
+      cyan: 'var(--accent-cyan,#7dcfff)', purple: 'var(--accent-purple,#bb9af7)',
+      red: 'var(--accent-red,#f7768e)', green: 'var(--accent-green,#9ece6a)'
+    };
+
+    // Pre-selected, not merely defaulted somewhere in the code: the card that
+    // is chosen is visibly chosen before anything is clicked.
+    let picked = window.chosenOS() || window.OS_DEFAULT;
+
+    let html = `
+      <h2 style="color:var(--accent-purple,#bb9af7); text-align:center; margin:0 0 0.4rem;">
+        Which system are you installing?
+      </h2>
+      <p style="color:#8b949e; text-align:center; font-size:0.85rem; margin:0 0 1.3rem;">
+        This changes the guides, the scripts and the labels across the whole site.
+        You can change it at any time from the switcher in the top-left corner.
+      </p>
+      <div id="os-choose-cards" style="display:flex; flex-direction:column; gap:0.6rem;">`;
+
+    Object.keys(META).forEach(id => {
+      const m = META[id];
+      const colour = ACCENT[m.accent] || ACCENT.purple;
+      html += `
+        <button type="button" class="os-choose-card" data-os="${id}"
+                aria-pressed="false"
+                style="display:flex; gap:0.8rem; align-items:flex-start; text-align:left;
+                       background:var(--bg-darker,#16161e); border:1px solid ${colour};
+                       border-radius:10px; padding:0.8rem 0.95rem; cursor:pointer;
+                       font-family:inherit; color:var(--fg-color,#a9b1d6); width:100%;">
+          <img src="img/icons/${m.slug}-64.png" alt="" width="40" height="40"
+               style="image-rendering:pixelated; flex:0 0 auto;">
+          <span style="display:block; min-width:0;">
+            <span style="display:block; font-weight:700; color:${colour}; font-size:0.98rem;">
+              ${m.label}${m.complete
+                ? ' <span style="font-size:0.7rem; color:var(--accent-green,#9ece6a); font-weight:400;">— complete</span>'
+                : ' <span style="font-size:0.7rem; color:var(--accent-orange,#ff9e64); font-weight:400;">— 🚧 work in progress</span>'}
+            </span>
+            <span style="display:block; color:var(--fg-color,#a9b1d6); font-size:0.83rem; margin-top:0.25rem; line-height:1.55;">
+              ${m.desc}
+            </span>
+            ${m.danger ? `<span style="display:block; color:var(--accent-orange,#ff9e64);
+                                        font-size:0.78rem; margin-top:0.4rem; line-height:1.5;">
+              ${m.danger}
+            </span>` : ''}
+          </span>
+        </button>`;
+    });
+
+    html += `</div>
+      <button id="os-choose-continue" class="btn" type="button" style="
+        background:var(--accent-purple,#bb9af7); color:#16161e;
+        border:1px solid var(--accent-purple,#bb9af7); width:100%;
+        padding:0.9rem; margin-top:1.1rem; font-size:1rem; font-weight:700;
+        border-radius:8px; cursor:pointer; letter-spacing:0.5px;">
+        Continue
+      </button>
+      <p id="os-choose-hint" style="color:#8b949e; font-size:0.72rem; text-align:center; margin:0.7rem 0 0;">
+        Arch Linux is selected. It is the only finished guide, and it is what
+        the site falls back to if you skip this.
+      </p>`;
+
+    modal.innerHTML = html;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    const cards = modal.querySelectorAll('.os-choose-card');
+    const hint = modal.querySelector('#os-choose-hint');
+
+    function paint() {
+      cards.forEach(c => {
+        const on = c.getAttribute('data-os') === picked;
+        c.setAttribute('aria-pressed', String(on));
+        c.style.background = on ? 'var(--bg-lighter,#24283b)' : 'var(--bg-darker,#16161e)';
+        c.style.borderWidth = on ? '2px' : '1px';
+      });
+      const m = META[picked];
+      hint.textContent = m.complete
+        ? m.label + ' is selected. It is the only finished guide.'
+        : m.label + ' is selected. Its guide is not finished — you can read it, ' +
+          'but use Arch Linux to actually install.';
+      hint.style.color = m.complete ? '#8b949e' : 'var(--accent-orange,#ff9e64)';
+    }
+
+    cards.forEach(c => c.addEventListener('click', () => {
+      picked = c.getAttribute('data-os');
+      paint();
+    }));
+    paint();
+
+    modal.querySelector('#os-choose-continue').addEventListener('click', () => {
+      window.setTargetOS(picked);
+      overlay.remove();
+      document.body.style.overflow = '';
+      next();
+    });
+
+    if (typeof window.refreshTooltips === 'function') window.refreshTooltips();
+  }
+
   // ─── Generator jump overlay ─────────────────────────────────────────────────
   // Shown only when the user ticked the shortcut box. Two plain choices, each
   // saying who it is for, so a first-time visitor picks the right one rather
@@ -292,11 +442,11 @@ document.addEventListener('DOMContentLoaded', () => {
         heading: '🛠️ Build an install',
         note: 'Both produce the same thing — a bash script and a matching markdown guide. They differ only in how much you decide up front.',
         items: [
-          { href: 'index.html', icon: '⚙️', name: 'Unix Install Generator',
+          { href: 'index.html', icon: '⚙️', name: osName() + 'Install Generator',
             tag: 'recommended on a PC', colour: 'var(--accent-blue,#7aa2f7)',
             desc: 'One form, every option at once. Best if you already know what you want.',
-            tip: 'Set every option in a single form and generate a custom Arch install script and guide. Fastest on a desktop.' },
-          { href: 'manual.html', icon: '🧭', name: 'Unix Install Walkthrough',
+            tip: 'Set every option in a single form and generate a custom install script and guide. Fastest on a desktop.' },
+          { href: 'manual.html', icon: '🧭', name: osName() + 'Install Walkthrough',
             tag: 'recommended on mobile', colour: 'var(--accent-purple,#bb9af7)',
             desc: 'One question at a time, everything explained, the guide building as you answer.',
             tip: 'Best on a phone, or if you are not sure yet — it walks you through each choice and says what it costs.' }
@@ -306,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
         heading: '🔍 Before you install',
         note: 'Do this first. It comes before everything else.',
         items: [
-          { href: 'iso-verify.html', icon: '💿', name: 'Verify Arch ISO',
+          { href: 'iso-verify.html', icon: '💿', name: 'Verify ' + osName() + 'ISO',
             tag: 'x86_64 and ARM', colour: 'var(--accent-green,#9ece6a)',
             desc: 'Hash your download in the browser and check it against mirrors other than the one that served it.',
             tip: 'The file never leaves your machine. A host that lies about the image cannot also hand you a matching checksum.' }
@@ -327,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
           { href: 'security-tools.html', icon: '🦀', name: 'Security Tools',
             tag: 'optional', colour: 'var(--accent-red,#f7768e)',
             desc: 'The Rust suite and the vetted third-party hardening tools. Several can lock you out — read first.',
-            tip: 'Libre OTP, Input Guard, Anti-Evil Maid, Kernel Watcher and Scarecrow. Reproducible, GPG-signed builds.' },
+            tip: 'Libre OTP, Anti-Ducky, Anti-Evil Maid, Kernel Watcher and Scarecrow. Reproducible, GPG-signed builds.' },
           { href: 'live.html', icon: '📝', name: 'Live Editor',
             tag: 'edit and download', colour: 'var(--accent-orange,#ff9e64)',
             desc: 'Edit a generated script and guide side by side, browse this session\'s history, and download.',
