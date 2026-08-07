@@ -1,7 +1,7 @@
 /* ============================================================================
    config-translate.js — make one saved config work in either front end.
    ----------------------------------------------------------------------------
-   The Unix Install Generator and the Unix Install Walkthrough are, deliberately, two
+   The *nix Install Generator and the *nix Install Walkthrough are, deliberately, two
    separate tools with their own pages and their own option sets. They already
    share a JSON envelope:
 

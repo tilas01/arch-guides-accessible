@@ -23,7 +23,7 @@
 
 ### What is Xorg (X11)?
 
-**Xorg** (X.Org Server) is the reference implementation of the **X Window System (X11)**, a display server protocol that has been the standard on Linux/Unix systems since 1984. It uses a **client-server architecture** where the X server manages display hardware and input devices, while client applications connect to it to render windows.
+**Xorg** (X.Org Server) is the reference implementation of the **X Window System (X11)**, a display server protocol that has been the standard on Linux/*nix systems since 1984. It uses a **client-server architecture** where the X server manages display hardware and input devices, while client applications connect to it to render windows.
 
 - **Mature:** 40+ years of development, massive compatibility.
 - **Network-transparent:** Built-in support for running applications on remote machines.
@@ -427,5 +427,5 @@ ldd /usr/local/bin/dwm
 
 ---
 
-*Part of the [Unix Guides Dynamic](https://github.com/tilas01/unix-guides-dynamic) wiki by [tilas01](https://github.com/tilas01).*
+*Part of the [*nix Guides Dynamic](https://github.com/tilas01/unix-guides-dynamic) wiki by [tilas01](https://github.com/tilas01).*
 *Dusky by [dusklinux](https://github.com/dusklinux/dusky).*

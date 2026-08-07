@@ -174,7 +174,7 @@ deliberate step, because several can lock you out.
 | `libre-otp` | — | Invoked by PAM. Test with `--setup` before wiring PAM, or you can lock yourself out. |
 | `anti-ducky` | libudev (evdev) | Run `--approve-current` **while your real keyboard is attached**. |
 | `anti-evil-maid` | libudev | Depends on `kernel-watcher` by path, so build that first if building individually. |
-| `kernel-watcher` | libudev | Uses `nix`, which is Unix-only. It will not build on Windows or macOS. |
+| `kernel-watcher` | libudev | Uses `nix`, which is *nix-only. It will not build on Windows or macOS. |
 | `scarecrow` | — | Optional kernel module in `src/driver/` is built separately with `make`. |
 | `arch-security-suite` | libudev | Links all five. Build this last. |
 

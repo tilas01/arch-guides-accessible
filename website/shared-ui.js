@@ -49,14 +49,14 @@
           title: '🔎 Index',
           desc: 'The contents page for the whole project, with a search box that looks through the wiki, every generator and walkthrough question, the security tools, the cheatsheets and the docs at once.' },
         // Named in full, matching its sibling. The nav said "Generator" beside
-        // "Unix Install Walkthrough", so the two front ends read as though one were
+        // "*nix Install Walkthrough", so the two front ends read as though one were
         // the default and the other a variant of it. They are two equal routes
         // to the same install and are named as such everywhere else.
-        { href: 'index.html',         label: '⚙️ Unix Install Generator',
-          title: '⚙️ Unix Install Generator',
+        { href: 'index.html',         label: '⚙️ *nix Install Generator',
+          title: '⚙️ *nix Install Generator',
           desc: 'Set every option in one form and generate a custom Arch install script and guide. Fastest on a desktop when you already know what you want.' },
-        { href: 'manual.html',        label: '🧭 Unix Install Walkthrough',
-          title: '🧭 Unix Install Walkthrough',
+        { href: 'manual.html',        label: '🧭 *nix Install Walkthrough',
+          title: '🧭 *nix Install Walkthrough',
           desc: 'One question at a time, every option explained, the guide building as you answer. Same output as the generator. Recommended on mobile, or if you are not yet sure what you want.' },
         // Live Editor sits directly after the two generators because that is
         // where their output goes — the three are one flow, and separating them
@@ -384,7 +384,10 @@
        fixed name — a label that changes for no reason is harder to find again,
        not easier. */
     var OS_NAMED_NAV = {
-        'iso-verify.html': { icon: '💿', suffix: 'ISO', verb: 'Verify' },
+        // `media` rather than a fixed "ISO": Raspberry Pi OS publishes a
+        // compressed disk image you write to a card, so "Verify Raspberry Pi
+        // ISO" would name a file that does not exist.
+        'iso-verify.html': { icon: '💿', suffix: null, verb: 'Verify' },
         'index.html':      { icon: '⚙️', suffix: 'Install Generator' },
         'manual.html':     { icon: '🧭', suffix: 'Install Walkthrough' }
     };
@@ -395,7 +398,9 @@
         var parts = [spec.icon];
         if (spec.verb) parts.push(spec.verb);
         if (name) parts.push(name);
-        parts.push(spec.suffix);
+        // The verify entry takes its noun from the system; the others have a
+        // fixed one. Before a system is chosen it is just "Verify image".
+        parts.push(spec.suffix || (chosen ? META[chosen].media : 'image'));
         return parts.join(' ');
     }
 
@@ -565,8 +570,8 @@
             '<p>' + (entries.length
                 ? entries.length + ' saved. Session-only — no cookies, and gone when this ' +
                   'tab closes, so download anything you want to keep.'
-                : 'Nothing yet. Anything you generate in the Unix Install Generator or finish ' +
-                  'in the Unix Install Walkthrough appears here.') + '</p>';
+                : 'Nothing yet. Anything you generate in the *nix Install Generator or finish ' +
+                  'in the *nix Install Walkthrough appears here.') + '</p>';
         panel.appendChild(head);
 
         if (entries.length) {
@@ -578,8 +583,8 @@
 
                 var meta = document.createElement('div');
                 meta.className = 'history-meta';
-                var src = e.source === 'manual-walkthrough' ? '🧭 Unix Install Walkthrough'
-                        : e.source === 'dynamic-generator' ? '⚙️ Unix Install Generator'
+                var src = e.source === 'manual-walkthrough' ? '🧭 *nix Install Walkthrough'
+                        : e.source === 'dynamic-generator' ? '⚙️ *nix Install Generator'
                         : '📄 Generated';
                 meta.innerHTML = '<strong>' + src + '</strong>' +
                     '<span>' + String(e.timestamp || '').replace(/[<>&]/g, '') + '</span>';
@@ -659,7 +664,7 @@
     // Exposed so a page can offer its own entry point to the same overlay.
     window.openSharedHistory = openHistoryOverlay;
     /* Exposed so a page that writes to the history can light the clock
-       immediately. The Unix Install Walkthrough auto-saves on completion, and
+       immediately. The *nix Install Walkthrough auto-saves on completion, and
        without this the badge stayed dark until the next page load. */
     window.refreshHistoryBadge = function () { refreshHistoryBadge(); };
 
@@ -847,7 +852,7 @@
        it, so the credits read as part of the disclaimer.
 
        Practically, ten copies drift. The link row still said "Manual" rather
-       than "Unix Install Walkthrough" and had never gained the Live Editor or the
+       than "*nix Install Walkthrough" and had never gained the Live Editor or the
        Cheatsheets — the same failure the top nav had before it was moved here.
 
        So: one definition, three blocks side by side, each with its own accent —
@@ -906,7 +911,7 @@
             return '<a href="' + item.href + '">' + item.label + '</a>';
         }).join('');
 
-        grid.appendChild(block('footer-project', '🦀', 'Unix Guides Dynamic', [
+        grid.appendChild(block('footer-project', '🦀', '*nix Guides Dynamic', [
             '<p>by <a href="https://github.com/tilas01" target="_blank" rel="noopener">tilas01</a>' +
             ' · <a href="' + REPO_URL + '" target="_blank" rel="noopener">Source</a>' +
             ' · <a href="' + REPO_URL + '/releases" target="_blank" rel="noopener">Releases</a>' +

@@ -397,7 +397,7 @@ function applyIsoOs() {
     // The tab title too: a tab reading "Verify an Arch ISO" while the page says
     // it cannot verify a Gentoo one is the sort of small contradiction that
     // makes a reader distrust the part that is correct.
-    document.title = 'Verify ' + named + ' image — Unix Guides Dynamic';
+    document.title = 'Verify ' + named + ' image — *nix Guides Dynamic';
 
     // The Arch-only machinery. Hidden rather than disabled: a mirror picker for
     // Arch mirrors, sitting under a FreeBSD heading, is not made safe by being
