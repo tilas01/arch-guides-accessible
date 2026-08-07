@@ -524,11 +524,19 @@ def text_width(text, scale_factor=1):
 BANNER_W, BANNER_H, BANNER_SCALE = 960, 200, 1
 
 
-def make_banner(name: str, spec: dict) -> list[list]:
+def make_banner(name: str, spec: dict, credit: bool = True) -> list[list]:
     """Icon on the left, wordmark and subtitle on the right, on a flat field.
 
     Deliberately no gradient: the whole design language here is flat Tokyo Night
     tints, and a gradient in a README banner would be the one place it appears.
+
+    `credit=False` leaves the attribution line out. Two variants exist because
+    they are read in two different ways. In a README the image is the whole
+    thing, at whatever width the page gives it, and the credit has to travel
+    inside it. On the site the banner is scaled down to a few hundred pixels by
+    `.banner`'s max-width, and a 7px-tall bitmap line inside it becomes
+    unreadable — so the site uses this variant and draws the credit as real
+    text underneath, which scales with the viewport instead of against it.
     """
     w, h = BANNER_W, BANNER_H
     px = [[BG_BANNER for _ in range(w)] for _ in range(h)]
@@ -573,25 +581,27 @@ def make_banner(name: str, spec: dict) -> list[list]:
     # Attribution is part of the image rather than page furniture, so it travels
     # with the banner wherever it is embedded — README, wiki, a forum post, a
     # screenshot — instead of only existing on the site that overlaid it.
-    credit = "BY TILAS01 ON GITHUB"
-    cscale = 1
-    while cscale > 1 and tx + text_width(credit, cscale) > w - 28:
+    credit_text = "BY TILAS01 ON GITHUB"
+    cscale = 2
+    while cscale > 1 and tx + text_width(credit_text, cscale) > w - 28:
         cscale -= 1
 
     title_h = FONT_H * tscale
     sub_h = FONT_H * sscale
-    credit_h = FONT_H * cscale
+    credit_h = FONT_H * cscale if credit else 0
     gap = 18
-    credit_gap = 10
+    credit_gap = 10 if credit else 0
     block_h = title_h + gap + sub_h + credit_gap + credit_h
     ty = (h - block_h) // 2 - 4
 
     draw_text(px, label, tx, ty, PALETTE["w"], tscale)
     draw_text(px, sub, tx, ty + title_h + gap, accent, sscale)
-    # Green regardless of the banner's accent: it reads as attribution rather
-    # than as another line of the subtitle, and stays consistent across the set.
-    draw_text(px, credit, tx, ty + title_h + gap + sub_h + credit_gap,
-              PALETTE["g"], cscale)
+    if credit:
+        # Green regardless of the banner's accent: it reads as attribution
+        # rather than as another line of the subtitle, and stays consistent
+        # across the set.
+        draw_text(px, credit_text, tx, ty + title_h + gap + sub_h + credit_gap,
+                  PALETTE["g"], cscale)
 
     return px
 
@@ -634,6 +644,13 @@ def main() -> int:
             write_png(os.path.join(d, f"{name}.png"), banner)
             written += 1
 
+        # Site variant: no baked credit line. The site scales the banner down to
+        # a few hundred pixels, which reduced the attribution to an unreadable
+        # smudge, so shared-ui.js draws it as real text underneath instead.
+        write_png(os.path.join(site_banner_dir, f"{name}-plain.png"),
+                  make_banner(name, spec, credit=False))
+        written += 1
+
     # Per-crate assets. The tool READMEs already point at assets/icon.png and
     # assets/banner.png, and the Rust binaries include assets/icon-64.png at
     # compile time, so the artwork has exactly one source of truth: this file.
@@ -675,11 +692,14 @@ def main() -> int:
     # shows and what the site header shows before a system has been chosen.
     # Arch's own banner is still written as img/banners/arch-guides.png and the
     # header swaps to it the moment Arch is selected.
-    for d, fn in ((os.path.join(root, "img"), "banner.png"),
-                  (os.path.join(root, "website", "img"), "banner.png")):
-        write_png(os.path.join(d, fn), make_banner("unix-guides",
-                                                   ICONS["unix-guides"]))
-        written += 1
+    # The repository copy keeps the credit baked in, because on GitHub the image
+    # is shown at full width and travels on its own. The site copy does not, for
+    # the reason given above.
+    write_png(os.path.join(root, "img", "banner.png"),
+              make_banner("unix-guides", ICONS["unix-guides"]))
+    write_png(os.path.join(root, "website", "img", "banner.png"),
+              make_banner("unix-guides", ICONS["unix-guides"], credit=False))
+    written += 2
 
     print(f"wrote {written} files for {len(ICONS)} icons")
     return 0
