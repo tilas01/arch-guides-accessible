@@ -9,7 +9,7 @@ const REPO_URL: &str = "https://raw.githubusercontent.com/tilas01/unix-guides-dy
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=================================================");
-    println!("  Unix Guides: Highly Optimised Async Installer  ");
+    println!("  *nix Guides: Highly Optimised Async Installer  ");
     println!("=================================================");
     println!("This ultra-fast Rust builder concurrently fetches required guides");
     println!("directly into memory (skipping all images/blobs to save bandwidth)");

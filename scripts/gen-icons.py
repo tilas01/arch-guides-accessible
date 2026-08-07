@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate the Unix Guides icon set, favicons and README banners.
+Generate the *nix Guides icon set, favicons and README banners.
 
 Everything here is deterministic and dependency-free: no Pillow, no cairo, no
 network. Given the same source grids you get byte-identical output, which is the
@@ -97,8 +97,8 @@ icon("arch-guides", "ARCH GUIDES", "DYNAMIC INSTALL GENERATOR", "m", """
 # and a trident, not a devil. OpenBSD's Puffy is a pufferfish. Gentoo's logo is
 # the "g" swirl — Larry the cow is the mascot, but the swirl is the mark.
 
-# Tux, for the neutral Unix banner shown before an OS is chosen.
-icon("unix-guides", "UNIX GUIDES", "EVERY UNIX GUIDE YOU COULD EVER NEED", "m", """
+# Tux, for the neutral *nix banner shown before an OS is chosen.
+icon("unix-guides", "*NIX GUIDES", "EVERY *NIX GUIDE YOU COULD EVER NEED", "m", """
 ................
 ......KKKK......
 .....KKKKKK.....
@@ -418,6 +418,10 @@ FONT: dict[str, list[str]] = {
     "_": [".....", ".....", ".....", ".....", ".....", ".....", "#####"],
     "+": [".....", "..#..", "..#..", "#####", "..#..", "..#..", "....."],
     "&": [".##..", "#..#.", "#.#..", ".#...", "#.#.#", "#..#.", ".##.#"],
+    # Needed for the "*nix" wordmark. Drawn in the top half of the cell rather
+    # than centred, which is where an asterisk sits in a real typeface, and
+    # squarer than a typographic one because a 5x7 grid cannot do six arms.
+    "*": ["#.#.#", ".###.", "#####", ".###.", "#.#.#", ".....", "....."],
     "!": ["..#..", "..#..", "..#..", "..#..", "..#..", ".....", "..#.."],
     "'": ["..#..", "..#..", ".....", ".....", ".....", ".....", "....."],
     "(": ["...#.", "..#..", ".#...", ".#...", ".#...", "..#..", "...#."],
@@ -712,7 +716,7 @@ def main() -> int:
     written += 1
 
     # The default banner keeps its historic file name so existing links stay
-    # valid, but it is the neutral Unix one, not Arch's: it is what the README
+    # valid, but it is the neutral *nix one, not Arch's: it is what the README
     # shows and what the site header shows before a system has been chosen.
     # Arch's own banner is still written as img/banners/arch-guides.png and the
     # header swaps to it the moment Arch is selected.

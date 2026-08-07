@@ -1,7 +1,7 @@
 /* Encrypted-DNS upstreams, shared by both front ends.
  *
  * Previously a `const DNS_PROVIDERS` private to `manual-guide.js`, which is why
- * the Unix Install Generator had no encrypted DNS at all: the table, and the
+ * the *nix Install Generator had no encrypted DNS at all: the table, and the
  * emission that used it, only existed on one side. Duplicating it here would
  * have left two tables to keep in step — the usual outcome being one updated
  * and the other quietly left behind. One table, two readers.

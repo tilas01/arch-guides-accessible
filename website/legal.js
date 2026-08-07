@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const legalDone   = localStorage.getItem(LEGAL_KEY) === 'true';
   const welcomeDone = localStorage.getItem(WELCOME_KEY) === 'true';
 
-  /* There is no neutral, general-Unix mode. Every page is a page about one
+  /* There is no neutral, general-*nix mode. Every page is a page about one
      system, so a session that has agreed but never chosen one is asked before
      it gets a page — otherwise a deep link, or a returning tab, would land
      somebody in a state the site is not meant to have. */
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="text-align:center; margin-bottom:1.75rem;">
         <div style="font-size:2.4rem; margin-bottom:0.6rem;">🦀🛡️</div>
         <h2 style="color:var(--accent-cyan,#7dcfff); margin:0; font-size:1.55rem; letter-spacing:0.5px; font-weight:800;">
-          Welcome to Unix Guides Dynamic
+          Welcome to *nix Guides Dynamic
         </h2>
         <p style="color:#8b949e; font-size:0.82rem; margin:0.5rem 0 0;">
           by <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple,#bb9af7); text-decoration:none;">tilas01</a>
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
           documentation, and source code provided on this website and within the GitHub repository
           <a href="https://github.com/tilas01/unix-guides-dynamic" target="_blank"
              style="color:var(--accent-blue,#7aa2f7);">tilas01/unix-guides-dynamic</a> —
-          including but not limited to the Unix Guides Unix Install Generator, the Arch Rusty Security Suite (ARSS),
+          including but not limited to the *nix Guides install generator, the Arch Rusty Security Suite (ARSS),
           Anti-Evil-Maid, Anti-Ducky, Kernel Watcher, LibreOTP, and Scarecrow —
           are provided strictly <strong>"AS IS"</strong>, without warranty of any kind, express or implied.
           The author (<strong>tilas01</strong>) expressly disclaims all liability for any direct, indirect,
@@ -272,6 +272,14 @@ document.addEventListener('DOMContentLoaded', () => {
   /* "Gentoo Install Generator" once Gentoo is chosen, "Install Generator"
      before anything is. Returns a trailing space so the caller reads as one
      phrase either way. */
+  /* What the chosen system actually publishes — an ISO for most, a disk image
+     for Raspberry Pi OS, which has no ISO to verify. */
+  function osMedia() {
+    const chosen = typeof window.chosenOS === 'function' ? window.chosenOS() : null;
+    if (!chosen || !window.OS_META) return 'image';
+    return window.OS_META[chosen].media || 'image';
+  }
+
   function osName() {
     const chosen = typeof window.chosenOS === 'function' ? window.chosenOS() : null;
     if (!chosen || !window.OS_META) return '';
@@ -494,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
         heading: '🔍 Before you install',
         note: 'Do this first. It comes before everything else.',
         items: [
-          { href: 'iso-verify.html', icon: '💿', name: 'Verify ' + osName() + 'ISO',
+          { href: 'iso-verify.html', icon: '💿', name: 'Verify ' + osName() + osMedia(),
             tag: 'x86_64 and ARM', colour: 'var(--accent-green,#9ece6a)',
             desc: 'Hash your download in the browser and check it against mirrors other than the one that served it.',
             tip: 'The file never leaves your machine. A host that lies about the image cannot also hand you a matching checksum.' }

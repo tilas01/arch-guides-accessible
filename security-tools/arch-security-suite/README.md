@@ -6,7 +6,7 @@
 
 All five tools in one binary, dispatching to whichever you ask for.
 
-Part of the [Unix Guides Dynamic](../../) security suite. Everything here is
+Part of the [*nix Guides Dynamic](../../) security suite. Everything here is
 Rust, builds reproducibly, and ships as a signed release binary.
 
 ---

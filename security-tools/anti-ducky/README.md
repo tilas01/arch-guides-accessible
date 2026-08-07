@@ -6,7 +6,7 @@
 
 Watches USB HID keystroke timing and sandboxes unknown input devices, so a BadUSB / Rubber Ducky cannot type its payload.
 
-Part of the [Unix Guides Dynamic](../../) security suite. Everything here is
+Part of the [*nix Guides Dynamic](../../) security suite. Everything here is
 Rust, builds reproducibly, and ships as a signed release binary.
 
 ---

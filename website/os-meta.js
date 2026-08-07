@@ -38,7 +38,7 @@
 
     var OS_META = {
         arch: {
-            label: 'Arch Linux', short: 'Arch', complete: true,
+            label: 'Arch Linux', short: 'Arch', media: 'ISO', complete: true,
             pkg: 'pacman', init: 'systemd', fde: 'LUKS2',
             docs: 'https://wiki.archlinux.org/',
             docsName: 'the Arch Wiki',
@@ -53,7 +53,7 @@
                   'disagree, the Arch Wiki is right.'
         },
         gentoo: {
-            label: 'Gentoo', short: 'Gentoo', complete: false,
+            label: 'Gentoo', short: 'Gentoo', media: 'ISO', complete: false,
             pkg: 'portage', init: 'OpenRC or systemd', fde: 'LUKS2',
             docs: 'https://wiki.gentoo.org/wiki/Handbook:AMD64',
             docsName: 'the Gentoo Handbook',
@@ -68,7 +68,7 @@
                     'working system. Use Arch for an actual install.'
         },
         freebsd: {
-            label: 'FreeBSD', short: 'FreeBSD', complete: false,
+            label: 'FreeBSD', short: 'FreeBSD', media: 'ISO', complete: false,
             pkg: 'pkg / ports', init: 'rc.d', fde: 'geli',
             docs: 'https://docs.freebsd.org/en/books/handbook/',
             docsName: 'the FreeBSD Handbook',
@@ -82,7 +82,7 @@
                     'the wiki before relying on any of it.'
         },
         raspios: {
-            label: 'Raspberry Pi OS', short: 'Raspberry Pi', complete: false,
+            label: 'Raspberry Pi OS', short: 'Raspberry Pi', media: 'image', complete: false,
             pkg: 'apt', init: 'systemd', fde: 'none by default',
             docs: 'https://www.raspberrypi.com/documentation/',
             docsName: 'the Raspberry Pi documentation',
@@ -107,7 +107,7 @@
                     'apply to it yet.'
         },
         openbsd: {
-            label: 'OpenBSD', short: 'OpenBSD', complete: false,
+            label: 'OpenBSD', short: 'OpenBSD', media: 'ISO', complete: false,
             pkg: 'pkg_add', init: 'rc.d', fde: 'softraid -C CRYPTO',
             docs: 'https://www.openbsd.org/faq/',
             docsName: 'the OpenBSD FAQ',
@@ -127,7 +127,7 @@
        of OS_META: it is not a system you can install, and putting it in the
        table would mean every consumer had to remember to exclude it. */
     var NEUTRAL = {
-        label: 'Unix Guides',
+        label: '*nix Guides',
         slug: 'unix-guides',
         accent: 'purple'
     };

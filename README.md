@@ -1,13 +1,13 @@
 <!-- Author: tilas01 | Main Developer & Maintainer -->
 
 <p align="center">
-  <img src="img/banners/unix-guides.png" width="100%" alt="Unix Guides banner">
+  <img src="img/banners/unix-guides.png" width="100%" alt="*nix Guides banner">
 </p>
 
-<h1 align="center">🐧 Unix Guides</h1>
+<h1 align="center">🐧 *nix Guides</h1>
 
 <p align="center">
-  <strong>A modular, dynamically generated, security-focused Unix-like installation system.</strong>
+  <strong>A modular, dynamically generated, security-focused *nix-like installation system.</strong>
 </p>
 
 <p align="center">
@@ -63,8 +63,8 @@ it.
 
 | | Route | Best for | Start here |
 |---|---|---|---|
-| **1** | **Unix Install Generator** — one form, get a script | You know what you want, and you are on a PC | **[Open the generator →](https://tilas01.github.io/unix-guides-dynamic/)** |
-| **2** | **Unix Install Walkthrough** — one question at a time, each explained | You are on mobile, or not yet sure what you want | **[Open the walkthrough →](https://tilas01.github.io/unix-guides-dynamic/manual.html)** |
+| **1** | ***nix Install Generator** — one form, get a script | You know what you want, and you are on a PC | **[Open the generator →](https://tilas01.github.io/unix-guides-dynamic/)** |
+| **2** | ***nix Install Walkthrough** — one question at a time, each explained | You are on mobile, or not yet sure what you want | **[Open the walkthrough →](https://tilas01.github.io/unix-guides-dynamic/manual.html)** |
 | **3** | **Website wiki** — the same options, explained, done by hand, with hyperlinks | You want to understand each step and follow along in a browser | **[Open the wiki →](https://tilas01.github.io/unix-guides-dynamic/wiki.html#manual-install)** |
 | **4** | **This repo only** — plain markdown and README links, no website | Your machine is too slow for the site, has no JavaScript, or you prefer reading on GitHub | [Start at 01-pre-installation](docs/01-pre-installation.md) |
 
