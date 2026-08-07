@@ -81,6 +81,31 @@
                     'Several security tools cannot work here unchanged — see ' +
                     'the wiki before relying on any of it.'
         },
+        raspios: {
+            label: 'Raspberry Pi OS', short: 'Raspberry Pi', complete: false,
+            pkg: 'apt', init: 'systemd', fde: 'none by default',
+            docs: 'https://www.raspberrypi.com/documentation/',
+            docsName: 'the Raspberry Pi documentation',
+            slug: 'raspios-guides',
+            accent: 'red',
+            summary: 'Debian on a Pi. apt, systemd, aarch64 only.',
+            desc: 'Debian, built for Raspberry Pi hardware. apt and systemd, ' +
+                  'configured through raspi-config, and written to an SD card ' +
+                  'or USB rather than installed from an ISO. It boots from the ' +
+                  'bootloader in the board EEPROM, not UEFI, so the firmware ' +
+                  'and Secure Boot steps elsewhere on this site do not apply.',
+            /* Architecture is not a choice here. Raspberry Pi OS runs on Pi
+               hardware and nothing else, so offering x86_64 alongside it would
+               be offering a combination that cannot exist. Enforced through
+               OS_LOCKS in manual-data.js, which shows the lock rather than
+               silently overriding the answer. */
+            locks: { arch: 'aarch64' },
+            danger: '🚧 NOT READY TO INSTALL FROM. Visible for reading only. ' +
+                    'Raspberry Pi OS is written to a card with an imaging tool ' +
+                    'rather than installed from a live environment, so most of ' +
+                    'this site\'s partitioning and bootloader steps do not ' +
+                    'apply to it yet.'
+        },
         openbsd: {
             label: 'OpenBSD', short: 'OpenBSD', complete: false,
             pkg: 'pkg_add', init: 'rc.d', fde: 'softraid -C CRYPTO',

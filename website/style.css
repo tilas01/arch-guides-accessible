@@ -86,11 +86,11 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 
 .banner {
     width: 100%;
-    /* Sized to sit above the page rather than lead it. At the previous
-       clamp(320px, 40vw, 480px) the banner was the largest thing on screen and
-       pushed the first question below the fold on a laptop — it is a mark, not
-       a hero image. */
-    max-width: clamp(200px, 24vw, 320px);
+    /* Sized to sit above the page rather than lead it, but the wordmark still
+       has to be readable — at clamp(200px, 24vw, 320px) it was not. The lower
+       bound is set by the longest label in the set rendering legibly:
+       RASPBERRY PI GUIDES, not the short ones. */
+    max-width: clamp(260px, 30vw, 400px);
     margin: 0 auto 0.4rem;
     display: block;
     transition: transform 0.2s, filter 0.2s;
@@ -191,6 +191,18 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 /* Drawn icons in the control cluster. Pixel art, so let it stay crisp rather
    than be smoothed into mush by the browser's default scaler. */
 .ctrl-pixel { display: block; image-rendering: pixelated; }
+
+/* A question's supplementary note — most often the reason an option somebody
+   might expect is not on the list. Distinct from .q-help so it reads as an
+   aside rather than as part of the question. */
+.q-note {
+    margin-top: 0.5rem;
+    padding-left: 0.7rem;
+    border-left: 2px solid var(--accent-orange);
+    color: var(--fg-dim);
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
 
 /* ─── The target-system switcher, top left ────────────────────────────────── */
 /* Mirrors #header-controls on the opposite side, and inset by the same amount

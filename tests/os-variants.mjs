@@ -53,11 +53,31 @@ function cfg(os) {
    OS_META: a test that reads its expectations from the code under test cannot
    catch that code being wrong. */
 const EXPECTED = {
-    arch:    { label: 'Arch Linux', complete: true },
-    gentoo:  { label: 'Gentoo',     complete: false },
-    freebsd: { label: 'FreeBSD',    complete: false },
-    openbsd: { label: 'OpenBSD',    complete: false }
+    arch:    { label: 'Arch Linux',      complete: true },
+    gentoo:  { label: 'Gentoo',          complete: false },
+    freebsd: { label: 'FreeBSD',         complete: false },
+    openbsd: { label: 'OpenBSD',         complete: false },
+    raspios: { label: 'Raspberry Pi OS', complete: false }
 };
+
+/* Adding a system without adding it here would leave it entirely untested while
+   this gate still reported success — the failure mode this repository treats as
+   worse than no gate. So the count has to match, and the message says what to
+   do rather than merely that a number is wrong. */
+checks++;
+if (OS_META) {
+    const inCode = Object.keys(OS_META).sort();
+    const inTest = Object.keys(EXPECTED).sort();
+    if (inCode.join(',') !== inTest.join(',')) {
+        problems.push(
+            `OS_META lists [${inCode.join(', ')}] but this gate only checks ` +
+            `[${inTest.join(', ')}]. Add the missing system to EXPECTED — until ` +
+            `you do, nothing verifies that its guide names it or carries its badge.`);
+    }
+} else {
+    problems.push('OS_META was not reachable from the page, so the per-system ' +
+                  'coverage check did not run. Treated as a failure, not a skip.');
+}
 
 // 1 + 3 + 4: title names the OS, and the WIP banner appears iff incomplete.
 for (const [id, want] of Object.entries(EXPECTED)) {
@@ -127,7 +147,8 @@ if (!Array.isArray(STEPS)) {
                       'where there is no PKGBUILD for it to read');
     } else {
         for (const [id, want] of [['arch', true], ['gentoo', false],
-                                  ['freebsd', false], ['openbsd', false]]) {
+                                  ['freebsd', false], ['openbsd', false],
+                                  ['raspios', false]]) {
             const shown = !!aur.when({ os: id });
             if (shown !== want) {
                 problems.push(`aur-guard is ${shown ? 'offered' : 'hidden'} on ${id} ` +
