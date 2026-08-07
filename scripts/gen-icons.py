@@ -567,14 +567,28 @@ def make_banner(name: str, spec: dict) -> list[list]:
     while sscale > 1 and tx + text_width(sub, sscale) > w - 28:
         sscale -= 1
 
+    # Attribution is part of the image rather than page furniture, so it travels
+    # with the banner wherever it is embedded — README, wiki, a forum post, a
+    # screenshot — instead of only existing on the site that overlaid it.
+    credit = "BY TILAS01 ON GITHUB"
+    cscale = 1
+    while cscale > 1 and tx + text_width(credit, cscale) > w - 28:
+        cscale -= 1
+
     title_h = FONT_H * tscale
     sub_h = FONT_H * sscale
+    credit_h = FONT_H * cscale
     gap = 18
-    block_h = title_h + gap + sub_h
+    credit_gap = 10
+    block_h = title_h + gap + sub_h + credit_gap + credit_h
     ty = (h - block_h) // 2 - 4
 
     draw_text(px, label, tx, ty, PALETTE["w"], tscale)
     draw_text(px, sub, tx, ty + title_h + gap, accent, sscale)
+    # Green regardless of the banner's accent: it reads as attribution rather
+    # than as another line of the subtitle, and stays consistent across the set.
+    draw_text(px, credit, tx, ty + title_h + gap + sub_h + credit_gap,
+              PALETTE["g"], cscale)
 
     return px
 

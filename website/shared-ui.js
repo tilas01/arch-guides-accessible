@@ -89,9 +89,7 @@
             nav = document.createElement('nav');
             nav.className = 'main-nav';
             var banner = header.querySelector('.banner-link');
-            var byline = document.getElementById('site-byline');
-            var after = byline || banner;
-            if (after && after.parentNode) after.parentNode.insertBefore(nav, after.nextSibling);
+            if (banner && banner.parentNode) banner.parentNode.insertBefore(nav, banner.nextSibling);
             else header.appendChild(nav);
         }
         nav.setAttribute('aria-label', 'Site');
@@ -450,8 +448,6 @@
                 var el = document.getElementById(id);
                 if (el && el.parentNode === bar) bar.appendChild(el);
             });
-
-        buildByline(header);
         buildNav(header);
 
         refreshHistoryBadge();
@@ -489,26 +485,6 @@
         el.setAttribute('data-count', String(n));
     }
 
-    /* "by tilas01 on GitHub" beneath the banner, linking where the octopus
-       links. Added here rather than in each page's HTML so it cannot end up on
-       some pages and not others. */
-    function buildByline(header) {
-        if (document.getElementById('site-byline')) return;
-        var banner = header.querySelector('.banner-link');
-        if (!banner) return;
-        var a = document.createElement('a');
-        a.id = 'site-byline';
-        a.href = REPO_URL;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        a.className = 'nav-tooltip';
-        a.textContent = 'by tilas01 on GitHub';
-        a.setAttribute('data-title', 'by tilas01 on GitHub');
-        a.setAttribute('data-desc',
-            'Written and maintained by tilas01. Opens the source repository — ' +
-            'the same place the octopus goes.');
-        banner.parentNode.insertBefore(a, banner.nextSibling);
-    }
 
     /* ── 2. Do not lose the history by closing the tab ──────────────────── */
 
