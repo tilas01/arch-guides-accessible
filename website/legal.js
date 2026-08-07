@@ -322,13 +322,49 @@ document.addEventListener('DOMContentLoaded', () => {
       <h2 style="color:var(--accent-purple,#bb9af7); text-align:center; margin:0 0 0.4rem;">
         Which system are you installing?
       </h2>
-      <p style="color:#8b949e; text-align:center; font-size:0.85rem; margin:0 0 1.3rem;">
+      <p style="color:#8b949e; text-align:center; font-size:0.85rem; margin:0 0 0.9rem;">
         This changes the guides, the scripts and the labels across the whole site.
         You can change it at any time from the switcher in the top-left corner.
       </p>
-      <div id="os-choose-cards" style="display:flex; flex-direction:column; gap:0.6rem;">`;
+      <p style="color:var(--accent-orange,#ff9e64); text-align:center; font-size:0.82rem;
+                line-height:1.6; margin:0 0 1.3rem; border:1px solid var(--accent-orange,#ff9e64);
+                border-radius:8px; padding:0.6rem 0.8rem;">
+        <strong>Pick the one you are actually installing.</strong> These are not
+        skins on the same guide — each system has its own package manager,
+        installer, bootloader and encryption tooling. A guide built for the wrong
+        one will run commands that do not exist on your machine and leave you
+        with a half-partitioned disk and no system.
+      </p>`;
 
-    Object.keys(META).forEach(id => {
+    /* Grouped, because the split matters and the names do not announce it.
+       Somebody who knows Arch may not know that FreeBSD and OpenBSD share
+       almost none of its tooling — different kernel, different userland,
+       different everything below the shell prompt. */
+    const FAMILIES = [
+      { key: 'linux', heading: 'Linux',
+        note: 'One kernel, shared tooling. LUKS for encryption, systemd or ' +
+              'OpenRC for init, and the same filesystems throughout.',
+        members: ['arch', 'gentoo', 'raspios'] },
+      { key: 'bsd', heading: 'BSD',
+        note: 'Not Linux, and not a variant of it. A different kernel and a ' +
+              'complete base system developed together, with its own installer, ' +
+              'its own package tools, geli or softraid instead of LUKS, and pf ' +
+              'for the firewall. Very little transfers across.',
+        members: ['freebsd', 'openbsd'] }
+    ];
+
+    FAMILIES.forEach(fam => {
+      // Only systems the table actually knows about, so a member listed here
+      // that no longer exists in OS_META drops out rather than rendering blank.
+      const present = fam.members.filter(id => META[id]);
+      if (!present.length) return;
+      html += `
+        <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.07em;
+                    color:var(--accent-cyan,#7dcfff); margin:0.9rem 0 0.2rem;">${fam.heading}</div>
+        <div style="font-size:0.78rem; color:#8b949e; margin-bottom:0.55rem; line-height:1.55;">${fam.note}</div>
+        <div class="os-choose-group" style="display:flex; flex-direction:column; gap:0.6rem;">`;
+
+      present.forEach(id => {
       const m = META[id];
       const colour = ACCENT[m.accent] || ACCENT.purple;
       html += `
@@ -355,9 +391,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </span>` : ''}
           </span>
         </button>`;
+      });
+      html += `</div>`;
     });
 
-    html += `</div>
+    html += `
       <button id="os-choose-continue" class="btn" type="button" style="
         background:var(--accent-purple,#bb9af7); color:#16161e;
         border:1px solid var(--accent-purple,#bb9af7); width:100%;

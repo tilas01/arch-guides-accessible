@@ -48,6 +48,39 @@ const DUSKY_REPO = 'https://github.com/dusklinux/dusky';
    folders: dark/ 135 files, light/ 134 — 269 in total, ~40 MB. */
 const DUSKY_IMAGES = 'https://github.com/dusklinux/images';
 const DUSKY_VIDEO = 'https://www.youtube.com/watch?v=JmgvSdEIK8c';
+
+/* Where Dusky's automated setup can actually run, and why not, where it cannot.
+   Dusky is Hyprland — a wlroots compositor on Wayland — installed by scripts
+   that assume pacman and the AUR. That combination is what decides this, and
+   the reasons differ enough per system to be worth stating rather than
+   collapsing into "unsupported":
+
+     Arch     its native target.
+     Gentoo   Linux, so DRM/KMS, libinput and elogind are all present, and
+              gui-wm/hyprland is packaged. The install steps need translating
+              from pacman to emerge, which is work, not an obstacle.
+     FreeBSD  Wayland and Hyprland both exist in ports, but nobody has verified
+              Dusky's own scripts there. Offered untested would be worse than
+              not offered — this project has removed that exact class of claim
+              several times.
+     OpenBSD  X11 and Xenocara. wlroots support is not there and Hyprland is not
+              packaged, so this is not a gap that closes with effort.
+     Pi OS    ships and expects its own desktop, and the Pi's graphics stack is
+              not what Dusky's scripts assume. */
+const DUSKY_SUPPORT = {
+    arch:    { ok: true },
+    gentoo:  { ok: true },
+    freebsd: { ok: false, why: 'Hyprland runs on FreeBSD, but Dusky\'s own install ' +
+                               'scripts assume pacman and the AUR and nobody has ' +
+                               'verified them here. It is hidden rather than offered ' +
+                               'untested.' },
+    openbsd: { ok: false, why: 'OpenBSD uses X11 through Xenocara. Hyprland needs ' +
+                               'wlroots on Wayland, which OpenBSD does not have and ' +
+                               'does not package, so Dusky cannot run here at all. ' +
+                               'Pick cwm, fvwm or i3 instead.' },
+    raspios: { ok: false, why: 'Raspberry Pi OS ships its own desktop and its graphics ' +
+                               'stack is not the one Dusky\'s scripts expect.' }
+};
 const DUSKY_CHANNEL = 'https://www.youtube.com/@dusk_everyday';
 
 /* ── Target operating system ─────────────────────────────────────────────────
@@ -81,6 +114,24 @@ function osMeta(s) { return OS_META[osId(s)]; }
 function osName(s) { return osMeta(s).label; }
 /** True for Linux targets — Arch and Gentoo share primitives the BSDs do not. */
 function isLinux(s) { return osId(s) === 'arch' || osId(s) === 'gentoo'; }
+
+/* Answers a system fixes for you, the same shape as DUSKY_LOCKS above and
+   enforced by the same code path, so they render identically: the question is
+   still shown, the fixed answer is still visible, and it says what fixed it.
+
+   Not the same thing as a hidden question. A hidden question is one that does
+   not apply; a locked one applies and has only one possible answer. Raspberry
+   Pi OS runs on Pi hardware, so offering x86_64 beside it would be offering a
+   combination that cannot exist — but the reader should see that rather than
+   find the architecture question mysteriously absent.
+
+   Read from OS_META so the constraint lives beside the system it belongs to.
+   `tests/dusky-locks.mjs` checks these against the real step ids and option
+   values, exactly as it does Dusky's. */
+const OS_LOCKS = {};
+Object.keys(OS_META).forEach(id => {
+    if (OS_META[id].locks) OS_LOCKS[id] = OS_META[id].locks;
+});
 
 const STEPS = [
 
@@ -628,6 +679,13 @@ const STEPS = [
     help: 'Nothing here is required to have a working system. Get the base ' +
           'system booting first — debugging a desktop is much easier from ' +
           'something you know boots.',
+    /* Says why Dusky is absent, on the systems where it is absent. Silence
+       would read as an oversight; the reason is a real constraint and the
+       reader may want to know it before choosing a system. */
+    note: s => {
+        const support = DUSKY_SUPPORT[osId(s)];
+        return support.ok ? '' : 'Dusky is not offered on ' + osName(s) + '. ' + support.why;
+    },
     wiki: 'desktop',
     type: 'choice',
     options: [
@@ -640,6 +698,12 @@ const STEPS = [
                 'lock and each one says what Dusky set it to.',
           note: 'Locks display server, shell, font and palette. Repo: ' + DUSKY_REPO +
                 ' · Video: ' + DUSKY_VIDEO,
+          /* Offered only where it can actually be installed. Dusky is Hyprland,
+             which is wlroots on Wayland — see DUSKY_SUPPORT below for why that
+             rules three systems out. The question's own note says which one you
+             are on and why it is missing, because an option that silently is
+             not there reads as an oversight rather than a constraint. */
+          when: s => DUSKY_SUPPORT[osId(s)].ok,
           locks: DUSKY_LOCKS },
         { value: 'hyprland', label: 'Hyprland (unconfigured)', recommended: true,
           desc: 'The compositor, with none of the rice. You configure it.' },
@@ -1276,7 +1340,7 @@ const STEPS = [
    place instead of needing a fallback at every call site. */
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        STEPS, DUSKY_LOCKS, DUSKY_VIDEO,
+        STEPS, DUSKY_LOCKS, DUSKY_VIDEO, OS_LOCKS,
         OS_META, osId, osMeta, osName, isLinux
     };
 }

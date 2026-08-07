@@ -57,11 +57,39 @@
         });
     }
 
-    /** Value Dusky forces for this question, or null. */
+    /** Value something else has already decided for this question, or null.
+     *
+     *  Two sources, and the system wins. A locked architecture on Raspberry Pi
+     *  OS is a fact about the hardware; a value Dusky fixes is a consequence of
+     *  a choice the reader made and could unmake. If they ever collide, the one
+     *  that cannot be unmade has to hold. */
     function lockedValue(step) {
+        var osLocks = (typeof OS_LOCKS !== 'undefined')
+            ? OS_LOCKS[window.osIdOf(state.os)] : null;
+        if (osLocks && Object.prototype.hasOwnProperty.call(osLocks, step.id)) {
+            return osLocks[step.id];
+        }
         if (state.desktop !== 'dusky') return null;
         return Object.prototype.hasOwnProperty.call(DUSKY_LOCKS, step.id)
             ? DUSKY_LOCKS[step.id] : null;
+    }
+
+    /** What to name as the thing that fixed it, for the notice on the card. */
+    function lockSource(step) {
+        var osLocks = (typeof OS_LOCKS !== 'undefined')
+            ? OS_LOCKS[window.osIdOf(state.os)] : null;
+        if (osLocks && Object.prototype.hasOwnProperty.call(osLocks, step.id)) {
+            return window.osMetaOf(state.os).label;
+        }
+        return 'Dusky';
+    }
+
+    /** A question's text field, which may be a plain string or a function of
+     *  the answers so far. Anything that throws falls back to empty rather than
+     *  taking the whole question down with it. */
+    function resolve(field) {
+        if (typeof field !== 'function') return field || '';
+        try { return field(state) || ''; } catch (_) { return ''; }
     }
 
     /** Human label for a value, for use in prose. Falls back to the raw value. */
@@ -261,17 +289,34 @@
                     text: '📖'
                 })
             ]),
-            h('p', { class: 'q-help', text: step.help })
+            /* `help` and `note` may be strings or functions of the answers so
+               far. A function lets a question explain something that depends on
+               the target system — most usefully, why an option the reader might
+               expect is not on the list.
+
+               `note` was declared on several questions and rendered nowhere, so
+               the OS question's "skipping this selects Arch" never appeared on
+               screen. A data field with no renderer is the small version of
+               this repository's usual defect. */
+            h('p', { class: 'q-help', text: resolve(step.help) }),
+            step.note ? h('p', { class: 'q-note', text: resolve(step.note) }) : null
         ]);
 
         if (locked !== null) {
             card.appendChild(h('div', { class: 'q-locked' }, [
-                h('strong', { text: '🔒 Fixed by Dusky: ' + optionLabel(step, locked) + '. ' }),
-                document.createTextNode(
-                    'Dusky ships this preconfigured, so the walkthrough will not fight it — ' +
-                    'it is carried through to your guide and script as it stands. ' +
-                    'Continue below, or go back and choose a different desktop to decide ' +
-                    'this yourself.')
+                h('strong', { text: '🔒 Fixed by ' + lockSource(step) + ': ' +
+                                    optionLabel(step, locked) + '. ' }),
+                document.createTextNode(lockSource(step) === 'Dusky'
+                    ? 'Dusky ships this preconfigured, so the walkthrough will not fight it — ' +
+                      'it is carried through to your guide and script as it stands. ' +
+                      'Continue below, or go back and choose a different desktop to decide ' +
+                      'this yourself.'
+                    // A system lock is not a preference and cannot be undone by
+                    // going back a question, so it does not offer to.
+                    : 'This is decided by the system you selected, not by anything you can ' +
+                      'change here — no other answer would produce a system that works. ' +
+                      'It is carried through to your guide and script. Change the system ' +
+                      'in the top-left corner if you meant a different one.')
             ]));
         }
 

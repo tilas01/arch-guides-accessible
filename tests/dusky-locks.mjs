@@ -38,9 +38,9 @@ function ok(cond, label) {
    A key that matches no step id locks nothing and is silently dead — which is
    what `desktop_extra: 'hyprland'` was. A value that matches no option leaves
    the question with an answer that cannot be rendered or carried forward. */
-const { STEPS, DUSKY_LOCKS } = new Function('window', 'module',
+const { STEPS, DUSKY_LOCKS, OS_LOCKS, OS_META } = new Function('window', 'module',
   read('os-meta.js') + '\n' + read('manual-data.js') +
-  '\nreturn { STEPS, DUSKY_LOCKS };')({}, undefined);
+  '\nreturn { STEPS, DUSKY_LOCKS, OS_LOCKS, OS_META };')({}, undefined);
 
 const byId = Object.fromEntries(STEPS.map(s => [s.id, s]));
 
@@ -53,6 +53,33 @@ for (const [id, value] of Object.entries(DUSKY_LOCKS)) {
     `DUSKY_LOCKS.${id} = '${value}' is not one of ${step.id}'s options (${values.join(', ')})`);
   ok(step.type !== 'text',
     `DUSKY_LOCKS.${id} locks a free-text question, which has no option to pin`);
+}
+
+/* The same check for the locks a target system imposes. Same failure mode: a
+   key naming no step locks nothing, and a value matching no option leaves the
+   question holding an answer that cannot be rendered.
+
+   Treated as a failure rather than a skip if the table cannot be reached at
+   all — an empty OS_LOCKS is a legitimate state, but an undefined one means the
+   export was renamed and this block silently stopped testing anything. */
+ok(OS_LOCKS && typeof OS_LOCKS === 'object',
+  'OS_LOCKS is not exported from manual-data.js, so the per-system locks went unchecked');
+
+for (const [os, locks] of Object.entries(OS_LOCKS || {})) {
+  ok(!!OS_META[os], `OS_LOCKS.${os} is not a system in OS_META — it locks nothing`);
+  for (const [id, value] of Object.entries(locks)) {
+    const step = byId[id];
+    ok(!!step, `OS_LOCKS.${os}.${id} is not the id of any step — it locks nothing`);
+    if (!step) continue;
+    const values = (step.options || []).map(o => o.value);
+    ok(values.includes(value),
+      `OS_LOCKS.${os}.${id} = '${value}' is not one of ${id}'s options (${values.join(', ')})`);
+    ok(step.type !== 'text',
+      `OS_LOCKS.${os}.${id} locks a free-text question, which has no option to pin`);
+    // Locking the question that chooses the system would make the choice
+    // unreachable the moment it was made.
+    ok(id !== 'os', `OS_LOCKS.${os} locks the system question itself`);
+  }
 }
 
 const duskyOpt = (byId.desktop.options || []).find(o => o.value === 'dusky');
