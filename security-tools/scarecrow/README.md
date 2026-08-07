@@ -6,7 +6,7 @@
 
 Canary tokens and sandbox spoofing: convinces malware it is being watched, and gives you a duress login that does not look like one.
 
-Part of the [Arch Guides Dynamic](../../) security suite. Everything here is
+Part of the [Unix Guides Dynamic](../../) security suite. Everything here is
 Rust, builds reproducibly, and ships as a signed release binary.
 
 ---

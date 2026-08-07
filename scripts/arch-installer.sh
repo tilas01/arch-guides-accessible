@@ -1,5 +1,5 @@
 #!/bin/bash
-# Arch Guides: Automated Extractive Modular Installer
+# Unix Guides: Automated Extractive Modular Installer
 # This script extracts bash blocks directly from the live GitHub repository markdown files
 # to guarantee it matches the guide exactly.
 
@@ -8,7 +8,7 @@ set -e
 REPO_URL="https://raw.githubusercontent.com/tilas01/unix-guides-dynamic/main"
 
 echo "================================================="
-echo "   Arch Guides: Automated Extractive Installer   "
+echo "   Unix Guides: Automated Extractive Installer   "
 echo "================================================="
 echo "WARNING: This script will format the selected disk."
 echo "Press Ctrl+C at any time to abort before execution."

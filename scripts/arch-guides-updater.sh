@@ -1,6 +1,6 @@
 #!/bin/bash
 # arch-guides-updater.sh
-# Secure auto-updater for Arch Guides standalone security tools
+# Secure auto-updater for Unix Guides standalone security tools
 # Triggered by Pacman hooks.
 
 set -e

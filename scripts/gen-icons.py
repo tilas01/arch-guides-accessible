@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate the Arch Guides icon set, favicons and README banners.
+Generate the Unix Guides icon set, favicons and README banners.
 
 Everything here is deterministic and dependency-free: no Pillow, no cairo, no
 network. Given the same source grids you get byte-identical output, which is the

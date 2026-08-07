@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="text-align:center; margin-bottom:1.75rem;">
         <div style="font-size:2.4rem; margin-bottom:0.6rem;">🦀🛡️</div>
         <h2 style="color:var(--accent-cyan,#7dcfff); margin:0; font-size:1.55rem; letter-spacing:0.5px; font-weight:800;">
-          Welcome to Arch Guides Dynamic
+          Welcome to Unix Guides Dynamic
         </h2>
         <p style="color:#8b949e; font-size:0.82rem; margin:0.5rem 0 0;">
           by <a href="https://github.com/tilas01" target="_blank" style="color:var(--accent-purple,#bb9af7); text-decoration:none;">tilas01</a>
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
           documentation, and source code provided on this website and within the GitHub repository
           <a href="https://github.com/tilas01/unix-guides-dynamic" target="_blank"
              style="color:var(--accent-blue,#7aa2f7);">tilas01/unix-guides-dynamic</a> —
-          including but not limited to the Arch Guides Unix Install Generator, the Arch Rusty Security Suite (ARSS),
+          including but not limited to the Unix Guides Unix Install Generator, the Arch Rusty Security Suite (ARSS),
           Anti-Evil-Maid, Anti-Ducky, Kernel Watcher, LibreOTP, and Scarecrow —
           are provided strictly <strong>"AS IS"</strong>, without warranty of any kind, express or implied.
           The author (<strong>tilas01</strong>) expressly disclaims all liability for any direct, indirect,

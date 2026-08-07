@@ -6,7 +6,7 @@
 
 Verifies that `/boot` has not been modified while the machine was out of your hands, before you type the passphrase that unlocks the disk.
 
-Part of the [Arch Guides Dynamic](../../) security suite. Everything here is
+Part of the [Unix Guides Dynamic](../../) security suite. Everything here is
 Rust, builds reproducibly, and ships as a signed release binary.
 
 ---

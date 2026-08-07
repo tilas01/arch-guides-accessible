@@ -6,7 +6,7 @@
 
 TOTP and HOTP one-time passwords in Rust, with no proprietary backend, no cloud account and no binary blobs.
 
-Part of the [Arch Guides Dynamic](../../) security suite. Everything here is
+Part of the [Unix Guides Dynamic](../../) security suite. Everything here is
 Rust, builds reproducibly, and ships as a signed release binary.
 
 ---
