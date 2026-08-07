@@ -1775,8 +1775,11 @@ run_with_progress() {
             }
         });
 
-        // Dusky auto-setup
-        if (post_apps.includes('dusky-setup')) {
+        // Dusky auto-setup. Driven by the desktop question, which is the
+        // only place Dusky is chosen — it used to key off a post-install
+        // checkbox that a separate yes/no control ticked on your behalf, so
+        // the same decision existed in three places and could disagree.
+        if (desktop === 'dusky') {
             if (!cmdOnly) o += `\n### Dusky Auto-Setup\n> Watch the [YouTube guide](https://www.youtube.com/watch?v=JmgvSdEIK8c) and read the [dusky repo](https://github.com/dusklinux/dusky) cheatsheet before running.\n\n\`\`\`bash\n`;
             else o += `\n# Dusky Auto-Setup (by dusklinux)\n# Watch: https://www.youtube.com/watch?v=JmgvSdEIK8c\n# Repo:  https://github.com/dusklinux/dusky\n`;
             o += `su - builder -c "git clone https://github.com/dusklinux/dusky.git /tmp/dusky && cd /tmp/dusky && ./install.sh"\n`;
@@ -2891,43 +2894,18 @@ document.addEventListener('DOMContentLoaded', () => {
         syncPq();
     }
 
-    // ── Dusky: one yes/no that answers the desktop questions for you ──
-    // Dusky ships its own Hyprland/Wayland configuration, so asking the user to
-    // pick a desktop and display server as well is redundant and easy to get
-    // wrong (Hyprland cannot run on Xorg). Answering Yes sets both and hides them.
-    const duskySelect = document.getElementById('dusky_setup');
-    if (duskySelect) {
-        const syncDusky = () => {
-            const on = duskySelect.value === 'yes';
-            const desktopGroup = document.getElementById('desktop')?.closest('.form-group');
-            const dsGroup = document.getElementById('display_server')?.closest('.form-step');
+    /* Dusky is chosen in one place — the desktop question — and the note
+       beneath it explains what that decides for you. There used to be a
+       separate yes/no here that ticked a post-install checkbox and rewrote
+       the desktop select, which meant three controls held one answer. */
+    const desktopSelectForDusky = document.getElementById('desktop');
+    if (desktopSelectForDusky) {
+        const syncDuskyNote = () => {
             const note = document.getElementById('dusky-note');
-            const duskyApp = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
-            const desktopSel = document.getElementById('desktop');
-            const dsSel = document.getElementById('display_server');
-
-            if (on) {
-                if (desktopSel) desktopSel.value = 'dusky';
-                if (dsSel) dsSel.value = 'wayland';
-                if (duskyApp && !duskyApp.checked) {
-                    duskyApp.checked = true;
-                    duskyApp.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            } else if (duskyApp && duskyApp.checked && desktopSel?.value === 'dusky') {
-                // Leaving Dusky: release the forced answers so the user can choose.
-                duskyApp.checked = false;
-                duskyApp.dispatchEvent(new Event('change', { bubbles: true }));
-                desktopSel.value = 'none';
-            }
-
-            // Hidden groups are also skipped by validation, since it only
-            // requires selects whose offsetParent is non-null.
-            if (desktopGroup) desktopGroup.style.display = on ? 'none' : '';
-            if (dsGroup) dsGroup.style.display = on ? 'none' : '';
-            if (note) note.style.display = on ? 'block' : 'none';
+            if (note) note.style.display = desktopSelectForDusky.value === 'dusky' ? 'block' : 'none';
         };
-        duskySelect.addEventListener('change', syncDusky);
-        syncDusky();
+        desktopSelectForDusky.addEventListener('change', syncDuskyNote);
+        syncDuskyNote();
     }
 
     // ── USB kill switch: show the trigger picker and warning when armed. ──
@@ -3473,21 +3451,9 @@ function validateConfigurations() {
     // on every keystroke that re-ran validation, and once contradicted itself
     // by forcing Dusky to Wayland and then warning that Wayland breaks it —
     // pin the select and say why, the same way the *nix Install Walkthrough locks it.
-    const duskyAppCb = document.querySelector('input[name="post_apps"][value="dusky-setup"]');
     const displayServerSelect = document.getElementById('display_server');
     const DS_REQUIRED = { dusky: 'wayland', hyprland: 'wayland', dwm: 'xorg' };
     const dsForced = DS_REQUIRED[desktop] || null;
-
-    if (duskyAppCb) {
-        const onDusky = desktop === 'dusky';
-        // Dusky is installed by its own script; with Dusky as the desktop the
-        // post-install entry is what runs it, so it is not optional.
-        if (onDusky) duskyAppCb.checked = true;
-        duskyAppCb.disabled = onDusky;
-        if (duskyAppCb.parentElement) {
-            duskyAppCb.parentElement.style.opacity = onDusky ? '0.6' : '1';
-        }
-    }
 
     if (displayServerSelect) {
         if (dsForced) {

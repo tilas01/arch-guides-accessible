@@ -856,19 +856,7 @@ Source: 📁 Arch Extra
 Website: https://github.com/openSUSE/snapper">ℹ️</span> <span class="app-desc">Snapshots</span> <span class="btn-configure" role="button" tabindex="0" data-app="snapper" style="background:var(--accent-blue); border:none; color:#0d1117; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-left:5px;">⚙️ Config</span>
                              <span class="gear-config-btn" onclick="event.preventDefault(); openAppConfigModal('snapper')" title="Configure this app">⚙️</span>
 </label>
-                            <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;">🎨 Dusky</div>
-                            <label class="app-card" oncontextmenu="window.open('wiki.html', '_blank'); return false;">
-                                <input type="checkbox" name="post_apps" value="dusky-setup">
-                                <span class="app-icon">🌙</span> <a href="https://github.com/dusklinux/dusky" target="_blank">Dusky Setup</a> <span class="info-tooltip-icon" title="Dusky auto-setup
---
-Automated Hyprland desktop setup by dusklinux — installs dotfiles, themes, and full Wayland environment. Includes cheatsheet. Watch YouTube guide before running.
-
-Build Integrity: 100% Reproducible (Verifiable from Source - Bit-for-bit identical)
-Source: 📁 GitHub / dusklinux
-Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc">Auto-desktop</span>
-                             
-</label>
-<div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;" oncontextmenu="window.open('wiki.html#theming', '_blank'); return false;">🌙 Theming &amp; Boot</div>
+                            <div class="app-category-header" style="grid-column: 1 / -1; margin-top: 0.5rem;" oncontextmenu="window.open('wiki.html#theming', '_blank'); return false;">🌙 Theming &amp; Boot</div>
                             <label class="app-card" oncontextmenu="window.open('wiki.html#tty-theme', '_blank'); return false;">
                                 <input type="checkbox" id="tty-theme" name="boot_theme" value="tokyo-night" checked>
                                 <span class="app-icon">🌌</span> Tokyo Night <span class="info-tooltip-icon" title="Tokyo Night Theme\n--\nInjects Tokyo Night ANSI colors and sets a permanent Monospace font for the raw Arch TTY (Console) outside of any GUI. Applies to LUKS and OTP boot prompts.">ℹ️</span> <span class="app-desc">Boot Theme</span>
@@ -962,22 +950,16 @@ Website: https://github.com/dusklinux/dusky">ℹ️</span> <span class="app-desc
                             <option value="dwm">DWM (Minimal WM)</option>
                             <option value="dusky">Dusky (dusklinux/dusky)</option>
                         </select>
-                    </div>
-
-                    <!-- Straight yes/no. Answering Yes ticks the Dusky setup app,
-                         forces Wayland and skips the questions that no longer
-                         apply, because Dusky brings its own answers. -->
-                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#duskyos', '_blank'); return false;" data-title="Dusky Automated Setup" data-desc="Dusky is a pre-configured Hyprland desktop by dusklinux: dotfiles, theming and a full Wayland environment installed for you. Choosing Yes sets the desktop and display server automatically.">
-                        <label for="dusky_setup">Install Dusky (automated Hyprland desktop)?</label>
-                        <select oncontextmenu="window.open('wiki.html#duskyos', '_blank'); return false;" id="dusky_setup">
-                            <option value="no" selected>No — I'll choose my own desktop</option>
-                            <option value="yes">Yes — set up Dusky for me</option>
-                        </select>
                         <p id="dusky-note" style="display:none; font-size:0.78rem; color:var(--accent-cyan); margin-top:0.4rem;">
-                            🌙 Dusky selected. Desktop and display server are set for you
-                            (Hyprland on Wayland) and those two questions are hidden. Watch the
+                            🌙 <strong>Dusky</strong> is a complete preconfigured Hyprland desktop by
+                            dusklinux — dotfiles, theming, Waybar, Rofi, Swaync and Wlogout, installed
+                            by its own scripts. It is not a separate operating system: you are still
+                            running the system you picked above. Choosing it fixes your display
+                            server to Wayland, and sets the shell, font and colour scheme, because
+                            Dusky ships those configured and the walkthrough will not fight it.
+                            Read the <a href="wiki.html#duskyos">wiki section</a>, watch the
                             <a href="https://www.youtube.com/watch?v=JmgvSdEIK8c" target="_blank" rel="noopener">setup video</a>
-                            and read the <a href="cheatsheets.html?sheet=duskyq">keybind cheatsheet</a> before first boot.
+                            and the <a href="cheatsheets.html?sheet=duskyq">keybind cheatsheet</a> before first boot.
                         </p>
                     </div>
 
