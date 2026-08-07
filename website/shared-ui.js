@@ -399,6 +399,29 @@
         return parts.join(' ');
     }
 
+    /* The attribution that used to be inside the banner image. Placed after the
+       banner's own link rather than inside it, so it is a link to the author
+       rather than part of a link to the repository — two different
+       destinations, and one wrapped in the other cannot be reached. */
+    function addBannerCredit(img) {
+        var anchor = img.closest ? img.closest('a') : null;
+        var host = anchor || img;
+        if (!host.parentNode) return;
+        var credit = document.getElementById('banner-credit');
+        if (!credit) {
+            credit = document.createElement('p');
+            credit.id = 'banner-credit';
+            credit.className = 'banner-credit';
+            var a = document.createElement('a');
+            a.href = 'https://github.com/tilas01';
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.textContent = 'by tilas01 on GitHub';
+            credit.appendChild(a);
+            host.parentNode.insertBefore(credit, host.nextSibling);
+        }
+    }
+
     function applyOsIdentity() {
         var META = osApi();
         if (!META) return;
@@ -406,15 +429,25 @@
         var ident = chosen ? META[chosen] : window.OS_NEUTRAL;
         var name = chosen ? (META[chosen].short || META[chosen].label) : '';
 
-        // The header banner. Matched on the file name rather than a class,
-        // because wiki.html's is an inline-styled <img> with no class and it
-        // would otherwise be the one page that kept the Arch banner.
+        /* The header banner. Matched on the file name rather than a class,
+           because wiki.html's is an inline-styled <img> with no class and it
+           would otherwise be the one page that kept the Arch banner.
+
+           The `-plain` variant: the banner is scaled to a few hundred pixels
+           here, and the attribution baked into the image is a 7px bitmap line
+           that becomes an unreadable smudge at that size. Drawn as text below
+           instead, where it scales with the viewport rather than against it.
+           The README keeps the version with the credit inside, because there
+           the image is full width and travels on its own. */
+        var bannerImg = null;
         [].forEach.call(document.querySelectorAll('header img'), function (img) {
             var src = img.getAttribute('src') || '';
             if (src.indexOf('banner') === -1) return;
-            img.src = 'img/banners/' + ident.slug + '.png';
+            img.src = 'img/banners/' + ident.slug + '-plain.png';
             img.alt = ident.label + ' banner';
+            bannerImg = img;
         });
+        if (bannerImg) addBannerCredit(bannerImg);
 
         Object.keys(OS_NAMED_NAV).forEach(function (href) {
             var label = osNavLabel(href, chosen, META);

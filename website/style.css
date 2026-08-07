@@ -96,6 +96,23 @@ header { text-align: center; margin-bottom: 2rem; position: relative; }
 .banner:hover { transform: scale(1.015); filter: brightness(1.07); }
 .banner-link { display: block; text-align: center; text-decoration: none; }
 
+/* The attribution, as text rather than pixels.
+   It used to be drawn inside the banner image at 7px tall, which survives a
+   full-width README and does not survive being scaled to `.banner`'s
+   max-width — it became a green smudge. Real text scales with the viewport
+   instead of against it, and stays selectable and linkable. Green, matching
+   the version still baked into the README copy, so the two read as one thing
+   in two places. */
+.banner-credit {
+    text-align: center;
+    margin: -0.2rem 0 0.8rem;
+    font-family: var(--font-mono);
+    font-size: clamp(0.72rem, 1.4vw, 0.95rem);
+    letter-spacing: 0.06em;
+}
+.banner-credit a { color: var(--accent-green); text-decoration: none; }
+.banner-credit a:hover { text-decoration: underline; }
+
 /* ─── Header controls: emoji-only, absolute top-right ─────────────────────── */
 /* Control cluster.
    Top right, and inset rather than flush to the edge: a control in the very
