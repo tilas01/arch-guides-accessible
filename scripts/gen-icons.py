@@ -347,6 +347,27 @@ icon("source-repo", "SOURCE REPO", "EVERY PAGE, SCRIPT AND TOOL, IN THE OPEN", "
 ................
 """)
 
+# A shield over a card slot: the boot partition, watched. Green rather than the
+# red the other boot tool uses, because this one reports and never enforces.
+icon("pi-boot-guard", "PI BOOT GUARD", "RASPBERRY PI BOOT INTEGRITY", "g", """
+................
+................
+..gggggggggggg..
+.gggggggggggggg.
+.gg..........gg.
+.gg.gggggggg.gg.
+.gg.gg....gg.gg.
+.gg.gg.KK.gg.gg.
+.gg.gg.KK.gg.gg.
+.gg.gggggggg.gg.
+.gg..........gg.
+.gggggggggggggg.
+..gggggggggggg..
+...gggggggggg...
+.....gggggg.....
+................
+""")
+
 # A package under a lens: read the PKGBUILD before makepkg runs it.
 icon("aur-guard", "AUR GUARD", "AUDITS PKGBUILDS BEFORE MAKEPKG RUNS", "y", """
 ................
@@ -683,7 +704,8 @@ def main() -> int:
     # assets/banner.png, and the Rust binaries include assets/icon-64.png at
     # compile time, so the artwork has exactly one source of truth: this file.
     for name in ("anti-ducky", "anti-evil-maid", "kernel-watcher", "libre-otp",
-                 "scarecrow", "arch-security-suite", "aur-guard"):
+                 "scarecrow", "arch-security-suite", "aur-guard",
+                 "pi-boot-guard"):
         crate = os.path.join(root, "security-tools", name)
         if not os.path.isdir(crate):
             continue
