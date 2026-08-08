@@ -286,9 +286,11 @@
             <div class="editor-actions">
                 <button type="button" class="btn-editor" onclick="copyToClipboard('markdown-editor')">📋 Copy</button>
                 <button type="button" class="btn-editor" id="preview-toggle-btn" onclick="toggleMarkdownPreview()">👁️ Preview</button>
+                <button type="button" class="btn-editor" id="cmd-toggle-btn" onclick="toggleCommandMode()">▶️ One command at a time</button>
                 <button type="button" class="btn-editor primary" onclick="downloadMarkdown()">⬇️ .md</button>
             </div>
         </div>
+        <div id="command-mode" hidden></div>
         <textarea id="markdown-editor" class="editor-textarea"
             placeholder="# Your generated Markdown guide will appear here...
 
@@ -296,7 +298,7 @@
 Paste, type, or load from the generator above.
 
 All edits are local — nothing is sent to any server."
-            oninput="updateLineCount('markdown-editor','md-line-count'); showConfirmBar();"
+            oninput="updateLineCount('markdown-editor','md-line-count'); showConfirmBar(); if (commandMode) renderCommandMode();"
             spellcheck="false"
         ></textarea>
         <!-- Preview pane (hidden by default) -->
@@ -526,6 +528,130 @@ function loadHistoryEntry(idx) {
     document.getElementById('editor-layout').scrollIntoView({ behavior: 'smooth' });
 }
 
+/* ── Command-by-command, the same as the walkthrough ─────────────────────────
+   The walkthrough has had this for a while and the editor did not, so a guide
+   loaded here could only be read as a wall of text. It parses whatever is in
+   the guide editor right now — including your edits — rather than a stored
+   copy, which is the point of having it here rather than only there.
+
+   window.buildCommandSteps(), from manual-guide.js, does all of it — including
+   deciding which steps are destructive. Nothing here re-derives that: a second
+   opinion about which commands destroy a disk is exactly the thing you do not
+   want two of. */
+
+var commandMode = false;
+
+function toggleCommandMode() {
+    commandMode = !commandMode;
+    var host = document.getElementById('command-mode');
+    var editor = document.getElementById('markdown-editor');
+    var preview = document.getElementById('markdown-preview');
+    var btn = document.getElementById('cmd-toggle-btn');
+    if (!host || !editor) return;
+
+    host.hidden = !commandMode;
+    editor.hidden = commandMode;
+    // Preview and command mode are two views of the same thing; showing both
+    // would leave the guide on screen twice.
+    if (preview && commandMode) preview.hidden = true;
+    if (btn) btn.textContent = commandMode ? '📖 Back to the guide' : '▶️ One command at a time';
+
+    if (commandMode) renderCommandMode();
+}
+
+function renderCommandMode() {
+    var host = document.getElementById('command-mode');
+    if (!host) return;
+    host.innerHTML = '';
+
+    if (typeof window.buildCommandSteps !== 'function') {
+        host.innerHTML = '<p class="cmd-empty">Command mode needs manual-guide.js, which did not load.</p>';
+        return;
+    }
+
+    var md = (document.getElementById('markdown-editor') || {}).value || '';
+    var steps = [];
+    try { steps = window.buildCommandSteps(md); } catch (e) { steps = []; }
+
+    if (!steps.length) {
+        host.innerHTML = '<p class="cmd-empty">No commands found in this guide yet. ' +
+            'Load or paste a generated guide, and its bash blocks appear here one at a time.</p>';
+        return;
+    }
+
+    var intro = document.createElement('p');
+    intro.className = 'cmd-empty';
+    intro.textContent = steps.length + ' commands, in order, parsed from the guide above — ' +
+        'edits included. Read each one before you run it.';
+    host.appendChild(intro);
+
+    steps.forEach(function (step) {
+        // `destructive` is decided by buildCommandSteps, not re-derived here.
+        // Two opinions about which commands destroy a disk is the one thing you
+        // do not want two of.
+        var card = document.createElement('div');
+        card.className = 'cmd-step' + (step.destructive ? ' cmd-destructive' : '');
+
+        var head = document.createElement('div');
+        head.className = 'cmd-head';
+        var num = document.createElement('strong');
+        num.textContent = step.n + ' / ' + steps.length;
+        head.appendChild(num);
+        var title = document.createElement('span');
+        title.textContent = step.title || '';
+        head.appendChild(title);
+        card.appendChild(head);
+
+        if (step.destructive) {
+            var warn = document.createElement('p');
+            warn.className = 'cmd-warn';
+            warn.textContent = '⚠ This one destroys data and does not ask twice. ' +
+                'Check every device path in it against lsblk before you run it.';
+            card.appendChild(warn);
+        }
+
+        if (step.why) {
+            var why = document.createElement('p');
+            why.className = 'cmd-why';
+            why.textContent = step.why;
+            card.appendChild(why);
+        }
+
+        var pre = document.createElement('pre');
+        pre.className = 'cmd-code';
+        pre.textContent = step.commands;
+        card.appendChild(pre);
+
+        if (step.expected) {
+            var exp = document.createElement('p');
+            exp.className = 'cmd-why';
+            exp.textContent = 'Expect: ' + step.expected;
+            card.appendChild(exp);
+        }
+
+        var copy = document.createElement('button');
+        copy.type = 'button';
+        copy.className = 'btn-editor';
+        copy.textContent = '📋 Copy';
+        copy.addEventListener('click', function () {
+            var ta = document.createElement('textarea');
+            ta.value = step.commands;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            var okFlag = false;
+            try { okFlag = document.execCommand('copy'); } catch (_) { okFlag = false; }
+            document.body.removeChild(ta);
+            copy.textContent = okFlag ? '✅ Copied' : '⚠ Press Ctrl+C';
+            setTimeout(function () { copy.textContent = '📋 Copy'; }, 1600);
+        });
+        card.appendChild(copy);
+
+        host.appendChild(card);
+    });
+}
+
 function clearSessionHistory() {
     // The same dialog the generator uses, from shared-ui.js: it lists every
     // stored guide and offers to download them all before wiping. Two
@@ -736,6 +862,13 @@ document.addEventListener('DOMContentLoaded', initLiveEditor);
 </script>
 <!-- Built by shared-ui.js. -->
 <footer class="site-footer"></footer>
+<!-- The walkthrough's emitters. buildCommandSteps() PARSES a finished guide
+     into steps, so command-by-command here is by construction the same
+     thing the guide says — a second emitter would be a second source of
+     truth and the two would drift. manual-data.js first: manual-guide.js
+     reads values from it. -->
+<script src="manual-data.js"></script>
+<script src="manual-guide.js"></script>
 <script src="tooltip.js" defer></script>
 <script src="shared-ui.js" defer></script>
 <!-- Syntax highlighting. Self-contained: no CDN, so it works offline and
