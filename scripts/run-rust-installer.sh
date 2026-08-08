@@ -1,5 +1,5 @@
 #!/bin/bash
-# *nix Guides: Download, Verify, and Execute Rust Installer
+# *nix Install Guides: Download, Verify, and Execute Rust Installer
 
 set -e
 

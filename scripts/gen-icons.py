@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate the *nix Guides icon set, favicons and README banners.
+Generate the *nix Install Guides icon set, favicons and README banners.
 
 Everything here is deterministic and dependency-free: no Pillow, no cairo, no
 network. Given the same source grids you get byte-identical output, which is the
@@ -68,7 +68,7 @@ def icon(name: str, label: str, subtitle: str, accent: str, grid: str) -> None:
 
 
 # The Arch mountain. Site mark, and the shape reused inside the suite shield.
-icon("arch-guides", "ARCH GUIDES", "DYNAMIC INSTALL GENERATOR", "m", """
+icon("arch-guides", "ARCH INSTALL GUIDES", "DYNAMIC INSTALL GENERATOR", "m", """
 ................
 .......mm.......
 .......mm.......
@@ -98,7 +98,7 @@ icon("arch-guides", "ARCH GUIDES", "DYNAMIC INSTALL GENERATOR", "m", """
 # the "g" swirl — Larry the cow is the mascot, but the swirl is the mark.
 
 # Tux, for the neutral *nix banner shown before an OS is chosen.
-icon("unix-guides", "*NIX GUIDES", "EVERY *NIX GUIDE YOU COULD EVER NEED", "m", """
+icon("unix-guides", "*NIX INSTALL GUIDES", "EVERY *NIX GUIDE YOU COULD EVER NEED", "m", """
 ................
 ......KKKK......
 .....KKKKKK.....
@@ -118,7 +118,7 @@ icon("unix-guides", "*NIX GUIDES", "EVERY *NIX GUIDE YOU COULD EVER NEED", "m", 
 """)
 
 # The Gentoo "g" swirl.
-icon("gentoo-guides", "GENTOO GUIDES", "THE GENTOO INSTALL GENERATOR", "m", """
+icon("gentoo-guides", "GENTOO INSTALL GUIDES", "THE GENTOO INSTALL GENERATOR", "m", """
 ................
 .....mmmmmm.....
 ...mmmmmmmmmm...
@@ -138,7 +138,7 @@ icon("gentoo-guides", "GENTOO GUIDES", "THE GENTOO INSTALL GENERATOR", "m", """
 """)
 
 # Beastie: horned daemon head.
-icon("freebsd-guides", "FREEBSD GUIDES", "THE FREEBSD INSTALL GENERATOR", "r", """
+icon("freebsd-guides", "FREEBSD INSTALL GUIDES", "THE FREEBSD INSTALL GENERATOR", "r", """
 ................
 ..rr........rr..
 ..rrr......rrr..
@@ -161,7 +161,7 @@ icon("freebsd-guides", "FREEBSD GUIDES", "THE FREEBSD INSTALL GENERATOR", "r", "
 # registered trademark — the same reason the repository control is a drawn
 # octopus rather than the GitHub mark. Naming the OS in text is nominative use
 # and unavoidable; reproducing the logo is not.
-icon("raspios-guides", "RASPBERRY PI GUIDES",
+icon("raspios-guides", "RASPBERRY PI INSTALL GUIDES",
      "THE RASPBERRY PI OS INSTALL GENERATOR", "r", """
 ................
 ......gg.g......
@@ -182,7 +182,7 @@ icon("raspios-guides", "RASPBERRY PI GUIDES",
 """)
 
 # Puffy: pufferfish, spines out.
-icon("openbsd-guides", "OPENBSD GUIDES", "THE OPENBSD INSTALL GENERATOR", "g", """
+icon("openbsd-guides", "OPENBSD INSTALL GUIDES", "THE OPENBSD INSTALL GENERATOR", "g", """
 ................
 ....g.g..g.g....
 .....gggggg.....

@@ -1,6 +1,6 @@
 
 
-# *nix Guides: Accessible & Modular
+# *nix Install Guides: Accessible & Modular
 **The ultimate, dynamically customizable, and highly secure guide to installing Arch Linux.**
 
 ## ⚖️ Legal Disclaimer & AI Notice

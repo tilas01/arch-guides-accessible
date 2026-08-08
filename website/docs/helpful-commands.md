@@ -692,5 +692,5 @@ pacman -Ss '^linux$' '^linux-hardened$' '^linux-zen$' '^linux-lts$'
 
 ---
 
-*Part of the [*nix Guides Dynamic](https://github.com/tilas01/unix-guides-dynamic) wiki by [tilas01](https://github.com/tilas01).*
+*Part of the [*nix Install Guides](https://github.com/tilas01/unix-guides-dynamic) wiki by [tilas01](https://github.com/tilas01).*
 *Dusky by [dusklinux](https://github.com/dusklinux/dusky). *

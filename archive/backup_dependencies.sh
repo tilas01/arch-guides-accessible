@@ -10,7 +10,7 @@ set -e
 ARCHIVE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "=============================================="
-echo "  *nix Guides Dependency Archive Tool"
+echo "  *nix Install Guides Dependency Archive Tool"
 echo "  Saving to: $ARCHIVE_DIR"
 echo "=============================================="
 

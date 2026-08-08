@@ -1,10 +1,10 @@
 <!-- Author: tilas01 | Main Developer & Maintainer -->
 
 <p align="center">
-  <img src="img/banners/unix-guides.png" width="100%" alt="*nix Guides banner">
+  <img src="img/banners/unix-guides.png" width="100%" alt="*nix Install Guides banner">
 </p>
 
-<h1 align="center">🐧 *nix Guides</h1>
+<h1 align="center">🐧 *nix Install Guides</h1>
 
 <p align="center">
   <strong>A modular, dynamically generated, security-focused *nix-like installation system.</strong>
