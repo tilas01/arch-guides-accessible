@@ -101,15 +101,26 @@
         return String(value);
     }
 
+    /* Whether a question has been dealt with.
+
+       One definition, because there were three and they disagreed. An optional
+       question that was shown and deliberately left blank is answered, and the
+       key existing in `state` is the record of that decision — judging it by
+       its value instead reads "no, nothing" as "not yet". That is what made
+       "Anything else?" impossible to pass: the walkthrough re-rendered the same
+       question, and the only way onwards was to invent a package to install. */
+    function isAnswered(s) {
+        var v = state[s.id];
+        if (s.type === 'multi') return Array.isArray(v);
+        if (s.optional) return Object.prototype.hasOwnProperty.call(state, s.id);
+        return v !== undefined && v !== null && v !== '';
+    }
+
     function nextUnanswered() {
         var steps = activeSteps();
         for (var i = 0; i < steps.length; i++) {
             var s = steps[i];
-            var v = state[s.id];
-            var answered = s.type === 'multi'
-                ? Array.isArray(v)
-                : (v !== undefined && v !== null && v !== '');
-            if (!answered) return s;
+            if (!isAnswered(s)) return s;
         }
         return null;
     }
@@ -452,7 +463,20 @@
 
     function submitText(step, raw) {
         var value = String(raw || '').trim();
-        if (!value) return showError(step, 'This one needs an answer.');
+        /* An optional text question may be left blank. submitMulti has always
+           honoured `optional` and this did not, so every question declared
+           optional and rendered as a text box was in fact compulsory —
+           "Anything else?" could not be answered with nothing, and the only way
+           past it was to invent a package to install.
+
+           Validation is skipped for a blank optional answer on purpose: a
+           validator exists to judge a value, and there is no value here. Running
+           it would reject the empty string on behalf of a question that just
+           said empty was fine. */
+        if (!value) {
+            if (step.optional) return answer(step, '');
+            return showError(step, 'This one needs an answer.');
+        }
         if (step.validate) {
             var msg = step.validate(value, state);
             if (msg) return showError(step, msg);
@@ -526,10 +550,7 @@
 
     function updateProgress() {
         var steps = activeSteps();
-        var done = steps.filter(function (s) {
-            var v = state[s.id];
-            return s.type === 'multi' ? Array.isArray(v) : (v !== undefined && v !== '');
-        }).length;
+        var done = steps.filter(isAnswered).length;
         var pct = steps.length ? (done / steps.length) * 100 : 0;
         var bar = document.getElementById('manual-progress');
         if (bar) {
