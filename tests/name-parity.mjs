@@ -18,7 +18,7 @@
  *
  *   1. Every crate's artwork label has to be recognisably that crate. Not
  *      character-identical — "LIBRE OTP" for `libre-otp` and "SECURITY SUITE"
- *      for `arch-security-suite` are both fine — but the words have to belong
+ *      for `unix-security-suite` are both fine — but the words have to belong
  *      to each other in one direction or the other. "INPUT GUARD" against
  *      `anti-ducky` shares nothing, which is exactly the failure.
  *
@@ -53,8 +53,26 @@ const RETIRED = [
            'enabled anti-ducky.service units and /etc/arch-security/anti-ducky/' },
     { retired: 'input-guard',
       instead: 'anti-ducky',
-      why: 'names a systemd unit that has never existed' }
+      why: 'names a systemd unit that has never existed' },
+    /* The suite covers systems that are not Arch, so the Arch name in it had
+       become a claim about scope rather than a name. The crate, the binary and
+       the artwork moved together; only the on-disk state directory stayed, and
+       deliberately — see below. */
+    { retired: 'arch-security-suite',
+      instead: 'unix-security-suite',
+      why: 'names a crate and a binary that no longer exist under that name' },
+    { retired: 'Arch Security Suite',
+      instead: 'Unix Security Suite',
+      why: 'describes the suite as Arch-only, which is no longer what it targets' }
 ];
+
+/* Not retired, and not an oversight: `/etc/arch-security/` keeps its name.
+   Every tool in the suite stores state there — scarecrow's three Argon2id PIN
+   hashes, anti-ducky's device registry and unlock PIN, anti-evil-maid's boot
+   baseline. Machines already have those files. Renaming the directory would
+   orphan them silently, and a duress PIN that has quietly stopped being read is
+   worse than an inelegantly named path. Moving it needs a migration step that
+   runs on upgrade, not a find-and-replace. */
 
 // ── 1. Crates exist and are readable ─────────────────────────────────────────
 let crates = [];

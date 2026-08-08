@@ -3,7 +3,7 @@ use libre_otp::gui::start_gui;
 use libre_otp::run;
 use std::process::ExitCode;
 
-/// Libre OTP Authenticator - Arch Security Suite Standalone
+/// Libre OTP Authenticator - Unix Security Suite Standalone
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

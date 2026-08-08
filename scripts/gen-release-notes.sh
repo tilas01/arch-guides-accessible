@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Generate the body for a GitHub release of the Arch Security Suite.
+# Generate the body for a GitHub release of the Unix Security Suite.
 #
 # The release previously had no body at all — just "Security Tools Release
 # (main)" and a pile of unlabelled binaries. Someone landing on it had no way to
@@ -32,11 +32,11 @@ readonly TOOLS=(
 "kernel-watcher|Filesystem monitor for infostealers touching browser profiles, SSH keys and wallets.|Runs as a daemon; logs to /var/log."
 "scarecrow|Canary tokens, sandbox spoofing, and three optional duress PINs for the login prompt.|Needs the pam_exec line to be installed or the PINs never fire."
 "aur-guard|Reads a PKGBUILD before makepkg runs it and reports what is worth reading yourself.|Read-only. Never needs root. Never says a package is safe."
-"arch-security-suite|The five daemons linked into a single binary, for people who want all of them.|aur-guard stays standalone — it never needs root."
+"unix-security-suite|The five daemons linked into a single binary, for people who want all of them.|aur-guard stays standalone — it never needs root."
 )
 
 cat <<HEADER
-# Arch Security Suite — \`${TAG}\`
+# Unix Security Suite — \`${TAG}\`
 
 Six independent Rust tools for hardening an Arch Linux install, plus a combined
 binary. Every binary below is reproducible-built and **GPG-signed**.

@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="assets/banner.png" width="880" alt="Arch Security Suite">
+  <img src="assets/banner.png" width="880" alt="Unix Security Suite">
 </div>
 
-# Arch Security Suite
+# Unix Security Suite
 
 All five tools in one binary, dispatching to whichever you ask for.
 
@@ -41,7 +41,7 @@ independent check that does not require trusting any signing key at all:
 ```bash
 pacman -S rustup && rustup default stable
 git clone https://github.com/tilas01/unix-guides-dynamic.git
-cd unix-guides-dynamic/security-tools/arch-security-suite
+cd unix-guides-dynamic/security-tools/unix-security-suite
 cargo build --release --locked
 ```
 
@@ -58,7 +58,7 @@ byte-identical to the published binary.
 ```
 
 ```bash
-arch-security-suite --help
+unix-security-suite --help
 ```
 
 ## Verifying a release binary
@@ -66,8 +66,8 @@ arch-security-suite --help
 ```bash
 gpg --import tilas01.asc
 gpg --fingerprint 5CC1B2BED4D05F65E9E965423AA74BEC12F3D5ED   # compare against the root README
-gpg --verify arch-security-suite.sig arch-security-suite
-sha512sum -c arch-security-suite.sha512
+gpg --verify unix-security-suite.sig unix-security-suite
+sha512sum -c unix-security-suite.sha512
 ```
 
 The previous signing key `4C0383A1…` is **revoked** — its private half was

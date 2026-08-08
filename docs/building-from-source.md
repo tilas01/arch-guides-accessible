@@ -32,9 +32,9 @@ rustc --version    # should match rust-toolchain.toml
 Everything, as one binary:
 
 ```bash
-cd security-tools/arch-security-suite
+cd security-tools/unix-security-suite
 cargo build --release --locked
-./target/release/arch-security-suite list
+./target/release/unix-security-suite list
 ```
 
 Or a single tool:
@@ -58,13 +58,13 @@ release against your own build:
 ```bash
 cd unix-guides-dynamic
 git checkout <the-release-tag>
-cd security-tools/arch-security-suite
+cd security-tools/unix-security-suite
 
 # Same timestamp the CI used: derived from the commit, not from now.
 export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
 
 cargo build --release --locked
-sha512sum target/release/arch-security-suite
+sha512sum target/release/unix-security-suite
 ```
 
 Compare that against the `.sha512` on the
@@ -143,7 +143,7 @@ Confirm they took effect:
 
 ```bash
 sudo pacman -S --needed checksec
-checksec --file=target/release/arch-security-suite
+checksec --file=target/release/unix-security-suite
 # Expect: Full RELRO, NX enabled, PIE enabled
 ```
 
@@ -152,7 +152,7 @@ checksec --file=target/release/arch-security-suite
 ## Installing what you built
 
 ```bash
-sudo install -Dm755 target/release/arch-security-suite /usr/local/bin/
+sudo install -Dm755 target/release/unix-security-suite /usr/local/bin/
 ```
 
 Or let the installer do it, building from source rather than downloading:
@@ -176,7 +176,7 @@ deliberate step, because several can lock you out.
 | `anti-evil-maid` | libudev | Depends on `kernel-watcher` by path, so build that first if building individually. |
 | `kernel-watcher` | libudev | Uses `nix`, which is *nix-only. It will not build on Windows or macOS. |
 | `scarecrow` | — | Optional kernel module in `src/driver/` is built separately with `make`. |
-| `arch-security-suite` | libudev | Links all five. Build this last. |
+| `unix-security-suite` | libudev | Links all five. Build this last. |
 
 ### Cross-platform
 
@@ -188,7 +188,7 @@ test on Linux, or in a VM or container:
 ```bash
 podman run --rm -it -v "$PWD":/src:Z -w /src/security-tools archlinux:latest \
   bash -c 'pacman -Sy --noconfirm rust base-devel pkg-config systemd-libs &&
-           cd arch-security-suite && cargo build --release --locked'
+           cd unix-security-suite && cargo build --release --locked'
 ```
 
 ---

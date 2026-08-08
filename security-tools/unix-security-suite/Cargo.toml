@@ -1,5 +1,5 @@
 [package]
-name = "arch-security-suite"
+name = "unix-security-suite"
 version = "1.0.0"
 edition = "2021"
 description = "All five tilas01 security tools in a single binary, dispatched by subcommand."

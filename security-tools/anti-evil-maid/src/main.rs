@@ -3,7 +3,7 @@ use anti_evil_maid::{autolock, run};
 use clap::Parser;
 use std::process::ExitCode;
 
-/// Anti-Evil Maid Boot Integrity - Arch Security Suite Standalone
+/// Anti-Evil Maid Boot Integrity - Unix Security Suite Standalone
 ///
 /// Every flag below is one the website, the generated install scripts and the
 /// README already tell people to run. They previously did not exist: this binary

@@ -19,7 +19,7 @@ use zeroize::Zeroize;
 /// little entropy to begin with.
 const UNLOCK_HASH_FILE: &str = "/etc/arch-security/anti-ducky/unlock.hash";
 
-/// Anti-Ducky USB HID Monitor - Arch Security Suite Standalone
+/// Anti-Ducky USB HID Monitor - Unix Security Suite Standalone
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

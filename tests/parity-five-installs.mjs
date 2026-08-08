@@ -80,7 +80,7 @@ const CASES = [
 // ── Walkthrough side (pure functions) ────────────────────────────────────────
 const wl = {};
 new Function('window','module',
-  fs.readFileSync(path.join(WEB,'os-meta.js'),'utf8') + '\n' +
+  fs.readFileSync(path.join(WEB,'os-meta.js'),'utf8') + '\n' + fs.readFileSync(path.join(WEB,'os-install.js'),'utf8') + '\n' +
   fs.readFileSync(path.join(WEB,'manual-data.js'),'utf8') + '\n' +
   fs.readFileSync(path.join(WEB,'manual-guide.js'),'utf8') +
   '\nwindow.STEPS=STEPS;')(wl, undefined);

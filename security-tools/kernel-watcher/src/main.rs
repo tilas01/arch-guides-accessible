@@ -5,7 +5,7 @@ use kernel_watcher::gui::start_gui;
 use kernel_watcher::start_watcher;
 use std::process;
 
-/// Kernel Watcher (EDR) - Arch Security Suite Standalone
+/// Kernel Watcher (EDR) - Unix Security Suite Standalone
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

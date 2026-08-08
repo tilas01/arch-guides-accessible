@@ -2,7 +2,7 @@
 name = "suite-hardening"
 version = "1.0.0"
 edition = "2024"
-description = "Process-level memory hardening shared by the Arch Security Suite tools."
+description = "Process-level memory hardening shared by the Unix Security Suite tools."
 
 # Deliberately almost dependency-free. Every tool in the suite links this, so
 # anything added here is added to all of them — and a hardening crate that

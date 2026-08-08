@@ -1,4 +1,4 @@
-//! arch-security-suite — all five tilas01 security tools in one binary.
+//! unix-security-suite — all five tilas01 security tools in one binary.
 //!
 //! Each tool remains its own crate and can still be built and shipped
 //! standalone; this links them all in and dispatches by subcommand, so a user
@@ -21,13 +21,13 @@ use std::process::ExitCode;
 
 #[derive(Parser)]
 #[command(
-    name = "arch-security-suite",
+    name = "unix-security-suite",
     version,
     about = "All five tilas01 security tools in one binary",
     long_about = None,
     after_help = "\
 Docs:      https://tilas01.github.io/unix-guides-dynamic/wiki.html#security-suite
-Verify:    gpg --verify arch-security-suite.sig arch-security-suite
+Verify:    gpg --verify unix-security-suite.sig unix-security-suite
 
 Provided AS IS with no warranty. Several of these can lock you out of your own
 machine if misconfigured. Read the wiki before enabling anything."
@@ -200,7 +200,7 @@ fn main() -> ExitCode {
         }
 
         Command::List => {
-            println!("arch-security-suite {}", env!("CARGO_PKG_VERSION"));
+            println!("unix-security-suite {}", env!("CARGO_PKG_VERSION"));
             println!("All five tools are linked into this single binary.\n");
             println!("  otp        Libre OTP — two-factor / silent boot tamper check");
             println!("  ducky      Anti-Ducky — blocks BadUSB keystroke injection");

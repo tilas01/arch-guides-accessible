@@ -30,7 +30,7 @@ jobs:
           # The five daemons linked into one binary, for people who want the suite.
           # aur-guard stays standalone: it is a read-only reading aid that never
           # needs root, and bundling it with tools that do would be misleading.
-          - arch-security-suite
+          - unix-security-suite
 
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
 
       # First thing that touches cargo, and it must be --locked.
       #
-      # Three lockfiles (anti-ducky, arch-security-suite, scarecrow) had drifted
+      # Three lockfiles (anti-ducky, unix-security-suite, scarecrow) had drifted
       # from their Cargo.toml: dependencies were declared and never resolved into
       # the lock. `cargo build --release --locked` below should have failed on
       # that — and did not, because the clippy step ran first *without* --locked,
@@ -195,7 +195,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          name: "Arch Security Suite ${{ steps.tag.outputs.tag }}"
+          name: "Unix Security Suite ${{ steps.tag.outputs.tag }}"
           body_path: RELEASE_NOTES.md
           files: final_release/*
           draft: false

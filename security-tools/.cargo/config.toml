@@ -14,8 +14,8 @@
 #
 # Verify a published binary yourself:
 #   SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) \
-#     cargo build --release --locked -p arch-security-suite
-#   sha512sum target/release/arch-security-suite
+#     cargo build --release --locked -p unix-security-suite
+#   sha512sum target/release/unix-security-suite
 # and compare against the .sha512 on the release.
 
 [build]

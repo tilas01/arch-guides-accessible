@@ -203,7 +203,7 @@ icon("openbsd-guides", "OPENBSD INSTALL GUIDES", "THE OPENBSD INSTALL GENERATOR"
 
 
 # Shield with the mountain inside it: the all-in-one binary.
-icon("arch-security-suite", "SECURITY SUITE", "ALL FIVE TOOLS, ONE BINARY", "m", """
+icon("unix-security-suite", "SECURITY SUITE", "ALL FIVE TOOLS, ONE BINARY", "m", """
 ................
 ..wwwwwwwwwwww..
 ..wMMMMMMMMMMw..
@@ -704,7 +704,7 @@ def main() -> int:
     # assets/banner.png, and the Rust binaries include assets/icon-64.png at
     # compile time, so the artwork has exactly one source of truth: this file.
     for name in ("anti-ducky", "anti-evil-maid", "kernel-watcher", "libre-otp",
-                 "scarecrow", "arch-security-suite", "aur-guard",
+                 "scarecrow", "unix-security-suite", "aur-guard",
                  "pi-boot-guard"):
         crate = os.path.join(root, "security-tools", name)
         if not os.path.isdir(crate):
