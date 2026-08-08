@@ -294,11 +294,31 @@
             if (s.dualboot === 'windows') {
                 L.push('   - In Windows, as administrator: `powercfg /h off`. Fast Startup');
                 L.push('     leaves NTFS hibernated, and resizing it in that state corrupts it.');
-                L.push('   - Suspend BitLocker: `manage-bde -protectors -disable C: -RebootCount 2`.');
-                L.push('     **Write the recovery key down first, somewhere that is not this');
-                L.push('     machine.** Changing the boot configuration changes the TPM');
+                L.push('   - Check whether BitLocker is even on: `manage-bde -status`.');
+                L.push('     Recent Windows turns on **Device Encryption** by itself on');
+                L.push('     machines that qualify, Home editions included, and puts the');
+                L.push('     recovery key in your Microsoft account rather than showing it');
+                L.push('     to you. Anything other than "Fully Decrypted" means it is on.');
+                L.push('   - **Write the recovery key down first, somewhere that is not this');
+                L.push('     machine** — <https://aka.ms/myrecoverykey> if it was never shown');
+                L.push('     to you. Changing the boot configuration changes the TPM');
                 L.push('     measurements, and Windows will ask for it.');
+                L.push('   - Suspend BitLocker: `manage-bde -protectors -disable C:`.');
+                L.push('     Without `-RebootCount` it stays suspended until you say');
+                L.push('     otherwise. `-RebootCount 2` means two boots and no more, so an');
+                L.push('     install that needs a third re-arms BitLocker partway through.');
                 L.push('   - Full **Restart**, not Shut down, before booting the installer.');
+                if (s.secureboot && s.secureboot !== 'none') {
+                    /* Two features this project offers, pointed at the same
+                       measurement. Enrolling keys changes PCR 7, which is one of
+                       the values BitLocker seals to, so the collision is certain
+                       rather than possible — worth saying before it happens. */
+                    L.push('   - You chose to enrol your own Secure Boot keys, which changes');
+                    L.push('     **PCR 7** — one of the measurements BitLocker seals its key');
+                    L.push('     to. Windows will ask for the recovery key afterwards. That is');
+                    L.push('     expected. Re-enable protection once, after Windows has booted');
+                    L.push('     cleanly, so it re-seals against the new measurements.');
+                }
             } else {
                 L.push('   - Note the existing EFI system partition: `' + esc(s.dualboot_esp) + '`.');
                 L.push('     It is **mounted, never formatted** — formatting it deletes the');
@@ -627,6 +647,13 @@
         L.push('```');
         L.push('');
         if (f.dual && s.dualboot === 'windows') {
+            L.push('> **Turn BitLocker back on once the boot menu is settled.** Boot');
+            L.push('> Windows, then `manage-bde -protectors -enable C:` and confirm with');
+            L.push('> `manage-bde -status C:` that it reports Protection On. Left');
+            L.push('> suspended, the disk still reports as encrypted while its key sits');
+            L.push('> unsealed on it, and nothing looks wrong — which is why this step is');
+            L.push('> the one that gets skipped.');
+            L.push('');
             L.push('> Windows expects the hardware clock in local time and Linux keeps it');
             L.push('> in UTC, so the two will disagree by your offset. `hwclock --systohc`');
             L.push('> above writes UTC, which is the standards-compliant side; set');
