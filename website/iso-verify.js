@@ -153,12 +153,24 @@ function hostOf(url) {
  * because two mirrors run by the same organisation in the same building are not
  * two independent sources.
  */
+/* The mirror pool follows the selected system. Everything downstream — the
+   image host, the two independent checksum hosts, the reshuffle button — works
+   the same way on every system; only the list it draws from changes. */
+function activeMirrors() {
+    const { spec } = isoSpec();
+    return (spec.mirrors && spec.mirrors.length) ? spec.mirrors : MIRRORS;
+}
+
 function chooseMirrors() {
     const region = guessRegion();
     const tiers = REGION_ORDER[region] || REGION_ORDER.Europe;
     // Nearest tier first, randomised within each tier so load spreads and the
     // choice is not predictable from a page load.
-    const ordered = tiers.flatMap(r => shuffle(MIRRORS.filter(m => m.region === r)));
+    const pool = activeMirrors();
+    const ordered = tiers.flatMap(r => shuffle(pool.filter(m => m.region === r)));
+    // A system with a single official host has no regional spread to sort;
+    // fall back to the whole pool rather than producing an empty list.
+    if (!ordered.length) ordered.push(...pool);
 
     const image = ordered[0];
     const checks = [];
@@ -337,127 +349,412 @@ function lookup(text, filename) {
 
 function el(id) { return document.getElementById(id); }
 
-/* ── When the selected system is not Arch ────────────────────────────────────
-   Everything below this point is Arch: Arch mirrors, Arch checksum files, an
-   Arch signing key. The other three systems verify their images by genuinely
-   different mechanisms — OpenBSD does not use GPG at all, it uses signify(1),
-   an Ed25519 scheme with its own container format — so relabelling this page
-   would produce instructions that are confidently wrong.
+/* -- Every system, verified the same way ------------------------------------
+   This page used to be Arch-only, and briefly told anyone on another system
+   that it could not help them. That was the wrong answer: the mechanic here is
+   not Arch-specific at all. It is
 
-   So when another system is selected the Arch machinery is put away and the
-   page says what it can and cannot do, with a link to that project's own
-   verification instructions. A page that says "not covered yet" is worth more
-   than one that checks the wrong thing and reports success.
+     1. hash the image locally, in the browser, so the file never moves;
+     2. take the published checksum from mirrors OTHER than the one that served
+        the image, so a single dishonest operator cannot supply a matching pair;
+     3. check the signature over the checksum file, with the key fingerprint
+        pinned here rather than taken from whatever the download host offers.
 
-   The exact filenames are deliberately not written out here. They change per
-   release, and a stale filename in a security instruction is the kind of
-   detail somebody works around by skipping the step. */
-const OS_VERIFY = {
+   All of that generalises. What differs per system is the mirror list, the file
+   names, the hash, and how the signature is made -- and those are data, so they
+   live in a table.
+
+   The one genuine divergence is stated rather than papered over: OpenBSD does
+   not use GPG. It signs with signify(1), an Ed25519 scheme of its own, so the
+   command and the key are different in kind, not merely in name. Raspberry Pi
+   OS is the other: one official host and no detached signature at all.
+
+   Mirror lists come from each project's own published list. They are hardcoded
+   because none of these hosts send CORS headers, so a static page cannot read
+   their mirror JSON -- a dead entry here is a broken link, not a security
+   problem. */
+
+const OS_IMAGES = {
+    arch: {
+        release: KNOWN_RELEASE,
+        mirrors: MIRRORS,
+        dir: 'iso/latest/',
+        image: 'archlinux-x86_64.iso',
+        localName: 'archlinux-' + KNOWN_RELEASE + '-x86_64.iso',
+        sums: 'sha256sums.txt',
+        algo: 'SHA-256',
+        sigFile: 'archlinux-x86_64.iso.sig',
+        sigKind: 'gpg',
+        fpr: ARCH_SIGNING_FPR,
+        verifyCmd: 'gpg --verify archlinux-x86_64.iso.sig archlinux-x86_64.iso',
+        sumsCmd: 'sha256sum -c sha256sums.txt --ignore-missing',
+        downloadPage: 'https://archlinux.org/download/',
+        docs: 'https://wiki.archlinux.org/title/Installation_guide'
+    },
+
     gentoo: {
-        how: 'Gentoo publishes a digest file alongside each installer image and ' +
-             'a detached GPG signature over it, signed by the Gentoo release ' +
-             'engineering key. Verify the signature on the digest file first, ' +
-             'then check the image against the digest.',
-        where: 'https://www.gentoo.org/downloads/',
-        whereName: 'gentoo.org/downloads',
-        keys: 'https://www.gentoo.org/downloads/signatures/',
-        keysName: 'the Gentoo signature and key documentation'
+        /* Gentoo publishes a rolling "current" directory rather than a dated
+           release, so the file name carries a timestamp that changes weekly.
+           Read the exact name from the listing; a stale one hardcoded here
+           would simply 404. */
+        release: 'current',
+        mirrors: [
+            { url: 'https://distfiles.gentoo.org/',                        cc: 'XX', country: 'Gentoo master',  region: 'Global' },
+            { url: 'https://mirror.leaseweb.com/gentoo/',                  cc: 'NL', country: 'Netherlands',    region: 'Europe' },
+            { url: 'https://ftp.fau.de/gentoo/',                           cc: 'DE', country: 'Germany',        region: 'Europe' },
+            { url: 'https://mirrors.kernel.org/gentoo/',                   cc: 'US', country: 'United States',  region: 'Americas' },
+            { url: 'https://gentoo.osuosl.org/',                           cc: 'US', country: 'United States',  region: 'Americas' },
+            { url: 'https://mirror.csclub.uwaterloo.ca/gentoo-distfiles/',  cc: 'CA', country: 'Canada',         region: 'Americas' },
+            { url: 'https://mirrors.mit.edu/gentoo-distfiles/',            cc: 'US', country: 'United States',  region: 'Americas' },
+            { url: 'https://mirror.aarnet.edu.au/pub/gentoo/',             cc: 'AU', country: 'Australia',      region: 'Oceania' },
+            { url: 'https://ftp.jaist.ac.jp/pub/Linux/Gentoo/',            cc: 'JP', country: 'Japan',          region: 'Asia' }
+        ],
+        dir: 'releases/amd64/autobuilds/current-install-amd64-minimal/',
+        image: null,
+        localName: 'install-amd64-minimal-<timestamp>.iso',
+        sums: 'install-amd64-minimal-<timestamp>.iso.sha256',
+        algo: 'SHA-256',
+        sigFile: 'install-amd64-minimal-<timestamp>.iso.asc',
+        sigKind: 'gpg',
+        fpr: '13EB BDBE DE7A 1277 5DFD  B1BA BB57 2E0E 2D18 2910',
+        recvKey: 'gpg --keyserver hkps://keys.gentoo.org --recv-keys 13EBBDBEDE7A12775DFDB1BABB572E0E2D182910',
+        verifyCmd: 'gpg --verify install-amd64-minimal-<timestamp>.iso.asc',
+        sumsCmd: 'sha256sum -c install-amd64-minimal-<timestamp>.iso.sha256',
+        note: 'Gentoo signs the digest file, so verifying that signature and then ' +
+              'checking the image against the digest covers both steps. The ' +
+              'timestamp changes with every weekly build, so take the exact file ' +
+              'name from the directory listing rather than typing it from memory.',
+        downloadPage: 'https://www.gentoo.org/downloads/',
+        docs: 'https://wiki.gentoo.org/wiki/Handbook:AMD64'
     },
+
     freebsd: {
-        how: 'FreeBSD publishes CHECKSUM files for each release and signs them ' +
-             'with the FreeBSD release engineering GPG key. Verify the signature ' +
-             'on the CHECKSUM file, then check the image against it.',
-        where: 'https://download.freebsd.org/',
-        whereName: 'download.freebsd.org',
-        keys: 'https://docs.freebsd.org/en/books/handbook/mirrors/',
-        keysName: 'the FreeBSD Handbook mirrors and keys chapter'
+        release: '14.4',
+        mirrors: [
+            { url: 'https://download.freebsd.org/',            cc: 'XX', country: 'FreeBSD CDN',     region: 'Global' },
+            { url: 'https://ftp.freebsd.org/pub/FreeBSD/',     cc: 'US', country: 'United States',   region: 'Americas' },
+            { url: 'https://ftp2.de.freebsd.org/pub/FreeBSD/', cc: 'DE', country: 'Germany',         region: 'Europe' },
+            { url: 'https://ftp.uk.freebsd.org/pub/FreeBSD/',  cc: 'GB', country: 'United Kingdom',  region: 'Europe' },
+            { url: 'https://ftp.nl.freebsd.org/pub/FreeBSD/',  cc: 'NL', country: 'Netherlands',     region: 'Europe' },
+            { url: 'https://ftp.jp.freebsd.org/pub/FreeBSD/',  cc: 'JP', country: 'Japan',           region: 'Asia' },
+            { url: 'https://ftp.au.freebsd.org/pub/FreeBSD/',  cc: 'AU', country: 'Australia',       region: 'Oceania' }
+        ],
+        dir: 'releases/amd64/amd64/ISO-IMAGES/14.4/',
+        image: 'FreeBSD-14.4-RELEASE-amd64-disc1.iso.xz',
+        localName: 'FreeBSD-14.4-RELEASE-amd64-disc1.iso.xz',
+        sums: 'CHECKSUM.SHA256-FreeBSD-14.4-RELEASE-amd64',
+        algo: 'SHA-256',
+        sigFile: 'CHECKSUM.SHA256-FreeBSD-14.4-RELEASE-amd64.asc',
+        sigKind: 'gpg',
+        /* Deliberately not a fingerprint written from memory. FreeBSD publishes
+           its release-engineering keys in the Handbook appendix, and a wrong
+           fingerprint printed with authority is worse than none at all. */
+        fpr: null,
+        keyPage: 'https://docs.freebsd.org/en/books/handbook/pgpkeys/',
+        verifyCmd: 'gpg --verify CHECKSUM.SHA256-FreeBSD-14.4-RELEASE-amd64.asc',
+        sumsCmd: 'sha256 -c <hash> FreeBSD-14.4-RELEASE-amd64-disc1.iso.xz',
+        note: 'Releases 14.3, 15.0 and 15.1 sit beside 14.4 under ISO-IMAGES and ' +
+              'follow the same naming with the version changed. Take the release ' +
+              'engineering key fingerprint from the Handbook appendix linked below ' +
+              'rather than from any download page.',
+        downloadPage: 'https://www.freebsd.org/where/',
+        docs: 'https://docs.freebsd.org/en/books/handbook/'
     },
+
     openbsd: {
-        how: 'OpenBSD does not use GPG. It signs releases with signify(1), an ' +
-             'Ed25519 scheme of its own: SHA256.sig holds the signature and the ' +
-             'per-release public keys ship in /etc/signify on an installed ' +
-             'system. There is no key to import and no gpg --verify step — the ' +
-             'command is signify -C, run on a machine that has it.',
-        where: 'https://www.openbsd.org/faq/faq4.html',
-        whereName: 'the OpenBSD FAQ, section 4',
-        keys: 'https://man.openbsd.org/signify',
-        keysName: 'signify(1)'
+        release: '7.9',
+        mirrors: [
+            { url: 'https://cdn.openbsd.org/pub/OpenBSD/',       cc: 'XX', country: 'OpenBSD CDN',     region: 'Global' },
+            { url: 'https://ftp.openbsd.org/pub/OpenBSD/',       cc: 'CA', country: 'Canada',          region: 'Americas' },
+            { url: 'https://mirrors.sonic.net/pub/OpenBSD/',     cc: 'US', country: 'United States',   region: 'Americas' },
+            { url: 'https://ftp.nluug.nl/pub/OpenBSD/',          cc: 'NL', country: 'Netherlands',     region: 'Europe' },
+            { url: 'https://ftp.spline.de/pub/OpenBSD/',         cc: 'DE', country: 'Germany',         region: 'Europe' },
+            { url: 'https://www.mirrorservice.org/pub/OpenBSD/', cc: 'GB', country: 'United Kingdom',  region: 'Europe' },
+            { url: 'https://mirrors.dotsrc.org/pub/OpenBSD/',    cc: 'DK', country: 'Denmark',         region: 'Europe' },
+            { url: 'https://ftp.icm.edu.pl/pub/OpenBSD/',        cc: 'PL', country: 'Poland',          region: 'Europe' },
+            { url: 'https://ftp.jaist.ac.jp/pub/OpenBSD/',       cc: 'JP', country: 'Japan',           region: 'Asia' },
+            { url: 'https://mirror.aarnet.edu.au/pub/OpenBSD/',  cc: 'AU', country: 'Australia',       region: 'Oceania' }
+        ],
+        dir: '7.9/amd64/',
+        image: 'install79.iso',
+        localName: 'install79.iso',
+        sums: 'SHA256',
+        algo: 'SHA-256',
+        sigFile: 'SHA256.sig',
+        sigKind: 'signify',
+        fpr: null,
+        keyFile: '/etc/signify/openbsd-79-base.pub',
+        verifyCmd: 'signify -Cp /etc/signify/openbsd-79-base.pub -x SHA256.sig install79.iso',
+        sumsCmd: 'sha256 -C SHA256 install79.iso',
+        note: 'OpenBSD does not use GPG anywhere in this path. signify(1) is ' +
+              'Ed25519 with its own container format, the key is a file that ships ' +
+              'in /etc/signify on an installed system rather than something you ' +
+              'fetch from a keyserver, and signify -C checks the image against the ' +
+              'signed SHA256 list in a single step. A signify package on another ' +
+              'operating system may not carry the key.',
+        downloadPage: 'https://www.openbsd.org/faq/faq4.html',
+        docs: 'https://www.openbsd.org/faq/'
+    },
+
+    raspios: {
+        release: 'current',
+        /* One official host, and that is the honest position rather than a
+           shortcoming to hide. Raspberry Pi runs no mirror network for OS images
+           and publishes no detached signature, so the two-source rule this page
+           is built on cannot be applied. Saying so is the point: checking a hash
+           against the same host that served the image proves the download
+           completed, and nothing more. */
+        mirrors: [
+            { url: 'https://downloads.raspberrypi.com/', cc: 'XX',
+              country: 'Raspberry Pi (official, single host)', region: 'Global' }
+        ],
+        dir: 'raspios_arm64/images/',
+        image: null,
+        localName: '<date>-raspios-<release>-arm64.img.xz',
+        sums: null,
+        algo: 'SHA-256',
+        sigFile: null,
+        sigKind: 'none',
+        fpr: null,
+        verifyCmd: null,
+        sumsCmd: 'sha256sum <date>-raspios-<release>-arm64.img.xz',
+        singleSource: true,
+        note: 'Raspberry Pi publishes the SHA-256 for each image on its software ' +
+              'page, labelled "SHA256 file integrity hash", and publishes no ' +
+              'signature. There is also only one official host, so the checksum ' +
+              'cannot be taken from an independent source the way it can for every ' +
+              'other system here. Raspberry Pi Imager downloads and writes the image ' +
+              'and verifies what it wrote to the card, which is a different ' +
+              'guarantee from verifying the publisher.',
+        downloadPage: 'https://www.raspberrypi.com/software/operating-systems/',
+        docs: 'https://www.raspberrypi.com/documentation/'
     }
 };
 
+/** The spec for whichever system is selected. Always resolves to something. */
+let lastPick = null;
+
+function isoSpec() {
+    const id = (typeof window.targetOS === 'function') ? window.targetOS() : 'arch';
+    return { id: id, spec: OS_IMAGES[id] || OS_IMAGES.arch };
+}
+
 function applyIsoOs() {
     if (typeof window.targetOS !== 'function' || !window.OS_META) return;
-    const id = window.targetOS();
+    const { id, spec } = isoSpec();
     const m = window.OS_META[id];
     const isArch = id === 'arch';
 
-    const named = isArch ? 'an Arch' : 'a ' + (m.short || m.label);
+    // "a OpenBSD" reads wrong. The article follows the sound of the name, not
+    // a rule about the letter, so it is chosen from the actual set of names.
+    const VOWEL_SOUND = /^(a|e|i|o|u|Arch|OpenBSD)/;
+    const short = m.short || m.label;
+    const named = (VOWEL_SOUND.test(short) ? 'an ' : 'a ') + short;
     const head = document.querySelector('.iso-head h1');
-    if (head) head.textContent = '💿 Verify ' + named + ' image before you install it';
-    // The tab title too: a tab reading "Verify an Arch ISO" while the page says
-    // it cannot verify a Gentoo one is the sort of small contradiction that
-    // makes a reader distrust the part that is correct.
-    document.title = 'Verify ' + named + ' image — *nix Install Guides';
+    const noun = m.media === 'ISO' ? 'ISO' : 'image';
+    if (head) head.textContent = '💿 Verify ' + named + ' ' + noun + ' before you install it';
+    document.title = 'Verify ' + named + ' ' + noun + ' — *nix Install Guides';
 
-    // The Arch-only machinery. Hidden rather than disabled: a mirror picker for
-    // Arch mirrors, sitting under a FreeBSD heading, is not made safe by being
-    // greyed out.
-    ['step-download', 'step-checksums', 'step-verify', 'step-gpg', 'step-write']
-        .forEach(sid => { const s = el(sid); if (s) s.hidden = !isArch; });
+    /* The architecture tabs are Arch's own: x86_64 against Arch Linux ARM, which
+       is a separate project with separate mirrors and its own signing key. No
+       other system here splits that way, so the tabs belong to Arch alone. */
     const tabs = document.querySelector('.arch-tabs');
     if (tabs) tabs.hidden = !isArch;
+    const armBox = el('arm-notice');
+    if (armBox && !isArch) armBox.hidden = true;
+    document.querySelectorAll('[data-arch="x86_64"]').forEach(n => { if (!isArch) n.hidden = false; });
+
+    // Every step stays on for every system — this page verifies all of them now.
+    ['step-download', 'step-checksums', 'step-verify', 'step-write']
+        .forEach(sid => { const s = el(sid); if (s) s.hidden = false; });
+
+    /* The signature step differs in kind, not only in wording: GPG for three
+       systems, signify for OpenBSD, and nothing published for Raspberry Pi OS.
+       Hidden only in the last case, because there is no signature to check. */
+    const gpgStep = el('step-gpg');
+    if (gpgStep) gpgStep.hidden = spec.sigKind === 'none';
+
     const badge = el('iso-verified-badge');
-    if (badge) badge.hidden = !isArch;
+    if (badge) {
+        badge.hidden = false;
+        const img = badge.querySelector('img');
+        if (img) img.src = 'img/icons/' + m.slug + '-64.png';
+    }
 
-    let panel = el('iso-os-elsewhere');
-    if (isArch) { if (panel) panel.remove(); return; }
+    // The file name the reader is checking, and where it comes from.
+    const nameBox = el('iso-name');
+    if (nameBox && !isArch) nameBox.value = spec.localName;
 
-    const spec = OS_VERIFY[id];
+    const base = (spec.mirrors[0] || {}).url || '';
+    const dirUrl = base.replace(/\/$/, '') + '/' + spec.dir;
+    if (!isArch) {
+        const dlIso = el('dl-iso');
+        const dlSig = el('dl-sig');
+        const dlDir = el('dl-dir');
+        if (dlIso) {
+            dlIso.href = spec.image ? dirUrl + spec.image : dirUrl;
+            dlIso.textContent = spec.image ? '⬇️ Download the image' : '⬇️ Open the image directory';
+        }
+        if (dlSig) {
+            dlSig.hidden = !spec.sigFile;
+            if (spec.sigFile) dlSig.href = dirUrl + spec.sigFile;
+        }
+        if (dlDir) dlDir.href = dirUrl;
+    }
+
+    // The signing key, stated for whichever mechanism this system uses.
+    const fprBox = el('fpr');
+    if (fprBox) {
+        if (spec.fpr) fprBox.textContent = spec.fpr;
+        else if (spec.keyFile) fprBox.textContent = spec.keyFile;
+        else fprBox.textContent = 'published by the project — see the link below';
+    }
+
+    renderIsoOsPanel(id, spec, m);
+    renderMirrorPanels();
+}
+
+/* What this system publishes, what to run, and where its documentation says so.
+   Built rather than written into the HTML because it changes with the switcher,
+   and a stale copy in the markup is how a page ends up describing one system
+   while verifying another. */
+/* Steps 1 and 2: which host serves the image, and which two independent hosts
+   the checksums come from. Rebuilt on every system change rather than once on
+   load — they were rendered from Arch's mirror list at startup, so choosing
+   FreeBSD relabelled the page around links that still pointed into an Arch
+   mirror's iso/latest directory.
+
+   The image host and the checksum hosts are drawn from the same shuffled pool
+   and are always different entries: that separation is the whole point of the
+   page, and it holds for every system that has more than one host. */
+function renderMirrorPanels() {
+    const { spec } = isoSpec();
+    const picked = chooseMirrors();
+    lastPick = picked;
+
+    const regionBox = el('region-guess');
+    if (regionBox) regionBox.textContent = picked.region;
+
+    const imgBase = picked.image.url.replace(/\/$/, '') + '/' + spec.dir;
+    const imgLink = el('image-mirror-link');
+    if (imgLink) {
+        imgLink.href = imgBase;
+        imgLink.textContent = hostOf(picked.image.url);
+    }
+    const country = el('image-mirror-country');
+    if (country) country.textContent = picked.image.country;
+
+    const list = el('checksum-mirrors');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (spec.singleSource) {
+        const li = document.createElement('li');
+        li.innerHTML =
+            '<strong>Only one official source.</strong> ' +
+            hostOf(spec.mirrors[0].url) +
+            ' is the single host for these images, so there is no second, ' +
+            'independent place to take the checksum from. See the note above.';
+        list.appendChild(li);
+        return;
+    }
+
+    picked.checks.forEach((mir, i) => {
+        const base = mir.url.replace(/\/$/, '') + '/' + spec.dir;
+        const li = document.createElement('li');
+        const sums = spec.sums
+            ? `<a href="${base}${spec.sums}" target="_blank" rel="noopener">${spec.sums}</a> · ` : '';
+        const sig = spec.sigFile
+            ? `<a href="${base}${spec.sigFile}" target="_blank" rel="noopener">${spec.sigFile}</a> · ` : '';
+        li.innerHTML =
+            `<strong>Source ${i + 1}</strong> — ${mir.country} ` +
+            `(<code>${hostOf(mir.url)}</code>)<br>` + sums + sig +
+            `<a href="${base}" target="_blank" rel="noopener">directory listing</a>`;
+        list.appendChild(li);
+    });
+}
+
+function renderIsoOsPanel(id, spec, m) {
+    let panel = el('iso-os-detail');
     if (!panel) {
         panel = document.createElement('section');
-        panel.id = 'iso-os-elsewhere';
-        panel.className = 'step warn';
+        panel.id = 'iso-os-detail';
+        panel.className = 'step';
         const main = document.querySelector('main');
-        const iso = document.querySelector('.iso-head');
-        if (main) main.insertBefore(panel, iso ? iso.nextSibling : main.firstChild);
+        const anchor = el('step-download');
+        if (main && anchor) main.insertBefore(panel, anchor);
+        else if (main) main.appendChild(panel);
     }
+    panel.className = 'step' + (spec.singleSource ? ' warn' : '');
     panel.innerHTML = '';
 
-    const h = (tag, text, style) => {
+    const h = (tag, text, cls) => {
         const e = document.createElement(tag);
         if (text) e.textContent = text;
-        if (style) e.setAttribute('style', style);
+        if (cls) e.className = cls;
         return e;
     };
+    const row = (k, v) => {
+        if (!v) return null;
+        const p = document.createElement('p');
+        p.style.margin = '0.25rem 0';
+        p.appendChild(h('strong', k + ': '));
+        const code = document.createElement('code');
+        code.textContent = v;
+        p.appendChild(code);
+        return p;
+    };
 
-    panel.appendChild(h('h2', '🚧 This page cannot verify a ' + (m.short || m.label) +
-                              ' image for you'));
-    panel.appendChild(h('p',
-        'The in-browser verifier is built around Arch: Arch mirrors, Arch checksum ' +
-        'files and an Arch signing key. ' + m.label + ' verifies its images by a ' +
-        'different mechanism, and running the Arch checks against a ' +
-        (m.short || m.label) + ' image would either fail for the wrong reason or, ' +
-        'worse, appear to pass. So it is not offered here yet.'));
-    panel.appendChild(h('p', spec.how));
+    panel.appendChild(h('h2', 'What ' + m.label + ' publishes'));
+
+    [
+        row('Image', spec.localName),
+        row('Checksums', spec.sums),
+        row('Hash', spec.algo),
+        row('Signature', spec.sigFile ||
+            (spec.sigKind === 'none' ? 'none published' : null)),
+        row('Signed with', spec.sigKind === 'gpg' ? 'GPG'
+            : spec.sigKind === 'signify' ? 'signify(1) — Ed25519, not GPG' : null),
+        row('Check the checksum', spec.sumsCmd),
+        row('Check the signature', spec.verifyCmd),
+        row('Fetch the key', spec.recvKey)
+    ].forEach(n => { if (n) panel.appendChild(n); });
+
+    if (spec.note) {
+        const note = h('p', spec.note);
+        note.style.cssText = 'margin-top:0.8rem; line-height:1.6;';
+        panel.appendChild(note);
+    }
+
+    if (spec.singleSource) {
+        const warn = h('p');
+        warn.style.cssText = 'margin-top:0.8rem; color:var(--accent-orange); line-height:1.6;';
+        warn.appendChild(h('strong', 'The two-source rule cannot apply here. '));
+        warn.appendChild(document.createTextNode(
+            'Every other system on this page lets you take the checksum from a host ' +
+            'other than the one that served the image. This one does not, so a match ' +
+            'tells you the download is intact — not that the download was genuine.'));
+        panel.appendChild(warn);
+    }
 
     const links = document.createElement('p');
-    links.appendChild(document.createTextNode('Download and verification instructions: '));
-    const a1 = document.createElement('a');
-    a1.href = spec.where; a1.target = '_blank'; a1.rel = 'noopener';
-    a1.textContent = spec.whereName;
-    links.appendChild(a1);
+    links.style.cssText = 'margin-top:0.8rem; font-size:0.85rem;';
+    const a = (href, text) => {
+        const e = document.createElement('a');
+        e.href = href; e.target = '_blank'; e.rel = 'noopener'; e.textContent = text;
+        return e;
+    };
+    links.appendChild(document.createTextNode('Official: '));
+    links.appendChild(a(spec.downloadPage, 'downloads'));
     links.appendChild(document.createTextNode(' · '));
-    const a2 = document.createElement('a');
-    a2.href = spec.keys; a2.target = '_blank'; a2.rel = 'noopener';
-    a2.textContent = spec.keysName;
-    links.appendChild(a2);
+    links.appendChild(a(spec.docs, m.docsName || 'documentation'));
+    if (spec.keyPage) {
+        links.appendChild(document.createTextNode(' · '));
+        links.appendChild(a(spec.keyPage, 'signing keys'));
+    }
     panel.appendChild(links);
-
-    panel.appendChild(h('p',
-        'Verifying an Arch image is still available — switch the system in the ' +
-        'top-left corner back to Arch Linux and this page becomes the Arch ' +
-        'verifier again.', 'font-size:0.85rem;color:var(--fg-dim);'));
 }
+
 
 document.addEventListener('unix:os-changed', applyIsoOs);
 
@@ -500,7 +797,9 @@ function applyArch(arch, picked) {
         const armFpr = el('arm-fpr');
         if (armFpr) armFpr.textContent = ALARM_KEY_FPR;
     } else {
-        const imgBase = picked.image.url.replace(/\/$/, '');
+        // lastPick, not the load-time selection: the pool is reshuffled on
+        // every system change, so the argument captured at page load goes stale.
+        const imgBase = (lastPick || picked).image.url.replace(/\/$/, '');
         if (nameBox) nameBox.value = `archlinux-${KNOWN_RELEASE}-x86_64.iso`;
         if (dlIso) { dlIso.href = `${imgBase}/iso/latest/archlinux-x86_64.iso`; dlIso.textContent = '⬇️ Download the ISO'; }
         if (dlSig) { dlSig.href = `${imgBase}/iso/latest/archlinux-x86_64.iso.sig`; }
@@ -538,35 +837,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => applyArch(btn.getAttribute('data-value'), picked));
     });
 
-    /* Step 1 — the image mirror, with the download startable from here.
-       The browser fetches straight from the mirror; nothing routes through this
-       site, which has no server to route it through. A cross-origin `download`
-       attribute is ignored by every engine, so the file keeps the mirror's
-       name — which is what you want, since that name is what the checksum list
-       refers to. */
-    const imgBase = picked.image.url.replace(/\/$/, '');
-    const imgLink = el('image-mirror-link');
-    imgLink.href = `${imgBase}/iso/latest/`;
-    imgLink.textContent = hostOf(picked.image.url);
-    el('image-mirror-country').textContent = picked.image.country;
+    renderMirrorPanels();
 
-
-    /* Step 2 — checksum mirrors, deliberately not the image mirror. */
-    const list = el('checksum-mirrors');
-    list.innerHTML = '';
-    picked.checks.forEach((m, i) => {
-        const base = m.url.replace(/\/$/, '');
-        const li = document.createElement('li');
-        li.innerHTML =
-            `<strong>Source ${i + 1}</strong> — ${m.country} ` +
-            `(<code>${hostOf(m.url)}</code>)<br>` +
-            `<a href="${base}/iso/latest/sha256sums.txt" target="_blank" rel="noopener">sha256sums.txt</a> · ` +
-            `<a href="${base}/iso/latest/b2sums.txt" target="_blank" rel="noopener">b2sums.txt</a> · ` +
-            `<a href="${base}/iso/latest/" target="_blank" rel="noopener">directory (for the .sig)</a>`;
-        list.appendChild(li);
-    });
-
-    el('reshuffle').addEventListener('click', () => location.reload());
+    /* Reshuffle in place rather than reloading. Pressing it repeatedly is the
+       point — watching the hosts actually change is what makes the two-source
+       rule believable — and a full reload threw away a hash already computed. */
+    el('reshuffle').addEventListener('click', renderMirrorPanels);
 
     /* Step 3 — hash the local file. */
     const fileInput = el('iso-file');
