@@ -347,7 +347,18 @@ window.toggleHistoryModal = function() {
 };
 
 window.clearHistory = function() {
-    if (!confirm("Are you sure you want to clear all generation history?")) return;
+    // shared-ui.js owns this: it lists what is about to be lost and offers to
+    // download it first. A bare confirm() is answered yes by reflex, and this
+    // history exists in one tab and nowhere else.
+    if (typeof window.clearHistoryWithWarning === 'function') {
+        window.clearHistoryWithWarning(function () {
+            renderHistory();
+            updateHistoryTooltip();
+        });
+        return;
+    }
+    // shared-ui.js absent: still ask, still clear, rather than doing nothing.
+    if (!confirm("Clear every generated guide in this session? They exist only in this tab.")) return;
     sessionStorage.removeItem(HISTORY_KEY);
     renderHistory();
     updateHistoryTooltip();
