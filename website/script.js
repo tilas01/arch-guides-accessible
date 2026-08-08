@@ -934,6 +934,15 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     const fw = gv('firmware','uefi');
     const fs = gv('filesystem','btrfs');
     const disk = gv('target-disk','/dev/sda');
+    /* Dual boot. Absent or 'none' keeps the previous behaviour exactly — a
+       whole-disk install — which is what every existing config means. Anything
+       else stops `sgdisk -Z` being emitted at all: that flag zaps the GPT and
+       the MBR, so it does not spare an operating system it was not told about. */
+    const dualboot = gv('dualboot','none');
+    const isDual = dualboot !== 'none';
+    const dualEspMode = gv('dualboot_esp_mode','separate');
+    const dualEsp = gv('dualboot_esp','');
+    const espShared = isDual && dualEspMode !== 'separate';
     const part = gv('partitioning','luks2');
     const initSys = gv('init_system','systemd');
     // Encryption "layer" selections (base type is `part`, above).
@@ -1084,8 +1093,15 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     }
 
     // Partition paths
-    let partEfi = disk + (disk.includes("nvme") ? "p1" : "1");
-    let partRoot = disk + (disk.includes("nvme") ? "p2" : "2");
+    /* On a whole-disk install this guide makes partitions 1 and 2, so both paths
+       are known. On a dual boot only the ESP is known, because the reader gives
+       it — the root partition number depends on what the other system already
+       laid down. The derivation below matches the walkthrough's so the two front
+       ends agree, and the emitted script checks the path rather than trusting
+       it. Kept in step with `facts()` in manual-guide.js. */
+    const pSep = disk.includes("nvme") || disk.includes("mmcblk") || disk.includes("loop") ? "p" : "";
+    let partEfi = isDual && dualEsp ? dualEsp : disk + pSep + "1";
+    let partRoot = disk + pSep + "2";
 
     // ── Proprietary Software Analysis ──
     // Local copy so the per-run additions below don't mutate the shared register.
@@ -1269,7 +1285,57 @@ run_with_progress() {
             o += `echo -e "\${COLOR_FG}Wiping partition tables and structuring for Arch Linux. UEFI requires an EFI system partition.\${COLOR_RESET}"\n`;
             o += `echo -e "\${COLOR_FG}Wiki: https://wiki.archlinux.org/title/Partitioning\${COLOR_RESET}"\n`;
         }
-        if (fw === "uefi") {
+        if (isDual) {
+            /* Never `sgdisk -Z` here. That zaps the GPT and the MBR, so it
+               destroys the operating system the reader just said they were
+               keeping. Partitions are added to free space instead, and the
+               script refuses to continue if the paths it was given are not
+               what is actually on the disk — a wrong path here is the
+               difference between an install and a lost Windows partition. */
+            o += `# Dual boot: ${dualboot}. The partition table is NOT wiped.\n`;
+            o += `# Shrink the other system's partition from that system's own tools\n`;
+            o += `# first, then create the partitions below in the free space.\n`;
+            if (dualboot === 'windows') {
+                /* These happen in Windows, before this script ever runs. They
+                   are comments rather than commands for that reason — but
+                   leaving them out entirely is how somebody resizes a
+                   hibernated NTFS volume and corrupts it. */
+                o += `#\n`;
+                o += `# BEFORE YOU BOOTED THIS INSTALLER, in Windows as administrator:\n`;
+                o += `#   powercfg /h off                       # Fast Startup leaves NTFS\n`;
+                o += `#                                         # hibernated; resizing it then\n`;
+                o += `#                                         # corrupts the filesystem.\n`;
+                o += `#   manage-bde -status                    # is BitLocker on? Recent Windows\n`;
+                o += `#                                         # enables Device Encryption itself,\n`;
+                o += `#                                         # key in your Microsoft account.\n`;
+                o += `#   manage-bde -protectors -disable C:    # suspend it. WRITE THE RECOVERY\n`;
+                o += `#                                         # KEY DOWN FIRST, off this machine.\n`;
+                o += `#   Then a full Restart, not Shut down.\n`;
+                o += `#\n`;
+                o += `# AFTER the install, boot Windows once and re-enable it:\n`;
+                o += `#   manage-bde -protectors -enable C:\n`;
+                o += `#   manage-bde -status C:                 # want: Protection On\n`;
+                o += `#\n`;
+            }
+            o += `lsblk -o NAME,SIZE,FSTYPE,PARTTYPENAME ${disk}\n`;
+            o += `echo "Check the layout above before continuing."\n\n`;
+            if (fw === "uefi" && !espShared) {
+                o += `# Your own EFI partition, so the other system's is untouched.\n`;
+                o += `sgdisk -n 0:0:+512M -t 0:ef00 -c 0:"LINUXESP" ${disk}\n`;
+            }
+            o += `sgdisk -n 0:0:0 -t 0:8300 ${disk}\n`;
+            o += `partprobe ${disk}\nsleep 2\n\n`;
+            o += `# Fail closed: these must already exist, and the ESP must not be the\n`;
+            o += `# other system's unless sharing was chosen deliberately.\n`;
+            o += `for p in "${partEfi}" "${partRoot}"; do\n`;
+            o += `    [ -b "$p" ] || { echo "No such partition: $p. Check lsblk." >&2; exit 1; }\n`;
+            o += `done\n`;
+            if (espShared) {
+                o += `echo "Sharing ${partEfi} — it is mounted, never formatted."\n`;
+            } else if (fw === "uefi") {
+                o += `mkfs.fat -F32 -n LINUXESP ${partEfi}\n`;
+            }
+        } else if (fw === "uefi") {
             o += `sgdisk -Z ${disk}\nsgdisk -n 1:0:+512M -t 1:ef00 ${disk}\nsgdisk -n 2:0:0 -t 2:8300 ${disk}\n`;
             o += `partprobe ${disk}\nsleep 2\nmkfs.fat -F32 ${partEfi}\n`;
         } else {
@@ -2921,6 +2987,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const pre = document.getElementById('sc-preview-json');
             if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
         });
+        /* Re-run the cross-field checks whenever anything changes. They used to
+           run only at load and after restoring a config, so a control that
+           reveals another one — the dual-boot ESP fields — stayed hidden until
+           the page was reloaded. */
+        const dualSel = document.getElementById('dualboot');
+        if (dualSel) dualSel.addEventListener('change', validateConfigurations);
         // Initial populate
         const pre = document.getElementById('sc-preview-json');
         if(pre) pre.textContent = JSON.stringify(window.getFormValues(), null, 2);
@@ -3472,6 +3544,21 @@ function validateConfigurations() {
     const fw = document.getElementById('firmware')?.value || 'uefi';
     const bootloader = document.getElementById('bootloader');
     const part = document.getElementById('partitioning');
+
+    /* The ESP questions only mean anything when another system is staying.
+       Done before the early return below, so it still works on a page where the
+       bootloader or partitioning controls are absent. */
+    const dualSel = document.getElementById('dualboot');
+    const espGroup = document.getElementById('dualboot-esp-group');
+    if (dualSel && espGroup) {
+        const dual = dualSel.value && dualSel.value !== 'none';
+        espGroup.hidden = !dual;
+        const espPath = document.getElementById('dualboot_esp');
+        // Required only while it is on screen, or the form cannot be submitted
+        // for a whole-disk install.
+        if (espPath) espPath.required = !!dual;
+    }
+
     if (!bootloader || !part) return;
 
     if (fw === 'bios') {

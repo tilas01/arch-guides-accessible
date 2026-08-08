@@ -43,6 +43,13 @@
         { wl: 'firmware',       gen: 'firmware',        group: 'selects' },
         { wl: 'filesystem',     gen: 'filesystem',      group: 'selects' },
         { wl: 'disk',           gen: 'target-disk',     group: 'inputs'  },
+        /* Dual boot. The ids match on both sides, so no value table is needed —
+           and carrying these across matters more than most: a config that loses
+           `dualboot` on the way into the generator turns a "keep Windows"
+           install into a whole-disk wipe. */
+        { wl: 'dualboot',           gen: 'dualboot',           group: 'selects' },
+        { wl: 'dualboot_esp_mode',  gen: 'dualboot_esp_mode',  group: 'selects' },
+        { wl: 'dualboot_esp',       gen: 'dualboot_esp',       group: 'inputs'  },
         { wl: 'bootloader',     gen: 'bootloader',      group: 'selects' },
         { wl: 'desktop',        gen: 'desktop',         group: 'selects' },
         { wl: 'display_server', gen: 'display_server',  group: 'selects' },

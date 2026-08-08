@@ -165,8 +165,42 @@
                             <br>• <strong>Baremetal:</strong> Double check size to ensure you format the right existing drive and encounter no errors!
                         </div>
                     </div>
-                    
-                    
+
+                    <!-- Dual boot. This existed in the walkthrough and not here,
+                         which meant the generator emitted `sgdisk -Z` — a zap of
+                         the whole partition table — with no way to say another
+                         operating system was staying. -->
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#dual-boot', '_blank'); return false;" data-title="Dual Boot" data-desc="Whether another operating system is staying on this disk. Choosing anything other than 'no' stops the guide wiping the partition table.">
+                        <label>Is anything else staying on this disk?</label>
+                        <select oncontextmenu="window.open('wiki.html#dual-boot', '_blank'); return false;" id="dualboot">
+                            <option value="none" selected>No — this disk is only for this system</option>
+                            <option value="windows">Windows 10 or 11</option>
+                            <option value="linux">Another Linux distribution</option>
+                            <option value="arch">An existing Arch install</option>
+                        </select>
+                        <div style="font-size:0.75rem; color:var(--accent-red); margin-top:0.4rem;">
+                            <strong>🔴</strong> Leaving this on <em>No</em> wipes the entire disk,
+                            including any other operating system on it.
+                        </div>
+                    </div>
+
+                    <div class="form-group form-step" id="dualboot-esp-group" hidden oncontextmenu="window.open('wiki.html#dual-boot-separate-boot', '_blank'); return false;" data-title="EFI System Partition" data-desc="Share the other system's EFI partition, or give this one its own. A shared partition makes boot-integrity checking report the other system's updates as tampering.">
+                        <label>EFI system partition:</label>
+                        <select oncontextmenu="window.open('wiki.html#dual-boot-separate-boot', '_blank'); return false;" id="dualboot_esp_mode">
+                            <option value="separate" selected>Give this system its own EFI partition ⭐ Recommended</option>
+                            <option value="share">Share the existing EFI partition</option>
+                        </select>
+                        <label style="margin-top:0.6rem;">Which partition is the EFI system partition?</label>
+                        <input type="text" id="dualboot_esp" value="" placeholder="/dev/nvme0n1p1">
+                        <div style="font-size:0.75rem; color:var(--accent-orange); margin-top:0.4rem;">
+                            Run <code>lsblk -f</code> to find it. If you are sharing, this is the
+                            existing one and it is <strong>mounted, never formatted</strong> —
+                            formatting it deletes the other system's bootloader. If you are making
+                            your own, give the next free partition number on the same disk.
+                        </div>
+                    </div>
+
+
 <div class="form-group form-step" data-title="⚙️ Disk Encryption" oncontextmenu="window.open('wiki.html#partitioning', '_blank'); return false;" data-desc="Your encryption is built up in layers: the container type, the cipher inside it, an optional post-quantum overlay, and an optional duress passphrase. Defaults are the recommended choice.">
     <label>🔐 Disk Encryption</label>
     <div class="enc-stack">
