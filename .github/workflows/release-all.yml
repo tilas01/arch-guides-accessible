@@ -25,6 +25,7 @@ jobs:
           - anti-evil-maid
           - kernel-watcher
           - scarecrow
+          - pi-boot-guard
           - aur-guard
           # The five daemons linked into one binary, for people who want the suite.
           # aur-guard stays standalone: it is a read-only reading aid that never

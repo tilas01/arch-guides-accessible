@@ -76,6 +76,7 @@ readonly TOOLS=(
     "kernel-watcher|Filesystem monitor for infostealers and rootkits|yes"
     "scarecrow|Canary tokens and sandbox spoofing|yes"
     "aur-guard|Reads a PKGBUILD before makepkg runs it|no"
+    "pi-boot-guard|Reports Raspberry Pi boot integrity and watches the boot partition|no"
 )
 
 # ─── What runs where ──────────────────────────────────────────────────────────
@@ -90,16 +91,17 @@ readonly TOOLS=(
 #   partial works, minus a named capability
 #   no      cannot work here; the mechanism it is built on does not exist
 #
-readonly SUPPORT_arch="libre-otp=yes anti-ducky=yes anti-evil-maid=yes kernel-watcher=yes scarecrow=yes aur-guard=yes"
-readonly SUPPORT_gentoo="libre-otp=yes anti-ducky=yes anti-evil-maid=yes kernel-watcher=yes scarecrow=yes aur-guard=no"
-readonly SUPPORT_raspios="libre-otp=yes anti-ducky=partial anti-evil-maid=partial kernel-watcher=yes scarecrow=yes aur-guard=no"
-readonly SUPPORT_freebsd="libre-otp=yes anti-ducky=no anti-evil-maid=partial kernel-watcher=yes scarecrow=partial aur-guard=no"
-readonly SUPPORT_openbsd="libre-otp=no anti-ducky=no anti-evil-maid=partial kernel-watcher=yes scarecrow=no aur-guard=no"
+readonly SUPPORT_arch="libre-otp=yes anti-ducky=yes anti-evil-maid=yes kernel-watcher=yes scarecrow=yes aur-guard=yes pi-boot-guard=no"
+readonly SUPPORT_gentoo="libre-otp=yes anti-ducky=yes anti-evil-maid=yes kernel-watcher=yes scarecrow=yes aur-guard=no pi-boot-guard=no"
+readonly SUPPORT_raspios="libre-otp=yes anti-ducky=partial anti-evil-maid=partial kernel-watcher=yes scarecrow=yes aur-guard=no pi-boot-guard=yes"
+readonly SUPPORT_freebsd="libre-otp=yes anti-ducky=no anti-evil-maid=partial kernel-watcher=yes scarecrow=partial aur-guard=no pi-boot-guard=no"
+readonly SUPPORT_openbsd="libre-otp=no anti-ducky=no anti-evil-maid=partial kernel-watcher=yes scarecrow=no aur-guard=no pi-boot-guard=no"
 
 # Why, in one line each, printed when a tool is refused or limited.
 reason_for() {
     case "$2:$1" in
         *:aur-guard)            echo "reads PKGBUILDs, which exist only on Arch" ;;
+        *:pi-boot-guard)        echo "reads Raspberry Pi firmware state, which only a Pi has" ;;
         openbsd:libre-otp)      echo "OpenBSD has no PAM; it uses BSD auth, which is a different integration" ;;
         openbsd:scarecrow)      echo "the duress gate needs PAM, and header erase needs cryptsetup" ;;
         freebsd:anti-ducky|openbsd:anti-ducky)
