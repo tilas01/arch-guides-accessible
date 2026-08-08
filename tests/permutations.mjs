@@ -134,11 +134,28 @@ function assertGuide(s, label) {
         ok(/Arch Linux ARM|archlinuxarm/.test(md), `${label}: aarch64 without any ARM guidance`);
     }
 
-    // dual boot: never format the shared ESP
+    /* Dual boot and the EFI system partition.
+     *
+     * The rule is about *sharing*, not about dual booting. A partition this
+     * system made for itself is ours to format; the other system's never is.
+     * Keying this on `dualboot` alone was right while sharing was the only
+     * option, and would now forbid the arrangement the guide recommends.
+     *
+     * An absent `dualboot_esp_mode` means shared, matching the emitter, so a
+     * config saved before the question existed is still held to the old rule. */
     if (s.dualboot && s.dualboot !== 'none') {
-        ok(!new RegExp('mkfs\\.fat[^\\n]*' + s.dualboot_esp.replace(/\//g, '\\/')).test(md),
-            `${label}: formats the shared ESP`);
-        ok(/NOT formatted/.test(md), `${label}: dual boot without the ESP warning`);
+        const espRe = new RegExp('mkfs\\.fat[^\\n]*' + s.dualboot_esp.replace(/\//g, '\\/'));
+        if (s.dualboot_esp_mode === 'separate') {
+            ok(espRe.test(md),
+                `${label}: own ESP chosen but never formatted — it would be empty at boot`);
+            ok(!/NOT formatted/.test(md),
+                `${label}: own ESP chosen, still says the ESP is not formatted`);
+            ok(/second|own EFI|this system's ESP/i.test(md),
+                `${label}: own ESP chosen without saying a second one is being made`);
+        } else {
+            ok(!espRe.test(md), `${label}: formats the shared ESP`);
+            ok(/NOT formatted/.test(md), `${label}: dual boot without the ESP warning`);
+        }
         if (s.dualboot === 'windows') ok(/powercfg \/h off/.test(md), `${label}: windows dual boot without Fast Startup step`);
         if (s.dualboot === 'windows') ok(/BitLocker|manage-bde/.test(md), `${label}: windows dual boot without BitLocker warning`);
     } else {

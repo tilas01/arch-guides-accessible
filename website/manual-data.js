@@ -267,13 +267,60 @@ const STEPS = [
     ]
 },
 {
+    id: 'dualboot_esp_mode',
+    section: 'Before you start',
+    title: 'Share the other system\'s EFI partition, or make your own?',
+    help: 'The EFI system partition is the small FAT32 partition the firmware ' +
+          'boots from. Sharing the existing one is the usual advice and it ' +
+          'works. Making a second one costs 512 MiB and keeps the two systems ' +
+          'off each other\'s boot ground — which is what boot-integrity ' +
+          'checking needs in order to mean anything.',
+    wiki: 'dual-boot-separate-boot',
+    when: s => s.dualboot && s.dualboot !== 'none',
+    type: 'choice',
+    options: [
+        { value: 'separate', label: 'Give this system its own EFI partition', recommended: true,
+          desc: 'A second ESP, 512 MiB, on the same disk. The other system\'s ' +
+                'is never touched. You pick between them in the firmware boot menu.' },
+        { value: 'share', label: 'Share the existing EFI partition',
+          desc: 'What most guides tell you to do. One partition, both ' +
+                'bootloaders. Simpler, and the other system\'s updates write ' +
+                'to the same place yours does.' }
+    ],
+    /* Said here rather than only in the wiki, because the consequence lands on
+       a tool the reader may have already chosen and would otherwise find
+       mysteriously noisy months later. */
+    /* Plain indexOf rather than a helper. `has()` lives inside manual-guide.js's
+       IIFE and is not global — the test harnesses concatenate both files into
+       one scope, so borrowing it would pass every gate and throw in a browser,
+       which is the failure mode this project keeps finding. */
+    note: s => (s.security_tools || []).indexOf('anti-evil-maid') !== -1
+        ? 'You selected anti-evil-maid. It hashes the boot partition and tells ' +
+          'you when it changes — and Windows Update rewrites its loader on the ' +
+          'ESP whenever it likes. Share the partition and every Windows update ' +
+          'reports as tampering, until you stop believing the alerts. A ' +
+          'separate ESP is what makes that alarm worth listening to.'
+        : 'If you later add anti-evil-maid or any boot-integrity checking, a ' +
+          'shared ESP will report the other system\'s updates as tampering.'
+},
+{
     id: 'dualboot_esp',
     section: 'Before you start',
-    title: 'Where is the existing EFI system partition?',
-    help: 'Run "lsblk -f" on the running system. The ESP is the small FAT32 ' +
+    title: 'Which partition is the EFI system partition?',
+    help: s => s.dualboot_esp_mode === 'separate'
+        ? 'The one you are about to create, not the existing one. Run ' +
+          '"lsblk -f" to see what is already there, and give the next free ' +
+          'number on the same disk — if the last partition is p3, this will ' +
+          'be p4. The guide creates and formats it for you.'
+        : 'Run "lsblk -f" on the running system. The ESP is the small FAT32 ' +
           'partition, usually 100-500 MiB, with partition type EF00. This ' +
           'partition is mounted, never formatted — formatting it deletes the ' +
           'other operating system\'s bootloader.',
+    /* Static, not a function of the answers. `help` and `note` may be
+       functions; `wiki` may not — it is concatenated straight into
+       `wiki.html#…`, and `tests/wiki-targets.mjs` only matches the quoted
+       form, so a function here would render a broken link *and* be skipped by
+       the gate meant to catch broken links. */
     wiki: 'dual-boot-esp',
     when: s => s.dualboot && s.dualboot !== 'none',
     type: 'text',

@@ -66,7 +66,17 @@
         const sep = /(\d|nvme\d+n\d+|mmcblk\d+|loop\d+)$/.test(disk) &&
                     /(nvme|mmcblk|loop)/.test(disk) ? 'p' : '';
         const dual = s.dualboot && s.dualboot !== 'none';
+        /* Whether the other operating system's EFI partition is being shared.
+           Absent means shared, which is what this guide did before the question
+           existed — so a config saved earlier produces the same output.
+
+           Sharing is the common advice and it works, but it puts both systems'
+           loaders on one partition, and anything measuring that partition then
+           sees the other system's updates as changes. That is why the question
+           exists rather than the answer being assumed. */
+        const espShared = dual && s.dualboot_esp_mode !== 'separate';
         return {
+            espShared: espShared,
             arm: arm,
             enc: enc,
             disk: disk,
@@ -319,10 +329,14 @@
                     L.push('     expected. Re-enable protection once, after Windows has booted');
                     L.push('     cleanly, so it re-seals against the new measurements.');
                 }
-            } else {
+            } else if (f.espShared) {
                 L.push('   - Note the existing EFI system partition: `' + esc(s.dualboot_esp) + '`.');
                 L.push('     It is **mounted, never formatted** — formatting it deletes the');
                 L.push('     other system\'s bootloader.');
+            } else {
+                L.push('   - You are giving this system its own EFI partition, so the other');
+                L.push('     system\'s is never touched. Leave 512 MiB of free space for it');
+                L.push('     when you shrink the existing partition.');
             }
         }
         L.push('');
@@ -400,11 +414,50 @@
             L.push('');
             L.push('```bash');
             L.push('gdisk ' + f.disk);
-            L.push('#   n → next free number → rest of free space → type 8300');
-            L.push('#   w → write');
-            L.push('#');
-            L.push('# Do NOT touch ' + esc(s.dualboot_esp) + '. That is the existing ESP and it is shared.');
-            L.push('```');
+            if (f.espShared) {
+                L.push('#   n → next free number → rest of free space → type 8300');
+                L.push('#   w → write');
+                L.push('#');
+                L.push('# Do NOT touch ' + esc(s.dualboot_esp) + '. That is the existing ESP and it is shared.');
+                L.push('```');
+                L.push('');
+                L.push('> You are sharing the other system\'s EFI partition. It is **mounted,');
+                L.push('> never formatted** — formatting it deletes that system\'s bootloader.');
+                if (has(s.security_tools, 'anti-evil-maid')) {
+                    /* The reader picked a tool whose whole job is noticing
+                       changes to this partition, and then chose to share it
+                       with a system that rewrites it unpredictably. Both are
+                       legitimate; the combination needs saying out loud. */
+                    L.push('>');
+                    L.push('> **You also selected anti-evil-maid.** It baselines this partition');
+                    L.push('> and reports changes, and the other system writes here too — so');
+                    L.push('> its updates will read as tampering. Re-baseline with');
+                    L.push('> `anti-evil-maid --setup` after each one, or the alerts stop');
+                    L.push('> meaning anything. A separate EFI partition avoids this entirely.');
+                }
+                L.push('');
+            } else {
+                L.push('#   n → next free number → +512M → type ef00   (this system\'s ESP)');
+                L.push('#   n → next free number → rest of free space → type 8300');
+                L.push('#   w → write');
+                L.push('#');
+                L.push('# Leave the other system\'s ESP alone. This makes a second one.');
+                L.push('```');
+                L.push('');
+                L.push('> The new partition is formatted with the others below. Check its');
+                L.push('> path twice before you get there: `mkfs.fat` aimed at the *other*');
+                L.push('> system\'s ESP destroys its bootloader, which is the exact failure a');
+                L.push('> second partition exists to avoid.');
+                L.push('');
+                L.push('> The UEFI specification allows more than one EFI system partition,');
+                L.push('> and the firmware boots whichever its boot entry names. You pick');
+                L.push('> between the two systems in the firmware boot menu. If your firmware');
+                L.push('> only ever offers the first ESP it finds — a few do — put the');
+                L.push('> bootloaders on the shared one and keep the kernel and initramfs on');
+                L.push('> a separate `/boot`, which keeps the measured files out of the other');
+                L.push('> system\'s reach just as well.');
+                L.push('');
+            }
         } else {
             L.push('```bash');
             L.push('gdisk ' + f.disk);
@@ -444,8 +497,14 @@
         L.push('### Format and mount');
         L.push('');
         L.push('```bash');
-        if (!f.dual) L.push('mkfs.fat -F32 ' + f.esp);
-        else L.push('# ' + f.esp + ' is the existing ESP. It is NOT formatted.');
+        /* Keyed on whether the partition is *shared*, not on whether this is a
+           dual boot. A second ESP made for this system is ours to format; the
+           other system's never is. */
+        if (!f.espShared) {
+            L.push('mkfs.fat -F32' + (f.dual ? ' -n LINUXESP' : '') + ' ' + f.esp);
+        } else {
+            L.push('# ' + f.esp + ' is the existing ESP. It is NOT formatted.');
+        }
         if (f.btrfs) {
             L.push('mkfs.btrfs -f ' + f.rootDev);
             L.push('');
