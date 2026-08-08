@@ -41,7 +41,7 @@ function load(file) { return fs.readFileSync(path.join(WEB, file), 'utf8'); }
 
 const sandbox = { window: {}, module: undefined };
 const fn = new Function('window', 'module',
-    load('os-meta.js') + '\n' + load('manual-data.js') + '\n' + load('manual-guide.js') +
+    load('os-meta.js') + '\n' + load('os-install.js') + '\n' + load('manual-data.js') + '\n' + load('manual-guide.js') +
     '\nreturn { STEPS, DUSKY_LOCKS, OS_META, build: window.buildManualGuide, ' +
     'script: window.buildManualScript };');
 const { STEPS, DUSKY_LOCKS, OS_META, build, script } = fn(sandbox.window, undefined);

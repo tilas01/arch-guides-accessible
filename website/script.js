@@ -1811,7 +1811,7 @@ run_with_progress() {
                              'webhooks', 'panic-password'];
         // The all-in-one binary stands in for all five individual tools, so
         // configuration below treats it as if each one were selected.
-        const wantsAllInOne = post_apps.includes('arch-security-suite');
+        const wantsAllInOne = post_apps.includes('unix-security-suite');
         const effectiveSuite = wantsAllInOne
             ? Array.from(new Set([...post_apps, 'libre-otp', 'anti-ducky',
                                   'anti-evil-maid', 'kernel-watcher', 'scarecrow']))
@@ -3774,6 +3774,24 @@ if (historyBtn) {
 }
 
 
+/* The scrolled-to section and the selected system both want the tab title.
+   They used to write it independently, so whichever ran last won: scrolling
+   past one section replaced "Arch Install Generator" with a fixed string and
+   the tab stopped naming the system for the rest of the visit. Both go through
+   here now, and the section is remembered rather than re-read from the DOM. */
+let currentStepTitle = '';
+
+function refreshDocumentTitle() {
+    const meta = (typeof window.targetOS === 'function' && window.OS_META)
+        ? window.OS_META[window.targetOS()]
+        : null;
+    // `short` is what the nav uses ("Arch Install Generator"), so the tab and
+    // the link a reader clicked to get here agree.
+    const base = meta ? (meta.short || meta.label) + ' Install Generator'
+                      : '*nix Install Generator';
+    document.title = currentStepTitle ? base + ' | ' + currentStepTitle : base;
+}
+
 // Dynamic document.title on scroll
 document.addEventListener('DOMContentLoaded', () => {
     const steps = document.querySelectorAll('.form-step');
@@ -3788,7 +3806,10 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const title = entry.target.getAttribute('data-title');
-                if (title) document.title = '*nix Install Guides | ' + title;
+                if (title) {
+                    currentStepTitle = title;
+                    refreshDocumentTitle();
+                }
             }
         });
     }, { threshold: 0.5 });
@@ -4725,7 +4746,7 @@ function applyGeneratorOs() {
                               : '');
         sub.style.color = m.complete === false ? 'var(--accent-orange)' : '';
     }
-    document.title = '*nix Install Generator — ' + m.label;
+    refreshDocumentTitle();
 }
 
 document.addEventListener('DOMContentLoaded', applyGeneratorOs);

@@ -39,7 +39,7 @@ function ok(cond, label) {
    what `desktop_extra: 'hyprland'` was. A value that matches no option leaves
    the question with an answer that cannot be rendered or carried forward. */
 const { STEPS, DUSKY_LOCKS, OS_LOCKS, OS_META } = new Function('window', 'module',
-  read('os-meta.js') + '\n' + read('manual-data.js') +
+  read('os-meta.js') + '\n' + read('os-install.js') + '\n' + read('manual-data.js') +
   '\nreturn { STEPS, DUSKY_LOCKS, OS_LOCKS, OS_META };')({}, undefined);
 
 const byId = Object.fromEntries(STEPS.map(s => [s.id, s]));

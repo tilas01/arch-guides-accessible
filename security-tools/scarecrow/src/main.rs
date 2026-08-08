@@ -7,7 +7,7 @@ use scarecrow::PinSlot;
 use scarecrow::start_gui;
 use std::process::ExitCode;
 
-/// Scarecrow Decoy System - Arch Security Suite Standalone
+/// Scarecrow Decoy System - Unix Security Suite Standalone
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

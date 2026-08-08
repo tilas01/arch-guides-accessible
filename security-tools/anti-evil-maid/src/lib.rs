@@ -58,10 +58,10 @@ pub fn run(
         run_fs_hash_check();
     } else {
         // Both spellings work: the standalone binary and the `aem` subcommand of
-        // the unified arch-security-suite binary. The old name printed here,
+        // the unified unix-security-suite binary. The old name printed here,
         // arch-rusty-security-suite, is not either of them.
         println!("Usage: anti-evil-maid [--setup | --daemon | --fs-hash-check]");
-        println!("   or: arch-security-suite aem [--setup | --daemon | --fs-hash-check]");
+        println!("   or: unix-security-suite aem [--setup | --daemon | --fs-hash-check]");
     }
 }
 

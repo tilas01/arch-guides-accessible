@@ -1,4 +1,4 @@
-<!-- Part of the Arch Security Suite. -->
+<!-- Part of the Unix Security Suite. -->
 
 # AUR Guard
 

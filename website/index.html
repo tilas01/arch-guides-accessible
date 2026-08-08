@@ -18,6 +18,7 @@
          used offline from a live USB, which is exactly when it is needed.
          markdown.js and highlight.js do both jobs and ship with the site. -->
     <script src="os-meta.js"></script>
+    <script src="os-install.js"></script>
     <script src="legal.js"></script>
 
     <link rel="preload" href="style.css" as="style">
@@ -1139,20 +1140,20 @@ Website: https://github.com/openSUSE/snapper">ℹ️</span> <span class="app-des
                              contains them — selecting both would install the same
                              code twice. -->
                         <label class="app-card suite-card" oncontextmenu="window.open('wiki.html#suite-installer', '_blank'); return false;">
-                            <input type="checkbox" name="post_apps" value="arch-security-suite" id="suite_all_in_one">
+                            <input type="checkbox" name="post_apps" value="unix-security-suite" id="suite_all_in_one">
                             <span class="app-icon">📦</span>
                             <a href="wiki.html#suite-installer">All-in-One Suite</a>
-                            <span class="info-tooltip-icon" title="arch-security-suite
+                            <span class="info-tooltip-icon" title="unix-security-suite
 --
 All five tools linked into a single binary, dispatched by subcommand:
-  arch-security-suite otp | ducky | aem | watch | scarecrow
+  unix-security-suite otp | ducky | aem | watch | scarecrow
 
 Every subcommand also takes --gui, and falls back to the interactive CLI when no display server is available — so it works on Wayland, Xorg and a bare TTY.
 
 One file to install, verify and update instead of five.
 
 Build Integrity: Reproducible (pinned toolchain, locked deps, SOURCE_DATE_EPOCH)
-Source: 📁 security-tools/arch-security-suite">ℹ️</span>
+Source: 📁 security-tools/unix-security-suite">ℹ️</span>
                             <span class="app-desc">All five, one binary</span>
                         </label>
 

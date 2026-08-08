@@ -265,7 +265,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "arch-security-suite"
+name = "unix-security-suite"
 version = "1.0.0"
 dependencies = [
  "anti-ducky",
