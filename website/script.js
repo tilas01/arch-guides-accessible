@@ -1923,9 +1923,41 @@ run_with_progress() {
                     o += `\n# Injecting Libre OTP into PAM\n`;
                     const pamLine = `auth required pam_exec.so expose_authtok quiet /usr/local/bin/libre-otp verify`;
                     if (libreOtpMode === "login" || libreOtpMode === "both") {
-                        o += `echo '${pamLine}' >> /etc/pam.d/system-auth\n`;
-                        o += `echo '${pamLine}' >> /etc/pam.d/su\n`;
-                        o += `echo '${pamLine}' >> /etc/pam.d/sudo\n`;
+                        /* Every way of becoming root, and each covered exactly once.
+                           doas was missing entirely, which mattered because this
+                           project installs doas and can alias sudo to it — so on
+                           those machines the second factor was written into three
+                           files and absent from the one the user actually types.
+
+                           The rest of this is about not covering anything twice.
+                           On Arch, /etc/pam.d/su, sudo, doas and sshd normally
+                           consist of `include system-auth`, so a line appended to
+                           system-auth already reaches all of them; appending to
+                           both would prompt for the code twice and read as a
+                           rejected login. The previous version appended to
+                           system-auth AND su AND sudo unconditionally, which is
+                           that bug for anyone whose stack includes.
+
+                           Rather than assume a layout, the script looks: a file
+                           that already reaches system-auth is left alone, and one
+                           that does not gets its own copy. The grep guard makes
+                           the whole thing safe to run twice.
+
+                           opendoas on Linux is built against PAM and reads
+                           /etc/pam.d/doas. OpenBSD's doas is not and does not —
+                           that is BSD auth, a separate integration, not claimed
+                           here and not emitted for OpenBSD. */
+                        o += `_otp_pam=${JSON.stringify(pamLine)}\n`;
+                        o += `grep -qF "$_otp_pam" /etc/pam.d/system-auth || echo "$_otp_pam" >> /etc/pam.d/system-auth\n`;
+                        o += `for _f in su sudo doas${effectiveSuite.includes('openssh') ? ' sshd' : ''}; do\n`;
+                        o += `    [ -f "/etc/pam.d/$_f" ] || continue\n`;
+                        o += `    # Already reaches system-auth? Then it is covered once already.\n`;
+                        o += `    grep -Eq '^[[:space:]]*auth[[:space:]]+(include|substack)[[:space:]]+system-auth' "/etc/pam.d/$_f" && continue\n`;
+                        o += `    grep -qF "$_otp_pam" "/etc/pam.d/$_f" || echo "$_otp_pam" >> "/etc/pam.d/$_f"\n`;
+                        o += `done\n`;
+                        o += `unset _f _otp_pam\n`;
+                        o += `# Every file that now demands a code. Check this before logging out.\n`;
+                        o += `grep -l libre-otp /etc/pam.d/* 2>/dev/null\n`;
                     }
                     if (libreOtpMode === "boot" || libreOtpMode === "both") {
                         o += `# Boot-time prompt lives in the initramfs, not PAM.\n`;
@@ -1953,9 +1985,9 @@ run_with_progress() {
                         o += `grep -n '^HOOKS=' /etc/mkinitcpio.conf   # confirm before rebooting\n`;
                         o += `mkinitcpio -P\n`;
                     }
-                    if (effectiveSuite.includes('openssh')) {
-                        o += `echo '${pamLine}' >> /etc/pam.d/sshd\n`;
-                    }
+                    // sshd is covered by the loop above, which adds a line only
+                    // to files that do not already reach system-auth. Appending
+                    // here as well was the other half of the double-prompt bug.
                     o += `\n# Recovery codes are printed once. Store them OFF this machine.\n`;
                     o += `echo "Recovery codes were printed above. Write them down now — without them,"\n`;
                     o += `echo "a lost authenticator means you cannot log in."\n`;
