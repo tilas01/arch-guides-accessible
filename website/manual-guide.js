@@ -162,6 +162,23 @@
         const osKey = (OSM && s.os && OSM[s.os]) ? s.os : 'arch';
         const os = OSM ? OSM[osKey] : { label: 'Arch Linux', complete: true };
 
+        /* How this system installs, from os-install.js.
+
+           Systems whose emitters are not written yet have no model. They borrow
+           Arch's commands rather than throwing, because throwing would take the
+           read-only preview down with it — but the guide then says, in as many
+           words, that the commands below are Arch's. A reader cannot reach one
+           of these anyway: setTargetOS() refuses to select an unfinished
+           system. The os-permutations gate generates all of them precisely to
+           measure how much borrowed Arch is left. */
+        const hasModel = (typeof window !== 'undefined' && window.osHasInstallModel)
+            ? window.osHasInstallModel(osKey) : (osKey === 'arch');
+        const modelKey = hasModel ? osKey : 'arch';
+        const M = (typeof window !== 'undefined' && window.osInstallModel)
+            ? window.osInstallModel(modelKey) : null;
+        const I = (typeof window !== 'undefined' && window.osInitOf)
+            ? window.osInitOf(modelKey, s) : null;
+
         L.push('# ' + os.label + ' — your manual install guide');
         L.push('');
         if (!answered) {
@@ -188,6 +205,20 @@
             L.push('> If you know ' + os.label + ' and want to help, corrections are very');
             L.push('> welcome: <https://github.com/tilas01/unix-guides-dynamic/issues>');
             L.push('');
+            /* Say which part is missing, not merely that something is. "This is
+               incomplete" leaves a reader guessing which lines to distrust;
+               "every command below is Arch's" tells them it is all of them. */
+            if (!hasModel) {
+                L.push('> **Specifically: the commands below are Arch\'s, not ' + os.label +
+                       '\'s.**');
+                L.push('> ' + os.label + ' uses ' + (os.pkg || 'a different package manager') +
+                       ' and ' + (os.init || 'a different init system') + ', and its ' +
+                       'installer');
+                L.push('> works differently again. Until its own commands are written, this');
+                L.push('> page shows the Arch ones under an ' + os.label + ' heading so the');
+                L.push('> structure can be reviewed. Do not run them.');
+                L.push('');
+            }
             L.push('> The authority for ' + os.label + ' is ' + os.docsName + ': <' +
                    os.docs + '>. Where this guide and that disagree, that is right and');
             L.push('> this is a bug worth reporting.');
@@ -454,15 +485,114 @@
         const base = basePackages(s, f);
         L.push('## 3. Install the base system');
         L.push('');
-        L.push('```bash');
-        L.push('pacstrap -K /mnt \\');
-        L.push('    ' + base.join(' ') + '');
-        L.push('');
-        L.push('genfstab -U /mnt >> /mnt/etc/fstab');
-        L.push('cat /mnt/etc/fstab          # read it before you trust it');
-        L.push('arch-chroot /mnt');
-        L.push('```');
-        L.push('');
+        if (M && M.family === 'gentoo') {
+            /* Not pacstrap with different words. Gentoo's base system is a
+               signed tarball you verify and unpack yourself, and the chroot is
+               assembled by hand because there is no arch-chroot to do it. */
+            L.push('Gentoo\'s base system is a **stage3 tarball**, not a package');
+            L.push('transaction. You download it, check its signature, and unpack it over');
+            L.push('the filesystem you just made.');
+            L.push('');
+            /* Everything in a ```bash fence is lifted verbatim into the
+               runnable script, so a placeholder has to be valid shell as well
+               as readable. An angle-bracket placeholder is a redirection and
+               makes the whole script unparseable — the fence is not decorative
+               here. A variable that must be filled in, checked before use, is
+               both: it reads as a blank to fill and it fails closed. */
+            L.push('```bash');
+            L.push('cd /mnt/gentoo');
+            L.push('');
+            L.push('# Pick a mirror:  ' + M.stage3.mirrorList);
+            L.push('# Newest tarball under:');
+            L.push('#   ' + M.stage3.path);
+            L.push('STAGE3_URL=""     # paste the full tarball URL here');
+            L.push('');
+            L.push('if [ -z "$STAGE3_URL" ]; then');
+            L.push('    echo "Set STAGE3_URL to the stage3 tarball you chose." >&2');
+            L.push('    exit 1');
+            L.push('fi');
+            L.push('');
+            L.push('wget "$STAGE3_URL"');
+            L.push('wget "$STAGE3_URL.asc"');
+            L.push('');
+            L.push(M.stage3.keyImport);
+            L.push(M.stage3.verify('stage3-*.tar.xz'));
+            L.push('```');
+            L.push('');
+            L.push('> Do not skip the signature. The tarball becomes every binary on the');
+            L.push('> machine, so a substituted one is not a corrupted download — it is a');
+            L.push('> system that belongs to somebody else from first boot.');
+            L.push('');
+            L.push('```bash');
+            L.push(M.stage3.unpack('stage3-*.tar.xz'));
+            L.push('```');
+            L.push('');
+            L.push('> `-p` and `--xattrs-include` keep permissions and extended attributes,');
+            L.push('> and `--numeric-owner` keeps the ids as they were built rather than');
+            L.push('> remapping them to whatever the live environment happens to call');
+            L.push('> them. Unpacking without these produces a system that boots and then');
+            L.push('> fails in ways that look unrelated to the tarball.');
+            L.push('');
+            L.push('### Enter the chroot');
+            L.push('');
+            L.push('```bash');
+            M.chrootPrep.forEach(c => L.push(c));
+            L.push('');
+            L.push(M.chroot);
+            M.chrootAfter.forEach(c => L.push(c));
+            L.push('```');
+            L.push('');
+            L.push('> The `--make-rslave` lines matter: without them, unmounting later in');
+            L.push('> the live environment can propagate into the mounts you are still');
+            L.push('> using.');
+            L.push('');
+            L.push('### Get a package tree, and pick a profile');
+            L.push('');
+            L.push('```bash');
+            L.push('emerge-webrsync');
+            L.push('eselect profile list');
+            L.push('');
+            L.push('# Pick the number matching your stage3 and the init system you want,');
+            L.push('# then run:  eselect profile set NUMBER');
+            L.push('```');
+            L.push('');
+            L.push('> The profile sets the default USE flags, the init system and the');
+            L.push('> toolchain defaults. Choosing the systemd profile and then trying to');
+            L.push('> run OpenRC — or the reverse — is the most common way a first Gentoo');
+            L.push('> install goes wrong.');
+            L.push('');
+            const gbase = (typeof window !== 'undefined' && window.osPkgNames)
+                ? window.osPkgNames('gentoo', base) : base;
+            if (gbase.length) {
+                L.push('```bash');
+                L.push(M.install(gbase));
+                L.push('```');
+                L.push('');
+            }
+            const missing = (typeof window !== 'undefined' && window.osPkgUnavailable)
+                ? window.osPkgUnavailable('gentoo', base) : [];
+            if (missing.length) {
+                L.push('> Not installed here, because Gentoo has no equivalent package: `' +
+                       missing.join('`, `') + '`. The stage3 tarball already provides the');
+                L.push('> base system, and zram is configured through Gentoo\'s own init');
+                L.push('> scripts rather than a generator package.');
+                L.push('');
+            }
+            L.push('> **fstab is written by hand on Gentoo** — there is no `genfstab`. Use');
+            L.push('> `blkid` to get each UUID and write `/etc/fstab` yourself, then read it');
+            L.push('> back before you trust it.');
+            L.push('');
+        } else {
+            L.push('```bash');
+            L.push('pacstrap -K /mnt \\');
+            L.push('    ' + base.join(' ') + '');
+            L.push('');
+            L.push(M ? M.fstab : 'genfstab -U /mnt >> /mnt/etc/fstab');
+            L.push('cat /mnt/etc/fstab          # read it before you trust it');
+            L.push(M ? M.chroot : 'arch-chroot /mnt');
+            L.push('```');
+            L.push('');
+        }
         if (f.libre) {
             L.push('> **Libre policy is on**, so no microcode is installed. That leaves');
             L.push('> known CPU errata unmitigated, including some speculative-execution');
@@ -504,7 +634,34 @@
             L.push('');
         }
 
-        if (f.enc) {
+        if (f.enc && M && M.family === 'gentoo') {
+            L.push('### Tell the initramfs about the encryption');
+            L.push('');
+            L.push('Gentoo has no `mkinitcpio`. The initramfs comes from **dracut**, pulled');
+            L.push('in through `sys-kernel/installkernel` with its `dracut` USE flag, and it');
+            L.push('is rebuilt automatically whenever a kernel is installed.');
+            L.push('');
+            L.push('```bash');
+            L.push('echo "sys-kernel/installkernel dracut" >> /etc/portage/package.use/installkernel');
+            L.push('emerge --verbose --noreplace sys-kernel/installkernel');
+            L.push('');
+            L.push("mkdir -p /etc/dracut.conf.d");
+            L.push("cat > /etc/dracut.conf.d/luks.conf <<'EOF'");
+            L.push('add_dracutmodules+=" crypt dm rootfs-block "');
+            L.push('EOF');
+            L.push('```');
+            L.push('');
+            L.push('> Dracut usually detects an encrypted root on its own, but only if it');
+            L.push('> can see the running configuration while it builds. Naming the modules');
+            L.push('> makes it independent of that — the failure it prevents is an initramfs');
+            L.push('> that cannot open the root volume, which you find out about at the');
+            L.push('> first reboot and not before.');
+            L.push('');
+            L.push('> The kernel command line still needs the volume named, the same way it');
+            L.push('> does on Arch. That goes in the bootloader configuration below, not');
+            L.push('> here. Authority for all of this is ' + os.docsName + ': <' + os.docs + '>.');
+            L.push('');
+        } else if (f.enc) {
             L.push('### Tell the initramfs about the encryption');
             L.push('');
             L.push('```bash');
@@ -652,13 +809,25 @@
         /* ── 6. Services ── */
         L.push('## 6. Services');
         L.push('');
+        /* Enabling a service is the one command that differs by init rather
+           than by system, so it comes from the init table. On Arch this
+           resolves to exactly the systemctl lines that were written here
+           before. */
+        const en = I ? (u => I.enable(u)) : (u => 'systemctl enable ' + u);
         L.push('```bash');
-        if (s.network === 'networkmanager') L.push('systemctl enable NetworkManager');
-        if (s.network === 'systemd-networkd') L.push('systemctl enable systemd-networkd systemd-resolved iwd');
-        if (s.network === 'iwd') L.push('systemctl enable iwd');
-        if (s.desktop === 'gnome') L.push('systemctl enable gdm');
-        if (s.desktop === 'kde') L.push('systemctl enable sddm');
-        if (s.swap === 'zram') {
+        if (s.network === 'networkmanager') L.push(en('NetworkManager'));
+        if (s.network === 'systemd-networkd') L.push(en('systemd-networkd systemd-resolved iwd'));
+        if (s.network === 'iwd') L.push(en('iwd'));
+        if (s.desktop === 'gnome') L.push(en('gdm'));
+        if (s.desktop === 'kde') L.push(en('sddm'));
+        if (s.swap === 'zram' && I && I.label === 'OpenRC') {
+            /* zram-generator is a systemd unit generator and has no OpenRC
+               equivalent, so pointing an OpenRC reader at it would be a command
+               that cannot work. Named rather than silently skipped. */
+            L.push('');
+            L.push('# zram under OpenRC is configured through /etc/conf.d/zram-init,');
+            L.push('# not systemd\'s zram-generator. See the Gentoo wiki page on zram.');
+        } else if (s.swap === 'zram') {
             L.push('');
             L.push("cat > /etc/systemd/zram-generator.conf <<'EOF'");
             L.push('[zram0]');
@@ -685,7 +854,9 @@
         L.push('```');
         L.push('');
         L.push('> If it does not come up, boot the installer again, `cryptsetup open`,');
-        L.push('> remount, `arch-chroot`, and you are exactly where you were. Almost');
+        L.push('> remount, ' + (M && M.family === 'gentoo'
+                ? 'redo the bind mounts and `chroot`'
+                : '`arch-chroot`') + ', and you are exactly where you were. Almost');
         L.push('> nothing at this stage is unrecoverable.');
         L.push('');
 
@@ -699,10 +870,28 @@
             L.push('');
             L.push('```bash');
             const all = dpkgs.concat(post.extra, post.apps);
-            L.push('sudo pacman -S --needed \\');
-            L.push('    ' + all.join(' '));
+            if (M && M.family === 'gentoo') {
+                const mapped = (typeof window !== 'undefined' && window.osPkgNames)
+                    ? window.osPkgNames('gentoo', all) : all;
+                L.push('sudo ' + M.install(mapped));
+            } else {
+                L.push('sudo pacman -S --needed \\');
+                L.push('    ' + all.join(' '));
+            }
             L.push('```');
             L.push('');
+            if (M && M.family === 'gentoo') {
+                L.push('> Names without a category are Gentoo atoms this guide does not yet');
+                L.push('> map. Check each against <https://packages.gentoo.org/> before');
+                L.push('> running the line — an unqualified name can match more than one');
+                L.push('> package, and portage will tell you so rather than guess.');
+                L.push('');
+                L.push('> Expect this to compile for a while. If any of these are ones');
+                L.push('> nobody sensibly builds from source — a browser, an office suite, a');
+                L.push('> toolchain — add `--getbinpkg` and take the binary instead. That is');
+                L.push('> a supported Gentoo workflow, not a shortcut.');
+                L.push('');
+            }
             if (f.libre && (s.apps || []).some(a => LIBRE_BLOCKED.indexOf(a) !== -1)) {
                 L.push('> Removed under the libre policy: `' +
                        (s.apps || []).filter(a => LIBRE_BLOCKED.indexOf(a) !== -1).join('`, `') +
