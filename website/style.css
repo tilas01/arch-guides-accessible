@@ -2151,3 +2151,9 @@ pre.tk:has(.copy-btn)[data-tk-lang]::before { right: 3.2rem; }
     white-space: pre;
     margin-bottom: 0.45rem;
 }
+
+/* A system listed but not yet selectable. Dimmed rather than hidden: knowing
+   what is coming is useful, being handed an unfinished guide is not. */
+.os-opt-locked { opacity: 0.62; cursor: not-allowed; }
+.os-opt-locked:hover { background: transparent; }
+.os-choose-locked:hover { filter: none; }

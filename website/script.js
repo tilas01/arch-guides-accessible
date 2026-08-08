@@ -3397,12 +3397,18 @@ function syncTooltipBtn() {
         : 'Tooltips are OFF everywhere else. This button keeps its own tooltip so you can always find your way back. Click to turn them on again.');
 }
 
-if (tooltipToggleBtn) {
+/* The click handler lives in shared-ui.js now, so the switch works on every
+   page rather than only this one. Binding a second handler to the same button
+   here would toggle it twice per click and leave it apparently dead, so this
+   only keeps the button's appearance in step on first paint — shared-ui.js
+   marks the element once it has wired it. */
+if (tooltipToggleBtn && !tooltipToggleBtn.hasAttribute('data-tt-wired')) {
     syncTooltipBtn();
+    tooltipToggleBtn.setAttribute('data-tt-wired', '1');
     tooltipToggleBtn.addEventListener('click', () => {
-        const nowOn = !window.tooltipsEnabled;
+        const nowOn = window.tooltipsEnabled === false;
         if (window.setTooltipsEnabled) window.setTooltipsEnabled(nowOn);
-        else { window.tooltipsEnabled = nowOn; sessionStorage.setItem('tooltips_enabled', nowOn); }
+        else { window.tooltipsEnabled = nowOn; sessionStorage.setItem('tooltips_enabled', String(nowOn)); }
         syncTooltipBtn();
     });
 }
