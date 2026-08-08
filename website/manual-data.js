@@ -31,11 +31,21 @@
    that step's option values — a key that matches nothing locks nothing, and a
    value that matches no option leaves the question with no answer to carry
    forward. `tests/dusky-locks.mjs` fails the build if either stops holding. */
+/* What choosing Dusky genuinely settles for you.
+
+   Each of these is a thing Dusky's own install scripts require: Hyprland is a
+   Wayland compositor, the dotfiles are written for zsh, and the status bar and
+   menus are laid out around a Nerd Font's glyph widths. Pick something else and
+   Dusky does not merely look different, it does not work.
+
+   `palette` is deliberately NOT here. Tokyo Night is what this *site* uses, and
+   forcing it onto somebody's installed desktop confused a house style with a
+   requirement — Dusky themes itself and does not care which scheme you pick.
+   The question stays free, and the recommended badge is enough of a nudge. */
 const DUSKY_LOCKS = {
     display_server: 'wayland',
     shell: 'zsh',
-    font: 'jetbrains-mono-nerd',
-    palette: 'tokyo-night'
+    font: 'jetbrains-mono-nerd'
 };
 
 /* Dusky, by dusklinux. Worth being precise about what it is: a dotfiles and

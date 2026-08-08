@@ -1996,6 +1996,139 @@ mount /dev/nvme0n1p1 /mnt/boot        # correct
             that is BitLocker working correctly.
         </p>
 
+        <h3 id="dual-boot-bitlocker-resume">Turn BitLocker back on when you are done</h3>
+        <p>
+            <code>-RebootCount 2</code> means <em>suspended for the next two
+            boots</em>, not "suspended until I say otherwise". An install that
+            takes more reboots than you expected — a kernel that will not boot, a
+            bootloader entry to redo — re-arms BitLocker partway through, and the
+            next Windows boot asks for the recovery key you were not expecting to
+            need yet. That is not a failure; it is the counter doing its job.
+        </p>
+        <p>
+            Two ways to avoid being surprised by it. Suspend indefinitely instead,
+            and re-enable deliberately:
+        </p>
+<pre><code>manage-bde -protectors -disable C:              # no reboot count: stays off
+manage-bde -status C:                           # check: "Protection Off"</code></pre>
+        <p>
+            Then, once Linux boots and the boot menu is settled, turn protection
+            back on and confirm it took:
+        </p>
+<pre><code>manage-bde -protectors -enable C:
+manage-bde -status C:                           # want: "Protection On"</code></pre>
+        <p style="color:var(--accent-orange);">
+            Leaving it suspended is the failure mode nobody notices. The disk
+            reports as encrypted, the key is sitting unsealed on it, and everything
+            looks normal. <strong>Check <code>manage-bde -status</code> after the
+            install rather than assuming.</strong>
+        </p>
+
+        <h3 id="dual-boot-bitlocker-secureboot">Secure Boot keys and BitLocker collide</h3>
+        <p>
+            This one is specific to what this site offers. If you enrol your own
+            Secure Boot keys — <a href="#bootloader">signed UKIs</a>,
+            <code>sbctl</code>, anything that replaces the platform keys — you
+            change PCR 7, which is one of the measurements BitLocker seals its key
+            to. Windows will demand the recovery key at the next boot.
+        </p>
+        <p>
+            It is recoverable and it is not a reason to avoid either feature. The
+            order that avoids the surprise:
+        </p>
+        <ol>
+            <li>Save the BitLocker recovery key somewhere off the machine.</li>
+            <li>Suspend BitLocker protection.</li>
+            <li>Enrol your Secure Boot keys and finish the Linux install.</li>
+            <li>Boot Windows once, let it settle, then re-enable protection so it
+                re-seals against the <em>new</em> measurements.</li>
+        </ol>
+        <p>
+            Step 4 is the one people skip. Re-enabling is what makes the new PCR
+            values the baseline; without it you meet the recovery prompt every
+            time.
+        </p>
+
+        <h3 id="dual-boot-bitlocker-silent">You may have BitLocker without knowing</h3>
+        <p>
+            Recent Windows enables <strong>Device Encryption</strong>
+            automatically on machines that qualify, including Home editions, when
+            you sign in with a Microsoft account. It is BitLocker, and the recovery
+            key was uploaded to that account rather than shown to you. People
+            discover this at the recovery prompt, after repartitioning.
+        </p>
+<pre><code>manage-bde -status</code></pre>
+        <p>
+            Run it before you touch the disk, on every Windows install, even if
+            you never turned encryption on. If it reports anything other than
+            "Fully Decrypted", find your key at
+            <a href="https://aka.ms/myrecoverykey" target="_blank" rel="noopener noreferrer">aka.ms/myrecoverykey</a>
+            and write it down first.
+        </p>
+
+        <h3 id="dual-boot-separate-boot">Give the *nix system its own boot partition</h3>
+        <p>
+            The two systems do not need to read each other's disks, and neither
+            side should try. What they <em>do</em> need is separate ground to boot
+            from. The default advice everywhere is to share the one EFI system
+            partition Windows already made, and it works — but it quietly breaks
+            <a href="#anti-evil-maid">anti-evil-maid</a>, which is the reason this
+            page exists at all.
+        </p>
+        <p>
+            <strong>Why a shared ESP defeats boot-integrity checking.</strong>
+            anti-evil-maid records a hash of what is on the boot partition while
+            the machine is known good, and tells you when it changes. Windows
+            Update rewrites its own loader on the ESP whenever it feels like it.
+            Share the partition and every Windows update looks exactly like an
+            attack: the hash changes, the tool reports tampering, and nothing was
+            wrong. People do not keep responding to an alarm that cries wolf —
+            they turn it off, and then it is not there on the day it matters.
+        </p>
+        <p>
+            The UEFI specification permits more than one EFI system partition, and
+            firmware boots whichever one its boot entry points at. So give the
+            *nix install its own:
+        </p>
+<pre><code># Leave the Windows ESP alone entirely. Make a second one:
+sgdisk -n 0:0:+512M -t 0:ef00 -c 0:"LINUX_ESP" /dev/nvme0n1
+mkfs.fat -F32 -n LINUXESP /dev/nvme0n1pN</code></pre>
+        <p>
+            Mount that one, install the bootloader to it, and point a firmware
+            entry at it. Windows keeps its ESP untouched, this system keeps its
+            own, and the measured surface belongs to one operating system — which
+            is what makes the baseline mean something.
+        </p>
+        <p>
+            You still choose Windows from the firmware boot menu, or chain to it
+            if you prefer a single menu. Both work. What changes is that a Windows
+            update can no longer alter the bytes this system measures.
+        </p>
+        <p style="color:var(--accent-orange);">
+            A caveat worth knowing rather than discovering: a few firmwares handle
+            multiple ESPs badly and will only offer the first one they find. If
+            yours does, the fallback is one ESP holding only the bootloaders, with
+            the kernel and initramfs on a <strong>separate <code>/boot</code>
+            partition</strong> that Windows never touches. That still keeps the
+            measured surface out of Windows Update's reach, which is the point.
+        </p>
+        <p>
+            Either way, BitLocker on the Windows partition and
+            <a href="#partitioning">LUKS</a> here stay entirely separate: separate
+            partitions, separate keys, neither able to unlock the other. That is
+            the intended arrangement, not a limitation to work around.
+        </p>
+
+        <h3 id="dual-boot-bitlocker-resize">Never resize a BitLocker volume from Linux</h3>
+        <p>
+            Shrink the Windows partition <em>from inside Windows</em>, using Disk
+            Management, before you boot the installer. A Linux partition editor
+            sees an encrypted blob: it can move the boundaries without
+            understanding the filesystem inside, and BitLocker's own metadata does
+            not survive that. Decrypt fully, or shrink from Windows — those are the
+            two safe routes, and there is no third.
+        </p>
+
         <h3 id="dual-boot-time">The clock will disagree</h3>
         <p>
             Linux keeps the hardware clock in UTC; Windows expects local time.
