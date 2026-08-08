@@ -25,6 +25,19 @@
 #   ./install-security-suite.sh --uninstall
 #   ./install-security-suite.sh --dry-run --all      # show what would happen
 #
+# Choosing what happens, rather than always doing all of it:
+#   --pull        download and verify only; install nothing
+#   --install     install, reusing anything --pull already fetched and verified
+#   --verify      check what is downloaded or installed; change nothing
+#   --reinstall   install over an existing copy deliberately
+#   --setup       run each tool's own configuration step after installing
+#
+# Choosing what it is being installed on:
+#   --os <arch|gentoo|freebsd|openbsd|raspios>
+#                 detected from /etc/os-release and uname when not given.
+#                 Anything a system genuinely cannot run is refused by name
+#                 with the reason, never silently skipped.
+#
 # Author: tilas01 · https://github.com/tilas01/unix-guides-dynamic
 # Licence: CC BY-NC-SA 4.0
 #
@@ -65,6 +78,90 @@ readonly TOOLS=(
     "aur-guard|Reads a PKGBUILD before makepkg runs it|no"
 )
 
+# ─── What runs where ──────────────────────────────────────────────────────────
+#
+# Not every tool can work on every system, and the differences are real rather
+# than a matter of porting effort. Stating them here means the installer can
+# refuse by name with a reason instead of installing a binary that will sit
+# there doing nothing — which is this project's characteristic failure and the
+# reason a scanner that reports success is worse than no scanner.
+#
+#   yes     works
+#   partial works, minus a named capability
+#   no      cannot work here; the mechanism it is built on does not exist
+#
+readonly SUPPORT_arch="libre-otp=yes anti-ducky=yes anti-evil-maid=yes kernel-watcher=yes scarecrow=yes aur-guard=yes"
+readonly SUPPORT_gentoo="libre-otp=yes anti-ducky=yes anti-evil-maid=yes kernel-watcher=yes scarecrow=yes aur-guard=no"
+readonly SUPPORT_raspios="libre-otp=yes anti-ducky=partial anti-evil-maid=partial kernel-watcher=yes scarecrow=yes aur-guard=no"
+readonly SUPPORT_freebsd="libre-otp=yes anti-ducky=no anti-evil-maid=partial kernel-watcher=yes scarecrow=partial aur-guard=no"
+readonly SUPPORT_openbsd="libre-otp=no anti-ducky=no anti-evil-maid=partial kernel-watcher=yes scarecrow=no aur-guard=no"
+
+# Why, in one line each, printed when a tool is refused or limited.
+reason_for() {
+    case "$2:$1" in
+        *:aur-guard)            echo "reads PKGBUILDs, which exist only on Arch" ;;
+        openbsd:libre-otp)      echo "OpenBSD has no PAM; it uses BSD auth, which is a different integration" ;;
+        openbsd:scarecrow)      echo "the duress gate needs PAM, and header erase needs cryptsetup" ;;
+        freebsd:anti-ducky|openbsd:anti-ducky)
+                                echo "built on Linux's USB authorized sysfs node, which has no equivalent here" ;;
+        raspios:anti-ducky)     echo "timing detection works; USB deauthorization on the Pi is unverified" ;;
+        openbsd:anti-evil-maid) echo "boot hashing works; softraid has no suspend, so the lock-on-tamper half cannot" ;;
+        freebsd:anti-evil-maid) echo "boot hashing works; suspend uses geli rather than cryptsetup and is untested" ;;
+        raspios:anti-evil-maid) echo "boot hashing works; the Pi boots from EEPROM, so the EFI checks do not apply" ;;
+        freebsd:scarecrow)      echo "canaries work; header erase uses geli rather than cryptsetup and is untested" ;;
+        *)                      echo "not supported on this system" ;;
+    esac
+}
+
+support_of() {
+    local tool="$1" osid="$2" table entry
+    case "$osid" in
+        arch)    table="$SUPPORT_arch" ;;
+        gentoo)  table="$SUPPORT_gentoo" ;;
+        raspios) table="$SUPPORT_raspios" ;;
+        freebsd) table="$SUPPORT_freebsd" ;;
+        openbsd) table="$SUPPORT_openbsd" ;;
+        *)       table="$SUPPORT_arch" ;;
+    esac
+    for entry in $table; do
+        [[ "${entry%%=*}" == "$tool" ]] && { printf '%s' "${entry#*=}"; return; }
+    done
+    printf 'no'
+}
+
+# Detected, not assumed. --os overrides, because a chroot or a rescue shell can
+# look like something it is not.
+detect_os() {
+    local sys
+    sys="$(uname -s 2>/dev/null || echo unknown)"
+    case "$sys" in
+        FreeBSD) echo freebsd; return ;;
+        OpenBSD) echo openbsd; return ;;
+    esac
+    if [[ -r /etc/os-release ]]; then
+        local id id_like
+        id="$(. /etc/os-release 2>/dev/null && printf '%s' "${ID:-}")"
+        id_like="$(. /etc/os-release 2>/dev/null && printf '%s' "${ID_LIKE:-}")"
+        case "$id" in
+            arch)                 echo arch;    return ;;
+            gentoo)               echo gentoo;  return ;;
+            raspbian|raspios)     echo raspios; return ;;
+            debian)
+                # Raspberry Pi OS identifies as Debian; the model file is what
+                # distinguishes it from Debian on a PC.
+                if [[ -r /proc/device-tree/model ]] && grep -qi raspberry /proc/device-tree/model 2>/dev/null; then
+                    echo raspios; return
+                fi
+                echo arch; return ;;
+        esac
+        case "$id_like" in
+            *arch*)   echo arch;   return ;;
+            *gentoo*) echo gentoo; return ;;
+        esac
+    fi
+    echo arch
+}
+
 # ─── Output helpers ───────────────────────────────────────────────────────────
 
 if [[ -t 1 ]]; then
@@ -97,6 +194,14 @@ DO_ENABLE=false
 FROM_SOURCE=false
 DRY_RUN=false
 DO_UNINSTALL=false
+# The default is what it has always been: fetch, verify, install. --pull and
+# --verify carve out the halves of that for anyone who wants them separately.
+DO_PULL=true
+DO_INSTALL=true
+DO_SETUP=false
+REINSTALL=false
+TARGET_OS=""
+OS_EXPLICIT=false
 
 usage() {
     sed -n '3,32p' "$0" | sed 's/^# \?//'
@@ -111,6 +216,12 @@ while [[ $# -gt 0 ]]; do
         --from-source)  FROM_SOURCE=true ;;
         --dry-run)      DRY_RUN=true ;;
         --uninstall)    DO_UNINSTALL=true ;;
+        --os)           TARGET_OS="${2:-}"; OS_EXPLICIT=true; shift ;;
+        --pull)         DO_PULL=true;  DO_INSTALL=false ;;
+        --install)      DO_INSTALL=true ;;
+        --verify)       DO_PULL=false; DO_INSTALL=false ;;
+        --reinstall)    REINSTALL=true; DO_INSTALL=true ;;
+        --setup)        DO_SETUP=true ;;
         -h|--help)      usage 0 ;;
         *)              err "Unknown option: $1"; usage 1 ;;
     esac
@@ -210,8 +321,76 @@ for name in "${SELECTED[@]}"; do
     is_valid_tool "$name" || die "Unknown tool '$name'. Valid: $(tool_names | paste -sd, -)"
 done
 
-info "Will install: ${SELECTED[*]}"
+# ─── Which of them can actually work here ─────────────────────────────────────
+#
+# Refused by name, with the reason, and dropped from the list. Installing a
+# binary whose mechanism does not exist on this system produces a program that
+# runs, reports nothing, and protects nothing — which is worse than not having
+# it, because the machine then looks defended.
+
+[[ -n "$TARGET_OS" ]] || TARGET_OS="$(detect_os)"
+case "$TARGET_OS" in
+    arch|gentoo|freebsd|openbsd|raspios) ;;
+    *) die "Unknown system '$TARGET_OS'. Use one of: arch, gentoo, freebsd, openbsd, raspios." ;;
+esac
+if $OS_EXPLICIT; then
+    info "Target system: ${TARGET_OS} (given with --os)"
+else
+    info "Target system: ${TARGET_OS} (detected — override with --os)"
+fi
+
+SUPPORTED=()
+for name in "${SELECTED[@]}"; do
+    case "$(support_of "$name" "$TARGET_OS")" in
+        yes)
+            SUPPORTED+=("$name") ;;
+        partial)
+            SUPPORTED+=("$name")
+            warn "${name}: partial on ${TARGET_OS} — $(reason_for "$name" "$TARGET_OS")" ;;
+        *)
+            err "${name}: not installed — $(reason_for "$name" "$TARGET_OS")" ;;
+    esac
+done
+SELECTED=("${SUPPORTED[@]}")
+[[ ${#SELECTED[@]} -eq 0 ]] && die "Nothing left to install on ${TARGET_OS}."
+
+# The published binaries are built on x86_64 Linux, and only there. On a Pi, or
+# on either BSD, they are the wrong architecture or the wrong ABI and will not
+# execute — so say that here rather than letting the reader discover it from
+# "cannot execute binary file" after a signature check has passed.
+HOST_ARCH="$(uname -m 2>/dev/null || echo unknown)"
+if ! $FROM_SOURCE; then
+    if [[ "$TARGET_OS" == freebsd || "$TARGET_OS" == openbsd ]]; then
+        die "The released binaries are Linux ELF and will not run on ${TARGET_OS}. Re-run with --from-source."
+    fi
+    if [[ "$HOST_ARCH" != x86_64 && "$HOST_ARCH" != amd64 ]]; then
+        die "The released binaries are x86_64 and this is ${HOST_ARCH}. Re-run with --from-source."
+    fi
+fi
+
+if $DO_INSTALL; then
+    info "Will install: ${SELECTED[*]}"
+elif $DO_PULL; then
+    info "Will download and verify, and install nothing: ${SELECTED[*]}"
+else
+    info "Will verify what is already here, and change nothing: ${SELECTED[*]}"
+fi
 $DRY_RUN && warn "Dry run — nothing will actually change."
+
+# ─── --verify: report, change nothing ─────────────────────────────────────────
+if ! $DO_PULL && ! $DO_INSTALL; then
+    missing=0
+    for name in "${SELECTED[@]}"; do
+        if [[ -x "${INSTALL_DIR}/${name}" ]]; then
+            ok "${name} installed at ${INSTALL_DIR}/${name}"
+        else
+            err "${name} is NOT installed"
+            missing=$((missing + 1))
+        fi
+    done
+    [[ $missing -eq 0 ]] || exit 1
+    exit 0
+fi
 
 # ─── Build from source ────────────────────────────────────────────────────────
 
@@ -303,9 +482,21 @@ install_from_release() {
         fi
     done
 
-    # Everything verified — now install.
+    # Everything verified. --pull stops here on purpose: the point of it is to
+    # fetch and check on a machine, or at a time, when installing is not wanted.
+    if ! $DO_INSTALL; then
+        info "Downloaded and verified. Nothing installed, as asked."
+        dim "Staged in ${stage}"
+        return 0
+    fi
+
     info "Installing verified binaries"
     for name in "${SELECTED[@]}"; do
+        if [[ -x "${INSTALL_DIR}/${name}" ]] && ! $REINSTALL; then
+            # Re-running to add one tool should not silently rewrite the others.
+            dim "${name} is already installed — leaving it. Use --reinstall to replace it."
+            continue
+        fi
         run install -Dm755 "${stage}/${name}" "${INSTALL_DIR}/${name}"
         ok "installed ${name} -> ${INSTALL_DIR}/${name}"
     done
