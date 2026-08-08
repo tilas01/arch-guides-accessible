@@ -243,11 +243,15 @@
 
         Object.keys(META).forEach(function (id) {
             var m = META[id];
+            // Listed whether or not it can be chosen. Seeing what is coming is
+            // worth something; being handed an unfinished guide is not.
+            var pickable = typeof window.osSelectable !== 'function' || window.osSelectable(id);
             var opt = document.createElement('button');
             opt.type = 'button';
-            opt.className = 'os-opt os-accent-' + m.accent;
+            opt.className = 'os-opt os-accent-' + m.accent + (pickable ? '' : ' os-opt-locked');
             opt.setAttribute('role', 'option');
             opt.setAttribute('data-os', id);
+            if (!pickable) opt.setAttribute('aria-disabled', 'true');
 
             opt.appendChild(osMark(m.slug, 24));
 
@@ -257,10 +261,10 @@
             var name = document.createElement('span');
             name.className = 'os-opt-name';
             name.textContent = m.label;
-            if (!m.complete) {
+            if (!pickable) {
                 var wip = document.createElement('span');
                 wip.className = 'os-opt-wip';
-                wip.textContent = '🚧 work in progress';
+                wip.textContent = '🚧 not available yet';
                 name.appendChild(document.createTextNode(' '));
                 name.appendChild(wip);
             }
@@ -271,13 +275,22 @@
             // Incomplete systems say so here rather than only in the badge. The
             // badge is a label; this is the sentence that tells someone the
             // guide will not install anything.
-            sum.textContent = m.complete
+            sum.textContent = pickable
                 ? m.summary
-                : m.summary + ' Not ready to install from — read only.';
+                : m.summary + ' Still being written — cannot be selected yet.';
             text.appendChild(sum);
 
             opt.appendChild(text);
             opt.addEventListener('click', function () {
+                if (!pickable) {
+                    // setTargetOS would refuse anyway; saying so beats a click
+                    // that silently does nothing.
+                    sum.textContent = typeof window.osUnavailableReason === 'function'
+                        ? window.osUnavailableReason(id)
+                        : m.label + ' is not available yet.';
+                    sum.style.color = 'var(--accent-orange)';
+                    return;
+                }
                 window.setTargetOS(id);
                 closeOsMenu();
                 var b = document.getElementById('os-switch-btn');
@@ -830,7 +843,33 @@
                 'keeps its own tooltip either way, so you can always find your way back.');
             tt.textContent = 'ℹ️';
         }
+        /* Wire it here, not in script.js.
+
+           The behaviour lived in script.js, which only the generator page
+           loads, while this file created the button on the other ten. So the
+           control that explains every other control was inert everywhere except
+           one page — and it is the one control that must always work, because
+           turning tooltips off is how you get rid of them and this button keeps
+           its own tooltip so you can find your way back.
+
+           Guarded against binding twice: on the generator page script.js still
+           attaches its own handler to the same element, and two handlers would
+           toggle and untoggle in the same click. */
+        if (!tt.hasAttribute('data-tt-wired')) {
+            tt.setAttribute('data-tt-wired', '1');
+            tt.addEventListener('click', function () {
+                var nowOn = window.tooltipsEnabled === false;
+                if (typeof window.setTooltipsEnabled === 'function') {
+                    window.setTooltipsEnabled(nowOn);
+                } else {
+                    window.tooltipsEnabled = nowOn;
+                    ss(function () { sessionStorage.setItem('tooltips_enabled', String(nowOn)); });
+                }
+                syncTooltipButton();
+            });
+        }
         bar.appendChild(tt);
+        syncTooltipButton();
 
         /* Source repository. A drawn octopus rather than the GitHub mark: that
            logo is a trademark, and a pixel one matches the rest of the set. */
@@ -922,6 +961,24 @@
                 ? 'Verified this session'
                 : 'Not verified yet';
         }
+    }
+
+    /* The switch says which state it is in, in three ways: the class that
+       colours it, the pressed state screen readers read, and its own tooltip
+       text. Colour alone would not survive being turned off. */
+    function syncTooltipButton() {
+        var tt = document.getElementById('toggle-tooltips-btn');
+        if (!tt) return;
+        var on = window.tooltipsEnabled !== false;
+        tt.classList.toggle('disabled', !on);
+        tt.setAttribute('aria-pressed', String(on));
+        tt.setAttribute('data-title', on ? 'ℹ️ Tooltips: ON' : 'ℹ️ Tooltips: OFF');
+        tt.setAttribute('data-desc', on
+            ? 'Tooltips are ON. Hover on desktop, or tap on mobile, for an explanation ' +
+              'of any control. Click to turn them off — this button keeps its own ' +
+              'tooltip either way, so you can always find your way back.'
+            : 'Tooltips are OFF everywhere else. This button keeps its own tooltip so ' +
+              'you can always find your way back. Click to turn them on again.');
     }
 
     function refreshHistoryBadge() {

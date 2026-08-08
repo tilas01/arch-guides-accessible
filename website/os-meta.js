@@ -35,6 +35,8 @@
        skipping the question has to produce exactly the guide this project
        produced before the selector existed. */
     var DEFAULT_OS = 'arch';
+    // Named in the unavailable-reason text below.
+    var DEFAULT_LABEL = 'Arch';
 
     var OS_META = {
         arch: {
@@ -132,6 +134,34 @@
         accent: 'purple'
     };
 
+    /* Which systems a reader may actually switch to.
+
+       All five are listed, because seeing what is coming is useful. Only a
+       finished one can be selected: the other four still emit Arch's commands
+       under another system's name, and a CAUTION banner is a weaker guarantee
+       than simply not handing someone the guide. When a system's emitters are
+       real and its badge lifts, `complete: true` is the only change needed —
+       nothing else here knows the list.
+
+       Enforced in setTargetOS() rather than only in the two places that draw a
+       chooser, so a hand-edited sessionStorage value, a stale session from an
+       earlier build, or a page that forgets to check cannot land somebody on a
+       guide that is not ready. */
+    function selectable(value) {
+        var meta = OS_META[value];
+        return !!(meta && meta.complete);
+    }
+
+    /** Why a system cannot be picked yet, for the UI to show beside it. */
+    function unavailableReason(value) {
+        var meta = OS_META[value];
+        if (!meta) return 'Not a system this project covers.';
+        if (meta.complete) return '';
+        return meta.label + ' is still being written. Its guide would print ' +
+               DEFAULT_LABEL + ' commands under the ' + meta.label +
+               ' name, so it is not offered yet — only shown, so you can see it coming.';
+    }
+
     /** Any value in, a real OS id out. Unknown and missing both mean Arch. */
     function osIdOf(value) {
         return (value && Object.prototype.hasOwnProperty.call(OS_META, value))
@@ -162,7 +192,10 @@
         var raw;
         try { raw = root.sessionStorage && root.sessionStorage.getItem(KEY); }
         catch (_) { return null; }                 // private mode; treat as unasked
-        return (raw && Object.prototype.hasOwnProperty.call(OS_META, raw)) ? raw : null;
+        // A stored value for a system that is no longer selectable — an older
+        // session, or a hand-edited key — reads as "not chosen" rather than
+        // being honoured.
+        return (raw && selectable(raw)) ? raw : null;
     }
 
     function targetOS() { return chosenOS() || DEFAULT_OS; }
@@ -172,7 +205,12 @@
      * which is the Arch fallback if `id` is not one of the four.
      */
     function setTargetOS(id) {
-        var next = osIdOf(id);
+        var want = osIdOf(id);
+        // An unfinished system is not a selection, it is a preview. Refusing
+        // here rather than in the chooser means every route in — the modal, the
+        // dropdown, a restored session, a page doing something unexpected —
+        // gets the same answer.
+        var next = selectable(want) ? want : DEFAULT_OS;
         try { if (root.sessionStorage) root.sessionStorage.setItem(KEY, next); }
         catch (_) { /* private mode: the selection holds for this page only */ }
         announce(next);
@@ -209,6 +247,8 @@
     root.OS_META = OS_META;
     root.OS_NEUTRAL = NEUTRAL;
     root.OS_DEFAULT = DEFAULT_OS;
+    root.osSelectable = selectable;
+    root.osUnavailableReason = unavailableReason;
     root.osIdOf = osIdOf;
     root.osMetaOf = osMetaOf;
     root.osLabelOf = osLabelOf;

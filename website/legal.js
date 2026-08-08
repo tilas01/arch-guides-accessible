@@ -323,8 +323,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Pre-selected, not merely defaulted somewhere in the code: the card that
-    // is chosen is visibly chosen before anything is clicked.
+    // is chosen is visibly chosen before anything is clicked. It can only ever
+    // be a system that is finished — os-meta.js refuses the others outright.
     let picked = window.chosenOS() || window.OS_DEFAULT;
+    const canPick = id => typeof window.osSelectable !== 'function' || window.osSelectable(id);
 
     let html = `
       <h2 style="color:var(--accent-purple,#bb9af7); text-align:center; margin:0 0 0.4rem;">
@@ -376,19 +378,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const m = META[id];
       const colour = ACCENT[m.accent] || ACCENT.purple;
       html += `
-        <button type="button" class="os-choose-card" data-os="${id}"
-                aria-pressed="false"
+        <button type="button" class="os-choose-card${canPick(id) ? '' : ' os-choose-locked'}" data-os="${id}"
+                aria-pressed="false"${canPick(id) ? '' : ' aria-disabled="true"'}
                 style="display:flex; gap:0.8rem; align-items:flex-start; text-align:left;
                        background:var(--bg-darker,#16161e); border:1px solid ${colour};
-                       border-radius:10px; padding:0.8rem 0.95rem; cursor:pointer;
+                       border-radius:10px; padding:0.8rem 0.95rem;
+                       cursor:${canPick(id) ? 'pointer' : 'not-allowed'};
+                       opacity:${canPick(id) ? '1' : '0.72'};
                        font-family:inherit; color:var(--fg-color,#a9b1d6); width:100%;">
           <img src="img/icons/${m.slug}-64.png" alt="" width="40" height="40"
                style="image-rendering:pixelated; flex:0 0 auto;">
           <span style="display:block; min-width:0;">
             <span style="display:block; font-weight:700; color:${colour}; font-size:0.98rem;">
               ${m.label}${m.complete
-                ? ' <span style="font-size:0.7rem; color:var(--accent-green,#9ece6a); font-weight:400;">— complete</span>'
-                : ' <span style="font-size:0.7rem; color:var(--accent-orange,#ff9e64); font-weight:400;">— 🚧 work in progress</span>'}
+                ? ' <span style="font-size:0.7rem; color:var(--accent-green,#9ece6a); font-weight:400;">— ready</span>'
+                : ' <span style="font-size:0.7rem; color:var(--accent-orange,#ff9e64); font-weight:400;">— 🚧 not available yet</span>'}
             </span>
             <span style="display:block; color:var(--fg-color,#a9b1d6); font-size:0.83rem; margin-top:0.25rem; line-height:1.55;">
               ${m.desc}
@@ -440,7 +444,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cards.forEach(c => c.addEventListener('click', () => {
-      picked = c.getAttribute('data-os');
+      const id = c.getAttribute('data-os');
+      if (!canPick(id)) {
+        // Not a selection. Say why, leave the choice where it was, and do not
+        // pretend the click did something.
+        hint.textContent = typeof window.osUnavailableReason === 'function'
+          ? window.osUnavailableReason(id)
+          : META[id].label + ' is not available yet.';
+        hint.style.color = 'var(--accent-orange,#ff9e64)';
+        return;
+      }
+      picked = id;
       paint();
     }));
     paint();
