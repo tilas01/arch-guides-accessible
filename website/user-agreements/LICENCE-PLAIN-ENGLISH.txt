@@ -1,7 +1,7 @@
 THE LICENCE, IN PLAIN ENGLISH
 =============================
 
-Project:  *nix Guides Dynamic
+Project:  *nix Install Guides
 Licence:  Creative Commons Attribution-NonCommercial-ShareAlike 4.0
           (CC BY-NC-SA 4.0)
 Full text: LICENSE.txt in this folder, and

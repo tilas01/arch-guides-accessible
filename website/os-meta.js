@@ -127,7 +127,7 @@
        of OS_META: it is not a system you can install, and putting it in the
        table would mean every consumer had to remember to exclude it. */
     var NEUTRAL = {
-        label: '*nix Guides',
+        label: '*nix Install Guides',
         slug: 'unix-guides',
         accent: 'purple'
     };

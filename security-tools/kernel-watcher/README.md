@@ -6,7 +6,7 @@
 
 Asynchronous filesystem monitor that flags infostealers reading browser profiles, SSH keys and wallets, and userland rootkit behaviour.
 
-Part of the [*nix Guides Dynamic](../../) security suite. Everything here is
+Part of the [*nix Install Guides](../../) security suite. Everything here is
 Rust, builds reproducibly, and ships as a signed release binary.
 
 ---

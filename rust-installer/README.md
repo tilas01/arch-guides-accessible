@@ -1,4 +1,4 @@
-# 🦀 *nix Guides: Async Rust Builder
+# 🦀 *nix Install Guides: Async Rust Builder
 
 This is a highly optimized, asynchronous deployment tool designed for rapid, multi-system Arch Linux installations.
 
