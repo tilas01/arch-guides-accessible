@@ -661,6 +661,129 @@
         document.removeEventListener('keydown', escClose);
     }
 
+    /* ── Clearing the history, with what is about to be lost spelled out ─────
+       Both "clear history" controls wipe the same session-wide store — the
+       generator's and the editor's — which is right: there is one history, not
+       one per page. What they did not do is say what was in it. A bare "are you
+       sure?" is answered yes by reflex, and the thing being discarded only
+       exists in this tab: close it and it is gone regardless.
+
+       So the question now lists every guide by number, where it came from and
+       when, and offers the option that makes the choice safe — take them with
+       you first. Three ways out, and the destructive one is not the default.
+
+       Exposed on window so both front ends call the same code. Two dialogs
+       phrased differently about the same irreversible act is how one of them
+       ends up understating it. */
+    function clearHistoryWithWarning(onCleared) {
+        var entries = readHistoryEntries();
+
+        function wipe() {
+            ss(function () { sessionStorage.removeItem(HISTORY_KEY); });
+            ss(function () { sessionStorage.setItem(HISTORY_SAVED_KEY, '1'); });
+            refreshHistoryBadge();
+            try { document.dispatchEvent(new CustomEvent('arch:history-changed')); } catch (_) { }
+            if (typeof onCleared === 'function') onCleared();
+        }
+
+        // Nothing stored: no drama, and no dialog for an empty action.
+        if (!entries.length) { wipe(); return; }
+
+        var ov = document.createElement('div');
+        ov.className = 'history-overlay';
+        ov.setAttribute('role', 'dialog');
+        ov.setAttribute('aria-modal', 'true');
+        ov.setAttribute('aria-label', 'Clear generation history');
+
+        var panel = document.createElement('div');
+        panel.className = 'history-panel';
+
+        var head = document.createElement('div');
+        head.className = 'history-head';
+        head.innerHTML = '<h2>🗑️ Clear all ' + entries.length + ' generated guide' +
+            (entries.length === 1 ? '' : 's') + '?</h2>' +
+            '<p>This clears the whole session, not just this page. These are held ' +
+            'in this tab only — there is no copy anywhere else, and closing the tab ' +
+            'loses them too. Download them first if you want to keep any of it.</p>';
+        panel.appendChild(head);
+
+        var list = document.createElement('ol');
+        list.className = 'history-list';
+        entries.forEach(function (e, i) {
+            var li = document.createElement('li');
+            li.className = 'history-item';
+            var src = e.source === 'manual-walkthrough' ? '🧭 Walkthrough'
+                    : e.source === 'dynamic-generator' ? '⚙️ Generator'
+                    : '📄 Generated';
+            var parts = [];
+            if (e.md) parts.push('guide');
+            if (e.sh) parts.push('script');
+            if (e.post) parts.push('post-install');
+            if (e.sc) parts.push('config');
+            var meta = document.createElement('div');
+            meta.className = 'history-meta';
+            meta.innerHTML = '<strong>' + (i + 1) + '. ' + src + '</strong>' +
+                '<span>' + String(e.timestamp || '').replace(/[<>&]/g, '') +
+                (parts.length ? ' · ' + parts.join(', ') : '') + '</span>';
+            li.appendChild(meta);
+            list.appendChild(li);
+        });
+        panel.appendChild(list);
+
+        var foot = document.createElement('div');
+        foot.className = 'history-foot';
+
+        var dl = document.createElement('button');
+        dl.type = 'button';
+        dl.className = 'btn';
+        dl.textContent = '⬇️ Download all, then clear';
+        dl.addEventListener('click', function () {
+            entries.forEach(function (e, i) {
+                var n = i + 1;
+                if (e.md)   downloadText('guide-' + n + '.md', e.md, 'text/markdown');
+                if (e.sh)   downloadText('install-' + n + '.sh', e.sh, 'text/x-shellscript');
+                if (e.post) downloadText('post-install-' + n + '.sh', e.post, 'text/x-shellscript');
+                if (e.sc)   downloadText('config-' + n + '.json', e.sc, 'application/json');
+            });
+            close();
+            wipe();
+        });
+        foot.appendChild(dl);
+
+        var go = document.createElement('button');
+        go.type = 'button';
+        go.className = 'btn btn-ghost';
+        go.textContent = 'Clear without downloading';
+        go.addEventListener('click', function () { close(); wipe(); });
+        foot.appendChild(go);
+
+        var cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'btn btn-ghost';
+        cancel.textContent = 'Cancel';
+        cancel.addEventListener('click', close);
+        foot.appendChild(cancel);
+
+        panel.appendChild(foot);
+        ov.appendChild(panel);
+        document.body.appendChild(ov);
+        document.body.style.overflow = 'hidden';
+
+        function onKey(ev) { if (ev.key === 'Escape') close(); }
+        function close() {
+            ov.remove();
+            document.body.style.overflow = '';
+            document.removeEventListener('keydown', onKey);
+        }
+        // Clicking the backdrop and pressing Escape both cancel, never clear:
+        // the accidental gesture must be the harmless one.
+        ov.addEventListener('click', function (ev) { if (ev.target === ov) close(); });
+        document.addEventListener('keydown', onKey);
+        cancel.focus();
+    }
+
+    window.clearHistoryWithWarning = clearHistoryWithWarning;
+
     // Exposed so a page can offer its own entry point to the same overlay.
     window.openSharedHistory = openHistoryOverlay;
     /* Exposed so a page that writes to the history can light the clock

@@ -527,7 +527,15 @@ function loadHistoryEntry(idx) {
 }
 
 function clearSessionHistory() {
-    if (!confirm('Clear this session\'s generation history? The editors keep their current contents.')) return;
+    // The same dialog the generator uses, from shared-ui.js: it lists every
+    // stored guide and offers to download them all before wiping. Two
+    // differently worded prompts for one irreversible act is how one of them
+    // ends up understating it.
+    if (typeof window.clearHistoryWithWarning === 'function') {
+        window.clearHistoryWithWarning(renderSessionHistory);
+        return;
+    }
+    if (!confirm('Clear every generated guide in this session? They exist only in this tab. The editors keep their current contents.')) return;
     try { sessionStorage.removeItem(HISTORY_KEY); } catch (e) { /* nothing to do */ }
     renderSessionHistory();
 }
