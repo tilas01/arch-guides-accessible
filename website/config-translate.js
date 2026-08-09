@@ -47,6 +47,9 @@
            and carrying these across matters more than most: a config that loses
            `dualboot` on the way into the generator turns a "keep Windows"
            install into a whole-disk wipe. */
+        { wl: 'timezone',       gen: 'timezone',        group: 'inputs'  },
+        { wl: 'locale',         gen: 'locale',          group: 'selects' },
+        { wl: 'keymap',         gen: 'keymap',          group: 'selects' },
         { wl: 'dualboot',           gen: 'dualboot',           group: 'selects' },
         { wl: 'dualboot_esp_mode',  gen: 'dualboot_esp_mode',  group: 'selects' },
         { wl: 'dualboot_esp',       gen: 'dualboot_esp',       group: 'inputs'  },

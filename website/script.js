@@ -262,6 +262,10 @@ function saveToHistory(mdContent, shContent, format, postContent, scContent) {
         // Which front end produced this, so the live editor and history can
         // label entries. The walkthrough writes 'manual-walkthrough'.
         source: 'dynamic-generator',
+        /* Which system it was generated for. Without this, two entries made
+           minutes apart for different systems are indistinguishable in the
+           list, and the one you restore decides which commands you run. */
+        os: (typeof window.targetOS === 'function' ? window.targetOS() : 'arch'),
         format,
         md: mdContent || '',
         sh: shContent || '',
@@ -943,6 +947,11 @@ const selectedPostApps = Array.from(document.querySelectorAll('input[name="post_
     const dualEspMode = gv('dualboot_esp_mode','separate');
     const dualEsp = gv('dualboot_esp','');
     const espShared = isDual && dualEspMode !== 'separate';
+    /* Defaults match the walkthrough's recommended answers, so a config that
+       omits them produces the same system from either front end. */
+    const timezone = gv('timezone','Europe/London');
+    const locale = gv('locale','en_US.UTF-8');
+    const keymap = gv('keymap','us');
     const part = gv('partitioning','luks2');
     const initSys = gv('init_system','systemd');
     // Encryption "layer" selections (base type is `part`, above).
@@ -1483,7 +1492,28 @@ run_with_progress() {
         if (cmdOnly) {
             o += `\ncat << 'EOF' > /mnt/chroot_script.sh\n#!/bin/bash\nexport COLOR_BLUE="\\e[38;2;122;162;247m"\nexport COLOR_RESET="\\e[0m"\n`;
             o += `echo -e "\${COLOR_BLUE}>> ENTERING CHROOT: Post-Install Configuration...\${COLOR_RESET}"\n`;
-            
+
+                /* Locale, time zone and console keymap.
+                   These were absent from this generator entirely: no zoneinfo
+                   symlink, no locale-gen, no /etc/locale.conf, no vconsole.conf.
+                   The Arch Wiki treats generating a locale as a required step,
+                   so the script was producing an incomplete system — and the
+                   keymap is not cosmetic either, because it decides how the
+                   disk passphrase types at the boot prompt. */
+                o += `\n# Time zone, locale and console keymap\n`;
+                o += `ln -sf /usr/share/zoneinfo/${timezone} /etc/localtime\n`;
+                o += `hwclock --systohc\n`;
+                o += `sed -i 's/^#${locale}/${locale}/' /etc/locale.gen\n`;
+                o += `locale-gen\n`;
+                o += `echo "LANG=${locale}" > /etc/locale.conf\n`;
+                o += `echo "KEYMAP=${keymap}" > /etc/vconsole.conf\n`;
+                if (isDual && dualboot === 'windows') {
+                    o += `# Windows keeps the hardware clock in local time and expects the same\n`;
+                    o += `# from Linux. hwclock --systohc above writes UTC, which is the\n`;
+                    o += `# standards-compliant side; set RealTimeIsUniversal to DWORD 1 in\n`;
+                    o += `# Windows to make the two agree instead of drifting by your offset.\n`;
+                }
+
                 // Interactive prompts for root and user (Passwords are never stored in plaintext)
                 o += `\n# Set Root Password\n`;
                 if (!cmdOnly) {

@@ -599,7 +599,21 @@
                 var src = e.source === 'manual-walkthrough' ? '🧭 *nix Install Walkthrough'
                         : e.source === 'dynamic-generator' ? '⚙️ *nix Install Generator'
                         : '📄 Generated';
-                meta.innerHTML = '<strong>' + src + '</strong>' +
+                /* Name the system too. Two entries made minutes apart for
+                   different systems are otherwise identical here, and the one
+                   restored decides which commands somebody runs. Older entries
+                   have no `os`, so they are left unlabelled rather than
+                   labelled with a guess. */
+                var osName = '';
+                if (e.os && typeof window.OS_META === 'object' && window.OS_META &&
+                        window.OS_META[e.os]) {
+                    var om = window.OS_META[e.os];
+                    // Table-sourced, so it cannot carry markup — but stripped
+                    // anyway, because this is assigned through innerHTML and
+                    // the entry itself came out of storage.
+                    osName = ' · ' + String(om.short || om.label).replace(/[<>&]/g, '');
+                }
+                meta.innerHTML = '<strong>' + src + osName + '</strong>' +
                     '<span>' + String(e.timestamp || '').replace(/[<>&]/g, '') + '</span>';
                 li.appendChild(meta);
 
@@ -728,6 +742,15 @@
             var src = e.source === 'manual-walkthrough' ? '🧭 Walkthrough'
                     : e.source === 'dynamic-generator' ? '⚙️ Generator'
                     : '📄 Generated';
+            // Same labelling as the history overlay above. This list is what a
+            // reader sees before wiping everything, so it has to identify each
+            // guide as precisely as the list they are wiping it from.
+            var osName = '';
+            if (e.os && typeof window.OS_META === 'object' && window.OS_META &&
+                    window.OS_META[e.os]) {
+                var om2 = window.OS_META[e.os];
+                osName = ' · ' + String(om2.short || om2.label).replace(/[<>&]/g, '');
+            }
             var parts = [];
             if (e.md) parts.push('guide');
             if (e.sh) parts.push('script');
@@ -735,7 +758,7 @@
             if (e.sc) parts.push('config');
             var meta = document.createElement('div');
             meta.className = 'history-meta';
-            meta.innerHTML = '<strong>' + (i + 1) + '. ' + src + '</strong>' +
+            meta.innerHTML = '<strong>' + (i + 1) + '. ' + src + osName + '</strong>' +
                 '<span>' + String(e.timestamp || '').replace(/[<>&]/g, '') +
                 (parts.length ? ' · ' + parts.join(', ') : '') + '</span>';
             li.appendChild(meta);

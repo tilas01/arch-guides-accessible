@@ -605,6 +605,10 @@
                 // The shared history overlay and the live editor both label
                 // entries by this.
                 source: 'manual-walkthrough',
+                /* Which system this guide is for. Two entries made minutes
+                   apart for different systems are otherwise identical in the
+                   list, and the one restored decides which commands get run. */
+                os: (state.os || (typeof window.targetOS === 'function' ? window.targetOS() : 'arch')),
                 format: 'unified',
                 md: window.buildManualGuide(state),
                 sh: window.buildManualScript(state),

@@ -166,6 +166,34 @@
                         </div>
                     </div>
 
+                    <!-- Locale, time zone and keymap. These were missing from this
+                         form entirely, so the generated script never ran
+                         locale-gen and never wrote /etc/locale.conf — an
+                         incomplete install, not a missing convenience. -->
+                    <div class="form-group form-step" oncontextmenu="window.open('wiki.html#manual-install', '_blank'); return false;" data-title="Locale and Time" data-desc="Language, formats and clock. The console keymap also decides how your disk passphrase types at the boot prompt.">
+                        <label>Time zone (IANA "Region/City"):</label>
+                        <input type="text" id="timezone" value="Europe/London" placeholder="Europe/London">
+                        <label style="margin-top:0.6rem;">Locale:</label>
+                        <select oncontextmenu="window.open('wiki.html#manual-install', '_blank'); return false;" id="locale">
+                            <option value="en_US.UTF-8" selected>en_US.UTF-8 — US English ⭐ Recommended</option>
+                            <option value="en_GB.UTF-8">en_GB.UTF-8 — British English</option>
+                            <option value="de_DE.UTF-8">de_DE.UTF-8 — German</option>
+                            <option value="fr_FR.UTF-8">fr_FR.UTF-8 — French</option>
+                        </select>
+                        <label style="margin-top:0.6rem;">Console keymap:</label>
+                        <select oncontextmenu="window.open('wiki.html#manual-install', '_blank'); return false;" id="keymap">
+                            <option value="us" selected>us — US QWERTY ⭐ Recommended</option>
+                            <option value="uk">uk — UK QWERTY</option>
+                            <option value="de">de — German QWERTZ</option>
+                            <option value="fr">fr — French AZERTY</option>
+                        </select>
+                        <div style="font-size:0.75rem; color:var(--accent-orange); margin-top:0.4rem;">
+                            The keymap is not cosmetic: it is the layout in use at the boot
+                            passphrase prompt, before any desktop starts. Pick the wrong one and
+                            your LUKS passphrase will not type the way you expect.
+                        </div>
+                    </div>
+
                     <!-- Dual boot. This existed in the walkthrough and not here,
                          which meant the generator emitted `sgdisk -Z` — a zap of
                          the whole partition table — with no way to say another
