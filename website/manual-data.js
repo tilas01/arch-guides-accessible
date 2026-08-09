@@ -865,7 +865,13 @@ const STEPS = [
         { value: 'light', label: 'Light only',
           desc: '134 available. For a light desktop, or a bright room.' },
         { value: 'mixed', label: 'A mix of both',
-          desc: 'Both folders, split by the percentage you choose next.' }
+          desc: 'Both folders, split by the percentage you choose next.' },
+        /* Reachable before only as mixed + "every one" + a split that then
+           divided them anyway, which is three answers to say one thing and
+           never quite produced the whole set. */
+        { value: 'all', label: 'All of them — both sets, everything',
+          desc: 'Every one of the 269: all 135 dark and all 134 light. ' +
+                'No count and no split to choose. About 40 MB.' }
     ]
 },
 {
@@ -876,7 +882,9 @@ const STEPS = [
           'you get a different set rather than always the first N. All 269 is ' +
           'about 40 MB; 50 is about 7 MB.',
     wiki: 'desktop',
-    when: s => s.wallpapers && s.wallpapers !== 'none',
+    // 'all' already answers this — asking how many of "all of them" you want
+    // would be a question with one possible answer.
+    when: s => s.wallpapers && s.wallpapers !== 'none' && s.wallpapers !== 'all',
     type: 'choice',
     options: [
         { value: '10',  label: '10',  desc: 'About 1.5 MB. Enough to try the look.' },

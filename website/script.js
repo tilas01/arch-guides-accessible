@@ -504,7 +504,13 @@ function wallpaperCounts(mode, count, split) {
     const want = count === 'all' ? 269 : parseInt(count || '50', 10);
     const pct = parseInt(split || '75', 10);
     let dark = 0, light = 0;
-    if (mode === 'dark') dark = Math.min(want, WALLPAPER_AVAILABLE.dark);
+    if (mode === 'all') {
+        // Everything in both folders. No count, no split, no rounding.
+        // Kept in step with the same branch in manual-guide.js.
+        dark = WALLPAPER_AVAILABLE.dark;
+        light = WALLPAPER_AVAILABLE.light;
+    }
+    else if (mode === 'dark') dark = Math.min(want, WALLPAPER_AVAILABLE.dark);
     else if (mode === 'light') light = Math.min(want, WALLPAPER_AVAILABLE.light);
     else {
         dark = Math.min(Math.round(want * pct / 100), WALLPAPER_AVAILABLE.dark);
@@ -3642,7 +3648,9 @@ function validateConfigurations() {
     const wpCountSel = document.getElementById('wallpaper_count');
     const wpNote = document.getElementById('wallpaper-note');
     const wpOn = wpMode !== 'none';
-    if (wpCountSel) wpCountSel.disabled = !wpOn;
+    // "All of them" answers both of the following, so they are disabled rather
+    // than left offering a choice that no longer changes anything.
+    if (wpCountSel) wpCountSel.disabled = !wpOn || wpMode === 'all';
     if (wpSplitSel) wpSplitSel.disabled = wpMode !== 'mixed';
     if (wpNote) {
         if (!wpOn) { wpNote.style.display = 'none'; }

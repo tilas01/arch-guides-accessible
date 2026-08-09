@@ -1048,7 +1048,12 @@
 
             // Work out how many come from each folder, capped at what each holds.
             let nDark = 0, nLight = 0;
-            if (s.wallpapers === 'dark')  nDark = Math.min(want, AVAIL.dark);
+            if (s.wallpapers === 'all') {
+                // Everything in both folders. No count, no split, no rounding.
+                nDark = AVAIL.dark;
+                nLight = AVAIL.light;
+            }
+            else if (s.wallpapers === 'dark')  nDark = Math.min(want, AVAIL.dark);
             else if (s.wallpapers === 'light') nLight = Math.min(want, AVAIL.light);
             else {
                 nDark  = Math.min(Math.round(want * split / 100), AVAIL.dark);
