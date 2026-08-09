@@ -250,6 +250,81 @@
         return Object.prototype.hasOwnProperty.call(OS_INSTALL, os);
     }
 
+    /* ── Which security tools work on which system ──────────────────────────
+       Mirrors `SUPPORT_*` and `support_reason()` in
+       scripts/install-security-suite.sh. Two copies is one more than ideal, but
+       the installer runs on a machine with no website and the website runs with
+       no installer, so neither can read the other. What must not happen is the
+       two disagreeing, so the strings are kept identical and
+       `tests/tool-support.mjs` compares them.
+
+       'yes' | 'partial' | 'no'. `partial` means some of the tool works and some
+       cannot — the reason says which half, because "partial" on its own tells a
+       reader nothing about whether the part they need is the part that works. */
+    var TOOL_SUPPORT = {
+        arch:    { 'libre-otp': 'yes', 'anti-ducky': 'yes', 'anti-evil-maid': 'yes',
+                   'kernel-watcher': 'yes', 'scarecrow': 'yes', 'aur-guard': 'yes',
+                   'pi-boot-guard': 'no' },
+        gentoo:  { 'libre-otp': 'yes', 'anti-ducky': 'yes', 'anti-evil-maid': 'yes',
+                   'kernel-watcher': 'yes', 'scarecrow': 'yes', 'aur-guard': 'no',
+                   'pi-boot-guard': 'no' },
+        raspios: { 'libre-otp': 'yes', 'anti-ducky': 'partial', 'anti-evil-maid': 'partial',
+                   'kernel-watcher': 'yes', 'scarecrow': 'yes', 'aur-guard': 'no',
+                   'pi-boot-guard': 'yes' },
+        freebsd: { 'libre-otp': 'yes', 'anti-ducky': 'no', 'anti-evil-maid': 'partial',
+                   'kernel-watcher': 'yes', 'scarecrow': 'partial', 'aur-guard': 'no',
+                   'pi-boot-guard': 'no' },
+        openbsd: { 'libre-otp': 'no', 'anti-ducky': 'no', 'anti-evil-maid': 'partial',
+                   'kernel-watcher': 'yes', 'scarecrow': 'no', 'aur-guard': 'no',
+                   'pi-boot-guard': 'no' }
+    };
+
+    /* Why, in the tool's own terms. A shorter list than the table above because
+       most 'no' answers share a reason, and because a system that simply is not
+       the target hardware needs no explanation beyond that. */
+    var TOOL_REASON = {
+        'openbsd:libre-otp': 'OpenBSD has no PAM; it uses BSD auth, which is a different integration',
+        'openbsd:scarecrow': 'the duress gate needs PAM, and header erase needs cryptsetup',
+        'freebsd:anti-ducky': 'built on Linux evdev and the USB authorized sysfs node',
+        'openbsd:anti-ducky': 'built on Linux evdev and the USB authorized sysfs node',
+        'raspios:anti-ducky': 'timing detection works; USB deauthorization on the Pi is unverified',
+        'openbsd:anti-evil-maid': 'boot hashing works; softraid has no suspend, so the lock-on-tamper half cannot',
+        'freebsd:anti-evil-maid': 'boot hashing works; suspend uses geli rather than cryptsetup and is untested',
+        'raspios:anti-evil-maid': 'boot hashing works; the Pi boots from EEPROM, so the EFI checks do not apply',
+        'freebsd:scarecrow': 'canaries work; header erase uses geli rather than cryptsetup and is untested',
+        'gentoo:aur-guard': 'there is no AUR on Gentoo; the equivalent would audit an ebuild',
+        'freebsd:aur-guard': 'there is no AUR here; the equivalent would audit a ports Makefile',
+        'openbsd:aur-guard': 'there is no AUR here; the equivalent would audit a ports Makefile',
+        'raspios:aur-guard': 'there is no AUR on Debian; packages come from apt',
+        'arch:pi-boot-guard': 'Raspberry Pi hardware only',
+        'gentoo:pi-boot-guard': 'Raspberry Pi hardware only',
+        'freebsd:pi-boot-guard': 'Raspberry Pi hardware only',
+        'openbsd:pi-boot-guard': 'Raspberry Pi hardware only'
+    };
+
+    /** 'yes' | 'partial' | 'no' for a tool on a system. Unknown pairs read 'no'. */
+    function toolSupport(os, tool) {
+        var table = TOOL_SUPPORT[osIdOfSafe(os)];
+        return (table && table[tool]) || 'no';
+    }
+
+    /** Why it is not a plain yes, or '' when it is. */
+    function toolReason(os, tool) {
+        return TOOL_REASON[osIdOfSafe(os) + ':' + tool] || '';
+    }
+
+    /* os-meta.js owns the fallback, but this file is loaded beside it rather
+       than after it in every harness, so the lookup is guarded rather than
+       assuming the helper is there. */
+    function osIdOfSafe(os) {
+        if (typeof root.osIdOf === 'function') return root.osIdOf(os);
+        return Object.prototype.hasOwnProperty.call(TOOL_SUPPORT, os) ? os : 'arch';
+    }
+
+    root.TOOL_SUPPORT = TOOL_SUPPORT;
+    root.osToolSupport = toolSupport;
+    root.osToolReason = toolReason;
+
     root.OS_INSTALL = OS_INSTALL;
     root.OS_INIT = INIT;
     root.osInstallModel = installModel;

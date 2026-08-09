@@ -1122,18 +1122,23 @@ const STEPS = [
     optional: true,
     options: [
         { value: 'libre-otp', label: 'Libre OTP',
+          when: s => !window.osToolSupport || window.osToolSupport(osId(s), 'libre-otp') !== 'no',
           desc: 'TOTP/HOTP second factor with no cloud account and no blobs.' },
         { value: 'anti-ducky', label: 'Anti-Ducky',
+          when: s => !window.osToolSupport || window.osToolSupport(osId(s), 'anti-ducky') !== 'no',
           desc: 'Blocks BadUSB keystroke injection by watching HID timing.',
           note: 'Its timing thresholds have never been measured on real ' +
                 'hardware. Test it before trusting it with your only keyboard.' },
         { value: 'anti-evil-maid', label: 'Anti-Evil Maid',
+          when: s => !window.osToolSupport || window.osToolSupport(osId(s), 'anti-evil-maid') !== 'no',
           desc: 'Hashes /boot so you know if it changed while the machine ' +
                 'was out of your hands.' },
         { value: 'kernel-watcher', label: 'Kernel Watcher',
+          when: s => !window.osToolSupport || window.osToolSupport(osId(s), 'kernel-watcher') !== 'no',
           desc: 'Watches SSH keys, browser profiles and wallet directories ' +
                 'for readers.' },
         { value: 'scarecrow', label: 'Scarecrow',
+          when: s => !window.osToolSupport || window.osToolSupport(osId(s), 'scarecrow') !== 'no',
           desc: 'Canary files and sandbox spoofing.',
           danger: 'Its duress mode can destroy data. Off by default and gated ' +
                   'behind typed confirmation.' },
@@ -1150,8 +1155,49 @@ const STEPS = [
           when: s => osId(s) === 'arch',
           desc: 'Audits a PKGBUILD for malicious patterns before makepkg ' +
                 'runs it. Read-only; it cannot lock you out. Arch only — the ' +
-                'AUR does not exist on the other systems.' }
-    ]
+                'AUR does not exist on the other systems.' },
+        /* Pi hardware only, and correct about that. It reads the EEPROM
+           bootloader state, which exists nowhere else. */
+        { value: 'pi-boot-guard', label: 'Pi Boot Guard',
+          when: s => osId(s) === 'raspios',
+          desc: 'Reports Raspberry Pi secure-boot state and baselines the boot ' +
+                'partition. It refuses to fuse OTP — that is irreversible — and ' +
+                'prints the steps instead.' }
+    ],
+    /* Say what only half runs.
+
+       Support comes from os-install.js, which mirrors the installer's table and
+       is held to it by tests/tool-support.mjs. Tools the installer would refuse
+       are hidden by each option's own `when` above — offering one would mean the
+       reader picks it, generates a script, and finds out on the machine.
+
+       "partial" is never left as a bare word. Which half works is the whole
+       question: boot hashing without the lock-on-tamper half is still worth
+       having, and knowing that is the difference between a useful tool and a
+       false sense of one. */
+    note: s => {
+        if (!window.osToolSupport || !window.osToolReason) return '';
+        const ALL = ['libre-otp', 'anti-ducky', 'anti-evil-maid', 'kernel-watcher',
+                     'scarecrow', 'aur-guard', 'pi-boot-guard'];
+        const describe = t => t + ' — ' + (window.osToolReason(osId(s), t) ||
+                                           'not supported on this system');
+        const partial = ALL.filter(t => window.osToolSupport(osId(s), t) === 'partial');
+        /* Absent tools are named too. A shorter list with no explanation
+           teaches the reader nothing — they cannot tell whether the tool does
+           not exist, does not apply here, or was forgotten. Naming it is also
+           the only way they learn that OpenBSD's missing PAM is what removed
+           two of these, rather than an oversight. */
+        const absent = ALL.filter(t => window.osToolSupport(osId(s), t) === 'no');
+        const parts = [];
+        if (partial.length) {
+            parts.push('These work only in part: ' + partial.map(describe).join('; ') + '.');
+        }
+        if (absent.length) {
+            parts.push('Not offered here, and why: ' + absent.map(describe).join('; ') + '.');
+        }
+        if (!parts.length) return '';
+        return 'On ' + osName(s) + '. ' + parts.join(' ');
+    }
 },
 /* ── Duress PINs ────────────────────────────────────────────────────────────
    Only offered when scarecrow is installed and the disk is actually encrypted:
