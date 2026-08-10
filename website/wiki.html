@@ -1929,6 +1929,95 @@ sudo tpm2_pcrread sha256</code></pre>
     </div>
 
     <!-- ══ Dual boot ═════════════════════════════════════════════════════ -->
+    <div class="section" id="gentoo">
+        <h2>🐧 Gentoo</h2>
+        <p>
+            The authority for Gentoo is the
+            <a href="https://wiki.gentoo.org/wiki/Handbook:AMD64" target="_blank" rel="noopener noreferrer">Gentoo Handbook</a>.
+            Where this page and the Handbook disagree, the Handbook is right and
+            this is a bug worth reporting.
+        </p>
+
+        <h3 id="gentoo-install">The install, and how it differs from Arch</h3>
+        <p>
+            Gentoo is a <strong>source distribution</strong>. The base system is
+            a signed <strong>stage3 tarball</strong> you verify and unpack, not a
+            package transaction — there is no <code>pacstrap</code>. There is no
+            <code>arch-chroot</code> either: the bind mounts are done by hand,
+            including the <code>--make-rslave</code> lines that stop a later
+            unmount in the live environment propagating into mounts you are still
+            using. There is no <code>genfstab</code>; <code>/etc/fstab</code> is
+            written by hand. And there is no <code>mkinitcpio</code> — dracut
+            builds the initramfs.
+        </p>
+        <p>
+            One difference bites later if it is missed:
+            <strong>Gentoo mounts the EFI system partition at <code>/efi</code>,
+            not <code>/boot</code></strong>, with <code>/boot</code> on the root
+            filesystem. Arch puts the kernel directly on the ESP. Mounting it the
+            Arch way produces a system that builds fine and does not boot.
+        </p>
+        <p>
+            The <strong>stage3 and the profile must agree</strong>. An openrc
+            stage3 under a systemd profile is the most common way a first Gentoo
+            install goes wrong, and the failure is confusing rather than obvious.
+        </p>
+        <p>
+            <strong>Binary packages are not cheating.</strong>
+            <code>--getbinpkg</code> is a supported workflow. Compiling
+            everything is the reason to run Gentoo; compiling a browser is the
+            reason people stop. Chromium alone can be the better part of a day on
+            a laptop.
+        </p>
+
+        <h3 id="gentoo-kernel">The kernel: three routes, three amounts of work</h3>
+        <table>
+            <thead><tr><th>Route</th><th>Atom</th><th>What you get</th></tr></thead>
+            <tbody>
+                <tr><td>Binary</td><td><code>sys-kernel/gentoo-kernel-bin</code></td>
+                    <td>Prebuilt. Minutes, and it boots. The sensible first install.</td></tr>
+                <tr><td>Distribution, from source</td><td><code>sys-kernel/gentoo-kernel</code></td>
+                    <td>Gentoo's configuration, compiled locally. Long build, no decisions to get wrong.</td></tr>
+                <tr><td>Manual</td><td><code>sys-kernel/gentoo-sources</code></td>
+                    <td>You run <code>make menuconfig</code>. Full control, full responsibility.</td></tr>
+            </tbody>
+        </table>
+        <p style="color:var(--accent-red);">
+            <strong>A manually configured kernel missing the driver for your disk
+            controller, your filesystem, or <code>dm-crypt</code> will not boot,
+            and will not tell you which one is missing.</strong> If this is your
+            first Gentoo install, take the binary kernel and come back to
+            <code>menuconfig</code> once the machine is up.
+        </p>
+
+        <h3 id="gentoo-use-flags">USE flags</h3>
+        <p>
+            USE decides which optional features are <em>compiled in at all</em>,
+            not merely which are switched on. A package built without PulseAudio
+            support does not contain it. That is the other reason to run Gentoo,
+            and the part that takes longest to learn.
+        </p>
+        <p>
+            A leading <code>-</code> removes a flag globally. Change nothing to
+            begin with: the profile's defaults are sensible, and you can add
+            flags once you know what you are missing. Turning one <em>off</em>
+            later means rebuilding everything that depended on it, so a
+            deliberately minimal set is a decision to make early or not at all.
+        </p>
+        <p>
+            <code>MAKEOPTS="-jN"</code> sets parallel build jobs. Each job can
+            want around 2 GB of RAM when linking, so a machine with many cores
+            and little memory meets the OOM killer partway through a long build.
+            The working rule is the lower of your core count and half your RAM in
+            gigabytes.
+        </p>
+
+        <p>
+            Longer walkthrough, with the exact commands:
+            <a href="docs/gentoo/01-installation.md" target="_blank" rel="noopener">docs/gentoo</a>.
+        </p>
+    </div>
+
     <div class="section" id="dual-boot">
         <h2><span class="icon">🪟</span> Dual Booting with Windows</h2>
         <p>

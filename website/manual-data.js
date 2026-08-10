@@ -544,6 +544,140 @@ const STEPS = [
                 'your bootloader.' }
     ]
 },
+
+/* ── Gentoo ─────────────────────────────────────────────────────────────────
+   The questions that make Gentoo Gentoo rather than Arch with a different
+   package manager. Every one is gated on the system, so an Arch reader never
+   sees them and the Arch permutation count is unaffected.
+
+   The Gentoo Handbook is the authority for all of it:
+   https://wiki.gentoo.org/wiki/Handbook:AMD64 */
+{
+    id: 'gentoo_stage3',
+    section: 'Before you start',
+    title: 'Which stage3 tarball?',
+    help: 'The base system comes as a signed tarball rather than a package ' +
+          'transaction. Which one you take decides the init system and the ' +
+          'toolchain, and it has to agree with the profile you select next — ' +
+          'an openrc stage3 under a systemd profile is the most common way a ' +
+          'first Gentoo install goes wrong.',
+    wiki: 'gentoo-install',
+    when: s => osId(s) === 'gentoo',
+    type: 'choice',
+    options: [
+        { value: 'openrc', label: 'openrc', recommended: true,
+          desc: 'Gentoo\'s own init. The common choice, and what the Handbook ' +
+                'assumes unless you tell it otherwise.' },
+        { value: 'systemd', label: 'systemd',
+          desc: 'Closest to the Arch experience. Pick this if you already know ' +
+                'systemd and would rather not learn OpenRC at the same time as ' +
+                'Gentoo.' },
+        { value: 'hardened-openrc', label: 'hardened (OpenRC)',
+          desc: 'The hardened toolchain and profile. More defence, more ' +
+                'friction: some packages need work, and you will meet it.' },
+        { value: 'musl', label: 'musl',
+          desc: 'A smaller libc with a smaller ecosystem. Choose it only if ' +
+                'you already know why you want it — expect to solve problems ' +
+                'nobody has written up.' }
+    ]
+},
+{
+    id: 'gentoo_kernel',
+    section: 'System',
+    title: 'How should the kernel be built?',
+    help: 'Gentoo does not ship you a kernel by default. These are genuinely ' +
+          'different amounts of work, and only the first is a sensible first ' +
+          'install.',
+    wiki: 'gentoo-kernel',
+    when: s => osId(s) === 'gentoo',
+    type: 'choice',
+    options: [
+        { value: 'bin', label: 'gentoo-kernel-bin — prebuilt', recommended: true,
+          desc: 'Gentoo\'s configuration, already compiled. Minutes rather ' +
+                'than hours, and it boots. Start here and come back to ' +
+                'menuconfig once the machine is up.' },
+        { value: 'dist', label: 'gentoo-kernel — Gentoo config, compiled here',
+          desc: 'The same configuration built locally, so it matches your ' +
+                'CFLAGS. Long build, no configuration decisions to get wrong.' },
+        { value: 'manual', label: 'gentoo-sources — you run menuconfig',
+          desc: 'Full control and full responsibility.',
+          danger: 'A config missing your disk controller, your filesystem or ' +
+                  'dm-crypt will not boot and will not tell you which one is ' +
+                  'absent. Do not make this your first Gentoo kernel.' }
+    ]
+},
+{
+    id: 'gentoo_binpkgs',
+    section: 'System',
+    title: 'Use binary packages where they exist?',
+    help: 'Compiling everything is the reason to run Gentoo, and compiling a ' +
+          'browser is the reason people stop. --getbinpkg takes a prebuilt ' +
+          'package when one is published and builds the rest from source, ' +
+          'which is a supported Gentoo workflow rather than a shortcut.',
+    wiki: 'gentoo-install',
+    when: s => osId(s) === 'gentoo',
+    type: 'choice',
+    options: [
+        { value: 'big', label: 'Only for the big ones', recommended: true,
+          desc: 'Source by default, binaries for Firefox, LibreOffice, ' +
+                'Chromium, Rust and LLVM. Those five are most of the wait: ' +
+                'Chromium alone can be the better part of a day on a laptop.' },
+        { value: 'none', label: 'Never — build everything',
+          desc: 'Every package compiled for this machine. Honest about the ' +
+                'cost: plan the first install as an overnight job.' },
+        { value: 'all', label: 'Prefer binaries wherever published',
+          desc: 'Fastest to a working desktop. You give up most of the ' +
+                'per-machine optimisation that made you choose Gentoo.' }
+    ]
+},
+{
+    id: 'gentoo_makeopts',
+    section: 'System',
+    title: 'How many parallel build jobs?',
+    help: 'MAKEOPTS="-jN". More jobs finish sooner until memory runs out — ' +
+          'each one can want around 2 GB when linking, so a machine with many ' +
+          'cores and little RAM meets the OOM killer partway through a long ' +
+          'build. The usual rule is the lower of your core count and half your ' +
+          'RAM in GB.',
+    wiki: 'gentoo-install',
+    when: s => osId(s) === 'gentoo',
+    type: 'choice',
+    options: [
+        { value: 'nproc', label: 'One per core — $(nproc)', recommended: true,
+          desc: 'The default advice. Right on any machine with roughly 2 GB of ' +
+                'RAM per core.' },
+        { value: 'half', label: 'Half the cores',
+          desc: 'Safer on a laptop with 8 GB or less, and leaves the machine ' +
+                'usable while it builds.' },
+        { value: '1', label: 'One job — no parallelism',
+          desc: 'Slowest, and the one that always finishes. Useful when a ' +
+                'build has already failed on memory once.' }
+    ]
+},
+{
+    id: 'gentoo_use',
+    section: 'System',
+    title: 'USE flags',
+    help: 'USE decides which optional features are compiled in at all — not ' +
+          'merely which are enabled. A package built without pulseaudio ' +
+          'support does not contain it. This is the other reason to run ' +
+          'Gentoo, and the one that takes the longest to learn.',
+    wiki: 'gentoo-use-flags',
+    when: s => osId(s) === 'gentoo',
+    type: 'choice',
+    options: [
+        { value: 'profile', label: 'Whatever the profile sets', recommended: true,
+          desc: 'Change nothing to begin with. The profile\'s defaults are ' +
+                'sensible and you can add flags once you know what you are ' +
+                'missing.' },
+        { value: 'desktop', label: 'Profile plus a desktop set',
+          desc: 'Adds elogind, dbus, policykit and the usual desktop wants, ' +
+                'and turns off systemd where the profile is OpenRC.' },
+        { value: 'minimal', label: 'Deliberately minimal',
+          desc: 'Strips X, Wayland, bluetooth and multimedia. For a server. ' +
+                'Adding one back later means rebuilding what depends on it.' }
+    ]
+},
 {
     id: 'kernels',
     section: 'Boot',

@@ -75,6 +75,19 @@
             'amd-ucode': 'sys-kernel/linux-firmware',
             'cronie': 'sys-process/cronie',
             'sysklogd': 'app-admin/sysklogd',
+            'dbus': 'sys-apps/dbus',
+            'os-prober': 'sys-boot/os-prober',
+            'snapper': 'app-backup/snapper',
+            'ufw': 'net-firewall/ufw',
+            'nftables': 'net-firewall/nftables',
+            'firefox': 'www-client/firefox',
+            'chromium': 'www-client/chromium',
+            'mpv': 'media-video/mpv',
+            'thunar': 'xfce-base/thunar',
+            'btop': 'sys-process/btop',
+            'openssh': 'net-misc/openssh',
+            'docker': 'app-containers/docker',
+            'git': 'dev-vcs/git',
 
             /* No equivalent. The emitters check for null and explain the
                absence instead of substituting something that merely sounds
@@ -156,6 +169,10 @@
                getting it wrong produces a system that builds and will not
                boot. */
             espMount: '/boot',
+            /* Where downloaded packages live, relative to the root. Given a
+               Btrfs subvolume of its own so snapshots do not carry the package
+               cache around with them. */
+            pkgCache: 'var/cache/pacman/pkg',
             init: { fixed: 'systemd' },
             kernel: { model: 'binary', compiled: false },
             aur: true,
@@ -174,6 +191,10 @@
             family: 'gentoo',
             authority: 'https://wiki.gentoo.org/wiki/Handbook:AMD64',
             espMount: '/efi',
+            /* Binary packages fetched with --getbinpkg land here. Portage's
+               source tree and distfiles are elsewhere again, but this is the one
+               that grows without bound and so wants its own subvolume. */
+            pkgCache: 'var/cache/binpkgs',
             /* Both are supported and the choice changes every service command
                below, which is why it gates other questions the way the desktop
                choice does. OpenRC is Gentoo's own and the default profile. */

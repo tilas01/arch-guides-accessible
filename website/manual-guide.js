@@ -364,6 +364,39 @@
             L.push('> own mirror list at /etc/pacman.d/mirrorlist. See');
             L.push('> <https://archlinuxarm.org/platforms> for your board.');
             L.push('');
+        } else if (M && M.family === 'gentoo') {
+            /* Gentoo has no reflector and no /etc/pacman.d/mirrorlist. Mirrors
+               are a make.conf variable, chosen with mirrorselect, and the
+               package *tree* is a separate thing again from the mirrors that
+               serve distfiles. */
+            const httpsOnlyG = s.mirror_https !== 'no';
+            L.push('### Pick fast package mirrors');
+            L.push('');
+            L.push('```bash');
+            L.push('emerge --verbose --oneshot app-portage/mirrorselect');
+            L.push('');
+            L.push('# Interactive: pick from the list, closest first.');
+            L.push('mirrorselect -i -o >> /mnt/gentoo/etc/portage/make.conf');
+            L.push('');
+            L.push('# Or automatic: the ' +
+                   (httpsOnlyG ? 'ten fastest HTTPS mirrors' : 'ten fastest mirrors') + '.');
+            L.push('mirrorselect -s10' + (httpsOnlyG ? ' -H' : '') +
+                   ' -o >> /mnt/gentoo/etc/portage/make.conf');
+            L.push('```');
+            L.push('');
+            L.push('> This writes a `GENTOO_MIRRORS=` line. Check it before you rely on');
+            L.push('> it — `mirrorselect` appends, so running it twice leaves two, and');
+            L.push('> the later one wins in a way that is easy to miss.');
+            L.push('');
+            if (!httpsOnlyG) {
+                L.push('> You allowed plain HTTP mirrors. Distfiles are verified against the');
+                L.push('> digests in the tree, so this is not an integrity risk — but anyone');
+                L.push('> on the path can see which packages you build. HTTPS hides that.');
+                L.push('');
+            }
+            L.push('The package tree itself is separate from these mirrors and is synced');
+            L.push('in the chroot below, with `emerge-webrsync`.');
+            L.push('');
         } else {
             // Mirror selection with reflector. Only on Arch-proper (x86_64):
             // Arch Linux ARM has a separate mirror system.
@@ -516,14 +549,21 @@
             L.push('btrfs subvolume create /mnt/@snapshots');
             L.push('umount /mnt');
             L.push('');
+            /* The package cache and the EFI mount point are per-system.
+               Gentoo keeps binary packages in var/cache/binpkgs and mounts the
+               ESP at /efi with /boot on the root filesystem; Arch does neither.
+               A subvolume named after another system's package manager is the
+               small, embarrassing kind of leak this reads as. */
+            const cache = (M && M.pkgCache) || 'var/cache/pacman/pkg';
+            const espAt = ((M && M.espMount) || '/boot').replace(/^\//, '');
             L.push('O="noatime,compress=zstd:3,space_cache=v2"');
             L.push('mount -o $O,subvol=@          ' + f.rootDev + ' /mnt');
-            L.push('mkdir -p /mnt/{home,var/log,var/cache/pacman/pkg,.snapshots,boot}');
+            L.push('mkdir -p /mnt/{home,var/log,' + cache + ',.snapshots,' + espAt + '}');
             L.push('mount -o $O,subvol=@home      ' + f.rootDev + ' /mnt/home');
             L.push('mount -o $O,subvol=@log       ' + f.rootDev + ' /mnt/var/log');
-            L.push('mount -o $O,subvol=@pkg       ' + f.rootDev + ' /mnt/var/cache/pacman/pkg');
+            L.push('mount -o $O,subvol=@pkg       ' + f.rootDev + ' /mnt/' + cache);
             L.push('mount -o $O,subvol=@snapshots ' + f.rootDev + ' /mnt/.snapshots');
-            L.push('mount ' + f.esp + ' /mnt/boot');
+            L.push('mount ' + f.esp + ' /mnt/' + espAt);
         } else {
             L.push('mkfs.' + (s.filesystem === 'xfs' ? 'xfs -f' : 'ext4') + ' ' + f.rootDev);
             L.push('mount ' + f.rootDev + ' /mnt');
@@ -581,9 +621,19 @@
             L.push('```bash');
             L.push('cd /mnt/gentoo');
             L.push('');
+            /* The stage3 answer decides the autobuilds directory, and it has to
+               agree with the profile chosen below. Naming the exact path is the
+               difference between "go and find one" and a command they can run. */
+            const STAGE3_DIR = {
+                'openrc': 'current-stage3-amd64-openrc',
+                'systemd': 'current-stage3-amd64-systemd',
+                'hardened-openrc': 'current-stage3-amd64-hardened-openrc',
+                'musl': 'current-stage3-amd64-musl'
+            };
+            const stage3Dir = STAGE3_DIR[s.gentoo_stage3] || STAGE3_DIR.openrc;
             L.push('# Pick a mirror:  ' + M.stage3.mirrorList);
             L.push('# Newest tarball under:');
-            L.push('#   ' + M.stage3.path);
+            L.push('#   releases/amd64/autobuilds/' + stage3Dir + '/');
             L.push('STAGE3_URL=""     # paste the full tarball URL here');
             L.push('');
             L.push('if [ -z "$STAGE3_URL" ]; then');
@@ -625,13 +675,55 @@
             L.push('> the live environment can propagate into the mounts you are still');
             L.push('> using.');
             L.push('');
+            L.push('### Compile options');
+            L.push('');
+            /* Every line here is an answer the reader gave. A question that
+               does not reach make.conf is a control wired to nothing. */
+            const MAKEOPTS = { nproc: '-j$(nproc)', half: '-j$(( $(nproc) / 2 ))', '1': '-j1' };
+            const USE_SETS = {
+                profile: '',
+                desktop: 'USE="elogind dbus policykit -systemd"',
+                minimal: 'USE="-X -wayland -bluetooth -pulseaudio -gtk -qt5"'
+            };
+            const makeopts = MAKEOPTS[s.gentoo_makeopts] || MAKEOPTS.nproc;
+            const useLine = USE_SETS[s.gentoo_use] !== undefined
+                ? USE_SETS[s.gentoo_use] : USE_SETS.profile;
+            L.push('```bash');
+            L.push('cat >> /mnt/gentoo/etc/portage/make.conf <<EOF');
+            L.push('COMMON_FLAGS="-O2 -pipe -march=native"');
+            L.push('MAKEOPTS="' + makeopts + '"');
+            if (useLine) L.push(useLine);
+            L.push('EOF');
+            L.push('```');
+            L.push('');
+            if (s.gentoo_makeopts === 'half') {
+                L.push('> Half the cores, because a build job can want around 2 GB of RAM');
+                L.push('> when it links. This is the setting that keeps a laptop usable while');
+                L.push('> it compiles, and keeps a long build away from the OOM killer.');
+                L.push('');
+            } else if (s.gentoo_makeopts === '1') {
+                L.push('> One job at a time. Slowest, and the one that always finishes —');
+                L.push('> the right answer after a build has already died on memory once.');
+                L.push('');
+            }
+            L.push('> `-march=native` builds for the CPU doing the building. Do not use it');
+            L.push('> if this disk will be moved to a different machine, or if you intend');
+            L.push('> to build packages here for another box.');
+            L.push('');
+            if (s.gentoo_use === 'minimal') {
+                L.push('> A deliberately minimal USE set is a decision to make now or not at');
+                L.push('> all: turning one of these back **on** later means rebuilding');
+                L.push('> everything that would have depended on it.');
+                L.push('');
+            }
             L.push('### Get a package tree, and pick a profile');
             L.push('');
             L.push('```bash');
             L.push('emerge-webrsync');
             L.push('eselect profile list');
             L.push('');
-            L.push('# Pick the number matching your stage3 and the init system you want,');
+            L.push('# Pick the number matching your stage3 (' +
+                   (s.gentoo_stage3 || 'openrc') + ') and the init system you want,');
             L.push('# then run:  eselect profile set NUMBER');
             L.push('```');
             L.push('');
@@ -646,6 +738,56 @@
                 L.push('```bash');
                 L.push(M.install(gbase));
                 L.push('```');
+                L.push('');
+            }
+            /* The kernel answer, emitted. Three genuinely different amounts of
+               work, and the manual route carries the warning at the point it
+               matters rather than in a wiki page. */
+            L.push('### The kernel');
+            L.push('');
+            L.push('```bash');
+            L.push(M.install(['sys-kernel/linux-firmware']));
+            if (s.gentoo_kernel === 'manual') {
+                L.push(M.install(['sys-kernel/gentoo-sources', 'sys-apps/pciutils']));
+                L.push('cd /usr/src/linux');
+                L.push('make menuconfig');
+                L.push('make -j$(nproc) && make modules_install');
+                L.push('make install');
+            } else if (s.gentoo_kernel === 'dist') {
+                L.push(M.install(['sys-kernel/gentoo-kernel']));
+            } else {
+                L.push(M.install(['sys-kernel/gentoo-kernel-bin']));
+            }
+            L.push('```');
+            L.push('');
+            if (s.gentoo_kernel === 'manual') {
+                L.push('> [!CAUTION]');
+                L.push('> A configuration missing the driver for your disk controller, your');
+                L.push('> filesystem, or `dm-crypt` will not boot and will not tell you which');
+                L.push('> one is absent. Check those three before you leave `menuconfig`.');
+                L.push('> If this is a first Gentoo install, take `gentoo-kernel-bin` and');
+                L.push('> come back to this once the machine is up.');
+                L.push('');
+            }
+            /* Binary packages, as chosen. --getbinpkg is a supported workflow,
+               so it is offered plainly rather than apologised for. */
+            if (s.gentoo_binpkgs === 'all') {
+                L.push('> **Binaries preferred wherever published.** Add `--getbinpkg` to the');
+                L.push('> emerge commands below, or set `FEATURES="getbinpkg"` in make.conf');
+                L.push('> to make it the default. Fastest route to a working desktop, and it');
+                L.push('> gives up most of the per-machine optimisation you came here for.');
+                L.push('');
+            } else if (s.gentoo_binpkgs === 'big') {
+                L.push('> **Binaries for the big ones only.** Build from source by default and');
+                L.push('> add `--getbinpkg` for the handful nobody sensibly compiles:');
+                L.push('> `www-client/firefox`, `app-office/libreoffice`,');
+                L.push('> `www-client/chromium`, `dev-lang/rust`, `sys-devel/llvm`. Chromium');
+                L.push('> alone can be the better part of a day on a laptop.');
+                L.push('');
+            } else if (s.gentoo_binpkgs === 'none') {
+                L.push('> **Everything from source**, which is the reason to be here. Plan the');
+                L.push('> first install as an overnight job, and expect a desktop with a');
+                L.push('> browser to be the long pole by a wide margin.');
                 L.push('');
             }
             const missing = (typeof window !== 'undefined' && window.osPkgUnavailable)
@@ -822,9 +964,19 @@
             L.push(uuidCmd);
             L.push('echo "' + rootOpts + '" > /etc/kernel/cmdline');
             L.push('');
-            L.push('# Turn on the unified image preset');
-            L.push('sed -i "s|^#\\?ALL_config|ALL_config|" /etc/mkinitcpio.d/linux.preset');
-            L.push('mkinitcpio -P');
+            if (M && M.family === 'gentoo') {
+                /* Gentoo builds unified images through dracut rather than a
+                   mkinitcpio preset. `--uefi` is what makes it one bundled
+                   executable instead of a separate kernel and initramfs. */
+                L.push('# Unified kernel image, built by dracut');
+                L.push('echo \'uefi="yes"\' >> /etc/dracut.conf.d/uki.conf');
+                L.push('echo \'kernel_cmdline="' + rootOpts + '"\' >> /etc/dracut.conf.d/uki.conf');
+                L.push('emerge --config sys-kernel/gentoo-kernel-bin   # rebuilds the image');
+            } else {
+                L.push('# Turn on the unified image preset');
+                L.push('sed -i "s|^#\\?ALL_config|ALL_config|" /etc/mkinitcpio.d/linux.preset');
+                L.push('mkinitcpio -P');
+            }
             L.push('```');
             L.push('');
             if (s.secureboot === 'own-keys') {
@@ -870,9 +1022,23 @@
             L.push('> unencrypted system that is a full compromise in one keystroke.');
         } else {
             L.push('```bash');
-            L.push(f.dual
-                ? 'pacman -S os-prober\ngrub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=Arch'
-                : 'grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=Arch');
+            /* Per-system: the package manager, the package name, the EFI mount
+               point and the loader id all differ. Gentoo additionally needs
+               GRUB_PLATFORMS set in make.conf *before* GRUB is emerged, or it
+               builds for the wrong platform and grub-install says so. */
+            const grubEfiDir = (M && M.espMount) || '/boot';
+            const grubId = (os.short || os.label).replace(/\s+/g, '');
+            if (M && M.family === 'gentoo') {
+                L.push('# GRUB_PLATFORMS must be set before GRUB is built, not after.');
+                L.push('echo \'GRUB_PLATFORMS="efi-64"\' >> /etc/portage/make.conf');
+                L.push(M.install(['sys-boot/grub']));
+                if (f.dual) L.push(M.install(['sys-boot/os-prober']));
+                L.push('grub-install --efi-directory=' + grubEfiDir);
+            } else {
+                if (f.dual) L.push('pacman -S os-prober');
+                L.push('grub-install --target=x86_64-efi --efi-directory=' + grubEfiDir +
+                       ' --bootloader-id=' + grubId);
+            }
             if (f.enc) {
                 L.push('');
                 L.push('# GRUB needs to be told to unlock the root device');
@@ -1001,30 +1167,57 @@
                 L.push('');
                 L.push('```bash');
                 L.push('for pkg in ' + typed.join(' ') + '; do');
-                L.push('    if pacman -Si "$pkg" >/dev/null 2>&1; then');
-                L.push('        sudo pacman -S --needed --noconfirm "$pkg"');
-                L.push('    elif command -v paru >/dev/null 2>&1 && paru -Si "$pkg" >/dev/null 2>&1; then');
-                L.push('        # AUR: a build script a stranger wrote, running as you.');
-                L.push('        paru -S --needed "$pkg"');
-                L.push('    else');
-                L.push('        echo "WARNING: \'$pkg\' is in neither the official repos nor the AUR." >&2');
-                L.push('        echo "  Official: https://archlinux.org/packages/?q=$pkg" >&2');
-                L.push('        echo "  AUR:      https://aur.archlinux.org/packages?K=$pkg" >&2');
-                L.push('        echo "  It may have been renamed or dropped. Skipping this one." >&2');
-                L.push('    fi');
+                if (M && M.family === 'gentoo') {
+                    /* No AUR here, so no second source to fall back to and no
+                       PKGBUILD warning to give. `emerge --pretend` is the
+                       existence check, and an unqualified name that matches
+                       more than one category makes portage stop and ask rather
+                       than guess — which is a good reason to check first. */
+                    L.push('    if emerge --pretend --quiet "$pkg" >/dev/null 2>&1; then');
+                    L.push('        sudo ' + M.install(['"$pkg"']));
+                    L.push('    else');
+                    L.push('        echo "WARNING: \'$pkg\' did not resolve to a package." >&2');
+                    L.push('        echo "  Search: https://packages.gentoo.org/packages/search?q=$pkg" >&2');
+                    L.push('        echo "  A name without its category can match more than one" >&2');
+                    L.push('        echo "  package. Try the full atom, e.g. app-editors/vim." >&2');
+                    L.push('    fi');
+                } else {
+                    L.push('    if pacman -Si "$pkg" >/dev/null 2>&1; then');
+                    L.push('        sudo pacman -S --needed --noconfirm "$pkg"');
+                    L.push('    elif command -v paru >/dev/null 2>&1 && paru -Si "$pkg" >/dev/null 2>&1; then');
+                    L.push('        # AUR: a build script a stranger wrote, running as you.');
+                    L.push('        paru -S --needed "$pkg"');
+                    L.push('    else');
+                    L.push('        echo "WARNING: \'$pkg\' is in neither the official repos nor the AUR." >&2');
+                    L.push('        echo "  Official: https://archlinux.org/packages/?q=$pkg" >&2');
+                    L.push('        echo "  AUR:      https://aur.archlinux.org/packages?K=$pkg" >&2');
+                    L.push('        echo "  It may have been renamed or dropped. Skipping this one." >&2');
+                    L.push('    fi');
+                }
                 L.push('done');
                 L.push('```');
                 L.push('');
-                L.push('> Those two links are the ones that would 404 if the package really is');
-                L.push('> gone — open them and see for yourself rather than taking the');
-                L.push('> warning\'s word for it.');
-                L.push('');
-                L.push('> [!NOTE]');
-                L.push('> AUR packages are not reviewed by anyone. `makepkg` runs a `PKGBUILD`');
-                L.push('> a stranger wrote, as your user, before anything is installed. Read');
-                L.push('> it — `paru -G <pkg>` fetches it without building — or run it past');
-                L.push('> `aur-guard`, which is in the security tools list for this reason.');
-                L.push('');
+                if (M && M.family === 'gentoo') {
+                    L.push('> That link is the one that would come back empty if the package');
+                    L.push('> really is gone — open it rather than taking the warning\'s word.');
+                    L.push('');
+                    L.push('> [!NOTE]');
+                    L.push('> Packages in the Gentoo tree are reviewed, unlike the AUR — but an');
+                    L.push('> **overlay** is not. If you add one, you are trusting whoever');
+                    L.push('> maintains it exactly as much as you would trust a PKGBUILD.');
+                    L.push('');
+                } else {
+                    L.push('> Those two links are the ones that would 404 if the package really is');
+                    L.push('> gone — open them and see for yourself rather than taking the');
+                    L.push('> warning\'s word for it.');
+                    L.push('');
+                    L.push('> [!NOTE]');
+                    L.push('> AUR packages are not reviewed by anyone. `makepkg` runs a `PKGBUILD`');
+                    L.push('> a stranger wrote, as your user, before anything is installed. Read');
+                    L.push('> it — `paru -G <pkg>` fetches it without building — or run it past');
+                    L.push('> `aur-guard`, which is in the security tools list for this reason.');
+                    L.push('');
+                }
             }
         }
 
@@ -1198,9 +1391,16 @@
             L.push('sudo systemctl enable --now snapper-timeline.timer snapper-cleanup.timer');
             L.push('```');
             L.push('');
-            L.push('> With `snap-pac` installed, a snapshot is taken before and after every');
-            L.push('> pacman transaction. A broken update becomes a reboot rather than a');
-            L.push('> rescue USB.');
+            if (M && M.family === 'gentoo') {
+                L.push('> Gentoo has no `snap-pac`, so nothing hooks snapshots to package');
+                L.push('> transactions automatically. The timer above still gives you');
+                L.push('> scheduled snapshots; a pre-update one is a `portage` hook you write');
+                L.push('> yourself, and worth it before a large `@world` rebuild.');
+            } else {
+                L.push('> With `snap-pac` installed, a snapshot is taken before and after every');
+                L.push('> pacman transaction. A broken update becomes a reboot rather than a');
+                L.push('> rescue USB.');
+            }
             L.push('');
         }
 
@@ -1229,14 +1429,34 @@
             L.push('```bash');
             L.push('curl -fsSL https://raw.githubusercontent.com/tilas01/unix-guides-dynamic/main/scripts/install-security-suite.sh -o install.sh');
             L.push('less install.sh          # read it before running it as root');
-            L.push('sudo bash install.sh --only ' + (s.security_tools || []).join(','));
+            /* On a source distribution, downloading somebody's prebuilt x86_64
+               binary is the one thing the reader did not sign up for. The
+               installer already has --from-source; use it, and take the
+               toolchain as a dependency rather than a surprise. */
+            const fromSource = M && M.kernel && M.kernel.compiled;
+            L.push('sudo bash install.sh --only ' + (s.security_tools || []).join(',') +
+                   (fromSource ? ' --from-source' : ''));
             L.push('```');
             L.push('');
-            L.push('> The installer verifies each binary\'s SHA-512 hash **and** GPG');
-            L.push('> signature, pins the signing key fingerprint, and fails closed. It');
-            L.push('> installs the daemons but does not enable them — several of these can');
-            L.push('> lock you out, which is the point of them.');
-            L.push('');
+            if (fromSource) {
+                L.push('> **Built here, from source.** You chose a system that compiles its');
+                L.push('> own software, so the installer is told to do the same rather than');
+                L.push('> fetching a prebuilt x86_64 binary — which is both the point of');
+                L.push('> ' + os.label + ' and the only way these get built for your CPU.');
+                L.push('> It needs a Rust toolchain: `emerge dev-lang/rust` if `cargo` is');
+                L.push('> not already there. Expect it to take a while.');
+                L.push('');
+                L.push('> Building from source means the signature check covers the *source*');
+                L.push('> you fetched, not a binary somebody else produced. That is a');
+                L.push('> stronger position, and it is worth knowing you are in it.');
+                L.push('');
+            } else {
+                L.push('> The installer verifies each binary\'s SHA-512 hash **and** GPG');
+                L.push('> signature, pins the signing key fingerprint, and fails closed. It');
+                L.push('> installs the daemons but does not enable them — several of these can');
+                L.push('> lock you out, which is the point of them.');
+                L.push('');
+            }
             if (has(s.security_tools, 'anti-ducky')) {
                 L.push('> **Anti-Ducky specifically:** its keystroke-timing thresholds have');
                 L.push('> never been measured on real hardware, so its false-positive rate is');
@@ -1422,7 +1642,10 @@
                 L.push('');
                 L.push('```bash');
                 L.push('# Needs dbus-monitor, which is in the dbus package.');
-                L.push('command -v dbus-monitor || sudo pacman -S --needed dbus');
+                L.push('command -v dbus-monitor || sudo ' +
+                       (M ? M.install([(typeof window !== 'undefined' && window.osPkgName)
+                                        ? window.osPkgName(modelKey, 'dbus') : 'dbus'])
+                          : 'pacman -S --needed dbus'));
                 L.push('');
                 L.push('sudo anti-evil-maid --install-lock-hook');
                 L.push('');
